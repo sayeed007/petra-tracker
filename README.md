@@ -14,13 +14,14 @@ Statuses: `open`, `in-progress`, `fixed-per-log` (a fix log claims it; branch no
 ## Update and publish
 
 ```
-PETRA_TRACKER_PW='a long password' bash tools/publish.sh
+python tools/build.py     # rebuilds data/items.json and site/index.html
+git add -A && git commit -m "update tracker" && git push
 ```
 
-It rebuilds `data/items.json`, builds the plain page into `build/` (git-ignored, never published) and encrypts it with StatiCrypt into `site/index.html`. Commit and push `site/` and `data/`; Vercel redeploys.
+Vercel redeploys on every push. `vercel.json` serves only `site/` and sets `noindex`.
 
-## Put it on the web (Vercel, free)
+## Hosting (Vercel, free)
 
-1. Private GitHub repo (done): `sayeed007/petra-tracker`.
-2. Vercel: import the repo, Framework "Other", no build command. `vercel.json` already sets the output folder to `site` and `noindex`.
-3. **Never publish the plain page.** A free Vercel site is public and the list names unfixed security gaps. Only the encrypted `site/index.html` is served; `data/` and `build/` are not (they are outside `site/`). Keep the password in a password manager. If a plain version was ever deployed, delete that old deployment in Vercel (Deployments, ... , Delete): old deployment URLs keep serving their content.
+Private GitHub repo `sayeed007/petra-tracker`, imported in Vercel (Framework "Other", no build command).
+The site is **open, no password** (decision 2026-11-09, so every developer can read it). Anyone with the link can read the list, which
+includes unfixed security gaps: do not share the link outside the team, and keep hosts, credentials and tokens out of the data files.
