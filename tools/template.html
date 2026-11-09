@@ -51,6 +51,7 @@ tr.row{cursor:pointer}tr.row:hover{background:color-mix(in srgb,var(--acc) 5%,tr
 <script>
 const DATA=/*DATA*/[];
 const SC={open:"--s-open","in-progress":"--s-in-progress","fixed-per-log":"--s-fixed-per-log",fixed:"--s-fixed","still-bug":"--s-still-bug",decision:"--s-decision",wontfix:"--s-wontfix",unknown:"--s-unknown"};
+const RANK=Object.fromEntries(["still-bug","open","in-progress","decision","unknown","fixed-per-log","fixed","wontfix"].map((k,i)=>[k,i])),SEV={high:0,medium:1,low:2,unrated:3};
 const STS=Object.keys(SC),$=s=>document.querySelector(s);
 const f={module:"",q:"",side:"",sev:"",st:"",set:""};
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -71,7 +72,7 @@ function cards(){
   const segs=STS.map(s=>{const n=arr.filter(d=>d.status===s).length;return n?`<i style="width:${n/arr.length*100}%;background:var(${SC[s]})"></i>`:""}).join("");
   return `<button class="mod ${f.module===k?"on":""}" data-m="${esc(k)}"><b>${esc(l)}</b><span>${arr.length} items · ${open} open</span><div class="bar">${segs}</div></button>`}).join("")}
 function rows(){
- const arr=DATA.filter(d=>match(d)),sh=arr.slice(0,400);
+ const arr=DATA.filter(d=>match(d)).sort((x,y)=>RANK[x.status]-RANK[y.status]||SEV[x.severity]-SEV[y.severity]||(x.module>y.module?1:x.module<y.module?-1:0)),sh=arr.slice(0,400);
  $("#count").textContent=`${arr.length} items${arr.length>400?" (first 400 shown, narrow the filters)":""}`;
  $("#rows").innerHTML=sh.map((d,i)=>`<tr class="row" data-i="${DATA.indexOf(d)}"><td>${pill(d.severity,"--"+d.severity)}</td><td>${pill(d.status,SC[d.status])}</td><td>${esc(d.module)}</td><td>${esc(d.side)}</td><td>${esc(d.title)}</td><td class="hide-s id">${esc(d.id)}</td></tr>`).join("")}
 function detail(tr){
