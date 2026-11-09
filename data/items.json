@@ -8108,7 +8108,9 @@
   "source": "backend-purchase-bugs-2026-11-01.md B-P11",
   "refs": [
    "POST /api/purchase/vendor-payments",
-   "spec 12 PUR-V-02a"
+   "spec 12 PUR-V-02a",
+   "rv-be:purchase:1",
+   "B-1"
   ],
   "size": "",
   "theme": "",
@@ -8116,7 +8118,10 @@
   "checked": {
    "ref": "321870e96",
    "date": "2026-11-09"
-  }
+  },
+  "merged": [
+   "rv-be:purchase:1"
+  ]
  },
  {
   "id": "purchase:B-P12",
@@ -8185,29 +8190,6 @@
   "size": "",
   "theme": "",
   "set": "notes-B",
-  "checked": {
-   "ref": "321870e96",
-   "date": "2026-11-09"
-  }
- },
- {
-  "id": "rv-be:purchase:1",
-  "module": "purchase",
-  "side": "backend",
-  "severity": "high",
-  "title": "Concurrent payments over-pay a bill",
-  "summary": "",
-  "status": "still-bug",
-  "status_evidence": "Same as B-P11: no @Lock/@Version anywhere in purchase; VendorPaymentDomainService:196-207 plain read; pending siblings are counted so only truly parallel requests overpay. | Repro: Two simultaneous POST /api/purchase/vendor-payments against the same bill, each for most of the remaining due.",
-  "evidence_level": "verified",
-  "found": "2026-11-02",
-  "source": "BACKEND-BY-MODULE/02-purchase.md",
-  "refs": [
-   "B-1"
-  ],
-  "size": "",
-  "theme": "Theme 1: Wrong money and wrong calculation",
-  "set": "review-be",
   "checked": {
    "ref": "321870e96",
    "date": "2026-11-09"
@@ -8344,7 +8326,9 @@
   "source": "backend-purchase-bugs-2026-11-01.md B-P3",
   "refs": [
    "POST /api/purchase/vendor-bills",
-   "spec 03 PUR-P-04a"
+   "spec 03 PUR-P-04a",
+   "rv-be:purchase:4",
+   "B-5"
   ],
   "size": "",
   "theme": "",
@@ -8352,7 +8336,10 @@
   "checked": {
    "ref": "321870e96",
    "date": "2026-11-09"
-  }
+  },
+  "merged": [
+   "rv-be:purchase:4"
+  ]
  },
  {
   "id": "purchase:B-P4",
@@ -8369,31 +8356,6 @@
   "refs": [
    "POST /api/purchase/vendor-bills",
    "spec 04 PUR-P-04c"
-  ],
-  "size": "",
-  "theme": "",
-  "set": "notes-B",
-  "checked": {
-   "ref": "321870e96",
-   "date": "2026-11-09"
-  }
- },
- {
-  "id": "purchase:B-P5",
-  "module": "purchase",
-  "side": "backend",
-  "severity": "medium",
-  "title": "Bill credit accepts refundQty above returned qty and a client-supplied unit price",
-  "summary": "refundQty 25 for a return of 20 and unit price 30 for goods bought at 8 are accepted; only the bill outstanding cap limits it.",
-  "status": "still-bug",
-  "status_evidence": "BillCreditDomainService.validateCommon:101-135 checks refundQty>0 only; unitPrice from the line; no comparison with return line qty or price. Only validateAppliedBills outstanding cap limits it. | Repro: POST /api/purchase/bill-credits for a return of 20 with refundQty 25 and unitPrice 30 (bought at 8): accepted if applied total fits the bill's outstanding.",
-  "evidence_level": "verified",
-  "found": "2026-11-01",
-  "source": "backend-purchase-bugs-2026-11-01.md B-P5",
-  "refs": [
-   "POST /api/purchase/bill-credits",
-   "spec 05 PUR-P-07b",
-   "spec 06 PUR-P-07c"
   ],
   "size": "",
   "theme": "",
@@ -8895,29 +8857,6 @@
   }
  },
  {
-  "id": "rv-be:purchase:4",
-  "module": "purchase",
-  "side": "backend",
-  "severity": "medium",
-  "title": "Three-way match: bill quantity not compared with received quantity",
-  "summary": "",
-  "status": "still-bug",
-  "status_evidence": "VendorBillGenerationService.buildItemsFromRequest (l.257-290) copies billedQty from request; VendorBillDomainService.validateLines (l.138) checks ids only; challan qty only >=0. No billed<=received check. | Repro: POST /api/purchase/vendor-bills with itemReceiptId and billedItems billedQty 1000 where receipt accepted 10 -> 201",
-  "evidence_level": "verified",
-  "found": "2026-11-02",
-  "source": "BACKEND-BY-MODULE/02-purchase.md",
-  "refs": [
-   "B-5"
-  ],
-  "size": "",
-  "theme": "Theme 1: Wrong money and wrong calculation",
-  "set": "review-be",
-  "checked": {
-   "ref": "321870e96",
-   "date": "2026-11-09"
-  }
- },
- {
   "id": "rv-be:purchase:40",
   "module": "purchase",
   "side": "backend",
@@ -9022,7 +8961,13 @@
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
   "refs": [
-   "be-A10-2"
+   "be-A10-2",
+   "purchase:B-P5",
+   "POST /api/purchase/bill-credits",
+   "spec 05 PUR-P-07b",
+   "spec 06 PUR-P-07c",
+   "rv-be:purchase:9",
+   "be-C04-5"
   ],
   "size": "",
   "theme": "Purchase order money trusted from the client; lines not tied to requisition  [MEDIUM] [VERIFIED]  (source IDs: be-A11-4, be-B02-4 (PO part))",
@@ -9030,7 +8975,11 @@
   "checked": {
    "ref": "321870e96",
    "date": "2026-11-09"
-  }
+  },
+  "merged": [
+   "purchase:B-P5",
+   "rv-be:purchase:9"
+  ]
  },
  {
   "id": "rv-be:purchase:7",
@@ -10284,29 +10233,6 @@
   ],
   "size": "",
   "theme": "Theme 8: Database and entity drift",
-  "set": "review-be",
-  "checked": {
-   "ref": "321870e96",
-   "date": "2026-11-09"
-  }
- },
- {
-  "id": "rv-be:purchase:9",
-  "module": "purchase",
-  "side": "backend",
-  "severity": "low",
-  "title": "Bill credit initialAmount copied from the request",
-  "summary": "",
-  "status": "still-bug",
-  "status_evidence": "BillCreditDomainService.mergeAppliedLines l.331 existingLine.setInitialAmount(incoming) and BillCreditMapper.java:104 copy initialAmount from client; never recomputed from the bill. Display snapshot only. | Repro: POST /api/purchase/bill-credits with appliedLines[0].initialAmount 1 for a bill of 1000 -> 201, stored 1",
-  "evidence_level": "verified",
-  "found": "2026-11-02",
-  "source": "BACKEND-BY-MODULE/02-purchase.md",
-  "refs": [
-   "be-C04-5"
-  ],
-  "size": "",
-  "theme": "Tax rate unit differs between documents (percent vs fraction), posting guesses  [MEDIUM] [VERIFIED]  (source IDs: be-A13-5, be-B02-5, be-A12-10 (third bullet))",
   "set": "review-be",
   "checked": {
    "ref": "321870e96",
@@ -12978,7 +12904,15 @@
   "source": "BACKEND-BY-MODULE/03-sales.md",
   "refs": [
    "be-A15-1",
-   "be-C06-2"
+   "be-C06-2",
+   "sales:B5",
+   "SAL-A-57",
+   "sales:B6",
+   "SAL-A-55",
+   "GET /api/sales/customer-refunds/available-credit-memos",
+   "e2e27:3",
+   "release_0.0.9",
+   "POST /api/sales/credit-memos"
   ],
   "size": "",
   "theme": "",
@@ -12986,7 +12920,12 @@
   "checked": {
    "ref": "321870e96",
    "date": "2026-11-09"
-  }
+  },
+  "merged": [
+   "sales:B5",
+   "sales:B6",
+   "e2e27:3"
+  ]
  },
  {
   "id": "rv-be:sales:2.2",
@@ -13070,7 +13009,10 @@
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
   "refs": [
-   "be-A15-4"
+   "be-A15-4",
+   "e2e27:2",
+   "release_0.0.9",
+   "POST /api/sales/delivery-orders"
   ],
   "size": "",
   "theme": "",
@@ -13078,7 +13020,10 @@
   "checked": {
    "ref": "321870e96",
    "date": "2026-11-09"
-  }
+  },
+  "merged": [
+   "e2e27:2"
+  ]
  },
  {
   "id": "rv-be:sales:2.6",
@@ -13116,7 +13061,10 @@
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
   "refs": [
-   "S-3"
+   "S-3",
+   "sales:B13",
+   "SAL-A-91",
+   "POST /api/sales/orders"
   ],
   "size": "",
   "theme": "",
@@ -13124,7 +13072,10 @@
   "checked": {
    "ref": "",
    "date": "2026-11-09"
-  }
+  },
+  "merged": [
+   "sales:B13"
+  ]
  },
  {
   "id": "rv-be:sales:3.1",
@@ -13570,7 +13521,12 @@
   "source": "backend-saleschain-bugs-2026-10-31.md P3-B4",
   "refs": [
    "CHN-A-08",
-   "POST /api/sales/item-returns"
+   "POST /api/sales/item-returns",
+   "sales:B7",
+   "SAL-A-53",
+   "SAL-A-54",
+   "e2e27:1",
+   "release_0.0.9"
   ],
   "size": "",
   "theme": "",
@@ -13578,7 +13534,11 @@
   "checked": {
    "ref": "5113a9e19",
    "date": "2026-11-09"
-  }
+  },
+  "merged": [
+   "sales:B7",
+   "e2e27:1"
+  ]
  },
  {
   "id": "saleschain:SC-1",
@@ -13969,7 +13929,10 @@
   "refs": [
    "be-B02-3",
    "be-B03-2",
-   "be-A16-7"
+   "be-A16-7",
+   "sales:B12",
+   "SAL-A-76",
+   "POST /api/sales/demands"
   ],
   "size": "",
   "theme": "",
@@ -13977,7 +13940,10 @@
   "checked": {
    "ref": "321870e96",
    "date": "2026-11-09"
-  }
+  },
+  "merged": [
+   "sales:B12"
+  ]
  },
  {
   "id": "rv-be:sales:4.2",
@@ -13992,7 +13958,10 @@
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
   "refs": [
-   "be-A14-5"
+   "be-A14-5",
+   "saleschain:SC-6",
+   "CHN-S3-03",
+   "POST /api/sales/pricing-schemes"
   ],
   "size": "",
   "theme": "",
@@ -14000,7 +13969,10 @@
   "checked": {
    "ref": "321870e96",
    "date": "2026-11-09"
-  }
+  },
+  "merged": [
+   "saleschain:SC-6"
+  ]
  },
  {
   "id": "rv-be:sales:4.3",
@@ -14015,7 +13987,9 @@
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
   "refs": [
-   "be-A14-2"
+   "be-A14-2",
+   "saleschain:SC-8",
+   "CHN-S2-09"
   ],
   "size": "",
   "theme": "",
@@ -14023,7 +13997,10 @@
   "checked": {
    "ref": "321870e96",
    "date": "2026-11-09"
-  }
+  },
+  "merged": [
+   "saleschain:SC-8"
+  ]
  },
  {
   "id": "rv-be:sales:4.4",
@@ -15569,126 +15546,6 @@
   }
  },
  {
-  "id": "sales:B12",
-  "module": "sales",
-  "side": "backend",
-  "severity": "medium",
-  "title": "Demand line totalValue stored as client sent it",
-  "summary": "totalValue 999 on 3 x 8.00 stored as 999 and order follows; server should compute.",
-  "status": "still-bug",
-  "status_evidence": "SalesDemandMapper.toLineEntity:137 setTotalValue(dto.getTotalValue()); never recomputed from qty*unitPrice in demand/order create paths (SalesOrderMapper:367 same). | Repro: POST /api/sales/demands line 3 x 8.00 with totalValue 999: stored 999.",
-  "evidence_level": "verified",
-  "found": "2026-10-31",
-  "source": "backend-sales-bugs-2026-10-31.md B12",
-  "refs": [
-   "SAL-A-76",
-   "POST /api/sales/demands"
-  ],
-  "size": "",
-  "theme": "",
-  "set": "notes-B",
-  "checked": {
-   "ref": "321870e96",
-   "date": "2026-11-09"
-  }
- },
- {
-  "id": "sales:B13",
-  "module": "sales",
-  "side": "backend",
-  "severity": "medium",
-  "title": "Credit limit checked only on demand path, not on direct order create",
-  "summary": "Customer limit 10,000,000: order of 12,000,000 via POST /api/sales/orders is 201 APPROVED.",
-  "status": "still-bug",
-  "status_evidence": "SalesOrderDomainService.validateCreate:408-417 and handleCreateDependencies:527-546 have no credit-limit check; credit gating exists only for demands. With no order workflow it auto-approves. | Repro: POST /api/sales/orders 12,000,000 for a customer with limit 10,000,000 and no order workflow: APPROVED.",
-  "evidence_level": "verified",
-  "found": "2026-10-31",
-  "source": "backend-sales-bugs-2026-10-31.md B13",
-  "refs": [
-   "SAL-A-91",
-   "POST /api/sales/orders"
-  ],
-  "size": "",
-  "theme": "",
-  "set": "notes-B",
-  "checked": {
-   "ref": "321870e96",
-   "date": "2026-11-09"
-  }
- },
- {
-  "id": "sales:B5",
-  "module": "sales",
-  "side": "backend",
-  "severity": "medium",
-  "title": "Credit memo with negative or zero refund quantity accepted",
-  "summary": "refundQty -1 gives total -9.00; refundQty 0 gives zero memo; expected 400.",
-  "status": "fixed",
-  "status_evidence": "CreditMemoService.buildRefundLines rejects refundQty null or <= 0",
-  "evidence_level": "verified",
-  "found": "2026-10-31",
-  "source": "backend-sales-bugs-2026-10-31.md B5",
-  "refs": [
-   "SAL-A-57"
-  ],
-  "size": "",
-  "theme": "",
-  "set": "notes-B",
-  "checked": {
-   "ref": "321870e96",
-   "date": "2026-11-09"
-  }
- },
- {
-  "id": "sales:B6",
-  "module": "sales",
-  "side": "backend",
-  "severity": "medium",
-  "title": "Second credit memo for the same returned units accepted",
-  "summary": "Return of 3, two memos of 3 x 9 both 201; 54 refundable for 27 returned.",
-  "status": "fixed",
-  "status_evidence": "CreditMemoService.buildRefundLines sums already credited per return line over non-cancelled memos and caps at returned qty",
-  "evidence_level": "verified",
-  "found": "2026-10-31",
-  "source": "backend-sales-bugs-2026-10-31.md B6",
-  "refs": [
-   "SAL-A-55",
-   "GET /api/sales/customer-refunds/available-credit-memos"
-  ],
-  "size": "",
-  "theme": "",
-  "set": "notes-B",
-  "checked": {
-   "ref": "321870e96",
-   "date": "2026-11-09"
-  }
- },
- {
-  "id": "sales:B7",
-  "module": "sales",
-  "side": "backend",
-  "severity": "medium",
-  "title": "Sales return above quantity sold accepted (also cumulative)",
-  "summary": "POST /api/sales/item-returns returnQty 11 on a line of 10 returns 201; 3 then 8 also accepted. UI blocks it (D-16); API does not.",
-  "status": "fixed",
-  "status_evidence": "SalesOrderReturnQuantityService.requireWithinReturnable caps return qty by fulfilled minus returned minus in-flight claims; ItemReturnDomainService.validateLines",
-  "evidence_level": "verified",
-  "found": "2026-10-31",
-  "source": "backend-sales-bugs-2026-10-31.md B7",
-  "refs": [
-   "SAL-A-53",
-   "SAL-A-54",
-   "POST /api/sales/item-returns"
-  ],
-  "size": "",
-  "theme": "",
-  "set": "notes-B",
-  "checked": {
-   "ref": "321870e96",
-   "date": "2026-11-09"
-  }
- },
- {
   "id": "saleschain:P2-1",
   "module": "sales",
   "side": "backend",
@@ -15805,30 +15662,6 @@
   }
  },
  {
-  "id": "saleschain:SC-6",
-  "module": "sales",
-  "side": "backend",
-  "severity": "medium",
-  "title": "Pricing scheme validation missing (150%, negatives, buyQty 0 accepted)",
-  "summary": "POST /api/sales/pricing-schemes returns 201 for invalid discount, tier, budget and PROMO values; expected 400.",
-  "status": "still-bug",
-  "status_evidence": "PricingSchemeDomainService reward validation (:448-495) is null-checks only; no range/sign checks on discount, cashback, buyQty/freeQty; no DB CHECK. | Repro: POST /api/sales/pricing-schemes PROMO buyQty 0 or negative values: 201.",
-  "evidence_level": "verified",
-  "found": "2026-10-31",
-  "source": "backend-saleschain-bugs-2026-10-31.md SC-6",
-  "refs": [
-   "CHN-S3-03",
-   "POST /api/sales/pricing-schemes"
-  ],
-  "size": "",
-  "theme": "",
-  "set": "notes-B",
-  "checked": {
-   "ref": "321870e96",
-   "date": "2026-11-09"
-  }
- },
- {
   "id": "saleschain:SC-7",
   "module": "sales",
   "side": "both",
@@ -15850,29 +15683,6 @@
   "set": "notes-B",
   "checked": {
    "ref": "55ba124a",
-   "date": "2026-11-09"
-  }
- },
- {
-  "id": "saleschain:SC-8",
-  "module": "sales",
-  "side": "backend",
-  "severity": "medium",
-  "title": "Duplicate customer category names accepted (Retailer / retailer)",
-  "summary": "POST /api/sales/channel-categories answers 201 for case-variant duplicates although service code rejects them; live build differs from source.",
-  "status": "fixed",
-  "status_evidence": "SalesChannelCategoryService:253 findByNameIgnoreCase rejects duplicate category names",
-  "evidence_level": "verified",
-  "found": "2026-10-31",
-  "source": "backend-saleschain-bugs-2026-10-31.md SC-8",
-  "refs": [
-   "CHN-S2-09"
-  ],
-  "size": "",
-  "theme": "",
-  "set": "notes-B",
-  "checked": {
-   "ref": "321870e96",
    "date": "2026-11-09"
   }
  },
@@ -16966,78 +16776,6 @@
   "set": "notes-B",
   "checked": {
    "ref": "",
-   "date": "2026-11-09"
-  }
- },
- {
-  "id": "e2e27:1",
-  "module": "sales",
-  "side": "backend",
-  "severity": "unrated",
-  "title": "Item return larger than shipped quantity accepted",
-  "summary": "POST /api/sales/item-returns with returnQty 11 on a line shipped 10 returns 200; expected 400.",
-  "status": "fixed",
-  "status_evidence": "ItemReturnDomainService.validateLines + SalesOrderReturnQuantityService.requireWithinReturnable refuse qty above returnable",
-  "evidence_level": "verified",
-  "found": "2026-10-27",
-  "source": "E2E bugs #1",
-  "refs": [
-   "release_0.0.9",
-   "POST /api/sales/item-returns"
-  ],
-  "size": "",
-  "theme": "",
-  "set": "notes-A",
-  "checked": {
-   "ref": "321870e96",
-   "date": "2026-11-09"
-  }
- },
- {
-  "id": "e2e27:2",
-  "module": "sales",
-  "side": "backend",
-  "severity": "unrated",
-  "title": "Fulfilment can be raised on a REJECTED sales order",
-  "summary": "POST /api/sales/delivery-orders for a REJECTED order returns 200; expected 400.",
-  "status": "fixed",
-  "status_evidence": "DeliveryOrderFulfillmentService create locks SO and calls requireApprovedSalesOrder; REJECTED refused; fix e21e150dc",
-  "evidence_level": "verified",
-  "found": "2026-10-27",
-  "source": "E2E bugs #2",
-  "refs": [
-   "release_0.0.9",
-   "POST /api/sales/delivery-orders"
-  ],
-  "size": "",
-  "theme": "",
-  "set": "notes-A",
-  "checked": {
-   "ref": "321870e96",
-   "date": "2026-11-09"
-  }
- },
- {
-  "id": "e2e27:3",
-  "module": "sales",
-  "side": "backend",
-  "severity": "unrated",
-  "title": "Credit memo can refund more than was returned",
-  "summary": "POST /api/sales/credit-memos with refundQty above returned minus refunded returns 200.",
-  "status": "fixed",
-  "status_evidence": "CreditMemoService.buildRefundLines: 'Cannot credit more than the quantity returned' (cumulative)",
-  "evidence_level": "verified",
-  "found": "2026-10-27",
-  "source": "E2E bugs #3",
-  "refs": [
-   "release_0.0.9",
-   "POST /api/sales/credit-memos"
-  ],
-  "size": "",
-  "theme": "",
-  "set": "notes-A",
-  "checked": {
-   "ref": "321870e96",
    "date": "2026-11-09"
   }
  },

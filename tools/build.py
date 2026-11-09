@@ -37,6 +37,20 @@ def load():
             it["status"] = "unknown"
         if it["severity"] not in SEVS:
             it["severity"] = "unrated"
+    mg_path = ROOT / "data" / "merges.json"
+    merges = json.loads(mg_path.read_text(encoding="utf8")) if mg_path.exists() else {}
+    byid = {it["id"]: it for it in items}
+    drop = set()
+    for pid, dups in merges.items():
+        prim = byid[pid]
+        for d in dups:
+            dup = byid[d]
+            if dup["status"] != prim["status"] or dup["module"] != prim["module"] or dup["side"] != prim["side"]:
+                raise SystemExit(f"merge {d} -> {pid}: status/module/side differ, fix merges.json")
+            prim["refs"] = list(dict.fromkeys(prim["refs"] + [d] + dup["refs"]))
+            drop.add(d)
+        prim["merged"] = dups
+    items = [it for it in items if it["id"] not in drop]
     order = {s: i for i, s in enumerate(SEVS)}
     items.sort(key=lambda i: (i["module"], order[i["severity"]], i["id"]))
     return items
