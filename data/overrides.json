@@ -91,199 +91,199 @@
  },
  "rv-be:sales:1.1": {
   "status": "still-bug",
-  "note": "SalesDemandDomainService.updateFields:961-965 and SalesDemandMapper:40-41 copy quantityValidated/creditLimitChecked/vatValidated/paymentValidated/paymentVerifiedAmount from request",
+  "note": "SalesDemandDomainService.updateFields:961-965 and SalesDemandMapper.toEntity:36-40 copy gate flags from request; applyCreateDefaults does not reset them; DTO has no read-only. No guard found. | Repro: POST /api/sales/demands with paymentValidated, quantityValidated, creditLimitChecked all true: gates pass unverified (isCoordinationReady true).",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:1.3": {
   "status": "still-bug",
-  "note": "SalesDemandCoordinationService.verifyCredit:256 override user only checked with userRepository.existsById, no authority check",
+  "note": "SalesDemandCoordinationService.verifyCredit:256 only userRepository.existsById on overrideUserId; endpoint needs sales.demand.credit.approve and an audit event is published, but the named authoriser is never checked for authority. | Repro: POST /coordination/credit/verify override=true overrideUserId=any user id remarks=x: accepted.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:1.4": {
   "status": "still-bug",
-  "note": "VendorMapper.toEntity:26-29 copies id, partnerCode and status from the request DTO",
+  "note": "VendorMapper.toEntity:26-29 sets id from DTO; validateCreate checks only name/partnerCode; DomainService.create:112 save(entity) with id set merges over the existing vendor. | Repro: POST vendors with id of an existing vendor: overwrites it instead of creating.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:1.5": {
   "status": "still-bug",
-  "note": "CustomerDomainService.updateFields:523,535-536 overwrites status, creditLimit, salesRepresentative from request, no audit/validation",
+  "note": "CustomerDomainService.updateFields:523-536 overwrites status/creditLimit/salesRepresentative from PUT body; only the dedicated credit-limit endpoint audits (CustomerFacadeImpl:36-70). BaseEntity keeps lastModified only. | Repro: PUT /api/sales/customers/{id} with different creditLimit/status: applied, no change-event audit.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:2.11": {
   "status": "still-bug",
-  "note": "ReceiptDomainService.validateCreate:186-189 validates each application on its own against stored balance; same invoice twice in one request not detected",
+  "note": "ReceiptDomainService.validateCreate:186-189/validateApplication:222-232 check each application against stored balance; no per-invoice aggregation on create (update path does dedupe, :281-299). | Repro: POST /api/sales/receipts with two applications to one invoice (outstanding 100), 100 each, payment 200: both pass.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:2.12": {
   "status": "still-bug",
-  "note": "SalesOrderDomainService.snapshotCustomerCategoryDiscount:620-624 copies demand's full discount % and amount onto each order",
+  "note": "SalesOrderDomainService.snapshotCustomerCategoryDiscount:619-624 copies demand's full % and amount to every linked order; not scaled to the order's own lines. | Repro: Create two sales orders for one approved demand: each gets the full demand discount amount.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:2.13": {
   "status": "still-bug",
-  "note": "SalesOrderDomainService.validateHeader:754 accepts demand in SO_CREATED, so a second order can link to the same demand",
+  "note": "SalesOrderDomainService.validateHeader:754 accepts APPROVED or SO_CREATED; no unique index on demand_id (only V7 plain index), no qty cap. Multi-order may be intended (getOrderDetails doc) but nothing limits it. | Repro: POST /api/sales/orders twice with the same demandId: both 201.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:2.14": {
   "status": "still-bug",
-  "note": "SalesChannelCategorySetting:75 and SalesChannelCategoryService:377 default taxInclusive false while resolver treats null as true",
+  "note": "SalesChannelCategoryService:377 stores FALSE when omitted; entity default and DB default false, but SalesChannelCategorySetting javadoc and CustomerCategoryDiscountResolver:111 treat null as true. Still inconsistent. | Repro: Create category setting without taxInclusive: stored false though documented default is true.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:3.2": {
   "status": "still-bug",
-  "note": "GatePassService.verifyAndRelease:85 loads gate pass with plain findById, no lock; two verifies can both pass the status check",
+  "note": "document/gatepass/service/GatePassService.verifyAndRelease:85 plain findById, no lock/@Version on gate pass or header; consumeReservations reads ACTIVE reservations unlocked, so a racing verify subtracts stock again. | Repro: Two concurrent gate-out verifies for the same AWAITING_GATE_OUT pass: both consume, onHand reduced twice.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:3.4": {
   "status": "still-bug",
-  "note": "SalesDemandCoordinationService.loadDetailed:322 no lock/version; each verify saves the whole demand so parallel gates can overwrite",
+  "note": "SalesDemandCoordinationService.loadDetailed:322-330 findDetailedById, no lock; DocumentHeader has no @Version (only workflow entities do); each verify saves whole demand. | Repro: Verify quantity and payment gates concurrently on one demand: last commit overwrites the other gate flag.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:4.1": {
   "status": "still-bug",
-  "note": "SalesOrderDomainService.validateLines:774 and SalesDemandDomainService.validateLines:1249 only null-check quantity; no sign/price/total/tax checks",
+  "note": "SalesOrderDomainService.validateLines:774 and SalesDemandDomainService.validateLines:1249 only null-check item/quantity; line DTOs have no bean validation; no DB CHECK on line qty/price. | Repro: POST /api/sales/orders with quantity -5 or unitPrice -1: accepted.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:4.2": {
   "status": "still-bug",
-  "note": "PricingSchemeDomainService.validateDiscountReward/validateCashbackReward/validatePromoReward:448-495 only null checks, no range checks",
+  "note": "PricingSchemeDomainService.validateDiscountReward/validateCashbackReward/validatePromoReward:448-495 only null checks; reward DTOs have no @Min/@DecimalMax; no DB check constraint. | Repro: POST /api/sales/pricing-schemes DISCOUNT PERCENTAGE value 150: 201.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:4.4": {
-  "status": "still-bug",
-  "note": "SalesGeographyManagerDomainService.reassignOnGeographyUpdate:76-90 null userId retires current manager and creates assignment with null user",
+  "status": "fixed",
+  "note": "Data damage blocked by DB: sales_geography_manager.user_id NOT NULL (V1__initial_schema.sql:614), so createActiveManager fails and the tx rolls back the retire. Residual: 500 not 400 (reassignOnGeographyUpdate:73-90 lacks a null check).",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:4.5": {
   "status": "still-bug",
-  "note": "CustomerDomainService.updateFields:523,535 accepts any status/credit limit; negative check exists only in updateCreditLimit:274",
+  "note": "CustomerDomainService.updateFields:523,535 and create path accept any creditLimit; CustomerRequestDTO has no validation annotations; negative check only in updateCreditLimit:273. Create forces ACTIVE; update accepts any enum status. | Repro: PUT /api/sales/customers/{id} creditLimit -500: 200.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:5.1": {
   "status": "still-bug",
-  "note": "CustomerDomainService.validateDelete:323-327 and VendorDomainService.validateDelete:133 are TODO no-ops; hard delete allowed",
+  "note": "CustomerDomainService.validateDelete:323-327 and VendorDomainService.validateDelete:133 are TODO no-ops; base DomainService.delete hard-deletes; document_header.partner_id has no FK, so nothing blocks. | Repro: DELETE /api/sales/customers/{id} for a customer with invoices returns 204 and removes the row.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:5.3": {
   "status": "still-bug",
-  "note": "FinancialLedgerService.recordInvoiceCancelled has no caller in main code (only a test)",
+  "note": "FinancialLedgerService.recordInvoiceCancelled:49 has no caller in main code (git grep release_beta_1.0.0); no invoice cancel path exists to call it. | Repro: Cancel an invoice: no INVOICE_CANCELLED ledger reversal can ever be written.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:9.1": {
   "status": "still-bug",
-  "note": "SalesGeographyRepository.findByTierLevelAndNameContaining:15-20 query has only tierLevel in WHERE; name param not used",
+  "note": "SalesGeographyRepository.findByTierLevelAndNameContaining:15-20 JPQL WHERE has only tierLevel; :name param unused; SalesGeographyDomainService.findByTierLevel:77 passes it. | Repro: GET geography by tierLevel with name=xyz returns all nodes of the tier.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:9.6": {
   "status": "still-bug",
-  "note": "SalesOrderCustomerOverviewService:116 Collectors.toMap with receipt.getTransactionDate() as value throws NPE when null",
+  "note": "SalesOrderCustomerOverviewService:116 Collectors.toMap (4-arg, uses Map.merge) with receipt.getTransactionDate() NPEs on null; Receipt.transactionDate nullable, DTO/mapper do not default it. | Repro: Create receipt without transactionDate applied to an invoice, then GET order customer overview: NPE/500.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:9.8": {
   "status": "still-bug",
-  "note": "SalesDemandMapper.applyPackSizing:179 originalTaxAmount reads attributes 'vatAmount' while the comment/attribute is 'vat'",
+  "note": "SalesDemandMapper.applyPackSizing:179 reads attributes 'vatAmount' but VAT is stored under 'vat' (SalesDemandCoordinationService ATTR_VAT); originalTaxAmount null. Nothing reads it, low impact. | Repro: POST demand line attributes {vat:12.28}: originalTaxAmount null.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:9.9": {
   "status": "still-bug",
-  "note": "GatePassDetailMapper:129 count = totalQuantity.longValue() truncates fractions",
+  "note": "GatePassDetailMapper:129 and GatePassService.expectedGateCount:143 use totalQuantity.longValue(), truncating fractions; a 0.5 line expects 0 and is skipped in verification. | Repro: Gate pass for line qty 2.5 kg shows count 2; qty 0.5 not counted at gate-out.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:10.2": {
-  "status": "still-bug",
-  "note": "SalesGeographyManagerDomainService:322-373 eight overrides still throw UnsupportedOperationException",
+  "status": "wontfix",
+  "note": "Not applicable: SalesGeographyManagerDomainService:322-373 stubs throw but are unreachable: SalesGeographyManagerController has only 2 GETs and the facade has no create/update/delete; geography service uses dedicated methods.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:2.17": {
   "status": "still-bug",
-  "note": "PricingSchemeDomainService.updateStatus:103-114 manual transition only checks status policy, not effective window",
+  "note": "PricingSchemeDomainService.updateStatus:103-114 checks PricingSchemeStatusPolicy only; DRAFT/PAUSED to ACTIVE ignores effectiveUntil. Daily cron (expireElapsedSchemes) later expires it, so low impact. | Repro: PUT status ACTIVE on a DRAFT scheme with effectiveUntil in the past: ACTIVE until the midnight run.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:7.17": {
   "status": "still-bug",
-  "note": "InvoiceDomainService.getOpenInvoicesByCustomer:1375 findByPartnerIdAndStatusNot loads whole invoice history, filtering done in Java",
+  "note": "InvoiceDomainService.getOpenInvoicesByCustomer:1375 findByPartnerIdAndStatusNot loads all non-cancelled invoices for the customer; date/status filtering in a Java loop. Performance only. | Repro: GET /api/sales/invoices/by-customer/{id} for a customer with thousands of invoices loads all of them.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:sales:7.2": {
   "status": "still-bug",
-  "note": "SalesGeographyScopeService:49, SalesGeographyDomainService:270 findAll() of geography tree; SalesByCustomerSummaryReportGenerator:96 customerRepository.findAll()",
+  "note": "SalesGeographyScopeService:49, SalesGeographyDomainService:270 findAll() geography tree per call; SalesByCustomerSummaryReportGenerator:96 customerRepository.findAll(). Performance only, grows with data. | Repro: Sales-by-customer summary without customerId loads every customer.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "sales:B4": {
   "status": "still-bug",
-  "note": "CreditMemoMapper.toRefundLineEntity:96-101 uses dto unitPrice and taxRate when supplied, not the return line's",
+  "note": "CreditMemoMapper.toRefundLineEntity:96-101 uses dto unitPrice/taxRate over return line values. Qty IS capped (CreditMemoService:397-410) but price/tax are not; no total cap. | Repro: POST /api/sales/credit-memos line unitPrice 90 on a 9.00 return line: total 90 stored.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "sales:B12": {
   "status": "still-bug",
-  "note": "SalesDemandMapper:137 line.setTotalValue(dto.getTotalValue()); never recomputed",
+  "note": "SalesDemandMapper.toLineEntity:137 setTotalValue(dto.getTotalValue()); never recomputed from qty*unitPrice in demand/order create paths (SalesOrderMapper:367 same). | Repro: POST /api/sales/demands line 3 x 8.00 with totalValue 999: stored 999.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "sales:B13": {
   "status": "still-bug",
-  "note": "SalesOrderDomainService has no credit-limit check on direct order create (only demand path autoCheckCreditLimit)",
+  "note": "SalesOrderDomainService.validateCreate:408-417 and handleCreateDependencies:527-546 have no credit-limit check; credit gating exists only for demands. With no order workflow it auto-approves. | Repro: POST /api/sales/orders 12,000,000 for a customer with limit 10,000,000 and no order workflow: APPROVED.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "saleschain:P3-B7": {
   "status": "still-bug",
-  "note": "InvoiceController/ReceiptController/SalesOrderController expose no cancel/void endpoint (order only DELETE)",
+  "note": "InvoiceController and ReceiptController expose no cancel/void/delete (PUT/GET/filter only); SalesOrderController has DELETE only. Credit memo, refund, delivery, return do have /cancel. | Repro: POST /api/sales/invoices/{id}/cancel returns 404/405.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "saleschain:SC-1": {
   "status": "still-bug",
-  "note": "Only PROMO rewards are applied (SalesDemandDomainService.injectPromoFreeLines); DISCOUNT/CASHBACK unused; totalRedemption/totalBudgetUsed never written",
+  "note": "Only PROMO rewards applied (SalesDemandDomainService.injectPromoFreeLines:1340+); DISCOUNT/CASHBACK never applied; PricingScheme.totalRedemption/totalBudgetUsed have no writer outside entity/mapper. | Repro: Demand/order line with appliedPricingSchemaId of an active DISCOUNT scheme: discount stays 0, scheme redemption stays 0.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "saleschain:SC-2": {
   "status": "still-bug",
-  "note": "SalesDemandDomainService.injectPromoFreeLines:1366-1369 uses appliedPricingSchemaId with no status/date/minimum/customer-type check",
+  "note": "injectPromoFreeLines:1360-1385 loads PromoReward by scheme id only; no status/date/minimum/customer-type check anywhere (validateLines also ignores appliedPricingSchemaId). | Repro: Demand line with appliedPricingSchemaId of a PAUSED PROMO scheme, qty >= buyQty: free offerQty stamped.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "saleschain:SC-6": {
   "status": "still-bug",
-  "note": "PricingSchemeDomainService reward validation only null-checks; 150%, negatives, buyQty 0 pass",
+  "note": "PricingSchemeDomainService reward validation (:448-495) is null-checks only; no range/sign checks on discount, cashback, buyQty/freeQty; no DB CHECK. | Repro: POST /api/sales/pricing-schemes PROMO buyQty 0 or negative values: 201.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "saleschain:SC-7": {
-  "status": "still-bug",
-  "note": "PricingSchemeDomainService.searchByItems:168-200 status filter optional, no default ACTIVE/date filter",
-  "ref": "321870e96",
+  "status": "fixed",
+  "note": "FE side done: sales-demand/index.ts:1640 by-items call passes status=ACTIVE, so paused/draft/cancelled are hidden in the ASE offer picker. Backend default (PricingSchemeDomainService:387-391) lists all non-archived, no date/enabled filter.",
+  "ref": "55ba124a",
   "date": "2026-11-09"
  },
  "e2e27:5": {
   "status": "still-bug",
-  "note": "CustomerRefundService.update:97-111 never reads refundAmount/applications; changed amount neither applied nor rejected",
+  "note": "CustomerRefundService.update:97-111 copies only account/currency/rate/date/period/method/notes; refundAmount and applications ignored, no rejection, returns 200. | Repro: PUT /api/sales/customer-refunds/{id} refundAmount 600 on a 500 refund: 200, amount stays 500.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
@@ -469,32 +469,32 @@
  },
  "rv-fe:sales:34": {
   "status": "still-bug",
-  "note": "sales-demand/schema.ts:220-226 depositAmount still required and > 0 on every create/edit (Verify-with-0 part is fixed)",
-  "ref": "a03704c99",
+  "note": "sales-demand/schema.ts:220-226 depositAmount required and >0; field marked required (sales-demand-form-view.tsx:846-850). Credit customer demand cannot be saved without deposit. Client rule unconfirmed; Verify-with-0 part fixed. | Repro: New demand: leave Deposit Amount empty or 0, Save is refused.",
+  "ref": "",
   "date": "2026-11-09"
  },
  "rv-fe:sales:26": {
   "status": "still-bug",
-  "note": "sales/shared/sales-tax.ts toTaxFraction still guesses: rate > 1 divided by 100, so 1 stays 100 percent",
-  "ref": "a03704c99",
+  "note": "shared/sales-tax.ts:32-40 toTaxFraction treats value >1 as percent else fraction, so a rate of 1 (1 percent) is read as 100 percent; float 15.800000000000001 fixed by toTaxPercent (l.52). | Repro: An item with 1 percent tax rate is shown or computed as 100 percent in order/invoice totals.",
+  "ref": "",
   "date": "2026-11-09"
  },
  "rv-fe:sales:28": {
   "status": "still-bug",
-  "note": "settings/sales/components/pricing-scheme-form-page.tsx:644-647 unticking with all selected builds list from loaded itemOptions page only",
-  "ref": "a03704c99",
+  "note": "settings/sales/components/pricing-scheme-form-page.tsx:642-651 toggleItem with Select all on builds list from loaded itemOptions page only, so unticking one chip narrows scope to that page. | Repro: Settings > Sales > pricing scheme > Applicability: keep Select all items, untick one item; scope becomes only the loaded page of items.",
+  "ref": "",
   "date": "2026-11-09"
  },
  "rv-fe:sales:36": {
   "status": "still-bug",
-  "note": "features/sales/receipt has no VDS/TDS/cheque input fields (only print and payment method)",
-  "ref": "a03704c99",
+  "note": "features/sales/receipt has no VDS/TDS/cheque-number inputs; erp-api/sales/receipts/types.ts:119-122 TODO says nothing sends withholding; print shows chequeId that can never be set. | Repro: Sales > Receipts > New: pick Cheque, there is no cheque number and no VDS/TDS amount or certificate fields.",
+  "ref": "",
   "date": "2026-11-09"
  },
  "rv-fe:sales:53": {
   "status": "still-bug",
-  "note": "erp-api/sales/item-receives/index.ts:381,391 filtered list scans first 500 receipts",
-  "ref": "a03704c99",
+  "note": "erp-api/sales/item-receives/index.ts:381,391-420 filtered list reads newest 500 receipts and filters in the server; backend list (ItemReceiveController) only takes customerId/status, no from/to/search. | Repro: Customer Received list: search or date-filter for a receipt older than the 500th newest; it is not found.",
+  "ref": "",
   "date": "2026-11-09"
  },
  "saleschain:SC-3": {
@@ -1467,6 +1467,564 @@
   "status": "still-bug",
   "note": "Picking fixtures gone, but adjustments/constants.ts:20 hard-coded accounts, form-view:114 and mappers.ts:88,193 default account",
   "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:13": {
+  "status": "fixed",
+  "note": "customer-deposit-form-view.tsx: auto-select effect removed (comment ~l.250), customer page size 50, amount disabled only when collectionId set (l.450). Currency still defaults to first config (BDT only).",
+  "ref": "c0c704a3",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:52": {
+  "status": "fixed",
+  "note": "erp-api/sales/sales-demand/index.ts getSalesDemandItemsByIds pages until every demand item is found (cap 30x100); list reads customers by id IN for the page only (~l.570).",
+  "ref": "e1455398",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:18": {
+  "status": "open",
+  "note": "Unclear (needs a run or a decision): features/sales/sales-demand/utils.ts:163,471 grid uses fixed 15.8% and modern trade does K=L x 15.8% by design (spreadsheet comment l.460). Item taxRate not read. Needs client decision.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:20": {
+  "status": "fixed",
+  "note": "credit-memo-create-types.ts getCreditMemoLineAmounts documents gross as before discount; column label now says BEFORE CUSTOMER DISCOUNT (messages/sales-demand/en.json:1977); grossAmount not sent.",
+  "ref": "c0c704a3",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:21": {
+  "status": "still-bug",
+  "note": "ase-create-demand/use-trade-discount.ts:157-185 comment says retail has no VAT, discount on gross, but code divides base by item rate (amountNetOfTax) and sends extracted VatAmount (view l.166). Backend zeroVatForRetail uses gross. | Repro: ASE: create demand for a retail customer with item VAT and a trade discount; Review step discount is lower than the saved demand discount.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:23": {
+  "status": "fixed",
+  "note": "sales-order/schema.ts:62-79 integer and >=0 on orderQty/offerQty, exchange rate >0 (l.168); sales-demand/schema.ts:96-170 non-negative, whole demand qty; return qty >0 and <= returnable (authorization view l.208-219).",
+  "ref": "e615597d",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:31": {
+  "status": "fixed",
+  "note": "customer/mappers.ts:365-367 buildContactPersons keeps every saved contact (has id) even without name or title; sidebar save sends the full list through it.",
+  "ref": "f71b800e",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:32": {
+  "status": "still-bug",
+  "note": "customer-contact-modal.tsx:43-44 still requires name AND job title while form (mappers.ts:367) accepts either. Default-address promotion on remove fixed (customer-form-tabs.tsx:307-316); blank address rows dropped by mapper. | Repro: Customer overview sidebar: edit a contact that has no job title, Save is blocked with required errors.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:35": {
+  "status": "still-bug",
+  "note": "trade-discount-panel.tsx:779-781,880 default order value 15000 and bad input silently replaced by 15000; ase-customer/delivery-details-view.tsx:95-96,121-122 show qty 1 and unit ctn when missing. Order paymentOption default now cash. | Repro: Settings > Trade discount: type abc in the preview order value, it snaps to 15000; ASE delivery details with missing qty show 1 ctn.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:38": {
+  "status": "still-bug",
+  "note": "customer-overview-sidebar.tsx:6,316-326 calls updateCustomer (erp-api, use server) directly, no action layer, error shown is String(error). Receive deposit now AccessGuarded (customer-record-header.tsx:136). deposit page generateMetadata re | Repro: Customer overview: edit an address while the backend rejects it; toast shows raw Error text.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:39": {
+  "status": "still-bug",
+  "note": "Deposit reads fixed (customer-deposits/index.ts:213-219, only 404 is null). Still swallow all errors to null: ims-reports/index.ts:100-103,125-128,201-204, demand.ts:259-262 getDemandOrderDetails, customers/index.ts:323-325 getCustomerSumma | Repro: Backend error on an IMS report or customer summary shows empty or not-found instead of an error with retry.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:40": {
+  "status": "fixed",
+  "note": "sales-order-form-view.tsx:157,298-306,403-404 failed trade discount tracked as failed with message, not cached as none; customer-list-view.tsx omits customerType.id for ALL; delivery-orders facade returns loadError (l.1214-1254).",
+  "ref": "327ecd7e",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:44": {
+  "status": "fixed",
+  "note": "sales-order-overview-panels.tsx: invoicing bar = invoicedAmount/totalAmount, no-limit text, danger bar at 100%; orders/index.ts:1253-1255 uses backend creditUtilized/creditAvailable for approved orders. Pre-approval fallback still uses orde",
+  "ref": "f71b800e",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:45": {
+  "status": "still-bug",
+  "note": "customer-overview-main.tsx:130 credit bar always bg-success, never red or showing excess when used > limit; receipt-record-header.tsx:23-27 badge always Paid. Website https and payment history rowKey are fixed. | Repro: Open a customer whose outstanding exceeds the limit: bar is green. Open any receipt: header badge says Paid.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:46": {
+  "status": "fixed",
+  "note": "step-product.tsx:81-110 offers fetched in an effect keyed on all line item ids (survives Back); trade-discount-panel.tsx:820-823 uses backend summary unless local edits exist.",
+  "ref": "5201e232",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:47": {
+  "status": "still-bug",
+  "note": "item-fulfillment-form-items-table.tsx:126 allocateUntrackedStockAction uses free stock only (delivery-orders/index.ts:2079-2125), ignoring own reservation; form-view.tsx:99 still prefills shipDate from order estimate. Date defaults to today | Repro: Edit a fulfillment holding part of an untracked item free stock, click Inventory detail: quantity drops or no stock. New fulfillment: Ship Date prefilled.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:48": {
+  "status": "fixed",
+  "note": "invoice-order-print-document.tsx:83-127 prints letterhead name, address lines and BIN (taxId) from company profile via print-company.ts fallback; bank block stays empty by design.",
+  "ref": "5426eca0",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:51": {
+  "status": "fixed",
+  "note": "pricing-scheme-list.tsx:139-158,293-302 confirm modal and try/finally on pending id; trade-discount-panel.tsx switchTarget confirm. Residual: sales-demand-detail-view.tsx:274-290 Approve with no taskId closes modal and does nothing.",
+  "ref": "d9762e2b",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:54": {
+  "status": "still-bug",
+  "note": "Customer detail no longer double-fetches, but 10 detail pages under app/(erp)/sales-demand still request email communications size 100 (e.g. invoice-order/[invoiceId]/page.tsx:72-76) plus extra company/ledger reads. | Repro: Open any invoice, receipt or order detail: network shows a 100-row email request alongside other reads.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:55": {
+  "status": "still-bug",
+  "note": "customer-deposit/constants.ts:32-36 payment option labels are English literals, bank-transfer value vs seeded Bank Transfer; receipt-print-document.tsx:24 and receipt-summary-card.tsx:40,70 default BDT. | Repro: Switch UI to Bangla: New Customer Deposit payment option list shows English Cheque/Cash/Bank Transfer.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:56": {
+  "status": "still-bug",
+  "note": "Mostly cleaned (mockDocNo, console.log gone) but dead splitTax (shared/sales-tax.ts:111, no callers) and topRate: 0 (trade-discount-panel.tsx:840) remain. Code hygiene only. | Repro: No UI symptom; code-level cleanup.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:57": {
+  "status": "still-bug",
+  "note": "No shared helper: separate customerMutationFailure/creditMemoMutationFailure-style functions remain per facade (erp-api/sales/{customers,credit-memos,invoices,item-returns,delivery-orders}/index.ts). | Repro: No UI symptom; code duplication.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:58": {
+  "status": "still-bug",
+  "note": "erp-api/sales/delivery-orders/index.ts 2123 lines, invoices 1683, sales-demand 1667, orders 1495; eslint-disable without reason at customer-form-tabs.tsx:393, receipt-create-form-view.tsx:131, use-receipt-customer-invoices.tsx:82. | Repro: No UI symptom; maintainability.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:1.2": {
+  "status": "still-bug",
+  "note": "SalesOrderMapper.toEntity:66 copies orderCompletionDecision; SalesOrderDomainService.handleCreateDependencies:535 approves without workflow. No permission check on the field. | Repro: POST /api/sales/orders with only sales.order.create and orderCompletionDecision=PENDING_FULFILLMENT: order APPROVED at once, no task.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.4": {
+  "status": "still-bug",
+  "note": "Qty fixed (ItemReturnDomainService.validateLines now called, cumulative cap, no dups, >0). Still open: line unitPrice/taxRate override accepted, ItemReturnMapper.toLineEntity:93-94. | Repro: POST /api/sales/item-returns with a line unitPrice far above the order line price: saved, return amount and credit follow it.",
+  "ref": "5113a9e19",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.7": {
+  "status": "still-bug",
+  "note": "Credit limit still advisory: outstanding = invoiced - received only (SalesDemandDomainService.computeCurrentOutstanding:1314); no check in SalesOrderDomainService.create or InvoiceDomainService.create. | Repro: Customer with limit 100k: create/approve several 90k demands or orders, none invoiced: all pass.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:3.3": {
+  "status": "fixed",
+  "note": "ItemReceiveDomainService.validate:414-450 requires put-away sum == receiveQty, rejects duplicate return lines; requireApprovedReturn locks the return row (findByIdAndStatusForUpdate); balance locked for update.",
+  "ref": "92f476d46",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.1": {
+  "status": "fixed",
+  "note": "V7__sales_foreign_key_indexes.sql adds the FK indexes (receipt_application, document_line, invoice_header_detail, sales_order_header, customer, etc.).",
+  "ref": "92f476d46",
+  "date": "2026-11-09"
+ },
+ "sales:B10": {
+  "status": "fixed",
+  "note": "InvoiceDomainService.create:261 locks the sales order before validate; ReceiptDomainService.lockInvoices:150 locks invoices in id order before the balance check, so the second request is refused.",
+  "ref": "5113a9e19",
+  "date": "2026-11-09"
+ },
+ "sales:B9": {
+  "status": "open",
+  "note": "Unclear (needs a run or a decision): Demand create takes the series row FOR UPDATE (TransactionSeriesConfigServiceImpl.generateNextId) held to commit; no pool config in repo (defaults). 500 cause unproven, code unchanged since report. Needs a run.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "saleschain:P3-B1": {
+  "status": "still-bug",
+  "note": "Credit memo never reduces invoice due: InvoiceDomainService.resolveAmountDue:742 = total - receipt/deposit applications; ECustomerLedgerEventType has no memo event, so the sub-ledger keeps it open. | Repro: Invoice, return, approve credit memo, customer pays the net: Aging/Open Invoices keep the memo amount; month close still passes.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "saleschain:P3-B2": {
+  "status": "still-bug",
+  "note": "No BDT-only check: ReceiptMapper:26-27 and SalesOrderMapper copy currency/exchangeRate from the request; CurrencyExchangeConfigServiceImpl.upsertBulk saves any rate. No 400 anywhere. | Repro: POST /api/sales/receipts with currency USD, exchangeRate 100 on an invoice: 201; POST /api/currency-exchange-config/bulk with BDT rate 2: 201.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "saleschain:P3-B4": {
+  "status": "fixed",
+  "note": "ItemReturnDomainService.validateLines:774 + SalesOrderReturnQuantityService.requireWithinReturnable cap at delivered minus returned minus in-flight (DRAFT/PENDING); receive requires put-away == receive qty.",
+  "ref": "5113a9e19",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:1.6": {
+  "status": "fixed",
+  "note": "SalesDemandController:47 class-level @RequiresPermission(sales.demand.view) is active again; my-summary and by-self inherit it.",
+  "ref": "122f355f8",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:1.7": {
+  "status": "still-bug",
+  "note": "Only getSummary/getCustomers use customerScope() (ImsReportDomainService:343,366). create, getById, draft, template have no scope check; validateCreate only checks the customer exists. | Repro: User with sales.ims.create POSTs /api/sales/ims-reports for a customer not assigned to them: accepted.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.10": {
+  "status": "still-bug",
+  "note": "InvoiceDomainService.updateFields:766-789 sets shipping/handling and recomputes total with no check vs applied amount; setPaymentStatus only in receipt/deposit apply paths. Line cuts are blocked, header costs are not. | Repro: PUT /api/sales/invoices/{id} raising shippingCost on a FULLY_PAID invoice: paymentStatus stays FULLY_PAID; lowering it below the paid amount is accepted.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.15": {
+  "status": "still-bug",
+  "note": "ImsReportLineRepository.sumSoldQtyGroupedByItemIdForVerifiedReports has no month filter; ImsOpeningStockService.computeOpeningStockByItemId:94-95 subtracts all verified sold qty. | Repro: Verify IMS reports for March and April for a customer, then submit February: In Stock is reduced by Mar+Apr sold qty.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.8": {
+  "status": "still-bug",
+  "note": "Three formulas remain: CollectionDomainService.resolveOutstanding:139 (no credit memos/refunds), SalesOrderCustomerOverviewService.batchOutstanding:330 (memos, no deposits), batchBalance:355. | Repro: Customer with an approved credit memo: collection outstanding differs from customer overview outstanding.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.9": {
+  "status": "still-bug",
+  "note": "InvoiceMapper.toLineEntity:248 uses dto.getTaxRate() over the order line rate (also InvoiceDomainService.applyLineEdits:839); total built in InvoiceMapper:122 and recomputeDiscountAndTotal:811. | Repro: POST /api/sales/invoices with line taxRate 0 on an order line taxed 15: invoice carries no VAT.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:5.2": {
+  "status": "still-bug",
+  "note": "ProductDistributionService.delete:264/update:136 act on PENDING record without touching the workflow instance; update clears items (no orphanRemoval, distribution_id nullable, V1:1450) leaving orphan lines. | Repro: Delete a PENDING distribution with an open approval task: approver still sees it, approval fails. PUT it, then look for product_distribution_line rows with null distribution_id.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:6.1": {
+  "status": "still-bug",
+  "note": "No unique index on doc_number for document_header/receipt/deposit/refund/memo (only gate_pass_return). Client docNumber now closed: invoice/receipt DTOs have none; order/demand/return check existsByDocNumber. | Repro: Series counter set below used numbers (see P3-B3): next document repeats a number and the DB accepts it.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.10": {
+  "status": "still-bug",
+  "note": "SalesCloseDataProviderImpl.unbilledOrders:135-162 loops orders, one line query each plus lastShipDate delivery query per unbilled order; factsFor and unbilledDeliveries each recompute it. | Repro: Open period-close sales facts for a month with many orders: queries scale with order count (performance only).",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.11": {
+  "status": "still-bug",
+  "note": "SalesGeographyDomainService.toEnrichedResponse:238-251: countByParentId, findIdsByLocation_Id, findActiveManagerForGeography per node when expand is off. | Repro: GET geography by-tier for TERRITORY without expand: several queries per node (performance only).",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.12": {
+  "status": "still-bug",
+  "note": "ImsReportDomainService.getSummary:343 customerRepository.findAll(customerScope()) loads every Customer entity only to count and collect ids. | Repro: Open IMS summary as a rep with many outlets (performance only).",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.13": {
+  "status": "still-bug",
+  "note": "CustomerMapper.buildLocationHierarchy:136-152 walks parents with salesGeographyRepository.findById per level per row; unchanged since review. | Repro: List customers page: depth x rows extra selects (performance only).",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.14": {
+  "status": "still-bug",
+  "note": "SalesGeographyManager.allowedChannels is a lazy @ManyToMany List (SalesGeographyManager:52-60), no batch fetch; unchanged. | Repro: List managers: one extra query per manager (performance only).",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.15": {
+  "status": "still-bug",
+  "note": "Moved to modules/inventory/packing_house/export/PackingHouseBookExportDataSource:91-106: customerFacade.getById per book in try/catch, soNo hard-coded null, no paging default. | Repro: Export packing house books with no page/size: per-row lookups (performance only).",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.3": {
+  "status": "still-bug",
+  "note": "PricingSchemeDomainService.convertEntityToResponse:308 runs findBySchemeId for policy and reward per scheme; searchByItems:178 is unbounded and empty itemIds returns all. | Repro: GET pricing-schemes list: 1+2N queries (performance only).",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.4": {
+  "status": "still-bug",
+  "note": "ProductDistributionMapper.toResponseDTO resolves warehouse, requester, channel per row via facades (try/catch); export loops it over searchEntities with no cap. | Repro: List/export product distributions: several lookups per row (performance only).",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.5": {
+  "status": "still-bug",
+  "note": "CollectionDomainService.resolveTerritoryFilter:360-371 loads every customer in scope as DTO (PageRequest Integer.MAX_VALUE) to take ids and builds a partnerId IN list. | Repro: Open my-territory collections as an SPO with thousands of outlets (performance only).",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.6": {
+  "status": "still-bug",
+  "note": "CustomerRefundFacadeImpl.publishRefundEvents:109-116 calls creditMemoService.getById and itemReturnDomainService.readDTOById per application only to read two ids. | Repro: Create or cancel a refund applied to many memos: full detail builds per memo (performance only).",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.7": {
+  "status": "open",
+  "note": "Unclear (needs a run or a decision): Invoice and gate pass lists batch their lookups; demand list still resolves rep name via userRepository.findById per row (SalesDemandDomainService:930-938). Lazy-association query count needs a query log.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.8": {
+  "status": "still-bug",
+  "note": "GatePassReturnRepository.findAllDetailed uses @EntityGraph with collection lines + Pageable; GatePassReturnService.list:176 pages in memory (HHH90003004). | Repro: GET gate pass returns list: whole table joined to lines loaded, sliced in Java.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.9": {
+  "status": "still-bug",
+  "note": "ItemSalesOrderQueryService.openQuantityByItem:98-110 loads all open order entities per item (Pageable.unpaged) then a sum query per item. | Repro: Open inventory overview with 20 items: 2 queries per item and all open orders loaded (performance only).",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:8.1": {
+  "status": "still-bug",
+  "note": "Credit memo, deposit, refund, collection, delivery export sources use Pageable.unpaged without page/size; DeliveryOrderDomainService.resolveLines:293 builds an IN list of every id; ExportController has no row cap. | Repro: Export deliveries with no page/size on a very large table: IN list exceeds the PostgreSQL bind limit (500); smaller: full history in memory.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:8.2": {
+  "status": "still-bug",
+  "note": "SalesDemandExportDataSource.parseStatus:204 uses EDocStatus.valueOf and returns null on failure; DemandListStatus.toDocStatus (handles labels) is not used, so the filter is dropped. | Repro: Export demands with status Pending Approval, Pending Verification or SO Created: file has all demands.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:9.2": {
+  "status": "still-bug",
+  "note": "CreditMemoService.buildListSpec:539 root.get(itemReturn).get(docNumber) is an implicit inner join; standalone memos (itemReturnId null, allowed) vanish whenever search is set. | Repro: Create a credit memo with no itemReturnId, list credit memos with search = its own number: 0 rows.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:9.3": {
+  "status": "still-bug",
+  "note": "AddressMasterDTO has Lombok boolean isDefault (@Data): accessor setDefault, so the JSON property is default; an isDefault key is ignored. Frontend mapper reads address.default. | Repro: POST/PUT customer with addresses[].isDefault=true: saved address has is_default false.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:9.4": {
+  "status": "still-bug",
+  "note": "Invoice/ItemReturn/ItemReceive mappers send manager-row id as salesRepId, order/demand send user id; only CreditMemo has salesRepUserId. ItemReceiveDomainService.salesRepRef unchecked. | Repro: GET an order (salesRepId = user id), copy it into POST item-receive salesRepId: wrong manager row or FK 409",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:9.5": {
+  "status": "still-bug",
+  "note": "CustomerRefundMapper.java:123 still .currency(ret != null ? ret.getCurrency() : null), not memo currency. | Repro: Refund applying a standalone credit memo: applications[0].currency is null",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "sales:B1": {
+  "status": "fixed",
+  "note": "Create path rounds discount to cents (InvoiceMapper.applyCustomerDiscountAndTotal, 2dp) so total 90.67 matches journal. Residual: edit path InvoiceDomainService.recomputeDiscountAndTotal:800 still 4dp, may drift.",
+  "ref": "5113a9e19",
+  "date": "2026-11-09"
+ },
+ "sales:B11": {
+  "status": "still-bug",
+  "note": "Date w/o period now refused (InvoiceDomainService.requirePostable, 5113a9e19); 24.999 and sub-cent lines absorbed by JournalLines. Still open: price 0 / offer-only invoice has zero amount, posting FAILED. | Repro: POST /api/sales/invoices with unitPrice 0 on a line: 201, posting FAILED 'no amounts to post'",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "saleschain:P3-B5": {
+  "status": "still-bug",
+  "note": "DeliveryOrderFulfillmentService.reserveLine:303-305 never reads block_from_normal_picking/exclude_from_sellable flags; detail.locationId can be any location; serial path (InventoryDimensionDomainService:38) ignores status and location. | Repro: POST delivery-orders with inventoryDetails serialNumber of a quarantined serial, or locationId of a blocked bin",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "saleschain:SC-4": {
+  "status": "still-bug",
+  "note": "ECustomerLedgerEventType has no credit memo/refund events; CustomerLedgerEntryRepository.receivableBalanceAsOf nets only invoices, payments, deposit applications. Client decision D-11 pending. | Repro: Approve a credit memo, then period-close receivableBalance differs from GL receivable",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "saleschain:SC-5": {
+  "status": "still-bug",
+  "note": "Invoice validation allows quantity 0 with offerQuantity>0; amount 0 so JournalLines.build:165 throws 'no amounts to post', posting FAILED. requirePostable javadoc says zero-amount invoices are deliberately allowed. | Repro: POST /api/sales/invoices line quantity 0, offerQuantity 2: 201, posting FAILED",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:1.8": {
+  "status": "still-bug",
+  "note": "document/posting/SalesPostingController.java:40-60 class-level anyOf only; no per-documentType permission check. | Repro: User with only sales.receipt.view calls GET postings documentType=SALES_INVOICE: 200 with journal",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:1.9": {
+  "status": "still-bug",
+  "note": "CollectionDomainService.getSummary:613 still to.atTime(23,59,59); CollectionFacadeImpl scope from client myTerritory flag; no ownership check on create. | Repro: Collection saved at 23:59:59.5 missing from that day's summary; create collection for out-of-territory customer",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:10.1": {
+  "status": "still-bug",
+  "note": "Unused members remain: CreditMemoWorkflowHandler.isAlreadyApproved, CreditMemoHeaderRepository.findByPartnerIdAndStatusNot, DO repo stage finder and countBySalesOrder_Id, 2 InventoryAllocationDetailRepository finders. | Repro: code only, no runtime trigger",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:10.3": {
+  "status": "still-bug",
+  "note": "DeliveryOrderDetailMapper.joinName:135 gives 'null Last' when first name null; ProductDistributionMapper.formatName:156 leading blank; duplicated partner mapping remains. | Repro: View delivery order whose sales rep user has no first name: shows 'null X'",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:10.4": {
+  "status": "still-bug",
+  "note": "SalesOrderRequestDTO still has fulfillmentStatus, invoiceStatus, totalInvoicedAmount, totalDeposited, totalPaymentReceived; SalesOrderLineResponseDTO taxCode/inventoryDetail unused. | Repro: code only, no runtime trigger",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.16": {
+  "status": "still-bug",
+  "note": "SalesTax.toFraction:38 treats rate>1 as percent (rate 1 = 100%); vatPart:105-106 divides by zero when VAT and AIT rates both 0. | Repro: Send taxRate 1 meaning 1 percent: taken as 100 percent",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.18": {
+  "status": "still-bug",
+  "note": "DeliveryOrderFulfillmentService: packRequestedDetail:874 only checks cartonCount>0, no upper bound; ship:1063 overwrites estimatedShippingDate; serial status ignored. | Repro: POST pack with cartonCount 1000 on a 10-unit line: accepted; ship replaces estimated ship date",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:4.6": {
+  "status": "still-bug",
+  "note": "ims/facade/ImsReportFacadeImpl.java:43 YearMonth.from(request.getReportMonth()) with no null check or @Valid; storeAttachment:50 inside transaction. | Repro: POST IMS report multipart with csvFile but no reportMonth: 500 NPE",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:4.7": {
+  "status": "still-bug",
+  "note": "ItemReturnRequestDTO.reason still plain String, no @Size; validateHeader only null check; EReturnReason unused. | Repro: POST item-returns with a reason of 40 characters: DB error 409",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:4.8": {
+  "status": "still-bug",
+  "note": "SalesOrderMapper.resolveCarrier:269-275 still creates ShippingCarrier from free text; shipping_carrier has no unique index (V1, V7). | Repro: POST sales order with a new shipping.carrier text twice in parallel: two rows",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:4.9": {
+  "status": "still-bug",
+  "note": "65 @RequestBody in sales controllers, only 6 @Valid (discount/distribution); InvoiceController:52,68 no @Valid; invoice DTOs have no constraints, negative shippingCost not rejected. | Repro: POST /api/sales/invoices with shippingCost -5: accepted, lowers total",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:6.2": {
+  "status": "still-bug",
+  "note": "V1 scheme_reward.scheme_id has only a non-unique index (V7 idx_scheme_reward_scheme_id); sales_channel_category_setting.discount_mode nullable in DB. | Repro: Two parallel creates of one scheme can create two scheme_reward rows",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.16": {
+  "status": "still-bug",
+  "note": "Per-line findById/chargesFlatVat remain: InvoiceDomainService:359,509,840,998; InvoiceMapper:296; CreditMemoMapper:105; DeliveryOrderMapper:104; Fulfillment:676,698. | Repro: performance only: 30-line invoice issues many extra selects",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.18": {
+  "status": "still-bug",
+  "note": "CustomerDirectoryQueryService.search:82-83 still findAll(spec) plus paged findAll; contactPersons/type loaded per row. | Repro: performance only: customer directory page loads the whole list",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.19": {
+  "status": "still-bug",
+  "note": "SalesGeographyRbacSyncService:213,259 findAll() of the tree per sync; per-geography scope lookup :269; collectAncestors:341 findById loop. | Repro: performance only: geography manager change reloads the tree",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:8.3": {
+  "status": "still-bug",
+  "note": "Vendor/ProductDistribution/PaymentCollection export sources still Enum.valueOf on filter; CommissionReportExportDataSource.fetchRows:91 uses Pageable.unpaged. Handler maps IllegalArgumentException to 400 with enum text, not 500. | Repro: Export commission report current page: returns all rows; status=foo gives 400 with internal text",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:9.10": {
+  "status": "still-bug",
+  "note": "CollectionMapper:53 .createdBy(entity.getCreatedBy()) raw audit string; same in CustomerRefund, SalesDemand DTOs; DeliveryOrderDetailMapper:271 exposes baseImagePath storage key. | Repro: GET /api/sales/collections/{id}: createdBy like '1_@_1'",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:9.11": {
+  "status": "still-bug",
+  "note": "CustomerDepositRequestDTO.paymentOption and refund paymentMethod still free String; no payment option enum in sales. | Repro: POST customer-deposits paymentOption 'cash ' vs 'Cash': both accepted",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:9.12": {
+  "status": "wontfix",
+  "note": "Not applicable: SalesGeographyManagerDomainService:305 still throws, but sales_geography_manager.user_id is NOT NULL FK to users (V1:614), so a missing user cannot occur through normal data.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:9.13": {
+  "status": "still-bug",
+  "note": "DeliveryOrderHeaderDetail:92,100,108 jsonb drafts of Pick/Pack/ShipRequestDTO; no JsonIgnoreProperties, no custom Hibernate json mapper. Latent: needs a DTO change plus a stored draft. | Repro: latent: only after a release removes a DTO field while a draft exists",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:9.14": {
+  "status": "still-bug",
+  "note": "SalesDemandCoordinationService.verifyQuantity:195 sets quantityValidated TRUE on confirm even if lines invalid; GatePassService:74, GatePassReturnService:183 atTime(23,59,59); getMySummary:519 APPROVED only. | Repro: POST /api/sales/demands/{id}/coordination/quantity/verify confirm=true with an invalid line: gate set",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:9.15": {
+  "status": "still-bug",
+  "note": "SalesOrderDomainService.validateLines:769-770 itemFacade.getById in catch(Exception) gives 'Item not found'; updateFields never calls markDemandSoCreated (only create:533). | Repro: Update an order to link a different demand: new demand not moved to SO_CREATED",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:9.7": {
+  "status": "still-bug",
+  "note": "CustomerSummaryService.get:56-67 ongoingDeliveries filters IN_TRANSIT only; both queries PageRequest.of(0,5) unsorted; DTO javadoc says not yet DELIVERED / newest first. | Repro: Customer with a PACKED delivery order: GET customer summary shows ongoingDeliveries empty",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "sales:B2": {
+  "status": "fixed",
+  "note": "Sub-half-cent lines are left out and rounding goes on the balancing line (JournalLines.build:195-199); invoice discount rounds to cents at create, so 1 x 0.01 at 7% posts.",
+  "ref": "5113a9e19",
+  "date": "2026-11-09"
+ },
+ "sales:B3": {
+  "status": "fixed",
+  "note": "Quantity overruns now name the item and remaining qty (InvoiceDomainService.validateLines ~413; DeliveryOrderFulfillmentService:232). Amount/offer-quantity messages still cite 'sales order line N'.",
+  "ref": "5113a9e19",
+  "date": "2026-11-09"
+ },
+ "saleschain:P3-B9": {
+  "status": "open",
+  "note": "Unclear (needs a run or a decision): Bundle of 7. uomId stored unconverted (SalesOrderMapper:382) still true. Task complete twice returns quietly (TaskService:372) and NET_DAYS 0 allowed (PaymentTermService:87): intended. Others not traced.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "e2e27:4": {
+  "status": "wontfix",
+  "note": "Not applicable: CustomerDepositController PUT is documented header-only: customerId/paymentAmount not editable (updateFields skips amount); returns 200 and ignores it. Intended, though silent.",
+  "ref": "",
+  "date": "2026-11-09"
+ },
+ "integ:known-backend-bugs": {
+  "status": "fixed",
+  "note": "SAL-05-07 fixed e21e150dc (requireApprovedSalesOrder); SAL-12-05 fixed 5113a9e19; SAL-02-11 capped by requireWithinReturnable; 05-03 intended; 09-09 and 12-11 amount not editable by design.",
+  "ref": "e21e150dc",
   "date": "2026-11-09"
  }
 }
