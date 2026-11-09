@@ -517,493 +517,493 @@
  },
  "purchase:B-P11": {
   "status": "still-bug",
-  "note": "VendorPaymentDomainService.java:189-205 checks remainingDue without row lock; VendorPaymentWorkflowHandler.post (l.118) approves with no re-check of bill due",
+  "note": "Sequential case is covered (VendorBillPaymentStatusService.remainingDue counts pending sibling payments), but no lock/@Version: VendorPaymentDomainService.validateCommon:198-207 read-then-write; post() has no re-check. | Repro: Fire two simultaneous POST /api/purchase/vendor-payments of 600 each against one approved 1000 bill; both pass remainingDue and both get approved (paid 1200).",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "purchase:B-P12": {
   "status": "still-bug",
-  "note": "VendorDomainService.validateDelete (l.133-136) is an empty TODO; handleDeleteDependencies empty, so a vendor with documents is hard-deleted",
+  "note": "VendorDomainService.validateDelete (sales/business_partner/vendor/service, l.133-136) is an empty TODO; documents keep vendor_id with no FK (V1 schema), so the delete succeeds and orphans them. | Repro: Create a vendor with a PO/bill/payment, then DELETE the vendor (permission purchase.vendor.delete): 204; GET the vendor's bill/aging then shows orphans.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "purchase:B-P2": {
   "status": "still-bug",
-  "note": "VendorChallanService.upsert reuses existing challan and does setExtraCosts(new list) on an orphanRemoval=true collection (VendorChallan.java:63); entity unchanged since creation",
+  "note": "VendorChallanService.upsert:62-103 loads the existing challan (item_receipt_id unique) and does setLines/setExtraCosts(new list) on orphanRemoval collections (VendorChallan.java:58-66); no other upsert path exists. | Repro: Bill an approved receipt, reject the bill, then POST /api/purchase/vendor-bills again for the same receipt with a challan: 500 JpaSystemException.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "purchase:B-P6": {
   "status": "still-bug",
-  "note": "BillCreditDomainService validateSourceReturn checks only APPROVED status, vendor, live credit; no fulfilledQty check anywhere in the file",
+  "note": "BillCreditDomainService.validateSourceReturn:143-160 checks only status APPROVED, vendor and no live credit; fulfilledQty is never read. May be a business choice, but the claim (no link to fulfilment) is accurate. | Repro: Approve a vendor return (not fulfilled), POST /api/purchase/bill-credits for it: accepted and approvable while totalFulfilledQty is 0.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:1": {
   "status": "still-bug",
-  "note": "No lock or @Version in purchase payment path; VendorPaymentDomainService:196-205 remainingDue check is a plain read, so parallel payments both pass",
+  "note": "Same as B-P11: no @Lock/@Version anywhere in purchase; VendorPaymentDomainService:196-207 plain read; pending siblings are counted so only truly parallel requests overpay. | Repro: Two simultaneous POST /api/purchase/vendor-payments against the same bill, each for most of the remaining due.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:2": {
   "status": "still-bug",
-  "note": "BillCreditDomainService.outstandingOf counts only APPROVED payments; BillCreditWorkflowHandler.onApproved has no re-check; payment post() also none",
+  "note": "BillCreditDomainService.outstandingOf:206-212 ignores PENDING payments; payment remainingDue ignores PENDING credits; BillCreditWorkflowHandler.approve:107 and payment post() do not re-check. | Repro: Bill 1000: create payment 600 (pending), create bill credit applying 600 (passes), approve both: bill paid 1200.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:3": {
   "status": "still-bug",
-  "note": "VendorPrepaymentDomainService.loadUsable (l.203-215) checks status and amount, never vendor; VendorPaymentDomainService:140 passes only id and amount",
+  "note": "VendorPrepaymentDomainService.loadUsable:203-215 and drawDown never compare the prepayment's vendor; VendorPaymentDomainService:140 passes only id and amount. | Repro: POST /api/purchase/vendor-payments for vendor B's bill with paymentMethod PREPAYMENT and vendorPrepaymentId of an approved vendor A prepayment: accepted.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:12": {
   "status": "still-bug",
-  "note": "@Version exists only on WorkflowInstance and WorkflowTask in backend main source; no purchase or sales entity has it",
+  "note": "@Version exists only on WorkflowInstance and WorkflowTask (shared/workflow); no purchase or sales entity has it; lock annotations in purchase only on ApprovalRequest. Hardening gap, last write wins. | Repro: Two users open the same pending PO, both PUT /api/purchase/orders/{id} with different lines: the later save silently overwrites the first.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:13": {
   "status": "still-bug",
-  "note": "VendorPrepaymentDomainService.drawDown (l.230-238) is findById + set unusedAmount + save, no lock or version",
+  "note": "VendorPrepaymentDomainService.drawDown:228-236 re-validates at approval (so sequential pending claims are caught) but is findById + save with no lock/@Version; only parallel approvals race. | Repro: Two payments each 600 against one 1000 prepayment, approve both at the same instant: unusedAmount ends at 400 instead of failing.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:14": {
   "status": "still-bug",
-  "note": "VendorReturnFulfillmentService.fulfill loads the request via plain findById (l.90), no lock on it; fulfilledQty updated after the fact (l.131-133)",
+  "note": "VendorReturnFulfillmentService.fulfill:90 findById (no lock) and remaining check l.164-170 happen before the inventory row lock; fulfilledQty added at l.257-263 from the stale state. | Repro: Two simultaneous POST /api/purchase/vendor-return-fulfillments for the same request line, each for its full returnQty (enough stock): both succeed, fulfilledQty > returnQty.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:15": {
-  "status": "still-bug",
-  "note": "VendorPaymentWorkflowHandler.post (l.118) runs on any entity status, no PENDING guard before draw-down and posting",
+  "status": "wontfix",
+  "note": "Not applicable: Handler has no status guard, but it is unreachable twice: WorkflowEngine.invokeHandler:421-428 fires once per instance (loadRunningInstance l.604, task @Version l.590); onDirectApproval only from create.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:16": {
   "status": "still-bug",
-  "note": "PurchaseOrderReturnQuantityService.applyFulfillment (l.174-181) findById then returnedQty += qty, no lock or @Version",
+  "note": "PurchaseOrderReturnQuantityService.applyFulfillment:174-181 and applyProformaInvoiceFulfillment:144-151 do findById then returnedQty += qty with no lock/@Version; parallel fulfilments lose an update. | Repro: Two simultaneous vendor-return fulfilments touching the same PO line: PurchaseOrderItem.returnedQty ends below the sum fulfilled.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:17": {
   "status": "still-bug",
-  "note": "PurchaseOrderConversionService:62-67 is check-then-create (findByRequisitionId); no unique constraint or requisition lock found",
+  "note": "PurchaseOrderConversionService.validateAndResolve:62-68 check-then-create; purchase_order has no unique on requisition_id (V1) and no lock on the requisition. Sequential duplicates are blocked. | Repro: Two simultaneous POST /api/purchase/orders for the same approved requisition: both 201, two live POs.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:20": {
   "status": "still-bug",
-  "note": "PurchasePostingController.getPosting accepts any EFinanceDocumentType with anyOf purchase view permissions; no type-to-permission match",
+  "note": "PurchasePostingController.getPosting:35-54 takes any EFinanceDocumentType; the anyOf permission is not matched to the type; DocumentPostingReader.read does no type filter. | Repro: As a user with only purchase.vendor_bill.view: GET /api/purchase/postings?documentType=SALES_INVOICE&documentId=<id> returns that invoice's journal entry.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:21": {
   "status": "still-bug",
-  "note": "PurchaseOrderFacadeImpl.workflowDecision (l.303-315) checks APPROVE on order {id} then completes decision.taskId; task never tied to {id}",
+  "note": "PurchaseOrderFacadeImpl.workflowDecision (l.303-315) checks APPROVE on order {id} then completes decision.taskId; same in other facades. Caller must still be task assignee (TaskAuthorizationService): low impact. | Repro: POST /api/purchase/orders/{A}/workflow-decision with taskId of order B's pending task assigned to caller -> B decided, response shows A",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:22": {
   "status": "still-bug",
-  "note": "ItemReceiptDomainService.mergeItems (l.166-200) copies sourceDocumentItemId and itemId from the client onto existing lines without validation",
+  "note": "ItemReceiptDomainService.mergeItems:185-186 copies sourceDocumentItemId/itemId from the client onto existing lines; ItemReceiptOverReceiptValidator.validateOnSave only checks qty against whichever line is named (type also from request). | Repro: PUT /api/purchase/item-receipts/{id} on a PENDING receipt with an existing line's sourceDocumentItemId set to another PO's line and a different itemId: 200.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:23": {
   "status": "still-bug",
-  "note": "PurchaseOrderDomainService.validateUpdate = validateCommon only; conversion validateAndResolve runs only in facade create",
+  "note": "PurchaseOrderDomainService.validateUpdate:73-76 = validateCommon only; PurchaseOrderConversionService.validateAndResolve runs only in facade create (:144). Update can change vendorId/vendorSelectionId/prices freely while PENDING_APPROVAL. | Repro: PUT /api/purchase/orders/{id} on a LOCAL PO in PENDING_APPROVAL with another vendorId (not the selection's vendor): 200.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:24": {
   "status": "still-bug",
-  "note": "PurchaseOrderConversionService.resolveLocalVendor (l.84-100) checks requisition match only, never selection status APPROVED",
+  "note": "PurchaseOrderConversionService.resolveLocalVendor:84-100 checks requisition match and vendor only; EVendorSelectionStatus (DRAFT/PENDING_APPROVAL/APPROVED/REJECTED/CANCELLED) is never read. | Repro: Create a vendor selection and leave it DRAFT/PENDING, then POST /api/purchase/orders LOCAL with its vendorSelectionId: 201.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:25": {
   "status": "still-bug",
-  "note": "VendorSelectionDomainService.updateFields (l.154-158) validates quotation against dto.requisitionId from the body, not the stored selection's requisition",
+  "note": "VendorSelectionDomainService.updateFields:154-158 and validateCommon use dto.requisitionId from the body; VendorSelectionFacadeImpl.update:108-124 never compares it with the stored selection's requisition. | Repro: PUT /api/purchase/vendor-selections/{id} with requisitionId of another LOCAL requisition and one of its quotations: 200; the selection's vendor changes to that quotation's vendor.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:26": {
   "status": "still-bug",
-  "note": "ItemReceiptDomainService.updateFields replaceCollection(attachments) takes client attachment rows with no existence or ownership check",
+  "note": "ItemReceiptMapper.toAttachmentEntities (l.277) + ItemReceiptDomainService.updateFields l.148 take attachmentId from request unchecked; item_receipt_attachment.attachment_id has no FK or unique (V1 l.2877); update is plain JSON body. | Repro: PUT /api/purchase/item-receipts/{id} with attachments:[{attachmentId:999999}] on PENDING receipt -> 200",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:29": {
   "status": "still-bug",
-  "note": "VendorPaymentDomainService validateCommon checks amount, VDS, AIT only; bankChargeAmount and exchangeRate unchecked; purchase controllers have no @Valid",
+  "note": "VendorPaymentDomainService.validateCommon (l.109-250) checks amount, lines, VDS/AIT but not bankChargeAmount (set at l.384) or exchangeRate; VendorPaymentDTO has no constraints; no @Valid in purchase controllers. | Repro: POST /api/purchase/vendor-payments with bankChargeAmount -500 and exchangeRate 0 and otherwise valid body -> 201",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:30": {
   "status": "still-bug",
-  "note": "Only one @Valid in the purchase package (quotation preferred); PO validateCommon checks qty only, no negative price, discount or tax checks",
+  "note": "PurchaseOrderDomainService.validateCommon (l.78-105) checks orderedQty>0, exchangeRate>=0 only; unitPrice, discountAmount, taxAmount unchecked (l.224-227, 301). One @Valid in purchase package. LC master/MR similar. | Repro: POST /api/purchase/orders with item unitPrice -100, discountAmount 5000 -> 201 with negative totals",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:32": {
   "status": "still-bug",
-  "note": "VendorQuotationDomainService has no signum or range checks on item qty/price and no duplicate-line check; no @Valid on quotation create",
+  "note": "VendorQuotationDomainService.requireItemsBelongToRequisition (l.510-525) only null-checks qty/price; no signum, no duplicate requisitionItemId, no DTO @Valid. Bad-cell 500 part is fixed (NumberFormatException -> 400). | Repro: POST /api/purchase/vendor-quotations with items [{requisitionItemId:X,quotedQty:-5,unitPrice:0},{requisitionItemId:X,...}] -> 201",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:33": {
   "status": "still-bug",
-  "note": "VendorQuotationStatusPolicy editable/deletable depend only on status DRAFT/SUBMITTED/ACTIVE; selection use never changes quotation status",
+  "note": "Nothing sets quotation status to SELECTED after a vendor selection (selection/*, quotation/* only set SUBMITTED); VendorQuotationStatusPolicy.isEditable allows DRAFT/SUBMITTED/ACTIVE, so still editable/deletable. | Repro: Create selection on quotation Q (even approved), then PUT or DELETE /api/purchase/vendor-quotations/{Q} -> 200",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:37": {
   "status": "still-bug",
-  "note": "BillCreditFacadeImpl.getById is plain @Transactional (l.128) and enrichApprovals calls syncMainWorkflow (l.266) which locks via findCurrentForUpdate; same in ItemReceipt getApprovals",
+  "note": "BillCreditFacadeImpl.getById (l.128) is plain @Transactional; enrichApprovals l.266 calls syncMainWorkflow -> findCurrentForUpdate (PESSIMISTIC_WRITE, ApprovalRequestRepository l.31) and writes steps. Deliberate in code comment; low impact. | Repro: GET /api/purchase/bill-credits/{id} with SQL log shows SELECT ... FOR UPDATE on approval_request and step updates",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:4": {
   "status": "still-bug",
-  "note": "VendorBillGenerationService.buildItemsFromRequest copies billedQty from request; VendorBillDomainService.validateLines has no billed<=received check",
+  "note": "VendorBillGenerationService.buildItemsFromRequest (l.257-290) copies billedQty from request; VendorBillDomainService.validateLines (l.138) checks ids only; challan qty only >=0. No billed<=received check. | Repro: POST /api/purchase/vendor-bills with itemReceiptId and billedItems billedQty 1000 where receipt accepted 10 -> 201",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:5": {
   "status": "still-bug",
-  "note": "buildItemsFromRequest has no duplicate itemReceiptItemId check nor all-lines-required check; validateLines only needs itemId and receipt item id",
+  "note": "VendorBillGenerationService.buildItemsFromRequest (l.257-290): no duplicate itemReceiptItemId check, no all-lines check; validateLines checks ids only. Partial billing may be intended (plan question). | Repro: POST /api/purchase/vendor-bills with billedItems listing the same itemReceiptItemId twice -> 201, PO billedQty counted twice on approval",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:6": {
   "status": "still-bug",
-  "note": "BillCreditDomainService.validateCommon only needs refundQty>0; no ceiling vs return qty, price/vat taken from client (updateFields l.304-305)",
+  "note": "BillCreditDomainService.validateCommon (l.103-132) needs only refundQty>0; unitPrice/vatRate/returnLineId from client (mergeLines l.300-306); no ceiling vs return qty. Bound only by applied-bill outstanding. | Repro: POST /api/purchase/bill-credits for an APPROVED return, line refundQty 999 unitPrice 5000 any itemId, appliedLines equal to total within bill outstanding -> 201",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:8": {
   "status": "still-bug",
-  "note": "VendorReturnRequestDomainService updateFields (l.196-203) sets itemId, unitPrice, vatRate from the client line",
+  "note": "VendorReturnRequestDomainService.mergeLines (l.196-203) and create take itemId, unitPrice, vatRate from client; validateReturnableAgainstPurchaseOrder checks PO item membership and qty only; vendorId only existence-checked in facade. | Repro: POST /api/purchase/vendor-return-requests with valid poItemId but unitPrice 9999, other itemId, other existing vendorId -> 201",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:9": {
   "status": "still-bug",
-  "note": "BillCreditDomainService.java:331 existingLine.setInitialAmount(incomingLine.getInitialAmount()) copied from the request",
+  "note": "BillCreditDomainService.mergeAppliedLines l.331 existingLine.setInitialAmount(incoming) and BillCreditMapper.java:104 copy initialAmount from client; never recomputed from the bill. Display snapshot only. | Repro: POST /api/purchase/bill-credits with appliedLines[0].initialAmount 1 for a bill of 1000 -> 201, stored 1",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:10": {
   "status": "still-bug",
-  "note": "ExtraCostAllocator.allocate (l.47) divides each share HALF_UP at scale 4 with no remainder assigned to the last line",
+  "note": "ExtraCostAllocator.allocate (bill/service/ExtraCostAllocator.java l.47) divides each share HALF_UP at scale 4, no remainder to last line; used by VendorChallanService.applyLandingCosts and LC master. | Repro: Challan with extra cost 100 over 3 equal lines: landing costs 33.3333 x3 = 99.9999",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "rv-be:purchase:11": {
-  "status": "still-bug",
-  "note": "PurchaseOrderRelatedRecordsService.java:153 shows payment.getPaymentAmount() (whole payment), not the amount applied to this PO's bills",
+  "status": "open",
+  "note": "Unclear (needs a run or a decision): PurchaseOrderRelatedRecordsService.java:153 shows payment.getPaymentAmount() (whole payment). Bills/returns also show whole-document amounts, so may be by design; needs business decision (plan asks owner).",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "purchase:B-P1": {
   "status": "still-bug",
-  "note": "PurchaseOrderDomainService.validateCommon (l.78-105) checks qty only; computeAndSetTotals (l.303) trusts client taxAmount; no negative price/discount/rate checks",
+  "note": "PurchaseOrderDomainService.validateCommon:78-105 checks qty only; computeAndSetTotals:293-319 uses client discountAmount/taxAmount/grossAmount as sent. No bean validation in purchase DTOs. | Repro: POST /api/purchase/orders with unitPrice -1 (or discountAmount above gross, taxAmount 999): 201.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "purchase:B-P3": {
   "status": "still-bug",
-  "note": "VendorBillDomainService.validateLines/validateCreate: no check billedQty <= receipt qty",
+  "note": "VendorBillDomainService.validateLines:138-155 and VendorBillGenerationService.buildItemsFromRequest:257-292 take billedQty as sent; billed qty is never compared with receipt/challan qty. | Repro: POST /api/purchase/vendor-bills for a receipt of 100 with billedItems billedQty 110: 201.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "purchase:B-P4": {
   "status": "still-bug",
-  "note": "VendorBillDomainService has no negative or range check on billUnitPrice/taxRate; only VendorChallanService.requirePositive covers challan price",
+  "note": "VendorBillDomainService.recomputeItemAmounts:391-399 has no sign/range check on billUnitPrice/taxRate; only VendorChallanService.requirePositive guards challan price and extra costs. | Repro: POST /api/purchase/vendor-bills with billedItems billUnitPrice -3 or taxRate -15: 201 with negative totals.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "purchase:B-P5": {
   "status": "still-bug",
-  "note": "BillCreditDomainService.validateCommon only checks refundQty>0; unitPrice taken from the line, no ceiling vs return qty",
+  "note": "BillCreditDomainService.validateCommon:101-135 checks refundQty>0 only; unitPrice from the line; no comparison with return line qty or price. Only validateAppliedBills outstanding cap limits it. | Repro: POST /api/purchase/bill-credits for a return of 20 with refundQty 25 and unitPrice 30 (bought at 8): accepted if applied total fits the bill's outstanding.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "purchase:B-P8": {
   "status": "still-bug",
-  "note": "No inactive vendor or payment-term check in quotation, selection or order create/validate code (status/active grep in those packages is empty)",
+  "note": "Partly fixed: bill/PI/LC mappers call PaymentTermLookup.requireActive. PO, quotation, selection have no inactive vendor check (status only in the Excel dropdown, VendorQuotationDomainService:680) and no term check. | Repro: Set a vendor INACTIVE via status toggle, POST /api/purchase/vendor-quotations for it: 201; PO with an inactive paymentTermId: 201.",
   "ref": "321870e96",
   "date": "2026-11-09"
  },
  "purchase:B-P9": {
-  "status": "still-bug",
-  "note": "VendorBillDTO has no postingStatus/postingError field (only period dates) and frontend shows none for bills; failures only in the posting log",
-  "ref": "321870e96",
+  "status": "open",
+  "note": "Unclear (needs a run or a decision): Vendor bill detail GL Impact tab (vendor-bill-detail-tabs.tsx) shows FAILED + reason via /api/purchase/postings; e2e note said tab empty. No bill DTO field, no list flag. Needs a runtime check.",
+  "ref": "a03704c99",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:1.2": {
   "status": "fixed",
-  "note": "bill-credit-edit-view.tsx:443-447 rejects refundQty > returnQty and input has max={row.returnQty}",
-  "ref": "a03704c99",
+  "note": "bill-credit-edit-view.tsx:443-448 refuses refundQty > returnQty (lineQtyExceeds) and refund input has max={row.returnQty}.",
+  "ref": "24e4ad11",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:1.3": {
   "status": "fixed",
-  "note": "bill-payment-create-view.tsx:174 and form-model.ts:259,286 use sumMoney/roundMoney, not float sums",
-  "ref": "a03704c99",
+  "note": "bill-payment-create-view.tsx:174 totalPaymentAmount=sumMoney; form-model.ts:259,286 roundMoney per line and sumMoney for paymentAmount.",
+  "ref": "24e4ad11",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:1.4": {
   "status": "fixed",
-  "note": "vendor-bill/utils.ts challanLineTotals variance = item totals only (no landing cost); generation view compares item rates",
-  "ref": "a03704c99",
+  "note": "vendor-bill/utils.ts challanLineTotals variance = challan total vs PO total of items only; landing cost not included. generation-view hasMismatch uses item rates.",
+  "ref": "24e4ad11",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:1.5": {
   "status": "fixed",
-  "note": "vendor-bill-generation-view.tsx:199 allocateByWeight to the paisa with last-line remainder, no whole-taka rounding",
-  "ref": "a03704c99",
+  "note": "vendor-bill-generation-view.tsx computeBilledItems uses allocateByWeight (utils.ts) to the paisa, last line takes remainder; no whole-taka rounding.",
+  "ref": "24e4ad11",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:1.6": {
   "status": "fixed",
-  "note": "vendor-bill-generation-view.tsx:129-134,646 match challan to bill lines by itemReceiptItemId, not index",
-  "ref": "a03704c99",
+  "note": "vendor-bill-generation-view.tsx matches challan to bill lines by itemReceiptItemId (l.129-134, 513), not by array index.",
+  "ref": "24e4ad11",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:1.7": {
   "status": "fixed",
-  "note": "vendor-bill-generation-view.tsx handleModalSubmit uses keepEditedBillLines so hand-edited bill lines survive re-submit",
-  "ref": "a03704c99",
+  "note": "vendor-bill-generation-view.tsx handleModalSubmit wraps rebuilt lines in keepEditedBillLines (utils.ts), so hand-edited lines survive re-submit unless their challan row changed.",
+  "ref": "8079892e",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:1.8": {
   "status": "fixed",
-  "note": "min/max on bill, LC bill, challan modal inputs; PI actions.ts validateProformaInvoice rejects negative price and vat outside 0-100",
-  "ref": "a03704c99",
+  "note": "Challan modal rejects negative/VAT>100 on submit (l.154); LC bill view rejects invalid, over-LC-qty and all-zero lines (lc-generation-view l.216-250); PI actions.ts validateProformaInvoice checks qty, price, VAT.",
+  "ref": "24e4ad11",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:1.9": {
   "status": "fixed",
-  "note": "proforma-invoices/index.ts exactPackBreakdown uses fitPurchasePackSizes (no Math.ceil); commit e9eff38b",
+  "note": "proforma-invoices/index.ts exactPackBreakdown uses fitPurchasePackSizes; no Math.ceil left in the file.",
   "ref": "e9eff38b",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:1.10": {
   "status": "fixed",
-  "note": "orders/index.ts mapFormItemToOrderDto refits packSizes to qty and always sends packSizes/demandSplits; commit e9eff38b",
+  "note": "orders/index.ts mapFormItemToOrderDto refits packSizes to orderedQty via fitPurchasePackSizes and always sends packSizes and demandSplits.",
   "ref": "e9eff38b",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:1.12": {
   "status": "fixed",
-  "note": "orders/index.ts sends per-line taxRate/taxAmount; header vatRate = mostCommonTaxRate, not an average; commit e9eff38b",
+  "note": "orders/index.ts sends per-line taxRate/taxAmount; header vatRate shown on edit is mostCommonTaxRate (l.673,1406), not tax/subtotal.",
   "ref": "e9eff38b",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:1.13": {
   "status": "fixed",
-  "note": "comparative-scoring.ts converts warranty to days (month 30, year 365), unit price shown at 2dp; commit e9eff38b",
+  "note": "purchase-requisition/comparative-scoring.ts getWarrantyDays (month 30, year 365), getDeliveryDays ignores 0; comparative-statement shows unit price at 2dp.",
   "ref": "e9eff38b",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:1.16": {
   "status": "fixed",
-  "note": "item-receipt/schema.ts:108 and vendor-return schema/fulfill view use 0.0001 tolerance, no exact float equality",
-  "ref": "a03704c99",
+  "note": "item-receipt/schema.ts:14,109,141,175,212, vendor-return/schema.ts:192,216 and fulfill view compare with Math.abs(a-b) > 0.0001; no exact float equality left.",
+  "ref": "4d3e4a56",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:1.18": {
   "status": "fixed",
-  "note": "vendor-bill-lc-items-table.tsx lcLineTax recomputes VAT from billed qty, price and rate (lcLineVatRate); no stale LC amount",
-  "ref": "a03704c99",
+  "note": "vendor-bill-lc-items-table.tsx lcLineVatRate falls back to LC rate or implied rate; lcLineTax recomputes VAT from billed qty x price, rounded; no stale LC amount.",
+  "ref": "24e4ad11",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:2.1": {
   "status": "fixed",
-  "note": "lc-import-form-view.tsx:354 sends billing.paymentTermId; backend LcBillingDTO has paymentTermId",
-  "ref": "a03704c99",
+  "note": "lc-import-form-view.tsx:354 sends billing.paymentTermId; backend LcMapper.java:129-141 reads dto.paymentTermId into the LC and returns it.",
+  "ref": "79b6789d",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:2.2": {
   "status": "fixed",
-  "note": "proforma-invoice-form-view.tsx:301-308 isLinkMode drops justification, delivery, billing requirements; commit e9eff38b",
+  "note": "proforma-invoice-form-view.tsx isLinkMode hides billing tab and delivery field; schema.ts linkMode skips deliveryDate and remarks requirements.",
   "ref": "e9eff38b",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:2.3": {
   "status": "fixed",
-  "note": "requisitions/index.ts:1814-1816 quotation update sends discountAmount, taxAmount, remarks per item; mapper l.907-909 loads them",
+  "note": "requisitions/index.ts:1814-1816 update sends discountAmount, taxAmount, remarks per item; mapper l.907-909 loads them into the edit rows (quotation modal createEditQuotationRows).",
   "ref": "a03704c99",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:2.4": {
   "status": "fixed",
-  "note": "quotation modal zod: deliveryTimeDays int, warranty numeric >= 0 only (l.289-302)",
+  "note": "purchase-requisition-quotation-modal.tsx:289-302 deliveryTimeDays must be an integer, warranty numeric >= 0 only, unit month/year select.",
   "ref": "a03704c99",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:3.1": {
   "status": "fixed",
-  "note": "lc-master/actions.ts:102-110 checks PURCHASE_LC_MASTER_APPROVE; detail view guards on canTakeAction and permission",
-  "ref": "a03704c99",
+  "note": "lc-master detail shows approve/reject only if canTakeAction, taskId and LC_MASTER_APPROVE; shared approval-decision-actions.tsx asserts permission in completeWorkflowTask and shows error on failure.",
+  "ref": "ae5d2a8b",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:3.2": {
   "status": "fixed",
-  "note": "shared/permissions/purchase.ts:140 canCancelOrder = canDeleteOrder; actions.ts:266 checks it (not edit)",
+  "note": "shared/permissions/purchase.ts canCancelOrder = canDeleteOrder; cancelPurchaseOrderAction (actions.ts:262) and the Cancel button use it, not canEditOrder.",
   "ref": "a03704c99",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:3.3": {
   "status": "fixed",
-  "note": "PO, PR, receipt, bill etc detail pages use readForTitleIfAllowed in generateMetadata, permission checked first",
-  "ref": "a03704c99",
+  "note": "PO, PR, receipt, bill, prepayment, return, payment pages use readForTitleIfAllowed (permission first). Residual: lc-import [id] and edit pages still read the LC in generateMetadata first.",
+  "ref": "96a9da61",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:3.4": {
   "status": "fixed",
-  "note": "bill-payment, item-receipt, lc-import actions.ts all check permission first and return denied results",
-  "ref": "a03704c99",
+  "note": "bill-payment/actions.ts, item-receipt/actions.ts, lc-import/actions.ts check permission first and return denied results. Residual: item-receipt location lookup actions (actions.ts:129-150) are still unwrapped.",
+  "ref": "c97e4493",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:4.1": {
   "status": "fixed",
-  "note": "bill-payment page uses readForTitleIfAllowed; item-receipts, lc, lc-master, MR APIs throw/loadError instead of empty (spot-checked, not every listed file)",
-  "ref": "a03704c99",
+  "note": "Lists return loadError (item-receipts, lc, lc-master, MR, PI, vendor-bills page, payments); detail loaders return null only on 404 and throw otherwise. Related-records/contacts still fail soft to [].",
+  "ref": "d5ed344a",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:4.2": {
   "status": "fixed",
-  "note": "proforma-invoices/index.ts:1037-1054 getProformaInvoiceCreateSeed throws on read failure, null only on 404; edit page notFound()",
-  "ref": "a03704c99",
+  "note": "proforma-invoices/index.ts getProformaInvoiceCreateSeed returns null only on 404, throws otherwise; PI edit page calls notFound() on null.",
+  "ref": "d5ed344a",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:4.3": {
   "status": "fixed",
-  "note": "vendor-return/actions.ts:208-219 reads PO and preview together, throws on failure, null only if missing",
-  "ref": "a03704c99",
+  "note": "vendor-return/actions.ts getVendorReturnCreationContextAction reads preview and PO together; getPurchaseOrder and getVendorReturnPreview throw on non-404.",
+  "ref": "d5ed344a",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:4.4": {
-  "status": "fixed",
-  "note": "purchase-pack-sizes.tsx loadPackSizeOptions has .catch returning []; pack-size actions guarded (spot-check of listed spots)",
+  "status": "still-bug",
+  "note": "Pack-size lookup now has .catch, but failures show no error (empty list/free typing); purchase-requisition-form-view.tsx:742 .then has no catch; purchase-requisition/actions.ts:223-235 item actions have no permission check. | Repro: Not easy by hand: needs a failing item lookup; with no permission, requisition item search still answers.",
   "ref": "a03704c99",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:5.1": {
   "status": "fixed",
-  "note": "bill-payment, vendor-bill, vendor-prepayment actions return backend_message via cleanBackendBusinessMessage; PI path not individually confirmed",
-  "ref": "a03704c99",
+  "note": "backend_message shown on payment (create-view l.219), vendor bill (generation l.702, edit l.265, LC l.320), PI (form-view l.383). Residual: bill-credit approve falls back to raw WORKFLOW_FAILED code if backend gives no reason.",
+  "ref": "24e4ad11",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:5.2": {
   "status": "fixed",
-  "note": "no raw error.message left in features/purchase/vendor or item-receipt (only commented code); commit e9eff38b",
+  "note": "No raw error.message surfaced in features/purchase/vendor or item-receipt (remaining .message uses are zod field errors).",
   "ref": "e9eff38b",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:6.1": {
   "status": "fixed",
-  "note": "vendor-return/[id]/edit/page.tsx reads source type from stored relatedRecords; no cross-type fallback by id",
-  "ref": "a03704c99",
+  "note": "vendor-return/[id]/edit/page.tsx derives source from the return's own relatedRecords/ids, no opposite-type fallback; read failure shows AppLoadError, missing id notFound().",
+  "ref": "24e4ad11",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:6.2": {
   "status": "fixed",
-  "note": "purchase-requisition-detail-view.tsx:36 initial state = preferred quotation id ?? selectedQuotationId, not quotations[0]",
+  "note": "purchase-requisition-detail-view.tsx:36 initial id = quotation flagged preferred ?? detail.selectedQuotationId; record-header confirm is disabled until one is set. No quotations[0].",
   "ref": "a03704c99",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:7.1": {
   "status": "fixed",
-  "note": "purchase-order-record-actions.tsx:97,200,248 cancel and reject open PurchaseCancelConfirm/RejectConfirm before acting",
-  "ref": "a03704c99",
+  "note": "purchase-order-record-actions.tsx: Cancel and Reject set confirming and open PurchaseCancelConfirm / PurchaseRejectConfirm (reject requires comment); action runs only on confirm.",
+  "ref": "ae5d2a8b",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:7.2": {
   "status": "fixed",
-  "note": "lc-import and lc-master form views use a redirecting flag so Save stays locked during redirect (spot-check)",
-  "ref": "a03704c99",
+  "note": "shared/use-purchase-submit.ts (holdAfterSuccess) used by PO, payment, receipt, prepayment, bill forms; PR, LC master, LC import, PI forms use isSaving guard plus redirecting flag. Legacy VendorBillEditView still unlocks.",
+  "ref": "e9eff38b",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:8.1": {
   "status": "fixed",
-  "note": "erp-api/purchase/types.ts:108 stage list has 'converted' and 'pi-converted'; constants.ts:86,116 map it",
+  "note": "erp-api/purchase/types.ts procurement stage list contains 'converted'; constants map it, so the stage filter matches backend values.",
   "ref": "a03704c99",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:8.2": {
   "status": "fixed",
-  "note": "no customerType/Customer filter anywhere in features/purchase/vendor-return",
+  "note": "No customerType/Customer filter anywhere in features/purchase/vendor-return.",
   "ref": "a03704c99",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:8.3": {
   "status": "fixed",
-  "note": "vendor-bill/components/columns.tsx:85 renders formatDate(row.date)",
-  "ref": "a03704c99",
+  "note": "vendor-bill/components/columns.tsx:85 Date column renders formatDate(row.date); backend VendorBillDTO has separate date and dueDate.",
+  "ref": "4d3e4a56",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:8.4": {
   "status": "fixed",
-  "note": "material-requisition columns.tsx:80 Request Date = createdAt, :138 Require Date = requisitionDate",
-  "ref": "a03704c99",
+  "note": "material-requisition columns.tsx: Request Date = createdAt/creationTime, Require Date = requisitionDate (distinct fields).",
+  "ref": "0fa92b6d",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:8.5": {
-  "status": "fixed",
-  "note": "lc-import/components/columns.tsx:184 renders row.lcMarginAmount ?? marginAmount",
+  "status": "still-bug",
+  "note": "lc-import columns.tsx:184 now reads lcMarginAmount ?? marginAmount, but backend LcDTO (release_beta_1.0.0) has no margin field at all, so the LC MARGIN AMOUNT column shows 0.00 for every row. | Repro: LC Import list: look at the LC MARGIN AMOUNT column; every row shows 0.00.",
   "ref": "a03704c99",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:8.6": {
   "status": "fixed",
-  "note": "bill-payment-primary-information-section.tsx adds fundingAccount, chequeNo and a translated method map",
-  "ref": "a03704c99",
+  "note": "bill-payment-primary-information-section.tsx shows fundingAccount (l.167), chequeNo (l.173), translated method via paymentMethods map, posting month via useFormatDate.",
+  "ref": "e7ef4595",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:8.9": {
   "status": "fixed",
-  "note": "no 'underDevelopment' use in src outside messages; vendor-purchase-order-transactions.tsx and vendor-item-receipt-transactions.tsx exist",
+  "note": "vendor-purchase-order-transactions.tsx and vendor-item-receipt-transactions.tsx exist; underDevelopment key only remains in message files, not used in src.",
   "ref": "a03704c99",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:6.5": {
   "status": "fixed",
-  "note": "vendor-overview-sidebar.tsx:39-40 toExternalHref keeps http(s) scheme else prefixes https",
-  "ref": "a03704c99",
+  "note": "vendor-overview-sidebar.tsx:39 toExternalHref keeps http(s) scheme else prefixes https.",
+  "ref": "bea5862f",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:10.1": {
   "status": "fixed",
-  "note": "vendor-payments/index.ts documentNumbersById is one filter call; orders/index.ts itemReads map dedupes item GETs",
-  "ref": "a03704c99",
+  "note": "vendor-payments/index.ts documentNumbersById resolves bill and LC numbers in one filter call; orders/index.ts packSizeSnapshot caches one item read per item id (promise stored in itemReads).",
+  "ref": "4e183936",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:13.4": {
   "status": "fixed",
-  "note": "money.test.ts, bill-payment/form-model.test.ts, vendor-bill/utils.test.ts exist",
-  "ref": "a03704c99",
+  "note": "Tests exist: bill-payment/form-model.test.ts (0.1+0.2 payload), vendor-bill/utils.test.ts, erp-api/purchase/pack-sizes.test.ts; no bill-credit amount-due test though.",
+  "ref": "24e4ad11",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:1.1": {
   "status": "still-bug",
-  "note": "bill-credit-edit-view.tsx:336 grandTotal = roundMoney(subtotal+vat) at 2dp; backend validateAppliedInFull compares the exact unrounded total",
+  "note": "bill-credit-edit-view.tsx:336 grandTotal=roundMoney(...) to 2dp; backend BillCreditDomainService.validateAppliedInFull compares applied vs unrounded subtotal+VAT with compareTo, so 34.02 != 34.02375. | Repro: Bill credit new: return 3 x 10.55 at 7.5% VAT, apply 34.02 to the bill, Save; backend rejects (applied total must equal items total).",
   "ref": "a03704c99",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:8.7": {
   "status": "still-bug",
-  "note": "vendor-bill-edit-view.tsx:301 status = paymentStatus ?? approvalStatus, so a pending bill under edit shows Not Paid; paid badge colours are fixed",
+  "note": "purchase-status-badge.tsx now colours paid/partial, but vendor-bill-edit-view.tsx:301 status = paymentStatus ?? approvalStatus, so a pending bill under edit shows Not Paid. Only direct bills (no receipt, no LC) reach that view. | Repro: Open edit of a pending vendor bill that has no receipt or LC: header badge reads Not Paid.",
   "ref": "a03704c99",
   "date": "2026-11-09"
  },
  "rv-fe:purchase:13.3": {
   "status": "still-bug",
-  "note": "unstable_rethrow absent in lc, lc-master, vendor-bills, vendor-payments, vendor-prepayments, proforma-invoices, item-receipts index.ts despite many catch blocks",
+  "note": "unstable_rethrow is absent in erp-api/purchase lc, lc-master, vendor-bills, vendor-payments, vendor-prepayments, proforma-invoices, item-receipts index.ts (only orders, requisitions, MR, bill-credits have it). | Repro: Not visible in UI; a Next control-flow error inside these calls is logged as a backend failure.",
   "ref": "a03704c99",
   "date": "2026-11-09"
  },
@@ -2025,6 +2025,324 @@
   "status": "fixed",
   "note": "SAL-05-07 fixed e21e150dc (requireApprovedSalesOrder); SAL-12-05 fixed 5113a9e19; SAL-02-11 capped by requireWithinReturnable; 05-03 intended; 09-09 and 12-11 amount not editable by design.",
   "ref": "e21e150dc",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:10.2": {
+  "status": "still-bug",
+  "note": "Bill-credit open bills and PO/PR vendor selects are fixed, but lc-master/new/page.tsx:43 and [id]/edit/page.tsx:41 still load filterVendors size 100 and pass them to the form; fallback only runs when list is empty. | Repro: LC Master new or edit with more than 100 vendors: open Vendor dropdown; the 101st+ vendor is missing.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:2.7": {
+  "status": "fixed",
+  "note": "requisitions/index.ts confirmVendorSelection: GET failure other than 404 is rethrown, so no POST; record-header confirm button disabled while busy.",
+  "ref": "3a16e2d6",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:4.5": {
+  "status": "fixed",
+  "note": "lc-import-customs-movement-modal.tsx uses saved quantity when receiptLines exist, suggestionsFailed shows an error and disables Save (l.997); fetchChannelAllocationSuggestionAction returns null on denial.",
+  "ref": "316e990f",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:9.1": {
+  "status": "still-bug",
+  "note": "PI Email tab loads real emails and Settlement tab is gone; fulfil form shipment date now empty and no id fallback. Still: vendor-return-fulfill-view.tsx:937 Email tab is a hardcoded English 'No email communication recorded'. | Repro: Vendor Return fulfil page: open the Email tab; it always says 'No email communication recorded' (English), nothing loaded.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.11": {
+  "status": "fixed",
+  "note": "material-requisition-form-view.tsx handlePackSizeChange nulls packSizes; material-requisitions/index.ts materialRequisitionLinePackSizes rebuilds the pack when breakdown no longer matches total.",
+  "ref": "0c11ba4c",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.14": {
+  "status": "fixed",
+  "note": "orders/index.ts mapFormItemToOrderDto rounds tax via roundMoney and uses ?? for providedTaxAmount (deliberate 0 kept); requisitions/index.ts rounds quotation tax; PI line amounts rounded.",
+  "ref": "2a97221a",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.15": {
+  "status": "still-bug",
+  "note": "purchase-order-overview-panels.tsx:22 useMoney uses Math.round (billed/total in whole taka); proforma-invoice-totals-cards.tsx:33 uses default Intl format, so 1234.50 shows as 'BDT 1,234.5'. | Repro: Open a PO with a fractional billed amount, Items tab, Receive & Billing panel: shown rounded to whole taka. Open a PI: totals cards show one decimal.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.17": {
+  "status": "wontfix",
+  "note": "Not applicable: PO form/mapper never set shippingCost or handlingCost (summary card rows never appear) and vatApplicable = taxTotal>0 in orders/index.ts:671, so print subtotal+VAT equals total.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.19": {
+  "status": "still-bug",
+  "note": "vendor-return-form-view.tsx:521-584 unit price and VAT inputs editable with no cap to the source line; backend stores unitPrice as sent (no check). Was flagged 'may be intended': needs owner decision. | Repro: New vendor return, tick a line, raise Unit Price above the order price: refund total follows.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:10.3": {
+  "status": "still-bug",
+  "note": "Page size clamped now (shared/purchase-list-query.ts:149, bill-credit, MR, vendor-bill query.ts), but ?status= is forwarded unvalidated in purchase-list-query.ts and vendor-bill/query.ts (rawStatus); size part fixed. | Repro: Open /purchase/vendor-bill?status=bogus (or receipts list): value goes to the backend unchecked.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:10.4": {
+  "status": "still-bug",
+  "note": "Bill credit pages now use Promise.all, but purchase-order/actions.ts savePurchaseOrderAction still calls getPurchaseOrder for status on every edit save, and item-receipt/new/page.tsx awaits location options after detail. | Repro: Edit a PO and Save with network tab open: full detail refetch before the update call.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:10.5": {
+  "status": "still-bug",
+  "note": "orders/index.ts:1262-1270 and requisitions/index.ts:1589-1596 upload attachments in a sequential for-await loop before create; no reuse of uploaded ids on failed create. | Repro: New PO with 3 attachments: uploads go one after another; a failed create then retry re-uploads.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:10.6": {
+  "status": "still-bug",
+  "note": "material-requisition-form-view.tsx:431-481 useEffect fires getMaterialRequisitionItemSelectionDetailsAction per line and setValue by index without a dirty check; errors swallowed by .catch(() => {}). | Repro: Edit an MR with many lines, change a quantity right after opening: late replies can overwrite it; one request per line.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:11.1": {
+  "status": "fixed",
+  "note": "Dates use companyToday() (item-receipt-form-view.tsx:222); lc-master/schema.ts:43,74 date required and dueDate>=date with errors shown; MR quantity z.coerce.number().gt(0) with step=any; damaged modal row text fixed.",
+  "ref": "7f6a17bd",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:11.2": {
+  "status": "fixed",
+  "note": "bill-credit-edit-view.tsx: selected toggled only by checkbox, select-all uses local remaining in updater; vendor-return/schema.ts:31 refine only when selected; bill-credit/actions.ts finiteNumber returns null for null/''.",
+  "ref": "db742e87",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:11.3": {
+  "status": "still-bug",
+  "note": "vendor-bill-generation-view.tsx:468-477 handleUploadClick sets a placeholder 'delivery-challan.pdf' with no file; save at ~681 keeps all old attachment ids so replace adds a second; legacy VendorBillEditView unchanged. | Repro: New vendor bill from a receipt: click upload area without choosing a file, confirm price modal: challan shows as attached; bill generates with no file.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:12.1": {
+  "status": "still-bug",
+  "note": "English literals remain: proforma-invoice-form-view.tsx:442 'To be Generated', orders/index.ts:1172, bill-payment-create-view.tsx:472 '(Unused: ...)', comparative-statement.tsx:134 'Months'; purchase forms import sales posting-period field. | Repro: Switch UI to Bangla: new PI shows 'To be Generated'; payment form prepayment option shows '(Unused: ...)'.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:13.1": {
+  "status": "still-bug",
+  "note": "Dead code still present: erp-api/purchase/payable-bills, vendor-billing-documents, shared/purchase-placeholder-panel.tsx, purchase-customer-type-options.ts, purchase-actions.tsx, bill-payment/utils.ts, bill-credit/utils.ts. No UI symptom. | Repro: Not visible in UI; code cleanup only.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:13.2": {
+  "status": "still-bug",
+  "note": "Duplicated helpers remain: three separate mutationFailure copies (orders, requisitions, proforma-invoices/index.ts:186, PI one has no unstable_rethrow or 401/403 mapping); page-size literals per list. No direct UI symptom. | Repro: Not visible in UI; code structure only.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:13.5": {
+  "status": "still-bug",
+  "note": "lc-master/form-model.ts:27 and erp-api/purchase/lc-master/index.ts:202 send payableAccount but backend CreateLcMasterRequestDTO reads payableAccountId, so the chosen ledger is ignored. Also raw antd imports remain. | Repro: New LC Master: pick a payable account other than the vendor default, save: detail shows the vendor default ledger.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:2.5": {
+  "status": "fixed",
+  "note": "vendor-overview-sidebar.tsx handleSaveAddress/Contact start from vendorChildrenFromDto (all contacts and addresses kept), blank address refused, contact modal uses optionalEmail.",
+  "ref": "bea5862f",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:2.6": {
+  "status": "fixed",
+  "note": "Frontend no longer sends payeeAddressSnapshot (use-payee-address hook gone; only a response type remains in vendor-prepayments/index.ts:84), so no blank address can be saved from the form.",
+  "ref": "e9eff38b",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:3.5": {
+  "status": "still-bug",
+  "note": "Status gates added for prepayment, payment, bill-credit edit routes and receipt/PO links, but vendor-bill/[id]/edit and proforma-invoice/[id]/edit pages open the form for any status; PO list Edit link ignores permission. | Repro: Open the vendor-bill edit URL of an approved bill by typing it: full edit form opens instead of redirecting to detail.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:3.6": {
+  "status": "fixed",
+  "note": "proforma-invoice/actions.ts no longer has the dead workflow actions; record-actions uses detail.canTakeAction === true.",
+  "ref": "a575b059",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:4.6": {
+  "status": "fixed",
+  "note": "vendor-performance-purchase-orders.tsx keeps table and pager on a failed page (lastTotal ref) and shows an error feedback above it.",
+  "ref": "0c11ba4c",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:6.3": {
+  "status": "still-bug",
+  "note": "itemId link null-checked (fixed), but lc-import-form-view.tsx:387 still falls back to idx+1 for a missing PI line id, and lc-import-form-items-panel.tsx:61-67,151 VAT input has no max 100. | Repro: New LC from a PI: type 4000 in a line's VAT %: accepted.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:6.4": {
+  "status": "fixed",
+  "note": "Snapshot kept, but bill-payment-create-view.tsx:219-228 shows the backend refusal (backend_message) and bill-payment/actions.ts returns it, so the second tab gets a clear error; backend is the guard.",
+  "ref": "24e4ad11",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:8.10": {
+  "status": "fixed",
+  "note": "vendor/constants.ts:11 has SUSPENDED option and tone; vendorCode no longer rendered in purchase-requisition components (comparative avatar uses vendor letter).",
+  "ref": "413f521e",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:8.8": {
+  "status": "fixed",
+  "note": "PI delivery date shows '-' (columns.tsx:188), address built with filter(Boolean), gross uses vatAmount ?? taxAmt, receipt Item Qty grouped per unit. Prepayment missing-status default NOT_APPLIED remains (rare).",
+  "ref": "db742e87",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:9.2": {
+  "status": "still-bug",
+  "note": "Partly fixed, but lc-import-detail-tabs.tsx:56-59 defaults mode 'Sea' and bill-to to vendor name; vendor-return primary section rate prints 0.00; bill-credit-detail-tabs.tsx:308 empty Billing tab. | Repro: Open an LC with no shipment mode: Shipment shows Sea. Open a vendor return: Exchange Rate 0.00. Open a bill credit: empty Billing tab.",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:9.3": {
+  "status": "fixed",
+  "note": "vendor-record-header.tsx Receive Deposit links to new prepayment (AccessGuard); debugPayload and console.log gone; PI and LC master have no currency select (BDT). LC master detail still prints an exchange rate row.",
+  "ref": "a4519700",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:9.4": {
+  "status": "still-bug",
+  "note": "Auto-generate is capped (qty 1-1000, integer) but item-receipt/barcode-labels.ts itemReceiptBarcodeLabels builds count = ceil(acceptedQty) labels with no cap. | Repro: Print Barcode Labels on a receipt with a very large accepted quantity: browser builds all labels, page freezes.",
+  "ref": "d82e3bd7",
+  "date": "2026-11-09"
+ },
+ "integ:PUR-06": {
+  "status": "fixed",
+  "note": "e2e/tests/purchase/06-payments.spec.ts uses /cash.in.hand/i for the account pick (test-only item).",
+  "ref": "c399c772",
+  "date": "2026-11-09"
+ },
+ "integ:PUR-07": {
+  "status": "fixed",
+  "note": "e2e/support/purchase-extra.ts payableAccountId() and advanceAccountId() resolve defaults from the API instead of hard-coded ids (test-only item).",
+  "ref": "c399c772",
+  "date": "2026-11-09"
+ },
+ "purchase:B-P10": {
+  "status": "still-bug",
+  "note": "Cause present: requisition create is @Transactional (holds a connection) and purchaseAudit.publish opens REQUIRES_NEW (AuditPublisher:69); no hikari pool setting in application*.properties. Not run-verified. | Repro: 20 simultaneous POST /api/purchase/requisitions: about half return 500 CannotCreateTransactionException after the pool timeout.",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:18": {
+  "status": "still-bug",
+  "note": "RequesterApprovalService.recordRequesterDecision:127-173 uses the unlocked finder (not findCurrentForUpdate) and decides allApproved from its own snapshot; two simultaneous approvals each see the other PENDING. | Repro: Requisition with two requesters; both call approve at the same moment: both steps APPROVED, request stays PENDING, requisition stuck in PENDING_REQUESTER_APPROVAL.",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:19": {
+  "status": "still-bug",
+  "note": "LcDomainService.applyCustomsMovement:417-419 runs mergeAdvanceReceiptLines on every RELEASED_FROM_CUSTOMS save, also after advanceReceivePosted; l.440-447 only enforces the total, mergeAdvanceReceiptLines:529-534 overwrites channel. | Repro: PUT /api/purchase/lc/{id}/status RELEASED_FROM_CUSTOMS twice; second with channel quantities swapped (same total): 200, lines change, in-transit stock does not.",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:31": {
+  "status": "still-bug",
+  "note": "Quantity cap removed on purpose (f0d1e64f8) but Swagger in ProformaInvoiceController.convert still promises it; ProformaInvoiceDomainService.validateItem:126-136 never checks unitPrice/vatRate sign. Item-vs-PO match is a business call. | Repro: POST /api/purchase/proforma-invoices/convert with a line unitPrice -5 and quantity above the PO line: 201.",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:35": {
+  "status": "still-bug",
+  "note": "ItemReceipt/BillCredit/Lc/VendorPrepayment/ProformaInvoice FacadeImpl.delete: no workflowFacade.cancel, is_current stays true. TaskService.java:148 hides orphan tasks from inbox, but instance/task rows stay. | Repro: Create item receipt (workflow starts), DELETE /api/purchase/item-receipts/{id}; workflow_instance stays RUNNING, approval_request.is_current=true, task PENDING in DB",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:36": {
+  "status": "still-bug",
+  "note": "VendorReturnRequestFacadeImpl.update (l.146) and DomainService.updateFields only check status PENDING_APPROVAL, which stays during multi-step approval; no approvedCount check or workflow restart. | Repro: 2-step workflow: approver 1 approves, creator PUT /api/purchase/vendor-return-requests/{id} with returnQty 50 -> 200, approver 2 approves edited doc",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:38": {
+  "status": "still-bug",
+  "note": "Performance only. No hibernate default_batch_fetch_size in resources, one @BatchSize in whole backend; VendorBillFacadeImpl.getByFilter maps full VendorBillMapper.toDTO per row (lazy items/billing/attachments). | Repro: POST /api/purchase/vendor-bills/filter size=20 with SQL logging: statement count grows with rows",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:39": {
+  "status": "still-bug",
+  "note": "Performance only, results correct. VendorPaymentFacadeImpl.getEligibleBills (l.246) loads all APPROVED bills unpaged; toEligibleBill calls remainingDue per bill (findById + SUM, VendorBillPaymentStatusService:125). | Repro: GET /api/purchase/vendor-payments/eligible-bills?vendorId=V for vendor with many approved bills; SQL log shows 2+ queries per bill",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:40": {
+  "status": "still-bug",
+  "note": "Performance only. ItemPurchaseOrderQueryService.openPurchaseOrderQuantityByItem (l.161) and openProformaInvoiceQuantityByItem (l.178) loop per item with 2+ queries each; called from ItemInventoryQueryService.java:145-147. | Repro: Open inventory overview page of 20 items with SQL logging: queries scale with item count",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:41": {
+  "status": "still-bug",
+  "note": "Performance only. ItemReceiptFacadeImpl.getById uses lazy demandSplits/inventoryDetails/damagedInventoryDetails per line (ItemReceiptItem l.99-115, no BatchSize); enrichBinLocations now memoises location codes (partly improved). | Repro: GET /api/purchase/item-receipts/{id} for a 30-line receipt with SQL logging",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:42": {
+  "status": "still-bug",
+  "note": "Performance only. RequisitionFacadeImpl.getAll loops enrichRequesters per row (l.211-213); RequisitionStockAnalysisService.analyze (l.35-70) runs 4 queries per item id, list unbounded. | Repro: Stock-analysis call with 40 itemIds, or requisition list size=20, with SQL logging",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:7": {
+  "status": "still-bug",
+  "note": "PurchaseCloseDataProviderImpl.factsFor l.77-78: payable = sumApprovedGrandTotalUpTo - sumApprovedAppliedToBillsUpTo (payments only); bill credits and PI applications not subtracted, unlike VendorBillPaymentStatusService.settledDirectly. | Repro: Bill 1000, approved bill credit 300, payment 700; month-close facts payableBalance = 300 instead of 0",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:27": {
+  "status": "still-bug",
+  "note": "MaterialRequisitionFacadeImpl.update l.153-160, applyPurchaseRequisitionLinks l.285-312: approved MR only relinks, other edits silently ignored; resolvePurchaseRequisition l.315 by number only, no status/item check. | Repro: PUT /api/purchase/material-requisitions/{id} (APPROVED) with line purchaseRequisitionNo of a PENDING or unrelated PR -> 200 linked",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:28": {
+  "status": "wontfix",
+  "note": "Not applicable: VendorBillDomainService.create l.221, LcMasterDomainService l.131, LcDomainService l.220 still honour dto status, but only called with server-built drafts (generation services set PENDING); Create*RequestDTOs have no status field.",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:34": {
+  "status": "still-bug",
+  "note": "ItemReceiptSplitValidator.validateDemandSplitsSumToAccepted (l.55-72) checks only the sum, so splits 15 and -5 for accepted 10 pass; all-zero receipt accepted; VendorChallanService.requirePositive allows 0 and repeated receipt lines. | Repro: POST /api/purchase/item-receipts/generate with accepted 10, demandSplits [{chA,15},{chB,-5}] -> 201",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:43": {
+  "status": "still-bug",
+  "note": "Performance only. VendorReturnRequestRepository.findInFlightRequestIds (l.49-55) returns all live request ids, passed as IN list by PurchaseOrderReturnQuantityService.inFlightClaimByLineIds l.88-123 on every create/update/preview. | Repro: Create or preview a vendor return with SQL log: system-wide select of live request ids",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:44": {
+  "status": "still-bug",
+  "note": "Minor hygiene: cheque_no VARCHAR(100) (V1 l.2703), currency VARCHAR(10), no DTO @Size. Review claims on payable_bill (a view) and uq_requisition_requester (exists, V1 l.1518) are wrong. | Repro: POST /api/purchase/vendor-payments with 101-char chequeNo -> DB error instead of field 400",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:45": {
+  "status": "wontfix",
+  "note": "Not applicable: ApprovalStep.approvalRequestId, ItemReceiptAttachment.itemReceiptId etc. mirror the parent join column but no code sets them (grep setApprovalRequestId/setItemReceiptId none); no live trigger, plan itself rates SUSPECT with 0 orphans.",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:12.2": {
+  "status": "fixed",
+  "note": "purchase-requisition-stock-analysis-modal.tsx toneConfig uses design classes (bg-success/10, text-info); approver cap of 3 is deliberate (approverSignatures max=3, tested), not a defect.",
+  "ref": "32257f60",
   "date": "2026-11-09"
  }
 }
