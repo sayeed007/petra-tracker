@@ -6,8 +6,8 @@
   "severity": "high",
   "title": "Reversal can leave cash in hand negative",
   "summary": "reverse() does not apply the cash floor rule; reversing a spent 500 receipt gives balance -500.",
-  "status": "open",
-  "status_evidence": "Journals file: no retest",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] JournalEntryDomainService.reverseEntry calls requireCashStaysPositive(reversal) (~l.729); b97e2ba30, drawer lock 8ecd1808a",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Journals #2 (JNL-A-108)",
@@ -17,7 +17,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "journals:JNL-A-109",
@@ -26,8 +30,8 @@
   "severity": "high",
   "title": "Reversal of a document-generated journal (vendor bill) is allowed",
   "summary": "POST /journal-entries/{id}/reverse on PURCHASE_VENDOR_BILL journal returns 200; bill stays posted in Purchase and payable disagrees.",
-  "status": "open",
-  "status_evidence": "Journals file: no retest",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] JournalEntryDomainService.reverse() refuses docs with own correction via hasItsOwnCorrection (PURCHASE_VENDOR_BILL etc.); b97e2ba30. Module path reverseDocumentPosting still allowed",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Journals #1 (JNL-A-109)",
@@ -37,7 +41,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "journals:JNL-A-138",
@@ -66,8 +74,8 @@
   "severity": "high",
   "title": "Editing a draft does not apply document type / voucher number",
   "summary": "PUT /{id} updateFields() never copies documentType nor recomputes voucherType/journalNo; a CONTRA draft can become a non-cash contra and post.",
-  "status": "open",
-  "status_evidence": "Journals file: no retest",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] JournalEntryDomainService.validateUpdate refuses documentType change; updateFields re-derives voucherType and renumbers, copies dueDate/documentNo; aac1b0133, b97e2ba30",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Journals #3 (JNL-A-68)",
@@ -77,7 +85,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:1",
@@ -86,8 +98,8 @@
   "severity": "high",
   "title": "Variance adjustment sign",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Variance direction decided by statement-line direction (BankReconciliationAdjustment.isBankDebit l.129-134); 5c1a6d12f",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -96,7 +108,11 @@
   ],
   "size": "",
   "theme": "Theme 1. Wrong money or wrong calculation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:4",
@@ -105,8 +121,8 @@
   "severity": "high",
   "title": "Finalize posts twice",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] finalize/approve load reconciliation FOR UPDATE and re-check status (BankReconciliationSessionService l.437/447); adjustments carry documentId (uq_journal_entry_document); d532f3274 + BankReconciliationFinalizeLockIT",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -115,7 +131,11 @@
   ],
   "size": "",
   "theme": "Theme 2. Missing lock or race",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:accounting:1",
@@ -143,8 +163,8 @@
   "severity": "medium",
   "title": "Party general ledger closing balance does not move",
   "summary": "GET /reports/general-ledger?partyId=1&partyType=CUSTOMER lists the line but closingBalance unchanged (expected +77). Source says 'Please check'.",
-  "status": "open",
-  "status_evidence": "Journals file: no retest",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Party ledger reads only accounts the balance is kept on (AccountScopes.partyTrackedAccountIds), lines/opening/closing from one set; f60f9a631, f42aeed2b",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Journals #9 (JNL-A-107)",
@@ -154,7 +174,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "journals:JNL-A-12",
@@ -163,8 +187,8 @@
   "severity": "medium",
   "title": "Four-decimal rounding stores an unbalanced entry",
   "summary": "10.00004+10.00004 vs 20.0001 passes then stores a 0.0001 difference.",
-  "status": "open",
-  "status_evidence": "Journals file: no retest",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] JournalEntryDomainService.validateLines rounds each line via money() before summing (~l.987); 10f631eb8, b97e2ba30",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Journals #7 (JNL-A-12)",
@@ -174,7 +198,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "journals:JNL-A-122",
@@ -183,8 +211,8 @@
   "severity": "medium",
   "title": "Journal list search treats % as wildcard",
   "summary": "GET /journal-entries/search?search=%25 returns all entries; LIKE characters not escaped.",
-  "status": "open",
-  "status_evidence": "Journals file: no retest",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] JournalEntryRepository search queries declare ESCAPE and JournalEntrySearchService escapes LIKE chars; b97e2ba30, cbd9f9ad8 (trigram indexes)",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Journals #10 (JNL-A-122)",
@@ -194,7 +222,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "journals:JNL-A-14",
@@ -203,8 +235,8 @@
   "severity": "medium",
   "title": "Huge amount (1e15) gives generic 409",
   "summary": "Numeric overflow answers 'data conflict' with no hint; expected 400.",
-  "status": "open",
-  "status_evidence": "Journals file: no retest",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] JournalEntryDomainService ~l.1368-1376 refuses amounts larger than the column with own message; ManualJournalLineRequestDTO @Digits(15,4); b97e2ba30, e811c07f2",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Journals #8 (JNL-A-14)",
@@ -214,7 +246,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "journals:JNL-A-23",
@@ -223,8 +259,8 @@
   "severity": "medium",
   "title": "Parties not validated (partyType without id, unknown partyId, VENDOR on receivable)",
   "summary": "Invalid party data is dropped silently or stored; expected 400.",
-  "status": "open",
-  "status_evidence": "Journals file: no retest",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] requirePartyExists (partyNameResolver.isKnown) + partyType-without-id refused + control-account party-kind check; f60f9a631, a78f3cd14, b97e2ba30",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Journals #6 (JNL-A-23)",
@@ -234,7 +270,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "journals:JNL-A-82",
@@ -263,8 +303,8 @@
   "severity": "medium",
   "title": "Manual match / flag accept any ledger line",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] match() refuses entries not in ledger / after statement month; flag-as-outstanding refuses draft/rejected lines; 5c1a6d12f, 84b82ca89",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -273,7 +313,11 @@
   ],
   "size": "",
   "theme": "Theme 3. Missing validation and missing business rule checks",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:11",
@@ -282,8 +326,8 @@
   "severity": "medium",
   "title": "Statement import confirm skips the month rule",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Import rows outside the month are skipped with reason (5c1a6d12f); b49ed3874 notes the month rule already existed and the finding was partly mis-described",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -292,7 +336,11 @@
   ],
   "size": "",
   "theme": "Theme 3. Missing validation and missing business rule checks",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:12",
@@ -301,8 +349,8 @@
   "severity": "medium",
   "title": "Auto-match is not safe (duplicates, date cut-off) and is slow",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Auto-match rewritten: one read per side, grouped by amount+side, only 1:1 groups match, date bound applied, UNRECORDED excluded; 0ac31ec9e",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -313,7 +361,11 @@
   ],
   "size": "",
   "theme": "Theme 3. Missing validation and missing business rule checks",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:2",
@@ -322,8 +374,8 @@
   "severity": "medium",
   "title": "Line rounding breaks balance",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Same as JNL-A-12: lines rounded where balance is checked; 10f631eb8",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -332,7 +384,11 @@
   ],
   "size": "",
   "theme": "Theme 1. Wrong money or wrong calculation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:20",
@@ -417,8 +473,8 @@
   "severity": "medium",
   "title": "Fiscal calendar re-cut fails with a database error",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Fiscal re-cut guard names the four non-cascading blockers (journal_entry, bank_reconciliation, depreciation_entry, vat_return); 70a793778",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -427,7 +483,11 @@
   ],
   "size": "",
   "theme": "Theme 5. Data left behind or work silently lost (workflow, posting, children)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:26",
@@ -455,8 +515,8 @@
   "severity": "medium",
   "title": "Draft edit keeps the old voucher type and number",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Same as JNL-A-68; aac1b0133",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -465,7 +525,11 @@
   ],
   "size": "",
   "theme": "Theme 5. Data left behind or work silently lost (workflow, posting, children)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:28",
@@ -474,8 +538,8 @@
   "severity": "medium",
   "title": "Land (NONE method) assets cannot be created or edited",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] FixedAssetMapper.toEntity no longer builds transient ChartOfAccount for null ids; FixedAssetNonDepreciableTest; f541d64fe",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -484,7 +548,11 @@
   ],
   "size": "",
   "theme": "Theme 5. Data left behind or work silently lost (workflow, posting, children)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:29",
@@ -493,8 +561,8 @@
   "severity": "medium",
   "title": "Depreciation schedule NPE and false \"next run\" for NONE assets",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] DepreciationScheduleService guards non-depreciating assets (empty, truncated=false, forecastRemaining 0), nextScheduledEvent asks method; f541d64fe",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -503,7 +571,11 @@
   ],
   "size": "",
   "theme": "Theme 5. Data left behind or work silently lost (workflow, posting, children)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:3",
@@ -533,8 +605,8 @@
   "severity": "medium",
   "title": "Depreciation run: one SUM query per asset",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] FixedAssetDepreciationService uses sumGroupedByAsset once for the list; b399ab591",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -543,7 +615,11 @@
   ],
   "size": "",
   "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:33",
@@ -552,8 +628,8 @@
   "severity": "medium",
   "title": "Journal entries of one period: unbounded list, lazy rows",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] readByPeriod returns a page; entries+lines+accounts fetched in 2 queries, reversals via findReversalsOf; 5c929ba0d, b5c00d52a",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -562,7 +638,11 @@
   ],
   "size": "",
   "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:34",
@@ -571,8 +651,8 @@
   "severity": "medium",
   "title": "Bank history list and exports: no size cap, rebuild per row",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] History page clamped to 100, export row cap 20,000 refused before the walk, status filter honoured; 5c929ba0d, cad80f442, a63d1b73c",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -581,7 +661,11 @@
   ],
   "size": "",
   "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:35",
@@ -590,8 +674,8 @@
   "severity": "medium",
   "title": "Reconciliation statement scans the whole book per build",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Reconciliation statement uses sumBalanceAsAt for the one account instead of findPeriodBalances; b399ab591",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -600,7 +684,11 @@
   ],
   "size": "",
   "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:36",
@@ -647,8 +735,8 @@
   "severity": "medium",
   "title": "Transaction Detail: one journal entry query per line",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Paged ledger-line queries JOIN FETCH entry+account (LedgerBalanceRepository), party names batched; 4fc63b160",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -657,7 +745,11 @@
   ],
   "size": "",
   "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:39",
@@ -666,8 +758,8 @@
   "severity": "medium",
   "title": "Budget vs Actual: lazy account per budget line",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Budget vs Actual (both) read lines through a query that fetches the account, window pushed into SQL; 131da59c8, 50c53890b",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -676,7 +768,11 @@
   ],
   "size": "",
   "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:48",
@@ -685,8 +781,8 @@
   "severity": "medium",
   "title": "Foreign keys without an index (accounting, RBAC, approval, workflow)",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] V4__accounting_indexes.sql adds ~30 FK indexes on accounting tables (6c7671388); RBAC/approval/workflow FKs and attachment columns deliberately left",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -695,7 +791,11 @@
   ],
   "size": "",
   "theme": "Theme 7. Common C-2: missing foreign-key indexes",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:5",
@@ -704,8 +804,8 @@
   "severity": "medium",
   "title": "Cash drawer can go negative",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] refuseIfCashGoesNegative locks drawers paid FROM (ascending id) on create/approve/reverse; CashDrawerLockIT; 8ecd1808a",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -714,7 +814,11 @@
   ],
   "size": "",
   "theme": "Theme 2. Missing lock or race",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:50",
@@ -723,8 +827,8 @@
   "severity": "medium",
   "title": "Percent versus fraction rates not bounded",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] e811c07f2 records salvagePercent/customAnnualDepreciationRate already bounded 0-100 in AssetTypeDomainService/FixedAssetDomainService (rate check present at l.~255); no change needed",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -733,7 +837,11 @@
   ],
   "size": "",
   "theme": "Theme 8. Common C-3: request validation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:9",
@@ -742,8 +850,8 @@
   "severity": "medium",
   "title": "Approve ignores the period status",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] approveManualEntry re-reads period FOR UPDATE and requirePeriodAccepts (~l.563); d58966dc0, e9a75ca2b",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -752,7 +860,11 @@
   ],
   "size": "",
   "theme": "Theme 3. Missing validation and missing business rule checks",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:accounting:10",
@@ -1278,8 +1390,8 @@
   "severity": "low",
   "title": "Same account on both sides (Dr 6105 / Cr 6105) accepted",
   "summary": "Entry moves nothing.",
-  "status": "open",
-  "status_evidence": "Journals file: no retest",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] validateLines tracks debitedAccounts/creditedAccounts and refuses same account on both sides; f60f9a631",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Journals #13 (JNL-A-11)",
@@ -1289,7 +1401,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "journals:JNL-A-16",
@@ -1298,8 +1414,8 @@
   "severity": "low",
   "title": "Blank memo accepted although DTO documents it as required",
   "summary": "Memo requirement not enforced.",
-  "status": "open",
-  "status_evidence": "Journals file: no retest",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] isHandTyped && blank memo -> BadRequest (~l.888); b97e2ba30",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Journals #12 (JNL-A-16)",
@@ -1309,7 +1425,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "journals:JNL-A-27",
@@ -1318,8 +1438,8 @@
   "severity": "low",
   "title": "segmentId / territoryId stored without checking the master",
   "summary": "No validation of segment/territory references.",
-  "status": "open",
-  "status_evidence": "Journals file: no retest",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] JournalDimensionDirectory.segmentExists/territoryExists checked per line; f60f9a631 (unreachable directory does not block posting)",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Journals #11 (JNL-A-27)",
@@ -1329,7 +1449,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:13",
@@ -1338,8 +1462,8 @@
   "severity": "low",
   "title": "Dispose accepts a date before acquisition; fiscal state changes lack @Transactional",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] dispose refuses date before acquisition; fiscal state changes now @Transactional; d953d2a3e, b49ed3874",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1348,7 +1472,11 @@
   ],
   "size": "",
   "theme": "Theme 3. Missing validation and missing business rule checks",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:14",
@@ -1357,8 +1485,8 @@
   "severity": "low",
   "title": "Import endpoints ignore the reconciliation id in the URL",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] requireImport checks import belongs to the reconciliation id for remap/preview/confirm/discard (404); 5e7a783b6",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1367,7 +1495,11 @@
   ],
   "size": "",
   "theme": "Theme 3. Missing validation and missing business rule checks",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:15",
@@ -1376,8 +1508,8 @@
   "severity": "low",
   "title": "Over-long text fails the whole call with a generic 409",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] @Size (column width) + @Valid on accounting controllers/DTOs gives 400 naming field; journal overflow message; d9bcb10bb, e811c07f2. Depreciation/period-close/year-end/posting/payroll/mapping controllers not touched",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1386,7 +1518,11 @@
   ],
   "size": "",
   "theme": "Theme 3. Missing validation and missing business rule checks",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:16",
@@ -1395,8 +1531,8 @@
   "severity": "low",
   "title": "Period-close owner id not checked; petty-cash mapping body not validated",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Close-task ownerUserId now checked via userFacade (b49ed3874); petty-cash mapping body validation not changed",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1405,7 +1541,11 @@
   ],
   "size": "",
   "theme": "Theme 3. Missing validation and missing business rule checks",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:17",
@@ -1433,8 +1573,8 @@
   "severity": "low",
   "title": "Statement column guess maps \"Description\" as the Credit column",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] StatementColumnDetector matches names of 3 letters or fewer whole and claims each column once; b49ed3874",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1443,7 +1583,11 @@
   ],
   "size": "",
   "theme": "Theme 3. Missing validation and missing business rule checks",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:19",
@@ -1452,8 +1596,8 @@
   "severity": "low",
   "title": "Statement import error text and silent storage failure",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] IOException text no longer shown (logged + generic sentence); StatementImportPreviewDTO flags file-not-stored; b49ed3874, e811c07f2",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1462,7 +1606,11 @@
   ],
   "size": "",
   "theme": "Theme 3. Missing validation and missing business rule checks",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:22",
@@ -1471,8 +1619,8 @@
   "severity": "low",
   "title": "Depreciation controller: one `create` permission for everything",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Three depreciation previews now anyOf accounting.fixed-asset.view or the posting permission; POSTs keep create; e248b6760. POST /depreciation-runs without reviewed tick still open",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1481,7 +1629,11 @@
   ],
   "size": "",
   "theme": "Theme 4. Security: permissions, client-controlled fields, secrets (Common: C-7)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:30",
@@ -1528,8 +1680,8 @@
   "severity": "low",
   "title": "Asset type list: one COUNT per type",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Asset-type list uses one grouped count; 131da59c8",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1538,7 +1690,11 @@
   ],
   "size": "",
   "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:41",
@@ -1547,8 +1703,8 @@
   "severity": "low",
   "title": "Budget list loads lines lazily and unbounded",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Budget list loads lines via EntityGraph; b5c00d52a (unbounded-lines cap deliberately not added)",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1557,7 +1713,11 @@
   ],
   "size": "",
   "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:42",
@@ -1566,8 +1726,8 @@
   "severity": "low",
   "title": "Large in-memory lists (chart filter, exports, workspace loops)",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Match-workspace lists became sets (cad80f442), export caps added (a63d1b73c), whole-book GL export walks once (460cbe472); chart filter in memory not changed",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1576,7 +1736,11 @@
   ],
   "size": "",
   "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:43",
@@ -1585,8 +1749,8 @@
   "severity": "low",
   "title": "Fixed-asset register list and exports: unpaged, lazy per row",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Register paged (default 50), 4 associations fetched in search(), disposal register filtered in SQL, single-asset print asks for that asset; 5c929ba0d, 2929c685a",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1595,7 +1759,11 @@
   ],
   "size": "",
   "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:44",
@@ -1623,8 +1791,8 @@
   "severity": "low",
   "title": "Journals list search cannot use indexes",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Two trigram GIN indexes in V4 matching the query expressions exactly; cbd9f9ad8",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1633,7 +1801,11 @@
   ],
   "size": "",
   "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:46",
@@ -1642,8 +1814,8 @@
   "severity": "low",
   "title": "Hand-typed entries: per-line lookups",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] One findAllById for accounts and cost centres, one query for opening-balance holders; 50c53890b, 0e6fba3a0",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1652,7 +1824,11 @@
   ],
   "size": "",
   "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:47",
@@ -1680,8 +1856,8 @@
   "severity": "low",
   "title": "Request bodies not `@Valid`, no size caps",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] @Valid/@Size added on accounting request bodies (d9bcb10bb, e811c07f2); no cap on budget lines/batch size; depreciation/period-close/posting/payroll/mapping controllers untouched",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1690,7 +1866,11 @@
   ],
   "size": "",
   "theme": "Theme 8. Common C-3: request validation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:51",
@@ -1699,8 +1879,8 @@
   "severity": "low",
   "title": "Retired fiscal endpoints still published",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] createYear/generatePeriods/createPeriod marked @Hidden, docs corrected (still answer 409); 2929c685a",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1709,7 +1889,11 @@
   ],
   "size": "",
   "theme": "Theme 9. Wrong or confusing API contract; dead code; tidy-ups",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:52",
@@ -1718,8 +1902,8 @@
   "severity": "low",
   "title": "Free-string statuses and types that should be enums",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Three String fields became enums (DepreciationScheduleLineDTO.status, FixedAssetDisposalRowDTO.status, MatchSuggestionDTO.confidenceLabel), wire format unchanged; e248b6760. Other free strings not reviewed",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1730,7 +1914,11 @@
   ],
   "size": "",
   "theme": "Theme 9. Wrong or confusing API contract; dead code; tidy-ups",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:53",
@@ -1739,8 +1927,8 @@
   "severity": "low",
   "title": "Entity and Javadoc drift from the schema",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] FiscalYear.yearLabel mapping, ECashFlowCategory/FiscalPeriod javadoc, misplaced facade javadocs fixed (b49ed3874, b5c00d52a); entity length= drift noted but not fixed (d9bcb10bb)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1749,7 +1937,11 @@
   ],
   "size": "",
   "theme": "Theme 9. Wrong or confusing API contract; dead code; tidy-ups",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:54",
@@ -1758,8 +1950,8 @@
   "severity": "low",
   "title": "Sibling DTOs disagree on JSON names; misleading docs",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] vendorId vs sourceVendorBillId schema clarified; documentVersion nulled without documentId (e248b6760); creditAccountId no longer required on update (e811c07f2). Other sibling-DTO name drift unknown",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1768,7 +1960,11 @@
   ],
   "size": "",
   "theme": "Theme 9. Wrong or confusing API contract; dead code; tidy-ups",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:55",
@@ -1777,8 +1973,8 @@
   "severity": "low",
   "title": "Nullable fields where the rule needs a value",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Report DTO list fields got @Builder.Default (b5c00d52a); other nullable-where-required fields not verified",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1787,7 +1983,11 @@
   ],
   "size": "",
   "theme": "Theme 9. Wrong or confusing API contract; dead code; tidy-ups",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:56",
@@ -1796,8 +1996,8 @@
   "severity": "low",
   "title": "Minor tidy-ups in fixed assets",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Body-less dispose is 400, dead readAll overload removed (b5c00d52a); depreciation on a non-open month now 409",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1806,7 +2006,11 @@
   ],
   "size": "",
   "theme": "Theme 9. Wrong or confusing API contract; dead code; tidy-ups",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:6",
@@ -1815,8 +2019,8 @@
   "severity": "low",
   "title": "Opening balance doubled by two requests",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] validateLines locks OPENING_BALANCE accounts in ascending id order before checking holders; b49ed3874. Also refuses Sundry Debtors/Creditors opening balances (99ae3bc2a)",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1825,7 +2029,11 @@
   ],
   "size": "",
   "theme": "Theme 2. Missing lock or race",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:7",
@@ -1834,8 +2042,8 @@
   "severity": "low",
   "title": "Period close/reopen/lock does not lock against postings; duplicate periods",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] resolvePeriod uses findCoveringPeriodForPosting (FOR SHARE); close/reopen/lock hold the period row and are @Transactional; createPeriod retired (409); 84b82ca89, 2929c685a",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1844,7 +2052,11 @@
   ],
   "size": "",
   "theme": "Theme 2. Missing lock or race",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:accounting:8",
@@ -1853,8 +2065,8 @@
   "severity": "low",
   "title": "Races that give a 500 instead of a 409",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Fixed: cash drawer, month finalize/approve, statement import confirm, period close vs posting (8ecd1808a, d532f3274, 84b82ca89). Generic race-to-409 mapping and manual match race (bank:A-111) remain",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/01-accounting.md",
@@ -1866,7 +2078,11 @@
   ],
   "size": "",
   "theme": "Theme 2. Missing lock or race",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:accounting:16",
@@ -2571,8 +2787,8 @@
   "severity": "unrated",
   "title": "Confirm: manual journal now accepted into a CLOSED month",
   "summary": "EFiscalStatus.acceptsManualPostings lets POST /journal-entries/manual into a closed month (201 PENDING_APPROVAL); asks backend to confirm intended and flag 'journal posted after close'.",
-  "status": "decision",
-  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md #5: 'Please confirm this is intended'",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] EFiscalStatus.acceptsManualPostings() is OPEN only; requirePeriodAccepts throws 409 'closed. Reopen it, then post this journal again' for manual journals in a CLOSED month (JournalEntryDomainService ~l.1430-1440). Same at base",
   "evidence_level": "verified",
   "found": "2026-10-28",
   "source": "Retest #5",
@@ -2583,7 +2799,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "integ:ACC-02-01",
@@ -2626,15 +2846,19 @@
   "severity": "unrated",
   "title": "VAT settle journal missing documentVersion (probably fixed in merge)",
   "summary": "JournalEntryDomainService now defaults a null documentVersion in the merge; confirmation pending.",
-  "status": "unknown",
-  "status_evidence": "'probably fixed in the merge ... pending'",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] validateDocumentVersion defaults null documentVersion to next free version (JournalEntryDomainService l.217-221); present at base",
   "evidence_level": "suspect",
   "found": "2026-10-25",
   "source": "Case verdicts table (ACC-11-04)",
   "refs": [],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "journals:F1",
@@ -2660,8 +2884,8 @@
   "severity": "unrated",
   "title": "Release chart seed PETTY_CASH_ACCOUNT_ID points to account 1110 which became a summary group (startup failure)",
   "summary": "Merged backend exits in a loop with 'account 1110 is a summary account'; local fix used 111002. Blocks merge.",
-  "status": "open",
-  "status_evidence": "Merge prompt: raised to backend team, no answer in file",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] petra-chart.json PETTY_CASH_ACCOUNT_ID -> accountCode 111002 (postable), not group 1110; same at base",
   "evidence_level": "verified",
   "found": "2026-10-24",
   "source": "Merge issues A2",
@@ -2672,7 +2896,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "merge:B1",
@@ -2681,8 +2909,8 @@
   "severity": "unrated",
   "title": "Confirm document-version rule for in-module postings (VAT settle) after merge",
   "summary": "Two commits (0430fa91, aa64f121) encode opposite rules for missing documentVersion; pick one.",
-  "status": "decision",
-  "status_evidence": "Merge prompt: 'Pick one rule'",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Same code: null version -> next free version for in-module callers; mapper nulls version when no document (e248b6760)",
   "evidence_level": "likely",
   "found": "2026-10-24",
   "source": "Merge issues B1",
@@ -2695,7 +2923,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "merge:B2",
@@ -2704,8 +2936,8 @@
   "severity": "unrated",
   "title": "Reconciliation and journal detail endpoints do not fill taskId / canTakeAction",
   "summary": "GET /bank-reconciliations, /{id} and GET /journal-entries/{id} omit taskId/canTakeAction, so frontend uses workarounds (search lookup, inbox scan that loses tasks past page 1).",
-  "status": "open",
-  "status_evidence": "Merge prompt: raised to backend team, no answer in file",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] JournalEntryFacadeImpl.getById/search and BankReconciliationFacadeImpl.get/history call enrichWorkflow to fill taskId/canTakeAction (already present at base aed7a66c0)",
   "evidence_level": "verified",
   "found": "2026-10-24",
   "source": "Merge issues B2",
@@ -2717,7 +2949,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "merge:C2",
@@ -2726,8 +2962,8 @@
   "severity": "unrated",
   "title": "Guide wording on canTakeAction/taskId meaning 'for the caller' should be explicit",
   "summary": "After #102 platform admin is not approver so taskId is null though a task is pending.",
-  "status": "open",
-  "status_evidence": "Merge prompt C2: 'keep the guide's wording explicit'",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] JournalEntryResponseDTO javadoc says taskId/canTakeAction are for this caller only; external guide document not checked",
   "evidence_level": "likely",
   "found": "2026-10-24",
   "source": "Merge issues C2",
@@ -2737,7 +2973,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "merge:D1",
@@ -2876,8 +3116,8 @@
   "severity": "unrated",
   "title": "Journal detail GET lacks taskId/workflowInstanceId for dev admin while search list has canTakeAction",
   "summary": "Frontend must use list data; detail page still shows Approve/Reject.",
-  "status": "open",
-  "status_evidence": "Env notes: dev admin gets canTakeAction on list, not detail",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] getById enriches taskId/canTakeAction like the list (JournalEntryFacadeImpl); null only when the caller is not an approver (see merge:C2)",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA journal-detail-task",
@@ -2886,7 +3126,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-86",
@@ -2895,8 +3139,8 @@
   "severity": "high",
   "title": "Approving a reconciliation with adjusting entries fails 409; month can never be FINALIZED",
   "summary": "BankReconciliationAdjustmentService.post() creates RECEIPT/PAYMENT entry held for approval, then refuses because not POSTED; any month with a bank fee/interest cannot be signed off.",
-  "status": "open",
-  "status_evidence": "No follow-up retest in the notes",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Adjustment entries now BANK_RECONCILIATION_ADJUSTMENT (not hand-typed, born POSTED, no own approval); postAll at finalize/approval; daa4b12f3 + V3",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Bank&Cash #1 [A-86]",
@@ -2907,7 +3151,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-92",
@@ -2916,8 +3164,8 @@
   "severity": "high",
   "title": "Withdrawal variance explained with wrong sign; month cannot be reconciled",
   "summary": "propose-variance on a WITHDRAWAL with statement amount above ledger yields bankDebit true and unexplainedDifference doubled; direction ignored in ProposedAdjustment.isBankDebit().",
-  "status": "open",
-  "status_evidence": "No follow-up retest in the notes",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Adjustment direction decided by statement-line direction (BankReconciliationAdjustment.isBankDebit l.129-134); 5c1a6d12f",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Bank&Cash #2 [A-92]",
@@ -2928,7 +3176,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-96b",
@@ -2937,8 +3189,8 @@
   "severity": "medium",
   "title": "propose-adjustment accepts a posting date inside a CLOSED month",
   "summary": "propose-adjustment with postingDate in a closed January returns 2xx and stores the decision; it only fails later at approval. Expected 409 naming CLOSED.",
-  "status": "open",
-  "status_evidence": "Addendum item 1: severity medium; open",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Adjustment date must fall inside the reconciled month (BankReconciliationAdjustmentService l.170-180, 5c1a6d12f) and start() needs an OPEN period, so a closed-January date is refused; a month closed after the draft started is not re-checked at propose",
   "evidence_level": "verified",
   "found": "2026-10-30",
   "source": "Addendum #1 [A-96b]",
@@ -2948,7 +3200,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-96c",
@@ -2957,8 +3213,8 @@
   "severity": "medium",
   "title": "finalize accepts a draft whose adjusting entry can no longer be posted (CLOSED/LOCKED period)",
   "summary": "finalize returns 200 PENDING_APPROVAL; approval then answers 409 and the month stays pending until rejected. Expected finalize refuses.",
-  "status": "open",
-  "status_evidence": "Addendum item 2: severity medium; open",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] postAll rolls back the whole acceptance if the period closed (no-approval path); with approval workflow finalize still returns PENDING_APPROVAL and posting happens at approval; no finalize pre-check seen",
   "evidence_level": "verified",
   "found": "2026-10-30",
   "source": "Addendum #2 [A-96c, A-99]",
@@ -2968,7 +3224,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-97c",
@@ -2998,8 +3258,8 @@
   "severity": "low",
   "title": "Reconciliation export includes DRAFT months that the list does not show",
   "summary": "Export of the Reconciliation tab has 3 rows, one a DRAFT with empty date; the tab lists only 2.",
-  "status": "open",
-  "status_evidence": "Addendum item 4: severity low; open",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] History export now honours the status filter (BankReconciliationHistoryExportDataSource.statuses, cad80f442); default with no status still includes DRAFT",
   "evidence_level": "verified",
   "found": "2026-10-30",
   "source": "Addendum #4 [UI-36c]",
@@ -3009,7 +3269,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:UI-36d",
@@ -3038,8 +3302,8 @@
   "severity": "low",
   "title": "Bank reconciliations export reads bankAccountId filter missing from the Exports guide",
   "summary": "Contract doc gap.",
-  "status": "open",
-  "status_evidence": "Merge prompt: raised to backend team, no answer in file",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Export reads bankAccountId via shared helper (400 on bad value, cad80f442); contract doc not verified",
   "evidence_level": "verified",
   "found": "2026-10-24",
   "source": "Merge issues B5",
@@ -3050,7 +3314,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "vqa:bankcash-history",
@@ -3078,8 +3346,8 @@
   "severity": "unrated",
   "title": "Discard reconciliation guarded by edit right instead of delete right",
   "summary": "DELETE /bank-reconciliations/{id} uses accounting.bank-reconciliation.edit while the screen hides the button by the delete right; also bare 'record already exists' messages do not name the field.",
-  "status": "open",
-  "status_evidence": "No follow-up retest in the notes",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Discard guarded by delete right; 5c1a6d12f",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Bank&Cash #17 [A-103b]",
@@ -3090,7 +3358,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-111",
@@ -3119,8 +3391,8 @@
   "severity": "unrated",
   "title": "Reconciliation can be started for a bank account with no ledger account",
   "summary": "POST /bank-reconciliations returns 200 DRAFT although month position is NOT_CONFIGURED; expected 409.",
-  "status": "open",
-  "status_evidence": "No follow-up retest in the notes",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] start refuses bank account with no ledger account (409); 5c1a6d12f",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Bank&Cash #13 [A-20b]",
@@ -3131,7 +3403,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-22",
@@ -3140,8 +3416,8 @@
   "severity": "unrated",
   "title": "Bank account numbers unique only byte for byte",
   "summary": "'TST-1' and ' tst-1 ' are two accounts.",
-  "status": "open",
-  "status_evidence": "No follow-up retest in the notes",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Account number compared normalised (trim/case); 5c1a6d12f, BankAccountDomainService",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Bank&Cash #14 [A-22]",
@@ -3151,7 +3427,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-24",
@@ -3160,8 +3440,8 @@
   "severity": "unrated",
   "title": "Out-of-range or over-long values give generic 409 data conflict; one long line fails the whole bulk request",
   "summary": "Opening balance 1e25, 1000-char name, closing balance 1e25 and a 5000-char statement description return 409 without field; the bulk request loses good lines too.",
-  "status": "open",
-  "status_evidence": "No follow-up retest in the notes",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Eight bank-account fields and two statement-line fields validated with 400 naming the field; bulk skips only the bad line; 5c1a6d12f, d9bcb10bb",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Bank&Cash #15 [A-24, A-24c, A-41b, A-53b]",
@@ -3171,7 +3451,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-48",
@@ -3180,8 +3464,8 @@
   "severity": "unrated",
   "title": "Ledger line of a journal pending approval can be matched",
   "summary": "PUT statement-lines/{id}/match accepts a PENDING_APPROVAL journal line that is not in the ledger.",
-  "status": "open",
-  "status_evidence": "No follow-up retest in the notes",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] match() refuses ledger lines not in the ledger (draft/pending); flag-outstanding same; 5c1a6d12f, 84b82ca89",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Bank&Cash #3 [A-48]",
@@ -3191,7 +3475,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-49",
@@ -3200,8 +3488,8 @@
   "severity": "unrated",
   "title": "Ledger line dated after the statement month can be matched",
   "summary": "match() and match-selected do not check date; March line matched to January statement line returns 200.",
-  "status": "open",
-  "status_evidence": "No follow-up retest in the notes",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] match() refuses ledger lines dated after the statement month (earlier months allowed); 5c1a6d12f",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Bank&Cash #4 [A-49]",
@@ -3211,7 +3499,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-61",
@@ -3220,8 +3512,8 @@
   "severity": "unrated",
   "title": "European number format misread on import (1.234,50 becomes 1.2345)",
   "summary": "readAmount strips all but digits, dot and minus, with no warning.",
-  "status": "open",
-  "status_evidence": "No follow-up retest in the notes",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Amount reader handles 1.234,50 and 6,42,000 formats; 5c1a6d12f",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Bank&Cash #10 [A-61]",
@@ -3231,7 +3523,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-63b",
@@ -3240,8 +3536,8 @@
   "severity": "unrated",
   "title": "Remembered bank layout overrides date format of a new file",
   "summary": "A later dd/MM/yyyy file is read with the stored yyyy-MM-dd format and every row becomes unreadable.",
-  "status": "open",
-  "status_evidence": "No follow-up retest in the notes",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Remembered layout that reads nothing is re-guessed; 5c1a6d12f",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Bank&Cash #11 [A-63b]",
@@ -3251,7 +3547,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-64b",
@@ -3260,8 +3560,8 @@
   "severity": "unrated",
   "title": "Excel date cells unreadable; quoted CSV description with line break splits record",
   "summary": "xlsx true dates read as display text ('6/9/25') give readable 0; the CSV reader is line based.",
-  "status": "open",
-  "status_evidence": "No follow-up retest in the notes",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Excel date cells read as dates; CSV reader handles quoted newlines; 5c1a6d12f",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Bank&Cash #12 [A-64b, A-66b]",
@@ -3271,7 +3571,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-67",
@@ -3280,8 +3584,8 @@
   "severity": "unrated",
   "title": "Statement import takes lines outside the reconciliation month",
   "summary": "Import confirm accepts out-of-month rows that manual and bulk entry refuse.",
-  "status": "open",
-  "status_evidence": "No follow-up retest in the notes",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Import skips out-of-month rows with reason; 5c1a6d12f",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Bank&Cash #6 [A-67]",
@@ -3291,7 +3595,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-68",
@@ -3320,8 +3628,8 @@
   "severity": "unrated",
   "title": "Newest-first statement takes the wrong closing balance",
   "summary": "applyClosingBalance reads the Balance of the last row, which is the opening balance for newest-first files.",
-  "status": "open",
-  "status_evidence": "No follow-up retest in the notes",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Closing balance taken from the latest-dated row in the month; 5c1a6d12f",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Bank&Cash #8 [A-69]",
@@ -3331,7 +3639,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-71",
@@ -3360,8 +3672,8 @@
   "severity": "unrated",
   "title": "Adjusting entry may be dated outside the reconciled month",
   "summary": "propose-adjustment postingDate in February on a January line is accepted and leaves January out of balance after sign-off.",
-  "status": "open",
-  "status_evidence": "No follow-up retest in the notes",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Adjustment postingDate must be inside the reconciled month; 5c1a6d12f",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Bank&Cash #16 [A-94]",
@@ -3371,7 +3683,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "budgets:B1",
@@ -3380,8 +3696,8 @@
   "severity": "high",
   "title": "Several approved budgets of one year add up in the all-accounts report",
   "summary": "GET /api/accounting/reports/budget-vs-actual-statement doubles budgetAmount when two approved budgets exist for the same lines.",
-  "status": "open",
-  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Register refuses a second approved budget per fiscal year; 652b141d6",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "B1 (BUD-A-88)",
@@ -3391,7 +3707,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "budgets:B2",
@@ -3400,8 +3720,8 @@
   "severity": "high",
   "title": "A closed month empties the purchases line of Budget vs Actual",
   "summary": "After closing January, GET /reports/budget-vs-actuals shows actual 5100 = 0 because the PERIOD_CLOSING journal credits purchase accounts; only YEAR_END_CLOSING is excluded.",
-  "status": "open",
-  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Budget-vs-actual excludes PERIOD_CLOSING entries of the window year (second exclusion list); 652b141d6",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "B2 (BUD-A-97)",
@@ -3411,7 +3731,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "budgets:B3",
@@ -3420,8 +3744,8 @@
   "severity": "medium",
   "title": "Balance accounts: all-accounts statement sums 12 month-end plans",
   "summary": "budgetAmount 780 (sum) vs amount = balance on 31 Dec; expected last bucket figure for BALANCE rows.",
-  "status": "open",
-  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] BALANCE rows take the last bucket of the window, FLOW rows add (BudgetVsActualStatementService basisFor); 652b141d6",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "B3 (BUD-A-82)",
@@ -3431,7 +3755,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "budgets:B4",
@@ -3440,8 +3768,8 @@
   "severity": "medium",
   "title": "Sales discount accounts read negative against a positive plan",
   "summary": "4810/4820 actuals are negative in both reports; expected positive amount spent or consistent sign.",
-  "status": "open",
-  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Contra flag: EBalanceSide.reportingSideOf gives discount accounts positive actual; favourable() fixed; 5ea57c27f (+06e2114fa, b5dd9a644)",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "B4 (BUD-A-75)",
@@ -3451,7 +3779,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "budgets:B5",
@@ -3460,8 +3792,8 @@
   "severity": "low",
   "title": "Rejected budget loses REJECTED status on first draft save",
   "summary": "PUT /budgets/{id} asDraft:true turns REJECTED into DRAFT contrary to javadoc.",
-  "status": "open",
-  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Rejected budget stays REJECTED on draft save (BudgetDomainService ~l.294); 652b141d6",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "B5 (BUD-A-44)",
@@ -3471,7 +3803,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "budgets:B6",
@@ -3480,8 +3816,8 @@
   "severity": "low",
   "title": "Two budgets with the same name for the same year accepted",
   "summary": "POST /api/accounting/budgets twice with same name creates both.",
-  "status": "open",
-  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Second approved budget per year refused, which 652b141d6 says settles duplicate names; a same-name DRAFT check not verified",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "B6 (BUD-A-05)",
@@ -3491,7 +3827,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "budgets:B7",
@@ -3500,8 +3840,8 @@
   "severity": "low",
   "title": "Duplicate account+month line refused with generic message",
   "summary": "409 'A record with the same value already exists' instead of 400 naming account and month.",
-  "status": "open",
-  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Duplicate account+month line refused by name (matches constraint incl. cost centre); 652b141d6",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "B7 (BUD-A-15, BUD-A-71)",
@@ -3511,7 +3851,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "budgets:B8",
@@ -3540,8 +3884,8 @@
   "severity": "low",
   "title": "Budget documentation does not match behaviour",
   "summary": "Omitted accountingBookId gives 409 not primary book; export job accepted with only fromDate; 999999999999999.9999 echoed as 1e15; create needs no view right.",
-  "status": "open",
-  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Omitted accountingBookId now resolves the primary book (652b141d6); export-job fromDate-only, 1e15 echo, view-right on create not addressed",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "B9 (BUD-A-17, A-91, A-13, A-52)",
@@ -3551,7 +3895,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "vqa:budget-total-col",
@@ -3744,8 +4092,8 @@
   "severity": "unrated",
   "title": "Reversing the journal of an approved bill leaves the bill APPROVED / paid in Purchase",
   "summary": "Direct journal reversal of a bill journal is not reflected in the purchase module.",
-  "status": "open",
-  "status_evidence": "No retest of this point",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] hasItsOwnCorrection refuses journals-screen reversal of vendor bill/payment/return etc. (and sales equivalents) so bill and journal cannot diverge; b97e2ba30",
   "evidence_level": "verified",
   "found": "2026-10-28",
   "source": "Closing 'Smaller points' (B-13)",
@@ -3755,7 +4103,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "closing:B-17",
@@ -3807,7 +4159,7 @@
   "title": "Year-end closing entries preview has wrong netProfit value and sign",
   "summary": "GET /year-end-close/4/closing-entries ignores contra-income discount accounts, showing profit +61.44 instead of loss -27.36.",
   "status": "fixed",
-  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md: C-05 income 4,562.64, netProfit -27.36",
+  "status_evidence": "[release_beta_copy e9a75ca2b] YearEndClosingEntriesService handles contra-income (closes with a debit) and contra-expense; present at base, contra flag added by branch",
   "evidence_level": "verified",
   "found": "2026-10-28",
   "source": "Closing #10 [C-05]; backend-closing-bugs-retest-2026-10-29.md Fixed list",
@@ -3818,7 +4170,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "closing:C-13",
@@ -4096,8 +4452,8 @@
   "severity": "high",
   "title": "Land / non-depreciable asset (method NONE) cannot be registered",
   "summary": "POST /api/accounting/fixed-assets with depreciationMethod NONE and no life gives 409 (life omitted) or 400 (life 0); land cannot be capitalised. Asset type accepts NONE only with life 0.",
-  "status": "open",
-  "status_evidence": "Listed under High; no retest in the notes",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] FixedAssetMapper no longer creates transient accounts for NONE method; land creatable; f541d64fe",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Assets #1 (A-31, A-09; blocks A-56, A-80)",
@@ -4108,7 +4464,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "assets:A-07",
@@ -4180,8 +4540,8 @@
   "severity": "medium",
   "title": "Disposal accepted with date one day before acquisition",
   "summary": "dispose with disposalDate before acquisitionDate returns 200 and posts a journal before the asset existed; expected 400. Endpoint POST /api/accounting/fixed-assets/{id}/dispose.",
-  "status": "open",
-  "status_evidence": "Listed under Medium; no retest",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] dispose refuses disposalDate before acquisitionDate (400); d953d2a3e + FixedAssetDisposalDateTest",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Assets #3 (A-73)",
@@ -4192,7 +4552,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "assets:A-76",
@@ -4201,8 +4565,8 @@
   "severity": "medium",
   "title": "Disposal accepts a SUMMARY account as receivingAccountId",
   "summary": "receivingAccountId set to a summary account returns 200 and posts to a heading account; other paths refuse summary accounts. Endpoint POST /api/accounting/fixed-assets/{id}/dispose.",
-  "status": "open",
-  "status_evidence": "Listed under Medium; no retest",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] dispose posts through journalEntryDomainService.create, whose requirePostableAccount refuses summary accounts; no dedicated check in dispose and same at base",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Assets #3 (A-76)",
@@ -4213,7 +4577,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "assets:A-83",
@@ -4338,8 +4706,8 @@
   "severity": "low",
   "title": "Generic 'data conflict' 409 where a clean 400 is due (cost 0.00004, 51-char type code, proceeds 1e30)",
   "summary": "Out-of-range or rounded-to-zero values return a generic 409 with no field named; expected 400 naming the field.",
-  "status": "open",
-  "status_evidence": "Listed under Low; no retest",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] @Size on code/name fields and journal amount overflow message (d9bcb10bb, b97e2ba30); asset cost rounding-to-zero case not verified",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Assets #7 (A-22, A-16, A-75)",
@@ -4349,7 +4717,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "assets:A-25",
@@ -4358,8 +4730,8 @@
   "severity": "low",
   "title": "Asset useful life has no upper cap; unknown vendor accepted",
   "summary": "usefulLifeMonths 100000 returns 201 (type caps at 1200); partyId 99999 VENDOR accepted and journal carries a non-existent party.",
-  "status": "open",
-  "status_evidence": "Listed under Low; no retest",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Unknown vendor now refused because the acquisition journal validates partyId via requirePartyExists; useful-life upper cap still absent (only >0 check, FixedAssetDomainService l.1407)",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Assets #6 (A-25, A-27)",
@@ -4369,7 +4741,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "assets:A-37b",
@@ -4440,7 +4816,7 @@
   "title": "Disposed asset shows NBV in the register list",
   "summary": "GET /fixed-assets showed DISPOSED asset with accumulatedDepreciation 100 and netBookValue 1100/550 instead of 0.",
   "status": "fixed",
-  "status_evidence": "A14-proof-2026-10-30.md: 'Does NOT reproduce on 598571d5'; retest: RESOLVED on 598571d5",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Register row NBV forced to 0 for DISPOSED (FixedAssetDomainService l.659); FixedAssetNetBookValueTest updated",
   "evidence_level": "verified",
   "found": "2026-10-28",
   "source": "Closing 'Smaller points' (A-14); Retest #3; A14-proof-2026-10-30.md",
@@ -4451,7 +4827,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "vqa:fa-depr-labels",
@@ -4588,7 +4968,7 @@
   "title": "Depreciation months can be posted out of order",
   "summary": "Posting February depreciation before January is accepted; voucher numbers and previews go wrong.",
   "status": "fixed",
-  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md: A-02 409 'post the months in order'",
+  "status_evidence": "[release_beta_copy e9a75ca2b] DepreciationSequenceGuard present and wired into DepreciationPreviewService (seeder test fixed in 26576fbd7)",
   "evidence_level": "verified",
   "found": "2026-10-28",
   "source": "Closing #2 [A-02]; backend-closing-bugs-retest-2026-10-29.md Fixed list",
@@ -4599,7 +4979,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "closing:A-07",
@@ -4669,7 +5053,7 @@
   "title": "Disposal can be dated before already-posted depreciation",
   "summary": "Disposal dated March accepted while April-August depreciation is posted; ledger shows odd balances.",
   "status": "fixed",
-  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md: A-15 400 'Date the disposal on or after that day'",
+  "status_evidence": "[release_beta_copy e9a75ca2b] dispose refuses a date before the last posted depreciation period (ConflictException); same at base",
   "evidence_level": "verified",
   "found": "2026-10-28",
   "source": "Closing #9 [A-15]; backend-closing-bugs-retest-2026-10-29.md Fixed list",
@@ -4680,7 +5064,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "closing:A-16",
@@ -4690,7 +5078,7 @@
   "title": "Rounding remainder carried into an extra month",
   "summary": "Cost 1,000 over 3 months charges 333.3333 x3 then a 4th 0.0001 charge.",
   "status": "fixed",
-  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md: A-16 333.3333 x 3 = 1,000, no fourth",
+  "status_evidence": "[release_beta_copy e9a75ca2b] DepreciationCalculator caps the charge at remaining (l.90-109); present at base",
   "evidence_level": "verified",
   "found": "2026-10-28",
   "source": "Closing #8 [A-16]; backend-closing-bugs-retest-2026-10-29.md Fixed list",
@@ -4700,7 +5088,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "merge:D2",
@@ -8038,8 +8430,8 @@
   "severity": "unrated",
   "title": "Merge conflict in docs/accounting/chart/build_revised_chart.py",
   "summary": "Both sides edited the doc tooling file; not part of the build.",
-  "status": "open",
-  "status_evidence": "Merge prompt: raised to backend team, no answer in file",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] build_revised_chart.py in the branch has no conflict markers and learned the contra field (def8e95b8)",
   "evidence_level": "verified",
   "found": "2026-10-24",
   "source": "Merge issues A3",
@@ -8050,7 +8442,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "merge:A4",
@@ -11592,8 +11988,8 @@
   "severity": "medium",
   "title": "Catch-all COALESCE(:param, col) filters may defeat indexes",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Account/party/voucher predicates in LedgerBalanceRepository rewritten to (:p IS NULL OR col=:p) (635f43685); 12 date COALESCE(:excludedFromDate,...) remain and JournalEntryRepository search still has COALESCE",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
@@ -11602,7 +11998,11 @@
   ],
   "size": "",
   "theme": "GL-tree export calls the full General Ledger per account and page; title() repeats the first query  [MEDIUM] [LIKELY]  (source IDs: be-A05-2)  Common: C-4",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:reports:11",
@@ -11611,8 +12011,8 @@
   "severity": "medium",
   "title": "Every Trial Balance based report loads and names all party balances",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] TrialBalanceService.build takes includeParties; Cash Statement, GL tree, Balance Sheet pass false; 64e17488f (YearEndCarryForward caller not changed)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
@@ -11621,7 +12021,11 @@
   ],
   "size": "",
   "theme": "GL-tree export calls the full General Ledger per account and page; title() repeats the first query  [MEDIUM] [LIKELY]  (source IDs: be-A05-2)  Common: C-4",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:reports:5",
@@ -11687,8 +12091,8 @@
   "severity": "medium",
   "title": "Dashboard open repeats heavy stock queries and scans full ledger history",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] Dashboard low-stock list cut in SQL, reorder-point moved to WHERE, count query added (117a54960); inventoryValue still called twice, no cache; ledger aggregates not cached",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
@@ -11699,7 +12103,11 @@
   ],
   "size": "",
   "theme": "Aging summary reads every invoice ever raised on each open  [MEDIUM] [LIKELY]  (source IDs: be-A19-4)  Common: C-6",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:reports:9",
@@ -11708,8 +12116,8 @@
   "severity": "medium",
   "title": "Account ledger and bank register aggregate the whole book to read one account",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] findPeriodBalancesForAccounts (IN :accountIds) used by General Ledger and Bank Register; carriedIn only for first account; 64e17488f, 460cbe472",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
@@ -11718,7 +12126,11 @@
   ],
   "size": "",
   "theme": "GL-tree export calls the full General Ledger per account and page; title() repeats the first query  [MEDIUM] [LIKELY]  (source IDs: be-A05-2)  Common: C-4",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:reports:1",
@@ -12094,8 +12506,8 @@
   "severity": "low",
   "title": "Profit-and-loss revenue lines: closing side and display fields disagree",
   "summary": "GET /reports/profit-and-loss line 4111 has closingSide CREDIT but closingDebit 960 and displayBalance -960; totals right.",
-  "status": "still-bug",
-  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md #4 [B-29]: still wrong, severity low",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] P&L uses its own ProfitAndLossLineDTO (closingBalance + closingSide, no derived closingDebit/displayBalance), side consistent in reshapeForThePeriod; present at base, negated() added by branch",
   "evidence_level": "verified",
   "found": "2026-10-28",
   "source": "Closing 'Smaller points' (B-29); Retest #4",
@@ -12106,7 +12518,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:reports:1",
@@ -12172,8 +12588,8 @@
   "severity": "low",
   "title": "Cash Statement for a quiet account answers 404",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "[release_beta_copy e9a75ca2b] CashStatementService asks TB for all rows when an account is named, includeEmpty applied to subtree afterwards; 5cd504c90",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
@@ -12182,7 +12598,11 @@
   ],
   "size": "",
   "theme": "Whole-entity loads to read two fields in reports and directories  [LOW] [VERIFIED]  (source IDs: RB8)  Common: C-4",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:reports:15",
@@ -12191,8 +12611,8 @@
   "severity": "low",
   "title": "Name-resolver and open-item failures swallowed; error text leaked",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[release_beta_copy e9a75ca2b] PartyNameResolver now uses PartyDirectoryLookup (NOT_SUPPORTED, WARN log); f2d36c379. YearEndCarryForwardService l.126 still returns e.getMessage()",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
@@ -12201,7 +12621,11 @@
   ],
   "size": "",
   "theme": "Whole-entity loads to read two fields in reports and directories  [LOW] [VERIFIED]  (source IDs: RB8)  Common: C-4",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "release_beta_copy@e9a75ca2b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:reports:2",

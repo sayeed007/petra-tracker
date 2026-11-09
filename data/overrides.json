@@ -2344,5 +2344,641 @@
   "note": "purchase-requisition-stock-analysis-modal.tsx toneConfig uses design classes (bg-success/10, text-info); approver cap of 3 is deliberate (approverSignatures max=3, tested), not a defect.",
   "ref": "32257f60",
   "date": "2026-11-09"
+ },
+ "journals:JNL-A-108": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] JournalEntryDomainService.reverseEntry calls requireCashStaysPositive(reversal) (~l.729); b97e2ba30, drawer lock 8ecd1808a",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "journals:JNL-A-109": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] JournalEntryDomainService.reverse() refuses docs with own correction via hasItsOwnCorrection (PURCHASE_VENDOR_BILL etc.); b97e2ba30. Module path reverseDocumentPosting still allowed",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "journals:JNL-A-68": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] JournalEntryDomainService.validateUpdate refuses documentType change; updateFields re-derives voucherType and renumbers, copies dueDate/documentNo; aac1b0133, b97e2ba30",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:1": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Variance direction decided by statement-line direction (BankReconciliationAdjustment.isBankDebit l.129-134); 5c1a6d12f",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:4": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] finalize/approve load reconciliation FOR UPDATE and re-check status (BankReconciliationSessionService l.437/447); adjustments carry documentId (uq_journal_entry_document); d532f3274 + BankReconciliationFinalizeLockIT",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "journals:JNL-A-107": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Party ledger reads only accounts the balance is kept on (AccountScopes.partyTrackedAccountIds), lines/opening/closing from one set; f60f9a631, f42aeed2b",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "journals:JNL-A-12": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] JournalEntryDomainService.validateLines rounds each line via money() before summing (~l.987); 10f631eb8, b97e2ba30",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "journals:JNL-A-122": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] JournalEntryRepository search queries declare ESCAPE and JournalEntrySearchService escapes LIKE chars; b97e2ba30, cbd9f9ad8 (trigram indexes)",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "journals:JNL-A-14": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] JournalEntryDomainService ~l.1368-1376 refuses amounts larger than the column with own message; ManualJournalLineRequestDTO @Digits(15,4); b97e2ba30, e811c07f2",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "journals:JNL-A-23": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] requirePartyExists (partyNameResolver.isKnown) + partyType-without-id refused + control-account party-kind check; f60f9a631, a78f3cd14, b97e2ba30",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:10": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] match() refuses entries not in ledger / after statement month; flag-as-outstanding refuses draft/rejected lines; 5c1a6d12f, 84b82ca89",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:11": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Import rows outside the month are skipped with reason (5c1a6d12f); b49ed3874 notes the month rule already existed and the finding was partly mis-described",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:12": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Auto-match rewritten: one read per side, grouped by amount+side, only 1:1 groups match, date bound applied, UNRECORDED excluded; 0ac31ec9e",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:2": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Same as JNL-A-12: lines rounded where balance is checked; 10f631eb8",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:25": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Fiscal re-cut guard names the four non-cascading blockers (journal_entry, bank_reconciliation, depreciation_entry, vat_return); 70a793778",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:27": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Same as JNL-A-68; aac1b0133",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:28": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] FixedAssetMapper.toEntity no longer builds transient ChartOfAccount for null ids; FixedAssetNonDepreciableTest; f541d64fe",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:29": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] DepreciationScheduleService guards non-depreciating assets (empty, truncated=false, forecastRemaining 0), nextScheduledEvent asks method; f541d64fe",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:32": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] FixedAssetDepreciationService uses sumGroupedByAsset once for the list; b399ab591",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:33": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] readByPeriod returns a page; entries+lines+accounts fetched in 2 queries, reversals via findReversalsOf; 5c929ba0d, b5c00d52a",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:34": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] History page clamped to 100, export row cap 20,000 refused before the walk, status filter honoured; 5c929ba0d, cad80f442, a63d1b73c",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:35": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Reconciliation statement uses sumBalanceAsAt for the one account instead of findPeriodBalances; b399ab591",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:38": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Paged ledger-line queries JOIN FETCH entry+account (LedgerBalanceRepository), party names batched; 4fc63b160",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:39": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Budget vs Actual (both) read lines through a query that fetches the account, window pushed into SQL; 131da59c8, 50c53890b",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:48": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] V4__accounting_indexes.sql adds ~30 FK indexes on accounting tables (6c7671388); RBAC/approval/workflow FKs and attachment columns deliberately left",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:5": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] refuseIfCashGoesNegative locks drawers paid FROM (ascending id) on create/approve/reverse; CashDrawerLockIT; 8ecd1808a",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:50": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] e811c07f2 records salvagePercent/customAnnualDepreciationRate already bounded 0-100 in AssetTypeDomainService/FixedAssetDomainService (rate check present at l.~255); no change needed",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:9": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] approveManualEntry re-reads period FOR UPDATE and requirePeriodAccepts (~l.563); d58966dc0, e9a75ca2b",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "journals:JNL-A-11": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] validateLines tracks debitedAccounts/creditedAccounts and refuses same account on both sides; f60f9a631",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "journals:JNL-A-16": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] isHandTyped && blank memo -> BadRequest (~l.888); b97e2ba30",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "journals:JNL-A-27": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] JournalDimensionDirectory.segmentExists/territoryExists checked per line; f60f9a631 (unreachable directory does not block posting)",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:13": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] dispose refuses date before acquisition; fiscal state changes now @Transactional; d953d2a3e, b49ed3874",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:14": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] requireImport checks import belongs to the reconciliation id for remap/preview/confirm/discard (404); 5e7a783b6",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:15": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] @Size (column width) + @Valid on accounting controllers/DTOs gives 400 naming field; journal overflow message; d9bcb10bb, e811c07f2. Depreciation/period-close/year-end/posting/payroll/mapping controllers not touched",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:16": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] Close-task ownerUserId now checked via userFacade (b49ed3874); petty-cash mapping body validation not changed",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:18": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] StatementColumnDetector matches names of 3 letters or fewer whole and claims each column once; b49ed3874",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:19": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] IOException text no longer shown (logged + generic sentence); StatementImportPreviewDTO flags file-not-stored; b49ed3874, e811c07f2",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:22": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Three depreciation previews now anyOf accounting.fixed-asset.view or the posting permission; POSTs keep create; e248b6760. POST /depreciation-runs without reviewed tick still open",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:40": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Asset-type list uses one grouped count; 131da59c8",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:41": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Budget list loads lines via EntityGraph; b5c00d52a (unbounded-lines cap deliberately not added)",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:42": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] Match-workspace lists became sets (cad80f442), export caps added (a63d1b73c), whole-book GL export walks once (460cbe472); chart filter in memory not changed",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:43": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Register paged (default 50), 4 associations fetched in search(), disposal register filtered in SQL, single-asset print asks for that asset; 5c929ba0d, 2929c685a",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:45": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Two trigram GIN indexes in V4 matching the query expressions exactly; cbd9f9ad8",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:46": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] One findAllById for accounts and cost centres, one query for opening-balance holders; 50c53890b, 0e6fba3a0",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:49": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] @Valid/@Size added on accounting request bodies (d9bcb10bb, e811c07f2); no cap on budget lines/batch size; depreciation/period-close/posting/payroll/mapping controllers untouched",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:51": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] createYear/generatePeriods/createPeriod marked @Hidden, docs corrected (still answer 409); 2929c685a",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:52": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] Three String fields became enums (DepreciationScheduleLineDTO.status, FixedAssetDisposalRowDTO.status, MatchSuggestionDTO.confidenceLabel), wire format unchanged; e248b6760. Other free strings not reviewed",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:53": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] FiscalYear.yearLabel mapping, ECashFlowCategory/FiscalPeriod javadoc, misplaced facade javadocs fixed (b49ed3874, b5c00d52a); entity length= drift noted but not fixed (d9bcb10bb)",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:54": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] vendorId vs sourceVendorBillId schema clarified; documentVersion nulled without documentId (e248b6760); creditAccountId no longer required on update (e811c07f2). Other sibling-DTO name drift unknown",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:55": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] Report DTO list fields got @Builder.Default (b5c00d52a); other nullable-where-required fields not verified",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:56": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Body-less dispose is 400, dead readAll overload removed (b5c00d52a); depreciation on a non-open month now 409",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:6": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] validateLines locks OPENING_BALANCE accounts in ascending id order before checking holders; b49ed3874. Also refuses Sundry Debtors/Creditors opening balances (99ae3bc2a)",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:7": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] resolvePeriod uses findCoveringPeriodForPosting (FOR SHARE); close/reopen/lock hold the period row and are @Transactional; createPeriod retired (409); 84b82ca89, 2929c685a",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:accounting:8": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] Fixed: cash drawer, month finalize/approve, statement import confirm, period close vs posting (8ecd1808a, d532f3274, 84b82ca89). Generic race-to-409 mapping and manual match race (bank:A-111) remain",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "closing:ret5": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] EFiscalStatus.acceptsManualPostings() is OPEN only; requirePeriodAccepts throws 409 'closed. Reopen it, then post this journal again' for manual journals in a CLOSED month (JournalEntryDomainService ~l.1430-1440). Same at base",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "integ:ACC-11-04": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] validateDocumentVersion defaults null documentVersion to next free version (JournalEntryDomainService l.217-221); present at base",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "merge:B1": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Same code: null version -> next free version for in-module callers; mapper nulls version when no document (e248b6760)",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "merge:A2": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] petra-chart.json PETTY_CASH_ACCOUNT_ID -> accountCode 111002 (postable), not group 1110; same at base",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "merge:A3": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] build_revised_chart.py in the branch has no conflict markers and learned the contra field (def8e95b8)",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "merge:B2": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] JournalEntryFacadeImpl.getById/search and BankReconciliationFacadeImpl.get/history call enrichWorkflow to fill taskId/canTakeAction (already present at base aed7a66c0)",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "vqa:journal-detail-task": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] getById enriches taskId/canTakeAction like the list (JournalEntryFacadeImpl); null only when the caller is not an approver (see merge:C2)",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "merge:C2": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] JournalEntryResponseDTO javadoc says taskId/canTakeAction are for this caller only; external guide document not checked",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-86": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Adjustment entries now BANK_RECONCILIATION_ADJUSTMENT (not hand-typed, born POSTED, no own approval); postAll at finalize/approval; daa4b12f3 + V3",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-92": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Adjustment direction decided by statement-line direction (BankReconciliationAdjustment.isBankDebit l.129-134); 5c1a6d12f",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-96b": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] Adjustment date must fall inside the reconciled month (BankReconciliationAdjustmentService l.170-180, 5c1a6d12f) and start() needs an OPEN period, so a closed-January date is refused; a month closed after the draft started is not re-checked at propose",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-96c": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] postAll rolls back the whole acceptance if the period closed (no-approval path); with approval workflow finalize still returns PENDING_APPROVAL and posting happens at approval; no finalize pre-check seen",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:UI-36c": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] History export now honours the status filter (BankReconciliationHistoryExportDataSource.statuses, cad80f442); default with no status still includes DRAFT",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "merge:B5": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] Export reads bankAccountId via shared helper (400 on bad value, cad80f442); contract doc not verified",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-103b": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Discard guarded by delete right; 5c1a6d12f",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-20b": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] start refuses bank account with no ledger account (409); 5c1a6d12f",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-22": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Account number compared normalised (trim/case); 5c1a6d12f, BankAccountDomainService",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-24": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Eight bank-account fields and two statement-line fields validated with 400 naming the field; bulk skips only the bad line; 5c1a6d12f, d9bcb10bb",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-48": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] match() refuses ledger lines not in the ledger (draft/pending); flag-outstanding same; 5c1a6d12f, 84b82ca89",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-49": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] match() refuses ledger lines dated after the statement month (earlier months allowed); 5c1a6d12f",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-61": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Amount reader handles 1.234,50 and 6,42,000 formats; 5c1a6d12f",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-63b": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Remembered layout that reads nothing is re-guessed; 5c1a6d12f",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-64b": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Excel date cells read as dates; CSV reader handles quoted newlines; 5c1a6d12f",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-67": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Import skips out-of-month rows with reason; 5c1a6d12f",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-69": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Closing balance taken from the latest-dated row in the month; 5c1a6d12f",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "bank:A-94": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Adjustment postingDate must be inside the reconciled month; 5c1a6d12f",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "budgets:B1": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Register refuses a second approved budget per fiscal year; 652b141d6",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "budgets:B2": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Budget-vs-actual excludes PERIOD_CLOSING entries of the window year (second exclusion list); 652b141d6",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "budgets:B3": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] BALANCE rows take the last bucket of the window, FLOW rows add (BudgetVsActualStatementService basisFor); 652b141d6",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "budgets:B4": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Contra flag: EBalanceSide.reportingSideOf gives discount accounts positive actual; favourable() fixed; 5ea57c27f (+06e2114fa, b5dd9a644)",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "budgets:B5": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Rejected budget stays REJECTED on draft save (BudgetDomainService ~l.294); 652b141d6",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "budgets:B6": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Second approved budget per year refused, which 652b141d6 says settles duplicate names; a same-name DRAFT check not verified",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "budgets:B7": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Duplicate account+month line refused by name (matches constraint incl. cost centre); 652b141d6",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "budgets:B9": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] Omitted accountingBookId now resolves the primary book (652b141d6); export-job fromDate-only, 1e15 echo, view-right on create not addressed",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "closing:B-13": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] hasItsOwnCorrection refuses journals-screen reversal of vendor bill/payment/return etc. (and sales equivalents) so bill and journal cannot diverge; b97e2ba30",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "closing:C-05": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] YearEndClosingEntriesService handles contra-income (closes with a debit) and contra-expense; present at base, contra flag added by branch",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "assets:A-31": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] FixedAssetMapper no longer creates transient accounts for NONE method; land creatable; f541d64fe",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "assets:A-73": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] dispose refuses disposalDate before acquisitionDate (400); d953d2a3e + FixedAssetDisposalDateTest",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "assets:A-76": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] dispose posts through journalEntryDomainService.create, whose requirePostableAccount refuses summary accounts; no dedicated check in dispose and same at base",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "assets:A-22": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] @Size on code/name fields and journal amount overflow message (d9bcb10bb, b97e2ba30); asset cost rounding-to-zero case not verified",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "assets:A-25": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] Unknown vendor now refused because the acquisition journal validates partyId via requirePartyExists; useful-life upper cap still absent (only >0 check, FixedAssetDomainService l.1407)",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "closing:A-14": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] Register row NBV forced to 0 for DISPOSED (FixedAssetDomainService l.659); FixedAssetNetBookValueTest updated",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "closing:A-02": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] DepreciationSequenceGuard present and wired into DepreciationPreviewService (seeder test fixed in 26576fbd7)",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "closing:A-15": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] dispose refuses a date before the last posted depreciation period (ConflictException); same at base",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "closing:A-16": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] DepreciationCalculator caps the charge at remaining (l.90-109); present at base",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:reports:10": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] Account/party/voucher predicates in LedgerBalanceRepository rewritten to (:p IS NULL OR col=:p) (635f43685); 12 date COALESCE(:excludedFromDate,...) remain and JournalEntryRepository search still has COALESCE",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:reports:11": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] TrialBalanceService.build takes includeParties; Cash Statement, GL tree, Balance Sheet pass false; 64e17488f (YearEndCarryForward caller not changed)",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:reports:8": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] Dashboard low-stock list cut in SQL, reorder-point moved to WHERE, count query added (117a54960); inventoryValue still called twice, no cache; ledger aggregates not cached",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:reports:9": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] findPeriodBalancesForAccounts (IN :accountIds) used by General Ledger and Bank Register; carriedIn only for first account; 64e17488f, 460cbe472",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "closing:B-29": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] P&L uses its own ProfitAndLossLineDTO (closingBalance + closingSide, no derived closingDebit/displayBalance), side consistent in reshapeForThePeriod; present at base, negated() added by branch",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:reports:14": {
+  "status": "fixed",
+  "note": "[release_beta_copy e9a75ca2b] CashStatementService asks TB for all rows when an account is named, includeEmpty applied to subtree afterwards; 5cd504c90",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
+ },
+ "rv-be:reports:15": {
+  "status": "in-progress",
+  "note": "[release_beta_copy e9a75ca2b] PartyNameResolver now uses PartyDirectoryLookup (NOT_SUPPORTED, WARN log); f2d36c379. YearEndCarryForwardService l.126 still returns e.getMessage()",
+  "ref": "release_beta_copy@e9a75ca2b",
+  "date": "2026-11-09"
  }
 }

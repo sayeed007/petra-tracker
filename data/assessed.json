@@ -1,4 +1,23 @@
 {
- "frontend": {"branch": "release_beta_1.0.0", "sha": "a03704c99", "head_time": "2026-11-09 09:47 UTC", "assessed": "2026-11-09", "scope": "sales, inventory, purchase (in progress)"},
- "backend":  {"branch": "release_beta_1.0.0", "sha": "321870e96", "head_time": "2026-11-09 09:56 UTC", "assessed": "2026-11-09", "scope": "sales, inventory, purchase (in progress)"}
+ "frontend": {
+  "branch": "release_beta_1.0.0",
+  "sha": "a03704c99",
+  "head_time": "2026-11-09 09:47 UTC",
+  "assessed": "2026-11-09",
+  "scope": "sales, inventory, purchase (in progress)"
+ },
+ "backend": {
+  "branch": "release_beta_1.0.0",
+  "sha": "321870e96",
+  "head_time": "2026-11-09 09:56 UTC",
+  "assessed": "2026-11-09",
+  "scope": "sales, inventory, purchase (in progress)"
+ },
+ "backend-accounting": {
+  "branch": "release_beta_copy",
+  "sha": "e9a75ca2b",
+  "head_time": "2026-11-09 16:06 UTC+6",
+  "assessed": "2026-11-09",
+  "scope": "accounting only (code read, not run); base aed7a66c0, lacks 23 newer release_beta_1.0.0 commits"
+ }
 }
