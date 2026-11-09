@@ -1,0 +1,2478 @@
+[
+ {
+  "id": "assets:A-31",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "high",
+  "title": "Land / non-depreciable asset (method NONE) cannot be registered",
+  "summary": "POST /api/accounting/fixed-assets with depreciationMethod NONE and no life gives 409 (life omitted) or 400 (life 0); land cannot be capitalised. Asset type accepts NONE only with life 0.",
+  "status": "open",
+  "status_evidence": "Listed under High; no retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Assets #1 (A-31, A-09; blocks A-56, A-80)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/assets/*.spec.ts",
+   "POST /api/accounting/fixed-assets"
+  ]
+ },
+ {
+  "id": "assets:A-83",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Generic journal reversal accepts fixed-asset acquisition/disposal entries",
+  "summary": "POST /journal-entries/{id}/reverse on FIXED_ASSET_ACQUISITION/DISPOSAL journals returns 201, so register and ledger disagree.",
+  "status": "open",
+  "status_evidence": "Listed under Medium; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Assets #2 (A-83)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/assets/*.spec.ts"
+  ]
+ },
+ {
+  "id": "assets:A-73",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Disposal accepted with date one day before acquisition",
+  "summary": "dispose with disposalDate before acquisitionDate returns 200 and posts a journal before the asset existed; expected 400. Endpoint POST /api/accounting/fixed-assets/{id}/dispose.",
+  "status": "open",
+  "status_evidence": "Listed under Medium; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Assets #3 (A-73)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/assets/*.spec.ts",
+   "POST /api/accounting/fixed-assets/{id}/dispose"
+  ]
+ },
+ {
+  "id": "assets:A-72",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Disposal accepted without disposalMethod",
+  "summary": "dispose with missing disposalMethod returns 200 and the register shows no method; expected 400. Endpoint POST /api/accounting/fixed-assets/{id}/dispose.",
+  "status": "open",
+  "status_evidence": "Listed under Medium; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Assets #3 (A-72)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/assets/*.spec.ts",
+   "POST /api/accounting/fixed-assets/{id}/dispose"
+  ]
+ },
+ {
+  "id": "assets:A-76",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Disposal accepts a SUMMARY account as receivingAccountId",
+  "summary": "receivingAccountId set to a summary account returns 200 and posts to a heading account; other paths refuse summary accounts. Endpoint POST /api/accounting/fixed-assets/{id}/dispose.",
+  "status": "open",
+  "status_evidence": "Listed under Medium; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Assets #3 (A-76)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/assets/*.spec.ts",
+   "POST /api/accounting/fixed-assets/{id}/dispose"
+  ]
+ },
+ {
+  "id": "assets:A-71",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "medium",
+  "title": "WRITE_OFF disposal accepted with proceeds 500",
+  "summary": "WRITE_OFF with non-zero proceeds returns 200 although a write-off brings nothing in. Endpoint POST /api/accounting/fixed-assets/{id}/dispose.",
+  "status": "open",
+  "status_evidence": "Listed under Medium; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Assets #3 (A-71)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/assets/*.spec.ts",
+   "POST /api/accounting/fixed-assets/{id}/dispose"
+  ]
+ },
+ {
+  "id": "assets:A-07",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Asset type accounts barely validated (accumulated = asset account, expense = bank)",
+  "summary": "POST /api/accounting/asset-types accepts accumulatedDepreciationAccountId equal to assetAccountId and a non-expense depreciation account; error only appears at first asset creation.",
+  "status": "open",
+  "status_evidence": "Listed under Medium; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Assets #4 (A-07, A-08)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/assets/*.spec.ts",
+   "POST /api/accounting/asset-types"
+  ]
+ },
+ {
+  "id": "assets:A-02",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "low",
+  "title": "Type and asset codes accepted with different case and surrounding spaces",
+  "summary": "at-x1 and ' AT-X1 ' accepted next to AT-X1; stored with the space. Expected trim and case-insensitive compare.",
+  "status": "open",
+  "status_evidence": "Listed under Low; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Assets #5 (A-02, A-26)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/assets/*.spec.ts"
+  ]
+ },
+ {
+  "id": "assets:A-25",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "low",
+  "title": "Asset useful life has no upper cap; unknown vendor accepted",
+  "summary": "usefulLifeMonths 100000 returns 201 (type caps at 1200); partyId 99999 VENDOR accepted and journal carries a non-existent party.",
+  "status": "open",
+  "status_evidence": "Listed under Low; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Assets #6 (A-25, A-27)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/assets/*.spec.ts"
+  ]
+ },
+ {
+  "id": "assets:A-22",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "low",
+  "title": "Generic 'data conflict' 409 where a clean 400 is due (cost 0.00004, 51-char type code, proceeds 1e30)",
+  "summary": "Out-of-range or rounded-to-zero values return a generic 409 with no field named; expected 400 naming the field.",
+  "status": "open",
+  "status_evidence": "Listed under Low; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Assets #7 (A-22, A-16, A-75)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/assets/*.spec.ts"
+  ]
+ },
+ {
+  "id": "assets:A-37b",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "low",
+  "title": "Depreciation schedule forecastRemaining is 0",
+  "summary": "GET /fixed-assets/{id}/depreciation-schedule for 2,400/24 months with 3 posted shows 21 FORECAST lines but forecastRemaining 0 (expected 2,100).",
+  "status": "open",
+  "status_evidence": "Listed under Low; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Assets #8 (A-37b)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/assets/*.spec.ts",
+   "GET /fixed-assets/{id}/depreciation-schedule"
+  ]
+ },
+ {
+  "id": "assets:A-58",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "low",
+  "title": "Quarterly asset whose life is not a multiple of 3 never finishes",
+  "summary": "1,000 over 4 months QUARTERLY from January charges 750 and stays ACTIVE with NBV 250 forever (already known).",
+  "status": "open",
+  "status_evidence": "Listed under Low; 'already known'; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Assets #9 (A-58)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/assets/*.spec.ts"
+  ]
+ },
+ {
+  "id": "assets:UI-08",
+  "module": "fixed-assets",
+  "side": "frontend",
+  "severity": "unrated",
+  "title": "Duplicate asset-type code shows raw backend sentence",
+  "summary": "Screen prints 'type code already exists: ...' raw from the backend.",
+  "status": "open",
+  "status_evidence": "Frontend list in the file; no fix recorded",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Assets Frontend #1 (ASSET-UI-08)",
+  "refs": []
+ },
+ {
+  "id": "assets:UI-10",
+  "module": "fixed-assets",
+  "side": "frontend",
+  "severity": "unrated",
+  "title": "Asset-type form cannot create a non-depreciable (land) type",
+  "summary": "Method list offers only Straight line / Reducing balance, no NONE.",
+  "status": "open",
+  "status_evidence": "Frontend list in the file; no fix recorded",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Assets Frontend #2 (ASSET-UI-10)",
+  "refs": []
+ },
+ {
+  "id": "assets:UI-02",
+  "module": "fixed-assets",
+  "side": "frontend",
+  "severity": "unrated",
+  "title": "Asset type list and register have no search/sorting; type list has no delete",
+  "summary": "Described as feature gaps.",
+  "status": "open",
+  "status_evidence": "Frontend list in the file; feature gap",
+  "evidence_level": "likely",
+  "found": "2026-10-29",
+  "source": "Assets Frontend #3 (ASSET-UI-02, UI-22)",
+  "refs": []
+ },
+ {
+  "id": "bank:A-86",
+  "module": "banking",
+  "side": "backend",
+  "severity": "high",
+  "title": "Approving a reconciliation with adjusting entries fails 409; month can never be FINALIZED",
+  "summary": "BankReconciliationAdjustmentService.post() creates RECEIPT/PAYMENT entry held for approval, then refuses because not POSTED; any month with a bank fee/interest cannot be signed off.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #1 [A-86]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts",
+   "POST /bank-reconciliations/{id}/finalize"
+  ]
+ },
+ {
+  "id": "bank:A-92",
+  "module": "banking",
+  "side": "backend",
+  "severity": "high",
+  "title": "Withdrawal variance explained with wrong sign; month cannot be reconciled",
+  "summary": "propose-variance on a WITHDRAWAL with statement amount above ledger yields bankDebit true and unexplainedDifference doubled; direction ignored in ProposedAdjustment.isBankDebit().",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #2 [A-92]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts",
+   "propose-variance"
+  ]
+ },
+ {
+  "id": "bank:A-48",
+  "module": "banking",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Ledger line of a journal pending approval can be matched",
+  "summary": "PUT statement-lines/{id}/match accepts a PENDING_APPROVAL journal line that is not in the ledger.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #3 [A-48]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:A-49",
+  "module": "banking",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Ledger line dated after the statement month can be matched",
+  "summary": "match() and match-selected do not check date; March line matched to January statement line returns 200.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #4 [A-49]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:A-111",
+  "module": "banking",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Two parallel matches of one statement line both answer 200",
+  "summary": "Second write wins and first user is told success; no lock/version.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #5 [A-111]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:A-67",
+  "module": "banking",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Statement import takes lines outside the reconciliation month",
+  "summary": "Import confirm accepts out-of-month rows that manual and bulk entry refuse.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #6 [A-67]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:A-68",
+  "module": "banking",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Uploading the same statement file twice doubles lines without a reference",
+  "summary": "Lines with blank reference are not de-duplicated.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #7 [A-68]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:A-69",
+  "module": "banking",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Newest-first statement takes the wrong closing balance",
+  "summary": "applyClosingBalance reads the Balance of the last row, which is the opening balance for newest-first files.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #8 [A-69]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:A-71",
+  "module": "banking",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Statement with one signed Amount column cannot be mapped",
+  "summary": "Mapping only supports separate debit/credit columns; mappingComplete stays false.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #9 [A-71]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:A-61",
+  "module": "banking",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "European number format misread on import (1.234,50 becomes 1.2345)",
+  "summary": "readAmount strips all but digits, dot and minus, with no warning.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #10 [A-61]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:A-63b",
+  "module": "banking",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Remembered bank layout overrides date format of a new file",
+  "summary": "A later dd/MM/yyyy file is read with the stored yyyy-MM-dd format and every row becomes unreadable.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #11 [A-63b]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:A-64b",
+  "module": "banking",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Excel date cells unreadable; quoted CSV description with line break splits record",
+  "summary": "xlsx true dates read as display text ('6/9/25') give readable 0; the CSV reader is line based.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #12 [A-64b, A-66b]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:A-20b",
+  "module": "banking",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Reconciliation can be started for a bank account with no ledger account",
+  "summary": "POST /bank-reconciliations returns 200 DRAFT although month position is NOT_CONFIGURED; expected 409.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #13 [A-20b]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts",
+   "POST /bank-reconciliations"
+  ]
+ },
+ {
+  "id": "bank:A-22",
+  "module": "banking",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Bank account numbers unique only byte for byte",
+  "summary": "'TST-1' and ' tst-1 ' are two accounts.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #14 [A-22]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:A-24",
+  "module": "banking",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Out-of-range or over-long values give generic 409 data conflict; one long line fails the whole bulk request",
+  "summary": "Opening balance 1e25, 1000-char name, closing balance 1e25 and a 5000-char statement description return 409 without field; the bulk request loses good lines too.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #15 [A-24, A-24c, A-41b, A-53b]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:A-94",
+  "module": "banking",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Adjusting entry may be dated outside the reconciled month",
+  "summary": "propose-adjustment postingDate in February on a January line is accepted and leaves January out of balance after sign-off.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #16 [A-94]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:A-103b",
+  "module": "banking",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Discard reconciliation guarded by edit right instead of delete right",
+  "summary": "DELETE /bank-reconciliations/{id} uses accounting.bank-reconciliation.edit while the screen hides the button by the delete right; also bare 'record already exists' messages do not name the field.",
+  "status": "open",
+  "status_evidence": "No follow-up retest in the notes",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Bank&Cash #17 [A-103b]",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/bankcash/*.spec.ts",
+   "DELETE /bank-reconciliations/{id}"
+  ]
+ },
+ {
+  "id": "bank:A-96b",
+  "module": "banking",
+  "side": "backend",
+  "severity": "medium",
+  "title": "propose-adjustment accepts a posting date inside a CLOSED month",
+  "summary": "propose-adjustment with postingDate in a closed January returns 2xx and stores the decision; it only fails later at approval. Expected 409 naming CLOSED.",
+  "status": "open",
+  "status_evidence": "Addendum item 1: severity medium; open",
+  "evidence_level": "verified",
+  "found": "2026-10-30",
+  "source": "Addendum #1 [A-96b]",
+  "refs": [
+   "release_0.0.9 598571d5",
+   "e2e/y25/bankcash/07-closed-and-locked-months.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:A-96c",
+  "module": "banking",
+  "side": "backend",
+  "severity": "medium",
+  "title": "finalize accepts a draft whose adjusting entry can no longer be posted (CLOSED/LOCKED period)",
+  "summary": "finalize returns 200 PENDING_APPROVAL; approval then answers 409 and the month stays pending until rejected. Expected finalize refuses.",
+  "status": "open",
+  "status_evidence": "Addendum item 2: severity medium; open",
+  "evidence_level": "verified",
+  "found": "2026-10-30",
+  "source": "Addendum #2 [A-96c, A-99]",
+  "refs": [
+   "release_0.0.9 598571d5",
+   "e2e/y25/bankcash/07-closed-and-locked-months.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:A-97c",
+  "module": "banking",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Period-close Bank & Cash check counts a matched draft / pending month as reconciled",
+  "summary": "GET /period-close/{periodId}/summary shows bankCash.accounts[City].reconciled true for DRAFT and PENDING_APPROVAL while positions say NEEDS_ATTENTION.",
+  "status": "open",
+  "status_evidence": "Addendum item 3: severity medium; open",
+  "evidence_level": "verified",
+  "found": "2026-10-30",
+  "source": "Addendum #3 [A-97c]",
+  "refs": [
+   "release_0.0.9 598571d5",
+   "e2e/y25/bankcash/07-closed-and-locked-months.spec.ts",
+   "GET /api/accounting/period-close/{periodId}/summary"
+  ]
+ },
+ {
+  "id": "bank:UI-36c",
+  "module": "banking",
+  "side": "backend",
+  "severity": "low",
+  "title": "Reconciliation export includes DRAFT months that the list does not show",
+  "summary": "Export of the Reconciliation tab has 3 rows, one a DRAFT with empty date; the tab lists only 2.",
+  "status": "open",
+  "status_evidence": "Addendum item 4: severity low; open",
+  "evidence_level": "verified",
+  "found": "2026-10-30",
+  "source": "Addendum #4 [UI-36c]",
+  "refs": [
+   "release_0.0.9 598571d5",
+   "e2e/y25/bankcash/07-closed-and-locked-months.spec.ts"
+  ]
+ },
+ {
+  "id": "bank:UI-36d",
+  "module": "banking",
+  "side": "backend",
+  "severity": "low",
+  "title": "Reconciliation export writes internal status codes and unformatted numbers",
+  "summary": "Status column shows FINALIZED/PENDING_APPROVAL/DRAFT and -99515.2 instead of screen labels and 2-decimal amounts.",
+  "status": "open",
+  "status_evidence": "Addendum item 5: severity low; open",
+  "evidence_level": "verified",
+  "found": "2026-10-30",
+  "source": "Addendum #5 [UI-36d]",
+  "refs": [
+   "release_0.0.9 598571d5",
+   "e2e/y25/bankcash/07-closed-and-locked-months.spec.ts"
+  ]
+ },
+ {
+  "id": "budgets:B1",
+  "module": "budgets",
+  "side": "backend",
+  "severity": "high",
+  "title": "Several approved budgets of one year add up in the all-accounts report",
+  "summary": "GET /api/accounting/reports/budget-vs-actual-statement doubles budgetAmount when two approved budgets exist for the same lines.",
+  "status": "open",
+  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "B1 (BUD-A-88)",
+  "refs": [
+   "release_0.0.9",
+   "e2e/y25/budgets/*.spec.ts"
+  ]
+ },
+ {
+  "id": "budgets:B2",
+  "module": "budgets",
+  "side": "backend",
+  "severity": "high",
+  "title": "A closed month empties the purchases line of Budget vs Actual",
+  "summary": "After closing January, GET /reports/budget-vs-actuals shows actual 5100 = 0 because the PERIOD_CLOSING journal credits purchase accounts; only YEAR_END_CLOSING is excluded.",
+  "status": "open",
+  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "B2 (BUD-A-97)",
+  "refs": [
+   "release_0.0.9",
+   "e2e/y25/budgets/*.spec.ts"
+  ]
+ },
+ {
+  "id": "budgets:B3",
+  "module": "budgets",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Balance accounts: all-accounts statement sums 12 month-end plans",
+  "summary": "budgetAmount 780 (sum) vs amount = balance on 31 Dec; expected last bucket figure for BALANCE rows.",
+  "status": "open",
+  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "B3 (BUD-A-82)",
+  "refs": [
+   "release_0.0.9",
+   "e2e/y25/budgets/*.spec.ts"
+  ]
+ },
+ {
+  "id": "budgets:B4",
+  "module": "budgets",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Sales discount accounts read negative against a positive plan",
+  "summary": "4810/4820 actuals are negative in both reports; expected positive amount spent or consistent sign.",
+  "status": "open",
+  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "B4 (BUD-A-75)",
+  "refs": [
+   "release_0.0.9",
+   "e2e/y25/budgets/*.spec.ts"
+  ]
+ },
+ {
+  "id": "budgets:B5",
+  "module": "budgets",
+  "side": "backend",
+  "severity": "low",
+  "title": "Rejected budget loses REJECTED status on first draft save",
+  "summary": "PUT /budgets/{id} asDraft:true turns REJECTED into DRAFT contrary to javadoc.",
+  "status": "open",
+  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "B5 (BUD-A-44)",
+  "refs": [
+   "release_0.0.9",
+   "e2e/y25/budgets/*.spec.ts"
+  ]
+ },
+ {
+  "id": "budgets:B6",
+  "module": "budgets",
+  "side": "backend",
+  "severity": "low",
+  "title": "Two budgets with the same name for the same year accepted",
+  "summary": "POST /api/accounting/budgets twice with same name creates both.",
+  "status": "open",
+  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "B6 (BUD-A-05)",
+  "refs": [
+   "release_0.0.9",
+   "e2e/y25/budgets/*.spec.ts"
+  ]
+ },
+ {
+  "id": "budgets:B7",
+  "module": "budgets",
+  "side": "backend",
+  "severity": "low",
+  "title": "Duplicate account+month line refused with generic message",
+  "summary": "409 'A record with the same value already exists' instead of 400 naming account and month.",
+  "status": "open",
+  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "B7 (BUD-A-15, BUD-A-71)",
+  "refs": [
+   "release_0.0.9",
+   "e2e/y25/budgets/*.spec.ts"
+  ]
+ },
+ {
+  "id": "budgets:B8",
+  "module": "budgets",
+  "side": "backend",
+  "severity": "low",
+  "title": "Finished approval task can be completed again",
+  "summary": "POST /api/workflow/tasks/{id}/complete second time returns 200 'Task completed' (same as Journals A-82/86).",
+  "status": "open",
+  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "B8 (BUD-A-42)",
+  "refs": [
+   "release_0.0.9",
+   "e2e/y25/budgets/*.spec.ts"
+  ]
+ },
+ {
+  "id": "budgets:B9",
+  "module": "budgets",
+  "side": "backend",
+  "severity": "low",
+  "title": "Budget documentation does not match behaviour",
+  "summary": "Omitted accountingBookId gives 409 not primary book; export job accepted with only fromDate; 999999999999999.9999 echoed as 1e15; create needs no view right.",
+  "status": "open",
+  "status_evidence": "Budgets file: no retest; tests green while defect exists",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "B9 (BUD-A-17, A-91, A-13, A-52)",
+  "refs": [
+   "release_0.0.9",
+   "e2e/y25/budgets/*.spec.ts"
+  ]
+ },
+ {
+  "id": "journals:JNL-A-109",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "high",
+  "title": "Reversal of a document-generated journal (vendor bill) is allowed",
+  "summary": "POST /journal-entries/{id}/reverse on PURCHASE_VENDOR_BILL journal returns 200; bill stays posted in Purchase and payable disagrees.",
+  "status": "open",
+  "status_evidence": "Journals file: no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Journals #1 (JNL-A-109)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/journals/*.spec.ts"
+  ]
+ },
+ {
+  "id": "journals:JNL-A-108",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "high",
+  "title": "Reversal can leave cash in hand negative",
+  "summary": "reverse() does not apply the cash floor rule; reversing a spent 500 receipt gives balance -500.",
+  "status": "open",
+  "status_evidence": "Journals file: no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Journals #2 (JNL-A-108)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/journals/*.spec.ts"
+  ]
+ },
+ {
+  "id": "journals:JNL-A-68",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "high",
+  "title": "Editing a draft does not apply document type / voucher number",
+  "summary": "PUT /{id} updateFields() never copies documentType nor recomputes voucherType/journalNo; a CONTRA draft can become a non-cash contra and post.",
+  "status": "open",
+  "status_evidence": "Journals file: no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Journals #3 (JNL-A-68)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/journals/*.spec.ts"
+  ]
+ },
+ {
+  "id": "journals:JNL-A-138",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "high",
+  "title": "Concurrent manual journal creates fail (500 and 401)",
+  "summary": "30 parallel POST /manual: 5 returned 500 and 20 returned 401 instead of 201.",
+  "status": "open",
+  "status_evidence": "Journals file: no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Journals #4 (JNL-A-138)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/journals/*.spec.ts"
+  ]
+ },
+ {
+  "id": "journals:JNL-A-82",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Approval task can be completed twice",
+  "summary": "POST /workflow/tasks/{id}/complete on a finished task returns 200 again, also APPROVED after REJECTED.",
+  "status": "open",
+  "status_evidence": "Journals file: no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Journals #5 (JNL-A-82)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/journals/*.spec.ts"
+  ]
+ },
+ {
+  "id": "journals:JNL-A-23",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Parties not validated (partyType without id, unknown partyId, VENDOR on receivable)",
+  "summary": "Invalid party data is dropped silently or stored; expected 400.",
+  "status": "open",
+  "status_evidence": "Journals file: no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Journals #6 (JNL-A-23)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/journals/*.spec.ts"
+  ]
+ },
+ {
+  "id": "journals:JNL-A-12",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Four-decimal rounding stores an unbalanced entry",
+  "summary": "10.00004+10.00004 vs 20.0001 passes then stores a 0.0001 difference.",
+  "status": "open",
+  "status_evidence": "Journals file: no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Journals #7 (JNL-A-12)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/journals/*.spec.ts"
+  ]
+ },
+ {
+  "id": "journals:JNL-A-14",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Huge amount (1e15) gives generic 409",
+  "summary": "Numeric overflow answers 'data conflict' with no hint; expected 400.",
+  "status": "open",
+  "status_evidence": "Journals file: no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Journals #8 (JNL-A-14)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/journals/*.spec.ts"
+  ]
+ },
+ {
+  "id": "journals:JNL-A-107",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Party general ledger closing balance does not move",
+  "summary": "GET /reports/general-ledger?partyId=1&partyType=CUSTOMER lists the line but closingBalance unchanged (expected +77). Source says 'Please check'.",
+  "status": "open",
+  "status_evidence": "Journals file: no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Journals #9 (JNL-A-107)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/journals/*.spec.ts"
+  ]
+ },
+ {
+  "id": "journals:JNL-A-122",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Journal list search treats % as wildcard",
+  "summary": "GET /journal-entries/search?search=%25 returns all entries; LIKE characters not escaped.",
+  "status": "open",
+  "status_evidence": "Journals file: no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Journals #10 (JNL-A-122)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/journals/*.spec.ts"
+  ]
+ },
+ {
+  "id": "journals:JNL-A-27",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "segmentId / territoryId stored without checking the master",
+  "summary": "No validation of segment/territory references.",
+  "status": "open",
+  "status_evidence": "Journals file: no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Journals #11 (JNL-A-27)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/journals/*.spec.ts"
+  ]
+ },
+ {
+  "id": "journals:JNL-A-16",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Blank memo accepted although DTO documents it as required",
+  "summary": "Memo requirement not enforced.",
+  "status": "open",
+  "status_evidence": "Journals file: no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Journals #12 (JNL-A-16)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/journals/*.spec.ts"
+  ]
+ },
+ {
+  "id": "journals:JNL-A-11",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Same account on both sides (Dr 6105 / Cr 6105) accepted",
+  "summary": "Entry moves nothing.",
+  "status": "open",
+  "status_evidence": "Journals file: no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-29",
+  "source": "Journals #13 (JNL-A-11)",
+  "refs": [
+   "release_0.0.9 7732e3aa",
+   "e2e/y25/journals/*.spec.ts"
+  ]
+ },
+ {
+  "id": "journals:F1",
+  "module": "accounting",
+  "side": "frontend",
+  "severity": "unrated",
+  "title": "Journals list has no search box / type filter",
+  "summary": "Listed as frontend finding F1 in HARD-TEST-JOURNALS.md.",
+  "status": "open",
+  "status_evidence": "Reference only; no fix recorded",
+  "evidence_level": "likely",
+  "found": "2026-10-29",
+  "source": "Journals Frontend (F1)",
+  "refs": []
+ },
+ {
+  "id": "closing:B-11",
+  "module": "closing",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Documents dated in a CLOSED month accepted and approved; journals fail silently",
+  "summary": "Purchase/sales documents (GR, delivery, bill, payment, invoice, receipt) in a closed January are accepted, move stock, and posting log is FAILED with no journal.",
+  "status": "fixed",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md: B-11/B-27/B-30 refused with 409 'CLOSED and no longer accepts documents'",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing #1 [B-11, B-27, B-30]; backend-closing-bugs-retest-2026-10-29.md Fixed list",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md"
+  ]
+ },
+ {
+  "id": "closing:B-27f",
+  "module": "closing",
+  "side": "backend",
+  "severity": "medium",
+  "title": "A month can still be closed while a document dated in it waits for approval",
+  "summary": "Pending vendor bill dated Feb 25 does not block closing February 7/7; later approval is refused and P&P card gives no warning.",
+  "status": "still-bug",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md Still wrong #1 (B-27 follow-up): month still closes with pending bill",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Retest #1 (B-27 follow-up)",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md"
+  ]
+ },
+ {
+  "id": "closing:A-02",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Depreciation months can be posted out of order",
+  "summary": "Posting February depreciation before January is accepted; voucher numbers and previews go wrong.",
+  "status": "fixed",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md: A-02 409 'post the months in order'",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing #2 [A-02]; backend-closing-bugs-retest-2026-10-29.md Fixed list",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md",
+   "POST /api/accounting/depreciation-runs/{id}/post"
+  ]
+ },
+ {
+  "id": "closing:B-04",
+  "module": "closing",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Inventory check of a month can be completed before previous month's",
+  "summary": "Completing Feb Inventory with Jan COGS unposted posts a negative cost of goods sold.",
+  "status": "fixed",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md: B-04 refused 409 naming January",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing #3 [B-04]; backend-closing-bugs-retest-2026-10-29.md Fixed list",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md"
+  ]
+ },
+ {
+  "id": "closing:B-17",
+  "module": "closing",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "fiscal-periods/{id}/close closes a month with 1 of 7 checks done",
+  "summary": "POST /api/accounting/fiscal-periods/{id}/close bypasses the 7-check checklist.",
+  "status": "fixed",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md: B-17 generic close refuses once checklist started",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing #4 [B-17]; backend-closing-bugs-retest-2026-10-29.md Fixed list",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md",
+   "POST /api/accounting/fiscal-periods/{id}/close"
+  ]
+ },
+ {
+  "id": "closing:B-07",
+  "module": "closing",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Confirmed stock count can be discarded after COGS entry posted",
+  "summary": "DELETE /period-close/{id}/stock-count returned 204 after entry PCV posted, destroying the audit trail.",
+  "status": "fixed",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md: B-07 409 'reverse the cost of goods sold entry first'",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing #5 [B-07]; backend-closing-bugs-retest-2026-10-29.md Fixed list",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md",
+   "DELETE /api/accounting/period-close/{id}/stock-count"
+  ]
+ },
+ {
+  "id": "closing:B-03",
+  "module": "closing",
+  "side": "backend",
+  "severity": "high",
+  "title": "Stock-count sheet shows stock at booking time, not the period-end stock",
+  "summary": "StockOnHandReader uses ledger booking timestamp (no document date column), so late/back-dated data gives wrong or empty quantities; retest returns 0 lines for every 2025 month.",
+  "status": "still-bug",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md #2: notReadyReason 'No item has a stock balance'; only the date column is missing",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing #6 [B-03]; Retest #2 (B-03 / D-03)",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md",
+   "GET /api/accounting/period-close/{id}/stock-count",
+   "StockOnHandReader.positionsAsOf"
+  ]
+ },
+ {
+  "id": "closing:A-09",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Depreciation life counted in charges, not dates",
+  "summary": "Skipping January then posting to Jan 2026 charges a 13th month and January 2025 is lost.",
+  "status": "fixed",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md: A-09 life by dates, skipped month impossible",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing #7 [A-09]; backend-closing-bugs-retest-2026-10-29.md Fixed list",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md"
+  ]
+ },
+ {
+  "id": "closing:A-16",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Rounding remainder carried into an extra month",
+  "summary": "Cost 1,000 over 3 months charges 333.3333 x3 then a 4th 0.0001 charge.",
+  "status": "fixed",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md: A-16 333.3333 x 3 = 1,000, no fourth",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing #8 [A-16]; backend-closing-bugs-retest-2026-10-29.md Fixed list",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md"
+  ]
+ },
+ {
+  "id": "closing:A-15",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Disposal can be dated before already-posted depreciation",
+  "summary": "Disposal dated March accepted while April-August depreciation is posted; ledger shows odd balances.",
+  "status": "fixed",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md: A-15 400 'Date the disposal on or after that day'",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing #9 [A-15]; backend-closing-bugs-retest-2026-10-29.md Fixed list",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md",
+   "POST /api/accounting/fixed-assets/{id}/dispose"
+  ]
+ },
+ {
+  "id": "closing:C-05",
+  "module": "closing",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Year-end closing entries preview has wrong netProfit value and sign",
+  "summary": "GET /year-end-close/4/closing-entries ignores contra-income discount accounts, showing profit +61.44 instead of loss -27.36.",
+  "status": "fixed",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md: C-05 income 4,562.64, netProfit -27.36",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing #10 [C-05]; backend-closing-bugs-retest-2026-10-29.md Fixed list",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md",
+   "GET /api/accounting/year-end-close/4/closing-entries"
+  ]
+ },
+ {
+  "id": "closing:B-00",
+  "module": "closing",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Sales & Receivables and Purchases & Payables checks always show a false difference",
+  "summary": "Period-close summary shows subledger balances 0 vs ledger 80/-150 every month; close data providers never fill them.",
+  "status": "fixed",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md: B-00 receivable/payable subledger filled (80/150, difference 0)",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing #11 [B-00]; backend-closing-bugs-retest-2026-10-29.md Fixed list",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md",
+   "GET /api/accounting/period-close/{id}/summary"
+  ]
+ },
+ {
+  "id": "closing:B-19",
+  "module": "closing",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "After month reopen the checklist still shows 7/7 CLOSED",
+  "summary": "COGS entry stays posted and VAT return FILED; closing again needs DELETE and POST of tasks/GENERAL_LEDGER/close.",
+  "status": "open",
+  "status_evidence": "No retest of this point",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing 'Smaller points' (B-19)",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md",
+   "POST /fiscal-periods/{id}/reopen"
+  ]
+ },
+ {
+  "id": "closing:A-07",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Salvage value and life of a FULLY_DEPRECIATED asset can be changed",
+  "summary": "Fully depreciated asset remains editable.",
+  "status": "open",
+  "status_evidence": "No retest of this point",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing 'Smaller points' (A-07)",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md"
+  ]
+ },
+ {
+  "id": "closing:B-13",
+  "module": "closing",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Reversing the journal of an approved bill leaves the bill APPROVED / paid in Purchase",
+  "summary": "Direct journal reversal of a bill journal is not reflected in the purchase module.",
+  "status": "open",
+  "status_evidence": "No retest of this point",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing 'Smaller points' (B-13)",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md"
+  ]
+ },
+ {
+  "id": "closing:A-08",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "low",
+  "title": "Depreciation preview of a later month misstates earlier unposted months",
+  "summary": "Retest: preview now shows the catch-up charge of the last window (December: 1,225); cannot be posted out of order but preview should say 'post month k first'.",
+  "status": "open",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md #7: preview artefact remains, low",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing 'Smaller points' (A-08); Retest #7",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md"
+  ]
+ },
+ {
+  "id": "closing:A-12",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Full-month convention gives the disposal month no charge for the disposed asset",
+  "summary": "Disposal month depreciation is skipped for the disposed asset.",
+  "status": "open",
+  "status_evidence": "No retest of this point",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing 'Smaller points' (A-12)",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md"
+  ]
+ },
+ {
+  "id": "closing:C-13",
+  "module": "closing",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Message 'a OPEN financial year cannot be reopened' wording",
+  "summary": "Refusal text has wrong article/wording.",
+  "status": "open",
+  "status_evidence": "No retest of this point",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing 'Smaller points' (C-13)",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md"
+  ]
+ },
+ {
+  "id": "closing:B-29",
+  "module": "reports",
+  "side": "backend",
+  "severity": "low",
+  "title": "Profit-and-loss revenue lines: closing side and display fields disagree",
+  "summary": "GET /reports/profit-and-loss line 4111 has closingSide CREDIT but closingDebit 960 and displayBalance -960; totals right.",
+  "status": "still-bug",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md #4 [B-29]: still wrong, severity low",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing 'Smaller points' (B-29); Retest #4",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md",
+   "GET /api/accounting/reports/profit-and-loss"
+  ]
+ },
+ {
+  "id": "closing:4b",
+  "module": "closing",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Closing a month does not wait for postings still in flight",
+  "summary": "An invoice created while February was open had its posting fail (FAILED, no journal) because February was closed before the async posting ran.",
+  "status": "open",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md #4b (new): expected close refuses while unposted outbox/posting-log rows exist",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Retest #4b (new)",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md",
+   "accounting_posting_log"
+  ]
+ },
+ {
+  "id": "closing:ret5",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Confirm: manual journal now accepted into a CLOSED month",
+  "summary": "EFiscalStatus.acceptsManualPostings lets POST /journal-entries/manual into a closed month (201 PENDING_APPROVAL); asks backend to confirm intended and flag 'journal posted after close'.",
+  "status": "decision",
+  "status_evidence": "backend-closing-bugs-retest-2026-10-29.md #5: 'Please confirm this is intended'",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Retest #5",
+  "refs": [
+   "release_0.0.9",
+   "CLOSING-TEST-REPORT.md",
+   "POST /api/accounting/journal-entries/manual"
+  ]
+ },
+ {
+  "id": "closing:A-14",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "low",
+  "title": "Disposed asset shows NBV in the register list",
+  "summary": "GET /fixed-assets showed DISPOSED asset with accumulatedDepreciation 100 and netBookValue 1100/550 instead of 0.",
+  "status": "fixed",
+  "status_evidence": "A14-proof-2026-10-30.md: 'Does NOT reproduce on 598571d5'; retest: RESOLVED on 598571d5",
+  "evidence_level": "verified",
+  "found": "2026-10-28",
+  "source": "Closing 'Smaller points' (A-14); Retest #3; A14-proof-2026-10-30.md",
+  "refs": [
+   "598571d5",
+   "e2e/y25/assets/06-a14-disposed-nbv-proof.spec.ts",
+   "GET /api/accounting/fixed-assets"
+  ]
+ },
+ {
+  "id": "e2e27:1",
+  "module": "sales",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Item return larger than shipped quantity accepted",
+  "summary": "POST /api/sales/item-returns with returnQty 11 on a line shipped 10 returns 200; expected 400.",
+  "status": "open",
+  "status_evidence": "E2E file: tests pass only as known-bug; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-27",
+  "source": "E2E bugs #1",
+  "refs": [
+   "release_0.0.9",
+   "POST /api/sales/item-returns"
+  ]
+ },
+ {
+  "id": "e2e27:2",
+  "module": "sales",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Fulfilment can be raised on a REJECTED sales order",
+  "summary": "POST /api/sales/delivery-orders for a REJECTED order returns 200; expected 400.",
+  "status": "open",
+  "status_evidence": "E2E file: tests pass only as known-bug; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-27",
+  "source": "E2E bugs #2",
+  "refs": [
+   "release_0.0.9",
+   "POST /api/sales/delivery-orders"
+  ]
+ },
+ {
+  "id": "e2e27:3",
+  "module": "sales",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Credit memo can refund more than was returned",
+  "summary": "POST /api/sales/credit-memos with refundQty above returned minus refunded returns 200.",
+  "status": "open",
+  "status_evidence": "E2E file: tests pass only as known-bug; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-27",
+  "source": "E2E bugs #3",
+  "refs": [
+   "release_0.0.9",
+   "POST /api/sales/credit-memos"
+  ]
+ },
+ {
+  "id": "e2e27:4",
+  "module": "sales",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Edit Customer Deposit: changed amount silently ignored",
+  "summary": "PUT /api/sales/customer-deposits/{id} 700->900 returns 200 but amount stays 700.",
+  "status": "open",
+  "status_evidence": "E2E file: tests pass only as known-bug; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-27",
+  "source": "E2E bugs #4",
+  "refs": [
+   "release_0.0.9",
+   "PUT /api/sales/customer-deposits/{id}"
+  ]
+ },
+ {
+  "id": "e2e27:5",
+  "module": "sales",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Edit Customer Refund: changed amount silently ignored",
+  "summary": "PUT /api/sales/customer-refunds/{id} 500->600 returns 200 but refund and credit memo keep 500.",
+  "status": "open",
+  "status_evidence": "E2E file: tests pass only as known-bug; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-27",
+  "source": "E2E bugs #5",
+  "refs": [
+   "release_0.0.9",
+   "PUT /api/sales/customer-refunds/{id}"
+  ]
+ },
+ {
+  "id": "e2e27:6",
+  "module": "field-force",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Renaming a Field Force node without an assignee fails with 409",
+  "summary": "PUT /api/sales/geographies/{id} on a REGION with no user returns 409 'Required field is missing: user id'; regions/areas/territories can never be renamed.",
+  "status": "open",
+  "status_evidence": "E2E file: tests pass only as known-bug; no retest",
+  "evidence_level": "verified",
+  "found": "2026-10-27",
+  "source": "E2E bugs #6",
+  "refs": [
+   "release_0.0.9",
+   "PUT /api/sales/geographies/{id}"
+  ]
+ },
+ {
+  "id": "dash:income-expense",
+  "module": "dashboard",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Dashboard expense ignores period-closing (COGS) entry; purchases shown as cost of goods sold",
+  "summary": "/api/dashboard/income-expense and /top-expenses exclude all closing entries incl. PERIOD_CLOSING, so in Periodic books expense is gross purchases (7,150 vs P&L 2,950) and profit is understated by the stock increase.",
+  "status": "open",
+  "status_evidence": "Found 2026-11-09; same code on beta 097ae0e2a; fix suggested, none done",
+  "evidence_level": "verified",
+  "found": "2026-11-09",
+  "source": "Whole file",
+  "refs": [
+   "release_0.0.9 598571d5",
+   "release_beta_1.0.0 097ae0e2a",
+   "GET /api/dashboard/income-expense",
+   "GET /api/dashboard/top-expenses",
+   "LedgerIncomeExpenseService",
+   "EFinanceDocumentType.isClosingEntry"
+  ]
+ },
+ {
+  "id": "integ:known-backend-bugs",
+  "module": "sales",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Known backend bugs still fail on merged backend (SAL-05-03, 05-07, 09-09, 02-11, 12-05, 12-11)",
+  "summary": "test.fail cases still fail as expected, i.e. the backend still accepts them; 'expected to fail but passed' not reproduced.",
+  "status": "open",
+  "status_evidence": "'known backend bugs, unchanged'",
+  "evidence_level": "likely",
+  "found": "2026-10-25",
+  "source": "Case verdicts table",
+  "refs": [
+   "scratch merge :18097"
+  ]
+ },
+ {
+  "id": "integ:ACC-11-04",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "VAT settle journal missing documentVersion (probably fixed in merge)",
+  "summary": "JournalEntryDomainService now defaults a null documentVersion in the merge; confirmation pending.",
+  "status": "unknown",
+  "status_evidence": "'probably fixed in the merge ... pending'",
+  "evidence_level": "suspect",
+  "found": "2026-10-25",
+  "source": "Case verdicts table (ACC-11-04)",
+  "refs": []
+ },
+ {
+  "id": "integ:PUR-06",
+  "module": "purchase",
+  "side": "frontend",
+  "severity": "unrated",
+  "title": "E2E spec picked cash account by /cash-in-hand/i but ledger is '111001 Cash In Hand'",
+  "summary": "Specs PUR-06-01..08, PUR-08-13 timed out; regex changed to /cash.in.hand/i.",
+  "status": "fixed",
+  "status_evidence": "`/cash.in.hand/i` in purchase/06, purchase/08, sales/09",
+  "evidence_level": "likely",
+  "found": "2026-10-25",
+  "source": "Case verdicts table (PUR-06)",
+  "refs": []
+ },
+ {
+  "id": "integ:PUR-07",
+  "module": "purchase",
+  "side": "frontend",
+  "severity": "unrated",
+  "title": "E2E helpers hard-coded account ids that are summary accounts in the merged chart",
+  "summary": "Payable ids 50/51 and prepayment 26 pointed to summary or wrong accounts; helpers now resolve defaults.",
+  "status": "fixed",
+  "status_evidence": "payableAccountId()/advanceAccountId() in e2e/support/purchase-extra.ts",
+  "evidence_level": "likely",
+  "found": "2026-10-25",
+  "source": "Case verdicts table (PUR-07)",
+  "refs": []
+ },
+ {
+  "id": "integ:SAL-stockUp",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "unrated",
+  "title": "stockUp split goods as qty/6 giving float error and 400 demandSplits",
+  "summary": "SAL-02-01, 10-01, 11-01, 12-01 failed in beforeAll; whole units per channel now.",
+  "status": "fixed",
+  "status_evidence": "whole units per channel (e2e/support/sales.ts)",
+  "evidence_level": "likely",
+  "found": "2026-10-25",
+  "source": "Case verdicts table (SAL-stockUp)",
+  "refs": []
+ },
+ {
+  "id": "integ:SET-09-01",
+  "module": "settings-platform",
+  "side": "frontend",
+  "severity": "unrated",
+  "title": "Seed default PETTY_CASH_ACCOUNT_ID is 111002 but spec expected 111001",
+  "summary": "Spec now accepts any code starting 1110 for that role.",
+  "status": "fixed",
+  "status_evidence": "accept any code starting 1110",
+  "evidence_level": "likely",
+  "found": "2026-10-25",
+  "source": "Case verdicts table (SET-09-01)",
+  "refs": []
+ },
+ {
+  "id": "integ:ACC-02-01",
+  "module": "accounting",
+  "side": "frontend",
+  "severity": "unrated",
+  "title": "E2E float noise, approveInbox side effects and dropdown race",
+  "summary": "Rounding, approveInbox before baseline and pickOptionOnce fixed.",
+  "status": "fixed",
+  "status_evidence": "round2; approveInbox before the baseline; pickOptionOnce",
+  "evidence_level": "likely",
+  "found": "2026-10-25",
+  "source": "Case verdicts table (ACC-02-01)",
+  "refs": []
+ },
+ {
+  "id": "integ:ACC-04-01",
+  "module": "accounting",
+  "side": "frontend",
+  "severity": "unrated",
+  "title": "E2E asserted cash balance > 0 but it is -11,059.45 on the stack",
+  "summary": "Spec changed to not.toBe(0).",
+  "status": "fixed",
+  "status_evidence": "`not.toBe(0)`",
+  "evidence_level": "likely",
+  "found": "2026-10-25",
+  "source": "Case verdicts table (ACC-04-01)",
+  "refs": []
+ },
+ {
+  "id": "inv:urgency",
+  "module": "inventory",
+  "side": "both",
+  "severity": "unrated",
+  "title": "Stock-out alert page 500s after backend removed urgency from reorder alerts",
+  "summary": "Backend #106 removed urgency; screen rendered row.urgency.toLowerCase(). Urgency column/field removed in src/features/inventory/stock-out-alert/* and its erp-api facade; rebuild needed, UI not re-run green yet.",
+  "status": "fixed",
+  "status_evidence": "'Removed the Urgency column/field ... REBUILD NEEDED; not re-run green yet'",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "INV-04-04, 04-05, 09-01, 09-06, 09-07",
+  "refs": [
+   "INV-04-04",
+   "INV-09-01",
+   "src/erp-api/inventory/stock-out-alert/index.ts"
+  ]
+ },
+ {
+  "id": "inv:INV-01-03",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Form-made lot adjustment has no destination bin; approval answers 400",
+  "summary": "Lot adjustment created from the form lacks a destination bin so approval fails with 400.",
+  "status": "open",
+  "status_evidence": "'backend (kept) ... Still test.fail (expected failure holds)'",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "INV-01-03",
+  "refs": []
+ },
+ {
+  "id": "inv:INV-16",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Adjustment posting defects (INV-16-01,02,05,06)",
+  "summary": "Adjustment posting fixed upstream in backend #106; all 19 posting cases pass.",
+  "status": "fixed",
+  "status_evidence": "'backend fixed upstream ... Adjustment posting fixed (#106)'",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "INV-16-01, 16-02, 16-05, 16-06",
+  "refs": []
+ },
+ {
+  "id": "inv:INV-07-17",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "/receive rejected a body without costDeferred",
+  "summary": "Fixed upstream; passes.",
+  "status": "fixed",
+  "status_evidence": "'/receive accepts a body without costDeferred. Passes'",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "INV-07-17",
+  "refs": [
+   "POST /api/inventory/items/receive"
+  ]
+ },
+ {
+  "id": "inv:INV-06",
+  "module": "inventory",
+  "side": "frontend",
+  "severity": "unrated",
+  "title": "Item Type / Sales Channel filters load options after render and list is virtualised (e2e race)",
+  "summary": "Spec race plus accumulating e2e types; new pickFilter helper in e2e/support/inventory-items.ts; both pass.",
+  "status": "fixed",
+  "status_evidence": "'Both pass'",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "INV-06-03, 06-04",
+  "refs": []
+ },
+ {
+  "id": "vqa:bank-register-width",
+  "module": "reports",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Bank Register hides PAYMENT and BALANCE at 1440 width",
+  "summary": "Table scrollX 1360 pushed columns off-screen; widths reduced in bank-register-view.tsx.",
+  "status": "fixed",
+  "status_evidence": "Visual QA: '(fixed)'; lead must rebuild",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA bank-register-width",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:cash-statement-width",
+  "module": "reports",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Cash Statement AMOUNT and BALANCE columns off-screen at 1440",
+  "summary": "Widths fixed in cash-statement-view.tsx.",
+  "status": "fixed",
+  "status_evidence": "Visual QA: '(fixed)'; lead must rebuild",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA cash-statement-width",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:recon-detail-width",
+  "module": "reports",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Reconciliation Detail BALANCE column off-screen at 1440",
+  "summary": "Widths fixed in reconciliation-detail-view.tsx.",
+  "status": "fixed",
+  "status_evidence": "Visual QA: '(fixed)'; lead must rebuild",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA recon-detail-width",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:recon-detail-bn",
+  "module": "reports",
+  "side": "both",
+  "severity": "medium",
+  "title": "Reconciliation Detail section/figure labels and fiscal period label stay English in Bangla",
+  "summary": "Backend wording printed as is (also merge issue B3).",
+  "status": "open",
+  "status_evidence": "Visual QA: 'M (not fixed, bn)'",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA recon-detail-bn",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:journals-approval-col",
+  "module": "accounting",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Journals list approval column off-screen at 1440, Approve/Reject invisible",
+  "summary": "Approval column now pinned right in columns.tsx.",
+  "status": "fixed",
+  "status_evidence": "Visual QA: '(fixed)'; lead must rebuild",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA journals-approval-col",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:contra-cols",
+  "module": "accounting",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Contra list STATUS/APPROVAL/ACTIONS off-screen at 1440",
+  "summary": "Approval/Actions pinned right, from/to narrowed.",
+  "status": "fixed",
+  "status_evidence": "Visual QA: '(fixed)'; lead must rebuild",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA contra-cols",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:fa-register-width",
+  "module": "fixed-assets",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Fixed asset register Cost, NBV, Method, Custodian, Quantity off-screen at 1440",
+  "summary": "Widths summed to 1920; reduced in columns.tsx. Source rates 'H/M'.",
+  "status": "fixed",
+  "status_evidence": "Visual QA: '(fixed)'; lead must rebuild",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA fa-register-width",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:fa-detail-fields",
+  "module": "fixed-assets",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Fixed asset detail Overview omits serial number, location, custodian",
+  "summary": "Three rows and en/bn keys added.",
+  "status": "fixed",
+  "status_evidence": "Visual QA: '(fixed)'; lead must rebuild",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA fa-detail-fields",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:fa-disposals-width",
+  "module": "fixed-assets",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Disposal register Cost/NBV/Proceeds/Gain-Loss/Status off-screen at 1440",
+  "summary": "Widths reduced in asset-disposals columns.",
+  "status": "fixed",
+  "status_evidence": "Visual QA: '(fixed)'; lead must rebuild",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA fa-disposals-width",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:fa-form-fields",
+  "module": "fixed-assets",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Add-asset form has no Location, Custodian or Cost centre fields though API takes them",
+  "summary": "Form lacks fields available in the API.",
+  "status": "open",
+  "status_evidence": "Visual QA: 'M (not fixed)'",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA fa-form-fields",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:hub-count",
+  "module": "reports",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Report hub category header counts 4 reports while limited user sees 2",
+  "summary": "Banking / Budgeting header count ignores permissions.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA hub-count",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:bankreg-zero",
+  "module": "reports",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Bank Register prints 0.00 on the unused side; rows 55px tall",
+  "summary": "A dash would read better.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA bankreg-zero",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:cash-bn-voucher",
+  "module": "reports",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Cash Statement voucher type stays English in Bangla (humanizeEnum)",
+  "summary": "Cash Receipt/Payment/Contra not translated.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA cash-bn-voucher",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:bva-range",
+  "module": "reports",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Budget vs Actual default range is calendar year, not fiscal year",
+  "summary": "Default range choice.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA bva-range",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:recon-bank-select",
+  "module": "reports",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Reconciliation Detail bank select label clipped",
+  "summary": "Cosmetic.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA recon-bank-select",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:journal-reject-banner",
+  "module": "accounting",
+  "side": "frontend",
+  "severity": "low",
+  "title": "No rejection banner on Draft journal detail; status filter chip reads 'Pending approval Status:'",
+  "summary": "Rejection comment only on the Approval Details tab.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA journal-reject-banner",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:journal-export-label",
+  "module": "accounting",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Journals export strip: whole-set vs this-page buttons differ only by tooltip",
+  "summary": "No visible label.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA journal-export-label",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:contra-reject-comment",
+  "module": "accounting",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Rejected contra shows Draft without the comment",
+  "summary": "Comment not visible.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA contra-reject-comment",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:budget-total-col",
+  "module": "budgets",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Budget monthly grid TOTAL column needs horizontal scroll",
+  "summary": "Cosmetic.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA budget-total-col",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:bankcash-history",
+  "module": "banking",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Bank & Cash History tab says no reconciliation started although a Draft exists",
+  "summary": "History shows only finalized/pending by design.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA bankcash-history",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:fa-raw-enums",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "low",
+  "title": "Backend sentences show raw STRAIGHT_LINE and ISO dates; 'Put into service' shows current location after transfer",
+  "summary": "Backend text printed as is.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA fa-raw-enums",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:fa-transfer-hint",
+  "module": "fixed-assets",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Transfer modal hint text touches the next label",
+  "summary": "Cosmetic.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA fa-transfer-hint",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:fa-depr-labels",
+  "module": "fixed-assets",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Depreciation posted period still titled 'Journal entry this run will raise'; 'Last run' shows previous month",
+  "summary": "Labels wrong after posting.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA fa-depr-labels",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:fa-dispose-zero",
+  "module": "fixed-assets",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Dispose dialog shows '-0.00' for nil depreciation",
+  "summary": "Cosmetic.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA fa-dispose-zero",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:guide-export",
+  "module": "other",
+  "side": "frontend",
+  "severity": "low",
+  "title": "In-app guide reports/export page does not explain whole-set vs this-page export",
+  "summary": "Doc gap.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA guide-export",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:guide-frames",
+  "module": "other",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Guide fixed-assets/register per-tab screenshot frames render blank in full-page shot",
+  "summary": "Probably lazy images; check once.",
+  "status": "open",
+  "status_evidence": "Visual QA: 'check once'",
+  "evidence_level": "suspect",
+  "found": "2026-10-25",
+  "source": "Visual QA guide-frames",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:guide-nav-bn",
+  "module": "other",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Module names stay English in the Bangla nav",
+  "summary": "Not translated.",
+  "status": "open",
+  "status_evidence": "Visual QA: not marked fixed",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA guide-nav-bn",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "vqa:journal-detail-task",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Journal detail GET lacks taskId/workflowInstanceId for dev admin while search list has canTakeAction",
+  "summary": "Frontend must use list data; detail page still shows Approve/Reject.",
+  "status": "open",
+  "status_evidence": "Env notes: dev admin gets canTakeAction on list, not detail",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Visual QA journal-detail-task",
+  "refs": [
+   "feat/accounting-backend-sync"
+  ]
+ },
+ {
+  "id": "merge:A1",
+  "module": "other",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Six new workflow seeders call removed assignRoleToPlatformAdmin (compile error)",
+  "summary": "After merge mvn package fails; frontend deleted the six calls locally. Blocks merge.",
+  "status": "open",
+  "status_evidence": "Merge prompt: raised to backend team, no answer in file",
+  "evidence_level": "verified",
+  "found": "2026-10-24",
+  "source": "Merge issues A1",
+  "refs": [
+   "feature/accounting bb54acf8",
+   "release_0.0.9 8170575a",
+   "WorkflowSeederRbacSupport",
+   "410c1d1c",
+   "30b5a8aa"
+  ]
+ },
+ {
+  "id": "merge:A2",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Release chart seed PETTY_CASH_ACCOUNT_ID points to account 1110 which became a summary group (startup failure)",
+  "summary": "Merged backend exits in a loop with 'account 1110 is a summary account'; local fix used 111002. Blocks merge.",
+  "status": "open",
+  "status_evidence": "Merge prompt: raised to backend team, no answer in file",
+  "evidence_level": "verified",
+  "found": "2026-10-24",
+  "source": "Merge issues A2",
+  "refs": [
+   "feature/accounting bb54acf8",
+   "release_0.0.9 8170575a",
+   "src/main/resources/accounting/seed/petra-chart.json"
+  ]
+ },
+ {
+  "id": "merge:A3",
+  "module": "other",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Merge conflict in docs/accounting/chart/build_revised_chart.py",
+  "summary": "Both sides edited the doc tooling file; not part of the build.",
+  "status": "open",
+  "status_evidence": "Merge prompt: raised to backend team, no answer in file",
+  "evidence_level": "verified",
+  "found": "2026-10-24",
+  "source": "Merge issues A3",
+  "refs": [
+   "feature/accounting bb54acf8",
+   "release_0.0.9 8170575a",
+   "build_revised_chart.py"
+  ]
+ },
+ {
+  "id": "merge:A4",
+  "module": "other",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Branch a week behind release; clean-merge failures need rebase and rerun",
+  "summary": "Merge release into branch before final merge.",
+  "status": "open",
+  "status_evidence": "Merge prompt: raised to backend team, no answer in file",
+  "evidence_level": "likely",
+  "found": "2026-10-24",
+  "source": "Merge issues A4",
+  "refs": [
+   "feature/accounting bb54acf8",
+   "release_0.0.9 8170575a"
+  ]
+ },
+ {
+  "id": "merge:B1",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Confirm document-version rule for in-module postings (VAT settle) after merge",
+  "summary": "Two commits (0430fa91, aa64f121) encode opposite rules for missing documentVersion; pick one.",
+  "status": "decision",
+  "status_evidence": "Merge prompt: 'Pick one rule'",
+  "evidence_level": "likely",
+  "found": "2026-10-24",
+  "source": "Merge issues B1",
+  "refs": [
+   "feature/accounting bb54acf8",
+   "release_0.0.9 8170575a",
+   "VatReturnService.settle",
+   "0430fa91",
+   "aa64f121"
+  ]
+ },
+ {
+  "id": "merge:B2",
+  "module": "accounting",
+  "side": "both",
+  "severity": "unrated",
+  "title": "Reconciliation and journal detail endpoints do not fill taskId / canTakeAction",
+  "summary": "GET /bank-reconciliations, /{id} and GET /journal-entries/{id} omit taskId/canTakeAction, so frontend uses workarounds (search lookup, inbox scan that loses tasks past page 1).",
+  "status": "open",
+  "status_evidence": "Merge prompt: raised to backend team, no answer in file",
+  "evidence_level": "verified",
+  "found": "2026-10-24",
+  "source": "Merge issues B2",
+  "refs": [
+   "feature/accounting bb54acf8",
+   "release_0.0.9 8170575a",
+   "BankReconciliationDTO",
+   "JournalEntryResponseDTO"
+  ]
+ },
+ {
+  "id": "merge:B3",
+  "module": "reports",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Reconciliation Detail report returns English-only row labels with no code to translate",
+  "summary": "GET /api/accounting/reports/reconciliation-detail labels like 'Reconciled' mix dates and have no stable code; Bengali users see English.",
+  "status": "open",
+  "status_evidence": "Merge prompt: raised to backend team, no answer in file",
+  "evidence_level": "verified",
+  "found": "2026-10-24",
+  "source": "Merge issues B3",
+  "refs": [
+   "feature/accounting bb54acf8",
+   "release_0.0.9 8170575a",
+   "GET /api/accounting/reports/reconciliation-detail"
+  ]
+ },
+ {
+  "id": "merge:B4",
+  "module": "reports",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Excel exports carry report title only as sheet name",
+  "summary": "Not a defect against the guide; decision whether to add title/filter row in ExcelExportService.writeXlsx.",
+  "status": "decision",
+  "status_evidence": "Merge prompt B4: 'Not a defect'",
+  "evidence_level": "likely",
+  "found": "2026-10-24",
+  "source": "Merge issues B4",
+  "refs": [
+   "feature/accounting bb54acf8",
+   "release_0.0.9 8170575a",
+   "ExcelExportService.writeXlsx"
+  ]
+ },
+ {
+  "id": "merge:B5",
+  "module": "banking",
+  "side": "backend",
+  "severity": "low",
+  "title": "Bank reconciliations export reads bankAccountId filter missing from the Exports guide",
+  "summary": "Contract doc gap.",
+  "status": "open",
+  "status_evidence": "Merge prompt: raised to backend team, no answer in file",
+  "evidence_level": "verified",
+  "found": "2026-10-24",
+  "source": "Merge issues B5",
+  "refs": [
+   "feature/accounting bb54acf8",
+   "release_0.0.9 8170575a",
+   "bank-reconciliations export"
+  ]
+ },
+ {
+  "id": "merge:C1",
+  "module": "other",
+  "side": "backend",
+  "severity": "low",
+  "title": "Guide says task complete decision APPROVE/REJECT; code accepts approved/rejected",
+  "summary": "POST /api/workflow/tasks/{taskId}/complete answers 400 for APPROVE.",
+  "status": "open",
+  "status_evidence": "Merge prompt: raised to backend team, no answer in file",
+  "evidence_level": "verified",
+  "found": "2026-10-24",
+  "source": "Merge issues C1",
+  "refs": [
+   "feature/accounting bb54acf8",
+   "release_0.0.9 8170575a",
+   "CompleteTaskRequest.java",
+   "POST /api/workflow/tasks/{taskId}/complete"
+  ]
+ },
+ {
+  "id": "merge:C2",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Guide wording on canTakeAction/taskId meaning 'for the caller' should be explicit",
+  "summary": "After #102 platform admin is not approver so taskId is null though a task is pending.",
+  "status": "open",
+  "status_evidence": "Merge prompt C2: 'keep the guide's wording explicit'",
+  "evidence_level": "likely",
+  "found": "2026-10-24",
+  "source": "Merge issues C2",
+  "refs": [
+   "feature/accounting bb54acf8",
+   "release_0.0.9 8170575a"
+  ]
+ },
+ {
+  "id": "merge:D1",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Decision: cash/bank became groups; what happens to existing postings on 1110",
+  "summary": "Existing lines on 1110 sit on an account that now refuses postings; migration or new-books-only?",
+  "status": "decision",
+  "status_evidence": "Merge prompt D1 question",
+  "evidence_level": "likely",
+  "found": "2026-10-24",
+  "source": "Merge issues D1",
+  "refs": [
+   "feature/accounting bb54acf8",
+   "release_0.0.9 8170575a"
+  ]
+ },
+ {
+  "id": "merge:D2",
+  "module": "fixed-assets",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Decision: Fixed Asset Method master deliberately not built",
+  "summary": "Confirm final; frontend removed Method tab.",
+  "status": "decision",
+  "status_evidence": "Merge prompt D2 'Confirm that is final'",
+  "evidence_level": "likely",
+  "found": "2026-10-24",
+  "source": "Merge issues D2",
+  "refs": [
+   "feature/accounting bb54acf8",
+   "release_0.0.9 8170575a"
+  ]
+ },
+ {
+  "id": "merge:D3",
+  "module": "other",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Decision: which dev account holds approver roles after #102",
+  "summary": "No dev user is an approver, breaking demo/e2e approvals through the UI.",
+  "status": "decision",
+  "status_evidence": "Merge prompt D3 question",
+  "evidence_level": "likely",
+  "found": "2026-10-24",
+  "source": "Merge issues D3",
+  "refs": [
+   "feature/accounting bb54acf8",
+   "release_0.0.9 8170575a",
+   "30b5a8aa",
+   "#102"
+  ]
+ },
+ {
+  "id": "merge:D4",
+  "module": "sales",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Confirm: sales order exceeding approved demand and fulfilment on rejected order now pass (SAL-05-03, SAL-05-07)",
+  "summary": "Cases that used to fail now pass on the merged backend; intentional?",
+  "status": "decision",
+  "status_evidence": "Merge prompt D4 question",
+  "evidence_level": "likely",
+  "found": "2026-10-24",
+  "source": "Merge issues D4",
+  "refs": [
+   "feature/accounting bb54acf8",
+   "release_0.0.9 8170575a"
+  ]
+ },
+ {
+  "id": "posting:lost-events",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "ACCOUNTING_POSTING_REQUESTED events marked PUBLISHED never reach the consumer; documents stay NOT_POSTED",
+  "summary": "On the shared testing server events are marked PUBLISHED in the outbox but vanish before the accounting consumer; requeuing to PENDING posts them. Cause unknown (outbox confirms, topology order, or server artefact).",
+  "status": "open",
+  "status_evidence": "Prompt asks backend to confirm or rule out; workaround SQL requeue in use",
+  "evidence_level": "verified",
+  "found": "2026-10-25",
+  "source": "Whole file",
+  "refs": [
+   "release_0.0.9 8a6953bd",
+   "446634da",
+   "outbox_events",
+   "consumed_domain_events",
+   "OutboxProcessor",
+   "erp.module.accounting",
+   "GET /api/purchase/postings"
+  ]
+ },
+ {
+  "id": "posting:retry-endpoint",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "unrated",
+  "title": "Question: supported way to re-trigger posting of a document with no posting log row",
+  "summary": "Existing exceptions-list retry only works for rows that exist.",
+  "status": "decision",
+  "status_evidence": "Prompt: 'tell us if there is a supported way to re-trigger'",
+  "evidence_level": "unknown",
+  "found": "2026-10-25",
+  "source": "'What we would like back'",
+  "refs": []
+ }
+]

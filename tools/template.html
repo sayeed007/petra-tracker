@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Petra Issue Tracker</title>
+<style>
+:root{--bg:#f6f6f4;--card:#fff;--ink:#1d1d1b;--mute:#6b6b66;--line:#e2e1dc;--acc:#c81d34;
+--high:#c81d34;--medium:#c27b0a;--low:#4b7bb5;--unrated:#8a8a85;
+--s-open:#c27b0a;--s-in-progress:#4b7bb5;--s-fixed-per-log:#6a9955;--s-fixed:#1f8a4c;--s-still-bug:#c81d34;--s-decision:#7a5bb5;--s-wontfix:#8a8a85;--s-unknown:#8a8a85}
+@media (prefers-color-scheme:dark){:root{--bg:#161615;--card:#1f1f1d;--ink:#ecebe6;--mute:#9a9992;--line:#34332f}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif}
+header,main{max-width:1200px;margin:0 auto;padding:0 16px}
+header{padding-top:20px}h1{font-size:20px;margin:0 0 2px}.sub{color:var(--mute);font-size:12px;margin-bottom:14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:14px}
+.mod{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left;color:inherit;font:inherit}
+.mod.on{outline:2px solid var(--acc)}.mod b{display:block;font-size:13px}.mod span{font-size:12px;color:var(--mute)}
+.bar{height:5px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden;display:flex}.bar i{display:block;height:100%}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+select,input{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit}
+input{flex:1;min-width:200px}
+.count{color:var(--mute);font-size:12px;margin:4px 0 8px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;text-transform:uppercase;color:var(--mute);letter-spacing:.04em}
+tr.row{cursor:pointer}tr.row:hover{background:color-mix(in srgb,var(--acc) 5%,transparent)}
+.pill{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600;color:#fff;white-space:nowrap}
+.id{font:12px ui-monospace,Consolas,monospace;color:var(--mute)}
+.detail td{background:color-mix(in srgb,var(--bg) 60%,var(--card));font-size:13px}
+.detail dl{margin:0;display:grid;grid-template-columns:130px 1fr;gap:4px 12px}.detail dt{color:var(--mute)}.detail dd{margin:0}
+@media (max-width:700px){.hide-s{display:none}.detail dl{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+<h1>Petra issue tracker</h1>
+<div class="sub">Built __BUILT__ from the notes and code-review work plans. Status shows what the documents say; "fixed-per-log" means a fix log claims it, not that the branch was checked.</div>
+<div class="cards" id="cards"></div>
+<div class="filters">
+<input id="q" placeholder="Search title, id, endpoint, branch…">
+<select id="side"><option value="">Front + back</option><option>frontend</option><option>backend</option><option>both</option></select>
+<select id="sev"><option value="">Any severity</option><option>high</option><option>medium</option><option>low</option><option>unrated</option></select>
+<select id="st"><option value="">Any status</option></select>
+<select id="set"><option value="">All sources</option></select>
+</div>
+<div class="count" id="count"></div>
+</header>
+<main><table><thead><tr><th>Sev</th><th>Status</th><th>Module</th><th>Side</th><th>Title</th><th class="hide-s">ID</th></tr></thead><tbody id="rows"></tbody></table></main>
+<script>
+const DATA=/*DATA*/[];
+const SC={open:"--s-open","in-progress":"--s-in-progress","fixed-per-log":"--s-fixed-per-log",fixed:"--s-fixed","still-bug":"--s-still-bug",decision:"--s-decision",wontfix:"--s-wontfix",unknown:"--s-unknown"};
+const STS=Object.keys(SC),$=s=>document.querySelector(s);
+const f={module:"",q:"",side:"",sev:"",st:"",set:""};
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pill=(t,c)=>`<span class="pill" style="background:var(${c})">${esc(t)}</span>`;
+STS.forEach(s=>$("#st").add(new Option(s,s)));
+[...new Set(DATA.map(d=>d.set))].sort().forEach(s=>$("#set").add(new Option(s,s)));
+function match(d,skipModule){
+ if(!skipModule&&f.module&&d.module!==f.module)return false;
+ if(f.side&&d.side!==f.side)return false;if(f.sev&&d.severity!==f.sev)return false;
+ if(f.st&&d.status!==f.st)return false;if(f.set&&d.set!==f.set)return false;
+ if(f.q){const h=(d.id+" "+d.title+" "+d.summary+" "+d.refs.join(" ")+" "+d.source).toLowerCase();if(!f.q.split(/\s+/).every(w=>h.includes(w)))return false}
+ return true}
+function cards(){
+ const mods=[...new Set(DATA.map(d=>d.module))].sort();
+ const all=DATA.filter(d=>match(d,true));
+ $("#cards").innerHTML=[["","All",all]].concat(mods.map(m=>[m,m,all.filter(d=>d.module===m)])).map(([k,l,arr])=>{
+  const open=arr.filter(d=>["open","still-bug","in-progress"].includes(d.status)).length;
+  const segs=STS.map(s=>{const n=arr.filter(d=>d.status===s).length;return n?`<i style="width:${n/arr.length*100}%;background:var(${SC[s]})"></i>`:""}).join("");
+  return `<button class="mod ${f.module===k?"on":""}" data-m="${esc(k)}"><b>${esc(l)}</b><span>${arr.length} items · ${open} open</span><div class="bar">${segs}</div></button>`}).join("")}
+function rows(){
+ const arr=DATA.filter(d=>match(d)),sh=arr.slice(0,400);
+ $("#count").textContent=`${arr.length} items${arr.length>400?" (first 400 shown, narrow the filters)":""}`;
+ $("#rows").innerHTML=sh.map((d,i)=>`<tr class="row" data-i="${DATA.indexOf(d)}"><td>${pill(d.severity,"--"+d.severity)}</td><td>${pill(d.status,SC[d.status])}</td><td>${esc(d.module)}</td><td>${esc(d.side)}</td><td>${esc(d.title)}</td><td class="hide-s id">${esc(d.id)}</td></tr>`).join("")}
+function detail(tr){
+ const nx=tr.nextElementSibling;if(nx&&nx.classList.contains("detail")){nx.remove();return}
+ const d=DATA[tr.dataset.i],chk=d.checked&&d.checked.date?` (checked ${esc(d.checked.date)} ${esc(d.checked.ref)})`:"";
+ const t=document.createElement("tr");t.className="detail";
+ t.innerHTML=`<td colspan="6"><dl><dt>ID</dt><dd class="id">${esc(d.id)}</dd><dt>What</dt><dd>${esc(d.summary||d.title)}</dd><dt>Status evidence</dt><dd>${esc(d.status_evidence)}${chk}</dd><dt>Evidence level</dt><dd>${esc(d.evidence_level)}</dd><dt>Found</dt><dd>${esc(d.found)}</dd><dt>Source</dt><dd class="id">${esc(d.source)}</dd>${d.refs.length?`<dt>Refs</dt><dd class="id">${esc(d.refs.join(", "))}</dd>`:""}${d.theme?`<dt>Theme</dt><dd>${esc(d.theme)}</dd>`:""}${d.size?`<dt>Size</dt><dd>${esc(d.size)}</dd>`:""}</dl></td>`;
+ tr.after(t)}
+function render(){cards();rows()}
+$("#cards").onclick=e=>{const b=e.target.closest(".mod");if(b){f.module=b.dataset.m;render()}};
+$("#rows").onclick=e=>{const tr=e.target.closest("tr.row");if(tr)detail(tr)};
+$("#q").oninput=e=>{f.q=e.target.value.toLowerCase().trim();render()};
+for(const k of["side","sev","st","set"])$("#"+k).onchange=e=>{f[k]=e.target.value;render()};
+render();
+</script>
+</body></html>

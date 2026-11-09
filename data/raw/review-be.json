@@ -1,0 +1,5566 @@
+[
+ {
+  "id": "rv-be:accounting:1",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "high",
+  "title": "Variance adjustment sign",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-C01-1"
+  ],
+  "size": "",
+  "theme": "Theme 1. Wrong money or wrong calculation"
+ },
+ {
+  "id": "rv-be:accounting:2",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Line rounding breaks balance",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-C02-2"
+  ],
+  "size": "",
+  "theme": "Theme 1. Wrong money or wrong calculation"
+ },
+ {
+  "id": "rv-be:accounting:3",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "VAT settlement uses live figures; settlement account unchecked",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A06-6",
+   "be-C03-6; merged",
+   "highest severity MEDIUM"
+  ],
+  "size": "",
+  "theme": "Theme 1. Wrong money or wrong calculation"
+ },
+ {
+  "id": "rv-be:accounting:4",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "high",
+  "title": "Finalize posts twice",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A02-1"
+  ],
+  "size": "",
+  "theme": "Theme 2. Missing lock or race"
+ },
+ {
+  "id": "rv-be:accounting:5",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Cash drawer can go negative",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "AB-5"
+  ],
+  "size": "",
+  "theme": "Theme 2. Missing lock or race"
+ },
+ {
+  "id": "rv-be:accounting:6",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Opening balance doubled by two requests",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "AB-7"
+  ],
+  "size": "",
+  "theme": "Theme 2. Missing lock or race"
+ },
+ {
+  "id": "rv-be:accounting:7",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Period close/reopen/lock does not lock against postings; duplicate periods",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "AB-6"
+  ],
+  "size": "",
+  "theme": "Theme 2. Missing lock or race"
+ },
+ {
+  "id": "rv-be:accounting:8",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Races that give a 500 instead of a 409",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A02-6",
+   "AB-8",
+   "be-A06-12",
+   "be-A07-6"
+  ],
+  "size": "",
+  "theme": "Theme 2. Missing lock or race"
+ },
+ {
+  "id": "rv-be:accounting:9",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Approve ignores the period status",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A04-1"
+  ],
+  "size": "",
+  "theme": "Theme 3. Missing validation and missing business rule checks"
+ },
+ {
+  "id": "rv-be:accounting:10",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Manual match / flag accept any ledger line",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A02-2"
+  ],
+  "size": "",
+  "theme": "Theme 3. Missing validation and missing business rule checks"
+ },
+ {
+  "id": "rv-be:accounting:11",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Statement import confirm skips the month rule",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A02-3"
+  ],
+  "size": "",
+  "theme": "Theme 3. Missing validation and missing business rule checks"
+ },
+ {
+  "id": "rv-be:accounting:12",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Auto-match is not safe (duplicates, date cut-off) and is slow",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A02-4",
+   "AB-4; merged",
+   "MEDIUM is the highest"
+  ],
+  "size": "",
+  "theme": "Theme 3. Missing validation and missing business rule checks"
+ },
+ {
+  "id": "rv-be:accounting:13",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Dispose accepts a date before acquisition; fiscal state changes lack @Transactional",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A03-7"
+  ],
+  "size": "",
+  "theme": "Theme 3. Missing validation and missing business rule checks"
+ },
+ {
+  "id": "rv-be:accounting:14",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Import endpoints ignore the reconciliation id in the URL",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A01-6"
+  ],
+  "size": "",
+  "theme": "Theme 3. Missing validation and missing business rule checks"
+ },
+ {
+  "id": "rv-be:accounting:15",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Over-long text fails the whole call with a generic 409",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-C01-3; also Common C-3"
+  ],
+  "size": "",
+  "theme": "Theme 3. Missing validation and missing business rule checks"
+ },
+ {
+  "id": "rv-be:accounting:16",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Period-close owner id not checked; petty-cash mapping body not validated",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A04-11"
+  ],
+  "size": "",
+  "theme": "Theme 3. Missing validation and missing business rule checks"
+ },
+ {
+  "id": "rv-be:accounting:17",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Mappings accept ids of channels/categories that do not exist; \"null null\" in year-end history",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A06-10"
+  ],
+  "size": "",
+  "theme": "Theme 3. Missing validation and missing business rule checks"
+ },
+ {
+  "id": "rv-be:accounting:18",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Statement column guess maps \"Description\" as the Credit column",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A01-5"
+  ],
+  "size": "",
+  "theme": "Theme 3. Missing validation and missing business rule checks"
+ },
+ {
+  "id": "rv-be:accounting:19",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Statement import error text and silent storage failure",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "AB-9"
+  ],
+  "size": "",
+  "theme": "Theme 3. Missing validation and missing business rule checks"
+ },
+ {
+  "id": "rv-be:accounting:20",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Dev profile default, secrets in git, bootstrap on",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A22-6; Common C-7"
+  ],
+  "size": "",
+  "theme": "Theme 4. Security: permissions, client-controlled fields, secrets (Common: C-7)"
+ },
+ {
+  "id": "rv-be:accounting:21",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Close-task request accepts any journal entry id",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-C02-1; Common C-7"
+  ],
+  "size": "",
+  "theme": "Theme 4. Security: permissions, client-controlled fields, secrets (Common: C-7)"
+ },
+ {
+  "id": "rv-be:accounting:22",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Depreciation controller: one `create` permission for everything",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A03-5; Common C-7"
+  ],
+  "size": "",
+  "theme": "Theme 4. Security: permissions, client-controlled fields, secrets (Common: C-7)"
+ },
+ {
+  "id": "rv-be:accounting:23",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Payroll not buildable is stored but never posted",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A04-5"
+  ],
+  "size": "",
+  "theme": "Theme 5. Data left behind or work silently lost (workflow, posting, children)"
+ },
+ {
+  "id": "rv-be:accounting:24",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Reversed cost-of-goods-sold entry blocks redoing the month",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A04-4"
+  ],
+  "size": "",
+  "theme": "Theme 5. Data left behind or work silently lost (workflow, posting, children)"
+ },
+ {
+  "id": "rv-be:accounting:25",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Fiscal calendar re-cut fails with a database error",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A03-3"
+  ],
+  "size": "",
+  "theme": "Theme 5. Data left behind or work silently lost (workflow, posting, children)"
+ },
+ {
+  "id": "rv-be:accounting:26",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Period-close summary: catch blocks do not work inside one read-only transaction",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A04-3"
+  ],
+  "size": "",
+  "theme": "Theme 5. Data left behind or work silently lost (workflow, posting, children)"
+ },
+ {
+  "id": "rv-be:accounting:27",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Draft edit keeps the old voucher type and number",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A04-2"
+  ],
+  "size": "",
+  "theme": "Theme 5. Data left behind or work silently lost (workflow, posting, children)"
+ },
+ {
+  "id": "rv-be:accounting:28",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Land (NONE method) assets cannot be created or edited",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A03-1"
+  ],
+  "size": "",
+  "theme": "Theme 5. Data left behind or work silently lost (workflow, posting, children)"
+ },
+ {
+  "id": "rv-be:accounting:29",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Depreciation schedule NPE and false \"next run\" for NONE assets",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A03-2"
+  ],
+  "size": "",
+  "theme": "Theme 5. Data left behind or work silently lost (workflow, posting, children)"
+ },
+ {
+  "id": "rv-be:accounting:30",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Posting log find-then-insert race",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A05-5"
+  ],
+  "size": "",
+  "theme": "Theme 5. Data left behind or work silently lost (workflow, posting, children)"
+ },
+ {
+  "id": "rv-be:accounting:31",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Payroll deduction bucketed by exact text",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A05-4"
+  ],
+  "size": "",
+  "theme": "Theme 5. Data left behind or work silently lost (workflow, posting, children)"
+ },
+ {
+  "id": "rv-be:accounting:32",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Depreciation run: one SUM query per asset",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "AB-1"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:33",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Journal entries of one period: unbounded list, lazy rows",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "AB-2"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:34",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Bank history list and exports: no size cap, rebuild per row",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A01-4; Common C-6"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:35",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Reconciliation statement scans the whole book per build",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A02-5"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:36",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Bank-and-cash check loads full lists per account",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A04-6"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:37",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Stock-count paths read the whole item catalogue and sheet",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A04-7"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:38",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Transaction Detail: one journal entry query per line",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A06-1; Common C-4"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:39",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Budget vs Actual: lazy account per budget line",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A06-5; Common C-4"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:40",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Asset type list: one COUNT per type",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "AB-3"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:41",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Budget list loads lines lazily and unbounded",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A02-8"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:42",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Large in-memory lists (chart filter, exports, workspace loops)",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A02-10; Common C-6"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:43",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Fixed-asset register list and exports: unpaged, lazy per row",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A03-6"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:44",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Inventory margin cards re-run the book-wide balance query up to 7 times",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A04-8"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:45",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Journals list search cannot use indexes",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A04-9; Common C-2"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:46",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Hand-typed entries: per-line lookups",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A04-10; Common C-4"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:47",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Posting looks up the ledger mapping once per line",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A05-3"
+  ],
+  "size": "",
+  "theme": "Theme 6. Slow or unbounded queries (Common: C-4 batch fetching, C-6 limits)"
+ },
+ {
+  "id": "rv-be:accounting:48",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Foreign keys without an index (accounting, RBAC, approval, workflow)",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A23-2; Common C-2"
+  ],
+  "size": "",
+  "theme": "Theme 7. Common C-2: missing foreign-key indexes"
+ },
+ {
+  "id": "rv-be:accounting:49",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Request bodies not `@Valid`, no size caps",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A02-7; Common C-3"
+  ],
+  "size": "",
+  "theme": "Theme 8. Common C-3: request validation"
+ },
+ {
+  "id": "rv-be:accounting:50",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Percent versus fraction rates not bounded",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-B01-4; Common C-3"
+  ],
+  "size": "",
+  "theme": "Theme 8. Common C-3: request validation"
+ },
+ {
+  "id": "rv-be:accounting:51",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Retired fiscal endpoints still published",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A02-9"
+  ],
+  "size": "",
+  "theme": "Theme 9. Wrong or confusing API contract; dead code; tidy-ups"
+ },
+ {
+  "id": "rv-be:accounting:52",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Free-string statuses and types that should be enums",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-C01-5",
+   "be-C02-3",
+   "be-A05-7"
+  ],
+  "size": "",
+  "theme": "Theme 9. Wrong or confusing API contract; dead code; tidy-ups"
+ },
+ {
+  "id": "rv-be:accounting:53",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Entity and Javadoc drift from the schema",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-C01-6"
+  ],
+  "size": "",
+  "theme": "Theme 9. Wrong or confusing API contract; dead code; tidy-ups"
+ },
+ {
+  "id": "rv-be:accounting:54",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Sibling DTOs disagree on JSON names; misleading docs",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-C02-4"
+  ],
+  "size": "",
+  "theme": "Theme 9. Wrong or confusing API contract; dead code; tidy-ups"
+ },
+ {
+  "id": "rv-be:accounting:55",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Nullable fields where the rule needs a value",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-B01-6"
+  ],
+  "size": "",
+  "theme": "Theme 9. Wrong or confusing API contract; dead code; tidy-ups"
+ },
+ {
+  "id": "rv-be:accounting:56",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Minor tidy-ups in fixed assets",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/01-accounting.md",
+  "refs": [
+   "be-A03-8"
+  ],
+  "size": "",
+  "theme": "Theme 9. Wrong or confusing API contract; dead code; tidy-ups"
+ },
+ {
+  "id": "rv-be:purchase:1",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "high",
+  "title": "Concurrent payments over-pay a bill",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "B-1"
+  ],
+  "size": "",
+  "theme": "Theme 1: Wrong money and wrong calculation"
+ },
+ {
+  "id": "rv-be:purchase:2",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "high",
+  "title": "Bill credit and payment do not see each other; no re-check at approval",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "B-2"
+  ],
+  "size": "",
+  "theme": "Theme 1: Wrong money and wrong calculation"
+ },
+ {
+  "id": "rv-be:purchase:3",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "high",
+  "title": "Prepayment of another vendor can fund a payment",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A12-1"
+  ],
+  "size": "",
+  "theme": "Theme 1: Wrong money and wrong calculation"
+ },
+ {
+  "id": "rv-be:purchase:4",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Three-way match: bill quantity not compared with received quantity",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "B-5"
+  ],
+  "size": "",
+  "theme": "Theme 1: Wrong money and wrong calculation"
+ },
+ {
+  "id": "rv-be:purchase:5",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Partial or duplicate bill lines",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A10-4"
+  ],
+  "size": "",
+  "theme": "Theme 1: Wrong money and wrong calculation"
+ },
+ {
+  "id": "rv-be:purchase:6",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Bill credit: lines not tied to the return; price, quantity ceiling, VAT range, rounding",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A10-2"
+  ],
+  "size": "",
+  "theme": "Purchase order money trusted from the client; lines not tied to requisition  [MEDIUM] [VERIFIED]  (source IDs: be-A11-4, be-B02-4 (PO part))"
+ },
+ {
+  "id": "rv-be:purchase:7",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Month-end payable balance ignores bill credits and PI applications",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A10-5"
+  ],
+  "size": "",
+  "theme": "Tax rate unit differs between documents (percent vs fraction), posting guesses  [MEDIUM] [VERIFIED]  (source IDs: be-A13-5, be-B02-5, be-A12-10 (third bullet))"
+ },
+ {
+  "id": "rv-be:purchase:8",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Vendor return request: money, item and vendor taken from the client",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A13-4"
+  ],
+  "size": "",
+  "theme": "Tax rate unit differs between documents (percent vs fraction), posting guesses  [MEDIUM] [VERIFIED]  (source IDs: be-A13-5, be-B02-5, be-A12-10 (third bullet))"
+ },
+ {
+  "id": "rv-be:purchase:9",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "low",
+  "title": "Bill credit initialAmount copied from the request",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-C04-5"
+  ],
+  "size": "",
+  "theme": "Tax rate unit differs between documents (percent vs fraction), posting guesses  [MEDIUM] [VERIFIED]  (source IDs: be-A13-5, be-B02-5, be-A12-10 (third bullet))"
+ },
+ {
+  "id": "rv-be:purchase:10",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "low",
+  "title": "Extra-cost allocation drops the rounding remainder",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A09-9"
+  ],
+  "size": "",
+  "theme": "Tax rate unit differs between documents (percent vs fraction), posting guesses  [MEDIUM] [VERIFIED]  (source IDs: be-A13-5, be-B02-5, be-A12-10 (third bullet))"
+ },
+ {
+  "id": "rv-be:purchase:11",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "low",
+  "title": "PO \"Related Records\" shows the whole payment amount",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A11-11"
+  ],
+  "size": "",
+  "theme": "Tax rate unit differs between documents (percent vs fraction), posting guesses  [MEDIUM] [VERIFIED]  (source IDs: be-A13-5, be-B02-5, be-A12-10 (third bullet))"
+ },
+ {
+  "id": "rv-be:purchase:12",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Optimistic locking missing on all purchase and sales entities",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-B02-9"
+  ],
+  "size": "",
+  "theme": "Theme 2: Missing lock or race"
+ },
+ {
+  "id": "rv-be:purchase:13",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Prepayment draw-down",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A12-9"
+  ],
+  "size": "",
+  "theme": "Theme 2: Missing lock or race"
+ },
+ {
+  "id": "rv-be:purchase:14",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "high",
+  "title": "Vendor return fulfilment race",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A13-1"
+  ],
+  "size": "",
+  "theme": "Theme 2: Missing lock or race"
+ },
+ {
+  "id": "rv-be:purchase:15",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Approval handlers not idempotent",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "B-3"
+  ],
+  "size": "",
+  "theme": "Theme 2: Missing lock or race"
+ },
+ {
+  "id": "rv-be:purchase:16",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Read-modify-write on PO / PI line quantities",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "B-4",
+   "B-8"
+  ],
+  "size": "",
+  "theme": "Theme 2: Missing lock or race"
+ },
+ {
+  "id": "rv-be:purchase:17",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Duplicate purchase order for one requisition",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A11-2"
+  ],
+  "size": "",
+  "theme": "Theme 2: Missing lock or race"
+ },
+ {
+  "id": "rv-be:purchase:18",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Requester approvals at the same time leave a requisition stuck",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A09-5"
+  ],
+  "size": "",
+  "theme": "Theme 2: Missing lock or race"
+ },
+ {
+  "id": "rv-be:purchase:19",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "LC customs re-save moves channel split without moving stock",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A10-7"
+  ],
+  "size": "",
+  "theme": "Theme 2: Missing lock or race"
+ },
+ {
+  "id": "rv-be:purchase:20",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Postings endpoint returns any document type",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A12-2"
+  ],
+  "size": "",
+  "theme": "Theme 3: Missing permission or client-controlled field"
+ },
+ {
+  "id": "rv-be:purchase:21",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "low",
+  "title": "workflow-decision endpoints complete any task, not the task of {id}",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A11-8",
+   "be-A13-11"
+  ],
+  "size": "",
+  "theme": "Theme 3: Missing permission or client-controlled field"
+ },
+ {
+  "id": "rv-be:purchase:22",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Item receipt edit trusts source line ids, type and item",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A10-1"
+  ],
+  "size": "",
+  "theme": "Theme 3: Missing permission or client-controlled field"
+ },
+ {
+  "id": "rv-be:purchase:23",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Editing a PO skips every conversion check and ignores a running approval",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A11-3"
+  ],
+  "size": "",
+  "theme": "Foreign child ids accepted when updating (merge helpers)  [MEDIUM] [LIKELY]  (source IDs: be-A12-3, be-C05-1, be-A10-11 (second bullet))"
+ },
+ {
+  "id": "rv-be:purchase:24",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "LOCAL PO can be created from a vendor selection that is not APPROVED",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A13-2"
+  ],
+  "size": "",
+  "theme": "Foreign child ids accepted when updating (merge helpers)  [MEDIUM] [LIKELY]  (source IDs: be-A12-3, be-C05-1, be-A10-11 (second bullet))"
+ },
+ {
+  "id": "rv-be:purchase:25",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Vendor selection update trusts requisitionId from the body",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A13-3"
+  ],
+  "size": "",
+  "theme": "Foreign child ids accepted when updating (merge helpers)  [MEDIUM] [LIKELY]  (source IDs: be-A12-3, be-C05-1, be-A10-11 (second bullet))"
+ },
+ {
+  "id": "rv-be:purchase:26",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "low",
+  "title": "Attachment id linked to a receipt without any check",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-C04-6"
+  ],
+  "size": "",
+  "theme": "Foreign child ids accepted when updating (merge helpers)  [MEDIUM] [LIKELY]  (source IDs: be-A12-3, be-C05-1, be-A10-11 (second bullet))"
+ },
+ {
+  "id": "rv-be:purchase:27",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "low",
+  "title": "Material requisition: approved MR relinked with edit permission, other edits ignored",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A11-12"
+  ],
+  "size": "",
+  "theme": "Requisition create accepts server-set fields; requester ids unchecked  [LOW] [VERIFIED]  (source IDs: be-C05-4, be-A13-12 (second bullet))"
+ },
+ {
+  "id": "rv-be:purchase:28",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "low",
+  "title": "Document status honoured from the client on create",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "B-9"
+  ],
+  "size": "",
+  "theme": "Requisition create accepts server-set fields; requester ids unchecked  [LOW] [VERIFIED]  (source IDs: be-C05-4, be-A13-12 (second bullet))"
+ },
+ {
+  "id": "rv-be:purchase:29",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "low",
+  "title": "Payment request: negative bank charge, exchange rate, no bean validation",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "B-7"
+  ],
+  "size": "",
+  "theme": "Theme 4: Missing validation"
+ },
+ {
+  "id": "rv-be:purchase:30",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "low",
+  "title": "LC master, material requisition, PO: no @Valid, negative values accepted",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A11-10"
+  ],
+  "size": "",
+  "theme": "Theme 4: Missing validation"
+ },
+ {
+  "id": "rv-be:purchase:31",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Proforma invoice conversion checks less than the API text promises",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A12-6"
+  ],
+  "size": "",
+  "theme": "Theme 4: Missing validation"
+ },
+ {
+  "id": "rv-be:purchase:32",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Quotation lines and spreadsheet upload accept duplicates, zero, negatives; bad cells give 500",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A12-8"
+  ],
+  "size": "",
+  "theme": "Theme 4: Missing validation"
+ },
+ {
+  "id": "rv-be:purchase:33",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Quotation stays editable and deletable after a vendor selection used it",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A12-7"
+  ],
+  "size": "",
+  "theme": "Theme 4: Missing validation"
+ },
+ {
+  "id": "rv-be:purchase:34",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "low",
+  "title": "Receipt, challan and LC line validation gaps",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A10-8"
+  ],
+  "size": "",
+  "theme": "Theme 4: Missing validation"
+ },
+ {
+  "id": "rv-be:purchase:35",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Deleting a pending document leaves its workflow and approver task alive",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A10-3",
+   "be-A12-4"
+  ],
+  "size": "",
+  "theme": "Theme 5: Data left behind (workflow, files, children)"
+ },
+ {
+  "id": "rv-be:purchase:36",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Vendor return request editable while approval runs",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A13-8"
+  ],
+  "size": "",
+  "theme": "Theme 5: Data left behind (workflow, files, children)"
+ },
+ {
+  "id": "rv-be:purchase:37",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "low",
+  "title": "Detail reads take a write lock and write rows",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A10-9"
+  ],
+  "size": "",
+  "theme": "Attachment files stored and deleted inside the DB transaction  [LOW] [LIKELY]  (source IDs: be-A11-9, be-A10-11 (third bullet))"
+ },
+ {
+  "id": "rv-be:purchase:38",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "List pages load lazy children per row",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A09-7",
+   "be-A11-1",
+   "be-A12-5"
+  ],
+  "size": "",
+  "theme": "Theme 6: Slow or unbounded queries"
+ },
+ {
+  "id": "rv-be:purchase:39",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Eligible bills: several queries per bill, unpaged",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A11-5"
+  ],
+  "size": "",
+  "theme": "Missing indexes (purchase)  [MEDIUM] [VERIFIED schema, plan impact LIKELY]  (source IDs: B-6, be-C05-3, be-A11-6 (index part))"
+ },
+ {
+  "id": "rv-be:purchase:40",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Inventory overview \"Open PO / Open PI\" columns: 2-4 queries per item",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A11-6"
+  ],
+  "size": "",
+  "theme": "Missing indexes (purchase)  [MEDIUM] [VERIFIED schema, plan impact LIKELY]  (source IDs: B-6, be-C05-3, be-A11-6 (index part))"
+ },
+ {
+  "id": "rv-be:purchase:41",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Item receipt detail and approval: one lookup per line, detail row and location",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A10-6"
+  ],
+  "size": "",
+  "theme": "Missing indexes (purchase)  [MEDIUM] [VERIFIED schema, plan impact LIKELY]  (source IDs: B-6, be-C05-3, be-A11-6 (index part))"
+ },
+ {
+  "id": "rv-be:purchase:42",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Requisition list requesters and stock analysis: per-row queries",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A13-6"
+  ],
+  "size": "",
+  "theme": "Missing indexes (purchase)  [MEDIUM] [VERIFIED schema, plan impact LIKELY]  (source IDs: B-6, be-C05-3, be-A11-6 (index part))"
+ },
+ {
+  "id": "rv-be:purchase:43",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "low",
+  "title": "Vendor return in-flight claim query loads all live request ids",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-A13-10"
+  ],
+  "size": "",
+  "theme": "Missing indexes (purchase)  [MEDIUM] [VERIFIED schema, plan impact LIKELY]  (source IDs: B-6, be-C05-3, be-A11-6 (index part))"
+ },
+ {
+  "id": "rv-be:purchase:44",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "low",
+  "title": "Column length and nullability drift, unconstrained money columns",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-C04-7",
+   "be-C05-5",
+   "be-B02-10"
+  ],
+  "size": "",
+  "theme": "Theme 8: Database and entity drift"
+ },
+ {
+  "id": "rv-be:purchase:45",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "low",
+  "title": "Child entities mirror the parent FK as a writable column",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/02-purchase.md",
+  "refs": [
+   "be-C04-10"
+  ],
+  "size": "",
+  "theme": "Theme 8: Database and entity drift"
+ },
+ {
+  "id": "rv-be:sales:1.1",
+  "module": "sales",
+  "side": "backend",
+  "severity": "high",
+  "title": "Demand gates and status come from the request",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "S-1",
+   "be-B02-1"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:1.2",
+  "module": "sales",
+  "side": "backend",
+  "severity": "high",
+  "title": "Approval workflow can be skipped with one JSON field",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A17-1"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:1.3",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Credit-limit override authoriser can be any user id",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-B02-2"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:1.4",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Vendor create copies id, status and code from the request",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-C06-1"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:1.5",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Customer update overwrites credit limit, status, rep and territory with no audit",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A14-8",
+   "be-C05-6"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:1.6",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Demand read endpoints have no permission check",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A16-2"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:1.7",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "IMS endpoints are not scoped to the rep's customers",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A18-4"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:1.8",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Postings endpoint exposes any sales document type to any sales money permission",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A17-9"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:1.9",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Collections, deposits, refunds: no territory or ownership check; summary window drops the last second",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A15-12"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.1",
+  "module": "sales",
+  "side": "backend",
+  "severity": "high",
+  "title": "Credit memo lines are not checked against the sales return",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A15-1",
+   "be-C06-2"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.2",
+  "module": "sales",
+  "side": "backend",
+  "severity": "high",
+  "title": "Credit memo edited after approval, cancelled after refund, approval not restarted",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A15-2"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.3",
+  "module": "sales",
+  "side": "backend",
+  "severity": "high",
+  "title": "Customer refund accepts unapproved memos, duplicates and unbacked amounts",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A15-3"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.4",
+  "module": "sales",
+  "side": "backend",
+  "severity": "high",
+  "title": "Item return quantities and prices are never validated",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A17-2"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.5",
+  "module": "sales",
+  "side": "backend",
+  "severity": "high",
+  "title": "Delivery order allowed for a sales order that is not approved",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A15-4"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.6",
+  "module": "sales",
+  "side": "backend",
+  "severity": "high",
+  "title": "Coordination verify works on a demand in any status",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A16-1"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.7",
+  "module": "sales",
+  "side": "backend",
+  "severity": "high",
+  "title": "Credit limit is advisory, invoice-only and measured three ways",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "S-3"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.8",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "\"Outstanding\" ignores credit memos and differs between three screens",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A15-10"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.9",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Invoice tax and discount rules",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "S-6"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.10",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Invoice edit does not re-sync paymentStatus and can drop total below paid",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A16-4"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.11",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Receipt may apply twice to the same invoice in one request",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A17-4"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.12",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Order from a demand copies the demand's whole customer discount",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A17-5"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.13",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "A demand can be turned into several sales orders",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "S-7"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.14",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Category `taxInclusive` default: code says false, docs and resolver say true",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A14-3",
+   "be-C06-3"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.15",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "IMS opening stock subtracts sold quantity from all verified reports, including later months",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A18-5"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.16",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "SalesTax rate scale is guessed",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A18-10"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.17",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Manual ACTIVE/resume of a pricing scheme ignores the effective window",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A14-11"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:2.18",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Delivery order state machine and validation gaps",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A15-11"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:3.1",
+  "module": "sales",
+  "side": "backend",
+  "severity": "high",
+  "title": "Concurrent invoices, receipts and delivery orders over-bill, over-apply, over-deliver",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "S-2"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:3.2",
+  "module": "sales",
+  "side": "backend",
+  "severity": "high",
+  "title": "Gate-out verify can consume stock twice",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A16-3"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:3.3",
+  "module": "sales",
+  "side": "backend",
+  "severity": "high",
+  "title": "Item receive: received vs put-away quantities independent, duplicate lines, unlocked balance",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A17-3"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:3.4",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Two coordinators verifying different gates can overwrite each other",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A16-8"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:4.1",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Order and demand lines accept any quantity, price, total and tax",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-B02-3",
+   "be-B03-2",
+   "be-A16-7"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:4.2",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Pricing scheme reward numbers are not range-checked",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A14-5"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:4.3",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Sales channel category: DRAFT skips the name check (500 on blank, duplicates accepted)",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A14-2"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:4.4",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Geography PUT/POST without `userId` retires the manager or inserts a null-user manager",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A18-3"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:4.5",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Customer create/update accepts a negative credit limit and any status",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-B02-8"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:4.6",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "IMS create: NPE on missing `reportMonth`, file stored inside the transaction",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A18-13"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:4.7",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Item return `reason` is a free string; enum unused; `reason_note` unmapped; no `@Size` on free text",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-C07-2"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:4.8",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "`resolveCarrier` creates carriers from free text with no uniqueness",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-B03-5"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:4.9",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Request DTOs validated by hand: 44 of 50 `@RequestBody` parameters lack `@Valid`",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "S-9"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:5.1",
+  "module": "sales",
+  "side": "backend",
+  "severity": "high",
+  "title": "Customer and vendor can be hard-deleted while documents point at them",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A14-1"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:5.2",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Product distribution: PENDING record deleted or edited while its workflow task is open; update leaves orphan lines",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A14-7"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:5.3",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "`FinancialLedgerService.recordInvoiceCancelled` has no caller",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A18-7"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:6.1",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Document numbers are not unique in the database and a client may supply its own",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "S-5",
+   "be-A23-1",
+   "be-B02-11",
+   "be-A15-8 unique part"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:6.2",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Pricing tables: `scheme_reward.scheme_id` not unique, `discount_mode` nullable in DB",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-C06-6"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.1",
+  "module": "sales",
+  "side": "backend",
+  "severity": "high",
+  "title": "Missing indexes on sales tables (one migration)",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "S-4",
+   "be-A14-9",
+   "be-A15-8 index part",
+   "be-B03-6",
+   "be-C06-6 index part"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.2",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Whole-table `findAll()` of customers and of the geography tree",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "S-8"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.3",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Pricing scheme list and by-items search: 2 extra queries per scheme, by-items unbounded",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A14-4"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.4",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Product distribution list and export: 3+ service calls per row, export unbounded",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A14-6"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.5",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "\"My territory\" collections loads every customer in scope as a full DTO",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A15-5"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.6",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Audit events for refunds and credit memos rebuild whole documents per row",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A15-7"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.7",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "List endpoints map lazy associations row by row (demand, invoice, gate pass, gate pass return)",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A16-5"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.8",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Gate pass return list loads every return with all lines and pages in memory",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A16-9"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.9",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "`openQuantityByItem` loads every open order per item",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A17-6"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.10",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Month-end close fact provider runs queries per order and computes the unbilled list twice",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A17-7"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.11",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Non-expanded geography lists run 4+ queries per node",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A18-2"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.12",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "IMS summary loads every customer in scope",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A18-6"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.13",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Customer list does a geography parent walk and manager lookup per row",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-B02-6"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.14",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "`SalesGeographyManager.allowedChannels` lazy bag: one extra query per manager",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-B03-4"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.15",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Packing house export loops customer and lines per row",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A08-6"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.16",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Per-line repository calls inside loops and mappers",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "S-10",
+   "be-B02-7"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.17",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "`getOpenInvoicesByCustomer` loads and filters the whole invoice history in Java",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "S-11"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.18",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Customer Directory loads every customer twice and touches lazy collections per row",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A18-8"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:7.19",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Geography RBAC sync reloads the tree and looks up scopes one by one",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A18-9"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:8.1",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Exports of five lists are unbounded; delivery export builds an `IN` list of every row",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A15-6"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:8.2",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Demand export ignores the status filter the list screen sends",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A16-6"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:8.3",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Export sources throw 500 on a bad enum filter; commission export ignores paging",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A14-12"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:9.1",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Geography name filter silently ignored",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A18-1"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:9.2",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Credit memo text search silently drops memos with no item return",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A15-9"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:9.3",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "`AddressMasterDTO.isDefault` is serialised as `default`; forms send `isDefault`",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-C05-2"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:9.4",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "`salesRepId` means two different ids across sales documents",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-C07-1"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:9.5",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Customer refund application takes `currency` only from the item return",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-C06-4"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:9.6",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Customer overview NPE when a receipt has no `transactionDate`",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A17-8"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:9.7",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Customer summary \"ongoing\" and \"recent\" deliveries do not match the DTO documentation",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-C05-7"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:9.8",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Demand line `originalTaxAmount` reads the wrong key and is always null",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-C06-5"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:9.9",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Gate pass count truncates fractional quantities",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-C06-7"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:9.10",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Response DTOs return the raw audit string (`userId_@_username`) and a storage key",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-C06-8"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:9.11",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Free-text strings where a fixed set of values exists",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-C06-10"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:9.12",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Manager list fails entirely when one linked user is missing",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A18-11"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:9.13",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Delivery order drafts persist request DTO classes as JSON",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-C07-4"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:9.14",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Demand and gate pass smaller points",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "unknown",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A16-10"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:9.15",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Sales order, receipt and item smaller points",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "unknown",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A17-10"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:10.1",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Unused members and wiring around credit memo, deposits and delivery",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A15-13"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:10.2",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "`SalesGeographyManagerDomainService` throws `UnsupportedOperationException` in 7 overrides",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-A18-12"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:10.3",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Copy-paste mapping code with drift",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-C06-9"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:sales:10.4",
+  "module": "sales",
+  "side": "backend",
+  "severity": "low",
+  "title": "Dead request/response fields, unused DTO and enum values",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/03-sales.md",
+  "refs": [
+   "be-C07-3"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:inventory:1",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "high",
+  "title": "Unlocked stock balance changes",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "BE-1",
+   "be-A08-1"
+  ],
+  "size": "",
+  "theme": "Theme 1: Missing lock, race, duplicates (stock and cost)"
+ },
+ {
+  "id": "rv-be:inventory:2",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "high",
+  "title": "Natural keys not unique (inventory_balance, inventory_dimension, channel_allocation, lot_master, approval_request)",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "BE-3",
+   "be-B01-2"
+  ],
+  "size": "",
+  "theme": "Theme 1: Missing lock, race, duplicates (stock and cost)"
+ },
+ {
+  "id": "rv-be:inventory:3",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Item.averageCost lost update",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "BE-5"
+  ],
+  "size": "",
+  "theme": "Theme 1: Missing lock, race, duplicates (stock and cost)"
+ },
+ {
+  "id": "rv-be:inventory:4",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Link-and-fulfill race on packing house booking",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A08-15"
+  ],
+  "size": "",
+  "theme": "Theme 1: Missing lock, race, duplicates (stock and cost)"
+ },
+ {
+  "id": "rv-be:inventory:5",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "high",
+  "title": "Bin transfer leaks reserved quantity",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A09-1"
+  ],
+  "size": "",
+  "theme": "Theme 2: Wrong stock after workflow, reservation and undo paths"
+ },
+ {
+  "id": "rv-be:inventory:6",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "high",
+  "title": "Packing house undoLine has no status check",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A08-2"
+  ],
+  "size": "",
+  "theme": "Theme 2: Wrong stock after workflow, reservation and undo paths"
+ },
+ {
+  "id": "rv-be:inventory:7",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "high",
+  "title": "Deleting an APPROVED packing house booking leaves stock moved",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A08-3"
+  ],
+  "size": "",
+  "theme": "Theme 2: Wrong stock after workflow, reservation and undo paths"
+ },
+ {
+  "id": "rv-be:inventory:8",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Stock transfer without workflow ignores reserved quantity",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A09-2"
+  ],
+  "size": "",
+  "theme": "Theme 2: Wrong stock after workflow, reservation and undo paths"
+ },
+ {
+  "id": "rv-be:inventory:9",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Serial lookup in bin transfer ignores item and location; serial not re-pointed",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A09-4"
+  ],
+  "size": "",
+  "theme": "Theme 2: Wrong stock after workflow, reservation and undo paths"
+ },
+ {
+  "id": "rv-be:inventory:10",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "Adjustment validation resolves a serial without item/location/status check",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A07-7"
+  ],
+  "size": "",
+  "theme": "Theme 2: Wrong stock after workflow, reservation and undo paths"
+ },
+ {
+  "id": "rv-be:inventory:11",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "Balance allocatedQty not moved by bin transfer / packing house",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "BE-9"
+  ],
+  "size": "",
+  "theme": "Theme 2: Wrong stock after workflow, reservation and undo paths"
+ },
+ {
+  "id": "rv-be:inventory:12",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Moving average counts damaged and in-transit stock",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "BE-6"
+  ],
+  "size": "",
+  "theme": "Theme 3: Wrong money or calculation"
+ },
+ {
+  "id": "rv-be:inventory:13",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Tax rate decided by channel display name",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A08-14"
+  ],
+  "size": "",
+  "theme": "Theme 3: Wrong money or calculation"
+ },
+ {
+  "id": "rv-be:inventory:14",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Promotional price stored but never applied",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-C03-3"
+  ],
+  "size": "",
+  "theme": "Theme 3: Wrong money or calculation"
+ },
+ {
+  "id": "rv-be:inventory:15",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "high",
+  "title": "Petty cash create/update: no amount, date or ownership validation",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A08-4"
+  ],
+  "size": "",
+  "theme": "Common C-7: security items from this module"
+ },
+ {
+  "id": "rv-be:inventory:16",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Inventory adjustment: requesterId taken from request body",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-C03-5"
+  ],
+  "size": "",
+  "theme": "Common C-7: security items from this module"
+ },
+ {
+  "id": "rv-be:inventory:17",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "BinTransferMapper.toEntity copies id, sequence, status, workflowInstanceId from the request",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-C04-1"
+  ],
+  "size": "",
+  "theme": "Common C-7: security items from this module"
+ },
+ {
+  "id": "rv-be:inventory:18",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Blank code stored as \"\" on Brand, Manufacturer, ItemCategory",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-C03-1"
+  ],
+  "size": "",
+  "theme": "Common C-3: request validation (inventory items)"
+ },
+ {
+  "id": "rv-be:inventory:19",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Duplicate sales channels in an item's channelPrices",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-C03-2"
+  ],
+  "size": "",
+  "theme": "Common C-3: request validation (inventory items)"
+ },
+ {
+  "id": "rv-be:inventory:20",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Item request: numeric fields without range checks; two required fields marked optional",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-C03-4"
+  ],
+  "size": "",
+  "theme": "Common C-3: request validation (inventory items)"
+ },
+ {
+  "id": "rv-be:inventory:21",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "Sales channel name not unique",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A07-2"
+  ],
+  "size": "",
+  "theme": "Common C-3: request validation (inventory items)"
+ },
+ {
+  "id": "rv-be:inventory:22",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Budget allocator: no period validation, overlap, unlocked update",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A08-10"
+  ],
+  "size": "",
+  "theme": "Common C-3: request validation (inventory items)"
+ },
+ {
+  "id": "rv-be:inventory:23",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "Petty cash dashboard and budget scheduler details",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A08-17"
+  ],
+  "size": "",
+  "theme": "Common C-3: request validation (inventory items)"
+ },
+ {
+  "id": "rv-be:inventory:24",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "Entity NOT NULL does not match database",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-C03-8"
+  ],
+  "size": "",
+  "theme": "Common C-3: request validation (inventory items)"
+ },
+ {
+  "id": "rv-be:inventory:25",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "Item create/update: duplicated validation, UOM auto-created from free text",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A08-18"
+  ],
+  "size": "",
+  "theme": "Common C-3: request validation (inventory items)"
+ },
+ {
+  "id": "rv-be:inventory:26",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "Ledger write: serial count vs quantity not checked",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A08-16"
+  ],
+  "size": "",
+  "theme": "Common C-3: request validation (inventory items)"
+ },
+ {
+  "id": "rv-be:inventory:27",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Brand and Sales Channel delete: false \"no references\" comment",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A07-1"
+  ],
+  "size": "",
+  "theme": "Theme 6: Data left behind, delete rules, files"
+ },
+ {
+  "id": "rv-be:inventory:28",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Location delete relies on DB errors; depth not enforced",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A08-11"
+  ],
+  "size": "",
+  "theme": "Theme 6: Data left behind, delete rules, files"
+ },
+ {
+  "id": "rv-be:inventory:29",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "Item images stored and deleted inside the DB transaction",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A07-5"
+  ],
+  "size": "",
+  "theme": "Theme 6: Data left behind, delete rules, files"
+ },
+ {
+  "id": "rv-be:inventory:30",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "high",
+  "title": "Item list and inventory overview: N+1 and unbounded",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "BE-4",
+   "be-A08-5"
+  ],
+  "size": "",
+  "theme": "Common C-4: batch fetching"
+ },
+ {
+  "id": "rv-be:inventory:31",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "List endpoints return everything without page/size",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "BE-7"
+  ],
+  "size": "",
+  "theme": "Common C-4: batch fetching"
+ },
+ {
+  "id": "rv-be:inventory:32",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Lot breakdown and item/location lists page in memory",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A08-7"
+  ],
+  "size": "",
+  "theme": "Common C-4: batch fetching"
+ },
+ {
+  "id": "rv-be:inventory:33",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "ItemPriceQueryService.queryBatch does about 4 queries per entry",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A08-8"
+  ],
+  "size": "",
+  "theme": "Common C-4: batch fetching"
+ },
+ {
+  "id": "rv-be:inventory:34",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Descendant walks and path resolution: one query per node",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "BE-8",
+   "be-A08-12"
+  ],
+  "size": "",
+  "theme": "Common C-4: batch fetching"
+ },
+ {
+  "id": "rv-be:inventory:35",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "Whole location table loaded on every stock query",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "BE-11"
+  ],
+  "size": "",
+  "theme": "Common C-4: batch fetching"
+ },
+ {
+  "id": "rv-be:inventory:36",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Reorder alert query scans the whole balance table twice per page",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A08-13"
+  ],
+  "size": "",
+  "theme": "Common C-4: batch fetching"
+ },
+ {
+  "id": "rv-be:inventory:37",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Mappers do per-row lookups (bin transfer, packing house lists); one lookup swallows every exception",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-C04-2"
+  ],
+  "size": "",
+  "theme": "Common C-4: batch fetching"
+ },
+ {
+  "id": "rv-be:inventory:38",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Stock transfer list paginates in memory",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A09-3"
+  ],
+  "size": "",
+  "theme": "Common C-4: batch fetching"
+ },
+ {
+  "id": "rv-be:inventory:39",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Inventory adjustment export: unbounded, lazy N+1",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A07-3"
+  ],
+  "size": "",
+  "theme": "Common C-4: batch fetching"
+ },
+ {
+  "id": "rv-be:inventory:40",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "Transfer export filters turn bad values into 500",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A09-8"
+  ],
+  "size": "",
+  "theme": "Theme 8: Wrong or confusing API contract"
+ },
+ {
+  "id": "rv-be:inventory:41",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Serial numbers accepted but never stored or returned; read-back merges lines",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-C04-3"
+  ],
+  "size": "",
+  "theme": "Theme 8: Wrong or confusing API contract"
+ },
+ {
+  "id": "rv-be:inventory:42",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "StockTransfer line unitId required but ignored; response unitId mixes id spaces",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-C04-4"
+  ],
+  "size": "",
+  "theme": "Theme 8: Wrong or confusing API contract"
+ },
+ {
+  "id": "rv-be:inventory:43",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "ItemPackingHouseBookDTO embeds a JPA entity; misspelled JSON key",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-C03-7"
+  ],
+  "size": "",
+  "theme": "Theme 8: Wrong or confusing API contract"
+ },
+ {
+  "id": "rv-be:inventory:44",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "Smaller contract problems (enums as strings, null list NPE, English text, keepImageIds, manufacturingId)",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-C03-9"
+  ],
+  "size": "",
+  "theme": "Theme 8: Wrong or confusing API contract"
+ },
+ {
+  "id": "rv-be:inventory:45",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "Requester name shows \"Ali null\"",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-C04-9"
+  ],
+  "size": "",
+  "theme": "Theme 8: Wrong or confusing API contract"
+ },
+ {
+  "id": "rv-be:inventory:46",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "Small inefficiencies and silent catches",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A09-10"
+  ],
+  "size": "",
+  "theme": "Theme 8: Wrong or confusing API contract"
+ },
+ {
+  "id": "rv-be:inventory:47",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "Same \"move stock between bins\" code copied four times",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "BE-10"
+  ],
+  "size": "",
+  "theme": "Theme 9: Dead code and tidy-ups"
+ },
+ {
+  "id": "rv-be:inventory:48",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "Dead model classes and two reservation statuses for one meaning",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-C04-8"
+  ],
+  "size": "",
+  "theme": "Theme 9: Dead code and tidy-ups"
+ },
+ {
+  "id": "rv-be:inventory:29",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "near-identical workflow seeders with duplicated @Order",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/04-inventory.md",
+  "refs": [
+   "be-A21-10"
+  ],
+  "size": "",
+  "theme": "Theme 9: Dead code and tidy-ups"
+ },
+ {
+  "id": "rv-be:reports:1",
+  "module": "reports",
+  "side": "backend",
+  "severity": "low",
+  "title": "Commission milestone duplicate check is scale sensitive",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "be-A14-10"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:reports:2",
+  "module": "reports",
+  "side": "backend",
+  "severity": "low",
+  "title": "Open Sales Order report converts with a zero or negative exchange rate",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "be-A19-10"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:reports:3",
+  "module": "reports",
+  "side": "backend",
+  "severity": "low",
+  "title": "Territory Sales lists drafts and rejected orders as sales",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "be-A19-7"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:reports:4",
+  "module": "reports",
+  "side": "backend",
+  "severity": "low",
+  "title": "Commission: unlinked SPO count counts assignments; \"Lifting VS IMS %\" may be inverted",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "be-A14-13"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:reports:5",
+  "module": "reports",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Report read-only transaction is never applied",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "be-A20-3"
+  ],
+  "size": "",
+  "theme": ""
+ },
+ {
+  "id": "rv-be:reports:6",
+  "module": "reports",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Export jobs: RUNNING never recovered, double dispatch, internal error text",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "RB5"
+  ],
+  "size": "",
+  "theme": "ASE can read any rep's target series and the national commission ranking  [MEDIUM] [LIKELY]  (source IDs: RB6)  Common: C-7"
+ },
+ {
+  "id": "rv-be:reports:7",
+  "module": "reports",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Commission export runs the whole commission report twice",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "RB3"
+  ],
+  "size": "",
+  "theme": "Exports hold every row in memory and the cap is too high or silently truncates  [MEDIUM] [VERIFIED code / LIKELY impact; LIKELY for the accounting exports]  (source IDs: RB3, be-A03-4, be-A05-1)  Common: C-6"
+ },
+ {
+  "id": "rv-be:reports:8",
+  "module": "reports",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Dashboard open repeats heavy stock queries and scans full ledger history",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "RB7",
+   "be-A07-4; same severity",
+   "no change"
+  ],
+  "size": "",
+  "theme": "Aging summary reads every invoice ever raised on each open  [MEDIUM] [LIKELY]  (source IDs: be-A19-4)  Common: C-6"
+ },
+ {
+  "id": "rv-be:reports:9",
+  "module": "reports",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Account ledger and bank register aggregate the whole book to read one account",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "be-A06-2"
+  ],
+  "size": "",
+  "theme": "GL-tree export calls the full General Ledger per account and page; title() repeats the first query  [MEDIUM] [LIKELY]  (source IDs: be-A05-2)  Common: C-4"
+ },
+ {
+  "id": "rv-be:reports:10",
+  "module": "reports",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Catch-all COALESCE(:param, col) filters may defeat indexes",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "be-A06-3"
+  ],
+  "size": "",
+  "theme": "GL-tree export calls the full General Ledger per account and page; title() repeats the first query  [MEDIUM] [LIKELY]  (source IDs: be-A05-2)  Common: C-4"
+ },
+ {
+  "id": "rv-be:reports:11",
+  "module": "reports",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Every Trial Balance based report loads and names all party balances",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "be-A06-4"
+  ],
+  "size": "",
+  "theme": "GL-tree export calls the full General Ledger per account and page; title() repeats the first query  [MEDIUM] [LIKELY]  (source IDs: be-A05-2)  Common: C-4"
+ },
+ {
+  "id": "rv-be:reports:12",
+  "module": "reports",
+  "side": "backend",
+  "severity": "low",
+  "title": "A/R and A/P aging use a different date rule from the dashboard; date helpers duplicated",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "unknown",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "RB9"
+  ],
+  "size": "",
+  "theme": "Whole-entity loads to read two fields in reports and directories  [LOW] [VERIFIED]  (source IDs: RB8)  Common: C-4"
+ },
+ {
+  "id": "rv-be:reports:13",
+  "module": "reports",
+  "side": "backend",
+  "severity": "low",
+  "title": "Export permission differs from the report endpoint's accepted permissions",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "be-A05-6"
+  ],
+  "size": "",
+  "theme": "Whole-entity loads to read two fields in reports and directories  [LOW] [VERIFIED]  (source IDs: RB8)  Common: C-4"
+ },
+ {
+  "id": "rv-be:reports:14",
+  "module": "reports",
+  "side": "backend",
+  "severity": "low",
+  "title": "Cash Statement for a quiet account answers 404",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "be-A06-9"
+  ],
+  "size": "",
+  "theme": "Whole-entity loads to read two fields in reports and directories  [LOW] [VERIFIED]  (source IDs: RB8)  Common: C-4"
+ },
+ {
+  "id": "rv-be:reports:15",
+  "module": "reports",
+  "side": "backend",
+  "severity": "low",
+  "title": "Name-resolver and open-item failures swallowed; error text leaked",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "be-A06-7"
+  ],
+  "size": "",
+  "theme": "Whole-entity loads to read two fields in reports and directories  [LOW] [VERIFIED]  (source IDs: RB8)  Common: C-4"
+ },
+ {
+  "id": "rv-be:settings-platform:1",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "high",
+  "title": "Organization controllers have no permission check at all",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "PB-1"
+  ],
+  "size": "",
+  "theme": "Theme 1. Missing permission, client-controlled input and security hardening (Common: C-7)"
+ },
+ {
+  "id": "rv-be:settings-platform:2",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "high",
+  "title": "Workflow instance endpoints need no permission and no ownership",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "PB-2"
+  ],
+  "size": "",
+  "theme": "Theme 1. Missing permission, client-controlled input and security hardening (Common: C-7)"
+ },
+ {
+  "id": "rv-be:settings-platform:3",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "high",
+  "title": "Media: any user reads or deletes any attachment; one token opens all",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "PB-3"
+  ],
+  "size": "",
+  "theme": "Theme 1. Missing permission, client-controlled input and security hardening (Common: C-7)"
+ },
+ {
+  "id": "rv-be:settings-platform:4",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "high",
+  "title": "Audit trail endpoints return any entity's history; unvalidated path values",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "PB-4"
+  ],
+  "size": "",
+  "theme": "Theme 1. Missing permission, client-controlled input and security hardening (Common: C-7)"
+ },
+ {
+  "id": "rv-be:settings-platform:5",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "high",
+  "title": "Generic filter and export `specFilters` can probe `User` fields (password hash and more)",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-B03-1"
+  ],
+  "size": "",
+  "theme": "Theme 1. Missing permission, client-controlled input and security hardening (Common: C-7)"
+ },
+ {
+  "id": "rv-be:settings-platform:6",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "high",
+  "title": "Profile picture upload accepts any file type into a public folder",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "PB-9"
+  ],
+  "size": "",
+  "theme": "Theme 1. Missing permission, client-controlled input and security hardening (Common: C-7)"
+ },
+ {
+  "id": "rv-be:settings-platform:7",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Other platform endpoints rely on \"logged in\" only; dev test controller is live on the test server",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "PB-5"
+  ],
+  "size": "",
+  "theme": "Committed dev secrets, dev is the default build profile, prod/test bootstrap defaults to on, dead JWT setting  [MEDIUM] [LIKELY]  (source IDs: PB-14, be-A22-6)  (added from another module: be-A22-6; severity = highest of MEDIUM and LOW)"
+ },
+ {
+  "id": "rv-be:settings-platform:8",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Native-user status toggle has no platform-operator or self guard",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A01-2"
+  ],
+  "size": "",
+  "theme": "Committed dev secrets, dev is the default build profile, prod/test bootstrap defaults to on, dead JWT setting  [MEDIUM] [LIKELY]  (source IDs: PB-14, be-A22-6)  (added from another module: be-A22-6; severity = highest of MEDIUM and LOW)"
+ },
+ {
+  "id": "rv-be:settings-platform:9",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "`user.account.edit` can assign any non-platform role; `rbac.role.edit` can grant itself anything",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A19-5"
+  ],
+  "size": "",
+  "theme": "Committed dev secrets, dev is the default build profile, prod/test bootstrap defaults to on, dead JWT setting  [MEDIUM] [LIKELY]  (source IDs: PB-14, be-A22-6)  (added from another module: be-A22-6; severity = highest of MEDIUM and LOW)"
+ },
+ {
+  "id": "rv-be:settings-platform:10",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "No separation of duties: the submitter can approve their own document",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A21-6"
+  ],
+  "size": "",
+  "theme": "Committed dev secrets, dev is the default build profile, prod/test bootstrap defaults to on, dead JWT setting  [MEDIUM] [LIKELY]  (source IDs: PB-14, be-A22-6)  (added from another module: be-A22-6; severity = highest of MEDIUM and LOW)"
+ },
+ {
+  "id": "rv-be:settings-platform:11",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "No login throttling or lockout",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "PB-15"
+  ],
+  "size": "",
+  "theme": "Committed dev secrets, dev is the default build profile, prod/test bootstrap defaults to on, dead JWT setting  [MEDIUM] [LIKELY]  (source IDs: PB-14, be-A22-6)  (added from another module: be-A22-6; severity = highest of MEDIUM and LOW)"
+ },
+ {
+  "id": "rv-be:settings-platform:12",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Request logger writes HRMS password hashes in clear",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A01-3"
+  ],
+  "size": "",
+  "theme": "Committed dev secrets, dev is the default build profile, prod/test bootstrap defaults to on, dead JWT setting  [MEDIUM] [LIKELY]  (source IDs: PB-14, be-A22-6)  (added from another module: be-A22-6; severity = highest of MEDIUM and LOW)"
+ },
+ {
+  "id": "rv-be:settings-platform:13",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Initial passwords travel through the email queue and are stored in the email log",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A01-9"
+  ],
+  "size": "",
+  "theme": "Committed dev secrets, dev is the default build profile, prod/test bootstrap defaults to on, dead JWT setting  [MEDIUM] [LIKELY]  (source IDs: PB-14, be-A22-6)  (added from another module: be-A22-6; severity = highest of MEDIUM and LOW)"
+ },
+ {
+  "id": "rv-be:settings-platform:14",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "SSO handshake token is a valid ERP access token; password reset does not end sessions",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A01-7"
+  ],
+  "size": "",
+  "theme": "Committed dev secrets, dev is the default build profile, prod/test bootstrap defaults to on, dead JWT setting  [MEDIUM] [LIKELY]  (source IDs: PB-14, be-A22-6)  (added from another module: be-A22-6; severity = highest of MEDIUM and LOW)"
+ },
+ {
+  "id": "rv-be:settings-platform:15",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Request logging at INFO and CORS wide open",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "PB-13"
+  ],
+  "size": "",
+  "theme": "Committed dev secrets, dev is the default build profile, prod/test bootstrap defaults to on, dead JWT setting  [MEDIUM] [LIKELY]  (source IDs: PB-14, be-A22-6)  (added from another module: be-A22-6; severity = highest of MEDIUM and LOW)"
+ },
+ {
+  "id": "rv-be:settings-platform:16",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Media token: docs say 60 s, code is 3,600 s; token not tied to user, attachment or purpose",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A20-8"
+  ],
+  "size": "",
+  "theme": "Committed dev secrets, dev is the default build profile, prod/test bootstrap defaults to on, dead JWT setting  [MEDIUM] [LIKELY]  (source IDs: PB-14, be-A22-6)  (added from another module: be-A22-6; severity = highest of MEDIUM and LOW)"
+ },
+ {
+  "id": "rv-be:settings-platform:17",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Permission grant with no scope passes global checks but shows nothing in scoped lists",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A19-6"
+  ],
+  "size": "",
+  "theme": "Committed dev secrets, dev is the default build profile, prod/test bootstrap defaults to on, dead JWT setting  [MEDIUM] [LIKELY]  (source IDs: PB-14, be-A22-6)  (added from another module: be-A22-6; severity = highest of MEDIUM and LOW)"
+ },
+ {
+  "id": "rv-be:settings-platform:18",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "`WorkflowActorResolver.isAdmin()` returns true for every logged-in user",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A21-5"
+  ],
+  "size": "",
+  "theme": "Committed dev secrets, dev is the default build profile, prod/test bootstrap defaults to on, dead JWT setting  [MEDIUM] [LIKELY]  (source IDs: PB-14, be-A22-6)  (added from another module: be-A22-6; severity = highest of MEDIUM and LOW)"
+ },
+ {
+  "id": "rv-be:settings-platform:19",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Numeric trigger operators paste the rule value into SpEL text",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A22-4"
+  ],
+  "size": "",
+  "theme": "Committed dev secrets, dev is the default build profile, prod/test bootstrap defaults to on, dead JWT setting  [MEDIUM] [LIKELY]  (source IDs: PB-14, be-A22-6)  (added from another module: be-A22-6; severity = highest of MEDIUM and LOW)"
+ },
+ {
+  "id": "rv-be:settings-platform:20",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Email templates not HTML-escaped; dev seeders put accounting permissions under the wrong module",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A21-9"
+  ],
+  "size": "",
+  "theme": "Committed dev secrets, dev is the default build profile, prod/test bootstrap defaults to on, dead JWT setting  [MEDIUM] [LIKELY]  (source IDs: PB-14, be-A22-6)  (added from another module: be-A22-6; severity = highest of MEDIUM and LOW)"
+ },
+ {
+  "id": "rv-be:settings-platform:21",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Weak input validation on account and organization write DTOs",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "PB-12"
+  ],
+  "size": "",
+  "theme": "Theme 2. Missing validation and wrong stored data (Common: C-3 for the DTO items)"
+ },
+ {
+  "id": "rv-be:settings-platform:22",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Organization settings DTOs: bad series length breaks numbering; `nextSequence` and `id` client-settable",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-B03-3"
+  ],
+  "size": "",
+  "theme": "Theme 2. Missing validation and wrong stored data (Common: C-3 for the DTO items)"
+ },
+ {
+  "id": "rv-be:settings-platform:23",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "HRMS sync `active` is a primitive boolean",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-C01-2"
+  ],
+  "size": "",
+  "theme": "Theme 2. Missing validation and wrong stored data (Common: C-3 for the DTO items)"
+ },
+ {
+  "id": "rv-be:settings-platform:24",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Updating a company without re-sending the logo wipes the logo",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A19-2"
+  ],
+  "size": "",
+  "theme": "Theme 2. Missing validation and wrong stored data (Common: C-3 for the DTO items)"
+ },
+ {
+  "id": "rv-be:settings-platform:25",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Bulk exchange-rate save ignores changes to effective date and active flag",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A19-3"
+  ],
+  "size": "",
+  "theme": "Theme 2. Missing validation and wrong stored data (Common: C-3 for the DTO items)"
+ },
+ {
+  "id": "rv-be:settings-platform:26",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Re-activating a workflow skips the priority check",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A22-1"
+  ],
+  "size": "",
+  "theme": "Theme 2. Missing validation and wrong stored data (Common: C-3 for the DTO items)"
+ },
+ {
+  "id": "rv-be:settings-platform:27",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Smaller validation gaps (table view, company, export, RBAC DTOs, DTO leaks, enum names, Permission.version)",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "unknown",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-B03-7"
+  ],
+  "size": "",
+  "theme": "Theme 2. Missing validation and wrong stored data (Common: C-3 for the DTO items)"
+ },
+ {
+  "id": "rv-be:settings-platform:28",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "`users.user_id` and `users.email` unique only case-sensitively",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-C01-4"
+  ],
+  "size": "",
+  "theme": "Theme 2. Missing validation and wrong stored data (Common: C-3 for the DTO items)"
+ },
+ {
+  "id": "rv-be:settings-platform:29",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Event idempotency claim does not detect a duplicate",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A20-1"
+  ],
+  "size": "",
+  "theme": "Theme 3. Missing lock, race and duplicate delivery (Common: C-1, C-5 for the items marked)"
+ },
+ {
+  "id": "rv-be:settings-platform:30",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Transaction series edit can overwrite the counter while numbers are issued",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A19-9"
+  ],
+  "size": "",
+  "theme": "Theme 3. Missing lock, race and duplicate delivery (Common: C-1, C-5 for the items marked)"
+ },
+ {
+  "id": "rv-be:settings-platform:31",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Table view \"default\" is not unique per user and table",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A19-8"
+  ],
+  "size": "",
+  "theme": "Theme 3. Missing lock, race and duplicate delivery (Common: C-1, C-5 for the items marked)"
+ },
+ {
+  "id": "rv-be:settings-platform:32",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Concurrent workflow `start` ends in 500; `invokeHandler` assumes numeric entity id",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A21-7"
+  ],
+  "size": "",
+  "theme": "Theme 3. Missing lock, race and duplicate delivery (Common: C-1, C-5 for the items marked)"
+ },
+ {
+  "id": "rv-be:settings-platform:33",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "No connection-pool tuning and no timeouts on outbound HTTP",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "PB-7"
+  ],
+  "size": "",
+  "theme": "Theme 4. Remote calls and broker I/O inside database transactions; swallowed errors"
+ },
+ {
+  "id": "rv-be:settings-platform:34",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "HRMS HTTP calls inside @Transactional methods",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "PB-8"
+  ],
+  "size": "",
+  "theme": "Theme 4. Remote calls and broker I/O inside database transactions; swallowed errors"
+ },
+ {
+  "id": "rv-be:settings-platform:35",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Seeder swallows a failed HRMS link inside the seeder's own transaction",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A01-11"
+  ],
+  "size": "",
+  "theme": "Theme 4. Remote calls and broker I/O inside database transactions; swallowed errors"
+ },
+ {
+  "id": "rv-be:settings-platform:36",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Every failed permission alternative writes an audit row in a second transaction",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A19-1"
+  ],
+  "size": "",
+  "theme": "Theme 4. Remote calls and broker I/O inside database transactions; swallowed errors"
+ },
+ {
+  "id": "rv-be:settings-platform:37",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Outbox: broker I/O inside the DB transaction, no publisher confirms, PUBLISHED rows never purged",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A20-4"
+  ],
+  "size": "",
+  "theme": "Theme 4. Remote calls and broker I/O inside database transactions; swallowed errors"
+ },
+ {
+  "id": "rv-be:settings-platform:38",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Document summary refresh swallows every RuntimeException inside the engine's transaction",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A22-3"
+  ],
+  "size": "",
+  "theme": "Theme 4. Remote calls and broker I/O inside database transactions; swallowed errors"
+ },
+ {
+  "id": "rv-be:settings-platform:39",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "MinIO upload inside the attachment DB transaction; client content type; unescaped Content-Disposition",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "PB-11"
+  ],
+  "size": "",
+  "theme": "Theme 4. Remote calls and broker I/O inside database transactions; swallowed errors"
+ },
+ {
+  "id": "rv-be:settings-platform:40",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Attachment delete removes the MinIO object before the DB row, with no reference check",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A20-6"
+  ],
+  "size": "",
+  "theme": "Theme 4. Remote calls and broker I/O inside database transactions; swallowed errors"
+ },
+ {
+  "id": "rv-be:settings-platform:41",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "high",
+  "title": "User admin lists load whole tables repeatedly; per-user HRMS-link query",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "PB-6",
+   "be-A01-1"
+  ],
+  "size": "",
+  "theme": "Theme 5. Slow or unbounded queries and N+1 (Common: C-2 indexes, C-4 batching)"
+ },
+ {
+  "id": "rv-be:settings-platform:42",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "high",
+  "title": "Workflow setup list, detail and condition catalog resolve every dropdown option per row",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A21-1"
+  ],
+  "size": "",
+  "theme": "Theme 5. Slow or unbounded queries and N+1 (Common: C-2 indexes, C-4 batching)"
+ },
+ {
+  "id": "rv-be:settings-platform:43",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "No index for approval-history lookup and inbox history tabs",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A21-2"
+  ],
+  "size": "",
+  "theme": "Theme 5. Slow or unbounded queries and N+1 (Common: C-2 indexes, C-4 batching)"
+ },
+ {
+  "id": "rv-be:settings-platform:44",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "SLA escalation poller: unbounded load, no index, runs on every node",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A22-2"
+  ],
+  "size": "",
+  "theme": "Theme 5. Slow or unbounded queries and N+1 (Common: C-2 indexes, C-4 batching)"
+ },
+ {
+  "id": "rv-be:settings-platform:45",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "`TaskApproverDetailsService` loads role/user names one query per task",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A21-3"
+  ],
+  "size": "",
+  "theme": "Theme 5. Slow or unbounded queries and N+1 (Common: C-2 indexes, C-4 batching)"
+ },
+ {
+  "id": "rv-be:settings-platform:46",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Inbox: second DB connection per entity type, extra single loads for rows the batch did not return",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A21-4"
+  ],
+  "size": "",
+  "theme": "Theme 5. Slow or unbounded queries and N+1 (Common: C-2 indexes, C-4 batching)"
+ },
+ {
+  "id": "rv-be:settings-platform:47",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "`ApprovalHistoryService` repeats per-cycle queries",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A21-8"
+  ],
+  "size": "",
+  "theme": "Theme 5. Slow or unbounded queries and N+1 (Common: C-2 indexes, C-4 batching)"
+ },
+ {
+  "id": "rv-be:settings-platform:48",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Suggested native user id scans one id at a time on every call",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A01-10"
+  ],
+  "size": "",
+  "theme": "Theme 5. Slow or unbounded queries and N+1 (Common: C-2 indexes, C-4 batching)"
+ },
+ {
+  "id": "rv-be:settings-platform:49",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Two queries per authenticated request; eager legacy `roles`; inactive accounts revealed before the password check",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A01-8",
+   "be-C01-7"
+  ],
+  "size": "",
+  "theme": "Theme 5. Slow or unbounded queries and N+1 (Common: C-2 indexes, C-4 batching)"
+ },
+ {
+  "id": "rv-be:settings-platform:50",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Synchronous export builds the whole report in memory, unbounded",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "PB-10"
+  ],
+  "size": "",
+  "theme": "Theme 6. Export limits (Common: C-6)"
+ },
+ {
+  "id": "rv-be:settings-platform:51",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Email communication log never leaves QUEUED",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A20-5"
+  ],
+  "size": "",
+  "theme": "Theme 7. Wrong or confusing API contract, dead code and tidy-ups"
+ },
+ {
+  "id": "rv-be:settings-platform:52",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "`GlobalExceptionHandler` returns raw internal messages and holds module-specific constraint names",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A20-7"
+  ],
+  "size": "",
+  "theme": "Theme 7. Wrong or confusing API contract, dead code and tidy-ups"
+ },
+ {
+  "id": "rv-be:settings-platform:53",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Small leftovers in shared helpers and exports",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "unknown",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A20-9"
+  ],
+  "size": "",
+  "theme": "Theme 7. Wrong or confusing API contract, dead code and tidy-ups"
+ },
+ {
+  "id": "rv-be:settings-platform:54",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Low-risk tidy-ups (grouped)",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A01-12"
+  ],
+  "size": "",
+  "theme": "Theme 7. Wrong or confusing API contract, dead code and tidy-ups"
+ },
+ {
+  "id": "rv-be:settings-platform:55",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Dev workflow seeder points at a missing resource; re-seeding fails",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A22-5"
+  ],
+  "size": "",
+  "theme": "Theme 7. Wrong or confusing API contract, dead code and tidy-ups"
+ },
+ {
+  "id": "rv-be:settings-platform:56",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "Timestamps stored as `TIMESTAMP` without time zone",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "listed in the review work plan; not re-checked",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "BACKEND-BY-MODULE/06-platform.md",
+  "refs": [
+   "be-A23-3"
+  ],
+  "size": "",
+  "theme": "Theme 7. Wrong or confusing API contract, dead code and tidy-ups"
+ }
+]
