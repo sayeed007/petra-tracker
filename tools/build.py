@@ -45,10 +45,11 @@ def load():
 def main():
     items = load()
     (ROOT / "data" / "items.json").write_text(json.dumps(items, indent=1, ensure_ascii=False), encoding="utf8")
-    SITE.mkdir(exist_ok=True)
+    BUILD = ROOT / "build"  # plain page, git-ignored, never published: tools/publish.sh encrypts it into site/
+    BUILD.mkdir(exist_ok=True)
     tpl = (ROOT / "tools" / "template.html").read_text(encoding="utf8")
     html = tpl.replace("/*DATA*/[]", json.dumps(items, ensure_ascii=False)).replace("__BUILT__", datetime.date.today().isoformat())
-    (SITE / "index.html").write_text(html, encoding="utf8")
+    (BUILD / "index.html").write_text(html, encoding="utf8")
     by = collections.Counter((i["module"], i["status"]) for i in items)
     print(len(items), "items")
     for m in sorted({i["module"] for i in items}):

@@ -11,16 +11,16 @@ One list of every issue we shared with the frontend and backend teams, by module
 
 Statuses: `open`, `in-progress`, `fixed-per-log` (a fix log claims it; branch not checked), `fixed` (checked on a branch or release), `still-bug`, `decision` (waiting for a business answer), `wontfix`, `unknown`.
 
-## Update
+## Update and publish
 
 ```
-python tools/build.py      # rebuilds data/items.json and site/index.html
+PETRA_TRACKER_PW='a long password' bash tools/publish.sh
 ```
+
+It rebuilds `data/items.json`, builds the plain page into `build/` (git-ignored, never published) and encrypts it with StatiCrypt into `site/index.html`. Commit and push `site/` and `data/`; Vercel redeploys.
 
 ## Put it on the web (Vercel, free)
 
-1. `git init` is done. Push this folder to a **private** repo (GitLab or GitHub).
-2. Vercel: New Project, import the repo, Framework "Other", Output Directory `site`, no build command. Every push redeploys.
-3. **Protect it.** A free Vercel site is public. The list names unfixed security gaps in the live ERP, so encrypt the page before publishing:
-   `npx staticrypt site/index.html -p "<a long password>" -d site` (put the encrypted file in `site/`; keep the password in a password manager).
-   Nothing in the data contains hosts or credentials; keep it that way.
+1. Private GitHub repo (done): `sayeed007/petra-tracker`.
+2. Vercel: import the repo, Framework "Other", no build command. `vercel.json` already sets the output folder to `site` and `noindex`.
+3. **Never publish the plain page.** A free Vercel site is public and the list names unfixed security gaps. Only the encrypted `site/index.html` is served; `data/` and `build/` are not (they are outside `site/`). Keep the password in a password manager. If a plain version was ever deployed, delete that old deployment in Vercel (Deployments, ... , Delete): old deployment URLs keep serving their content.
