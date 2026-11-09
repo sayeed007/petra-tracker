@@ -4729,8 +4729,8 @@
   "severity": "high",
   "title": "Unlocked stock balance changes",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "InventoryStockDomainService.java:191 reads balance unlocked (findByItemIdAndDimensionId); no @Version on InventoryBalance/ChannelAllocation; ForUpdate only used by sales/purchase",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -4740,7 +4740,11 @@
   ],
   "size": "",
   "theme": "Theme 1: Missing lock, race, duplicates (stock and cost)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:15",
@@ -4749,8 +4753,8 @@
   "severity": "high",
   "title": "Petty cash create/update: no amount, date or ownership validation",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "PettyCashRequestController.java:51 no @Valid; PettyCashRequestDTO amount (l.26) has no constraints",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -4759,7 +4763,11 @@
   ],
   "size": "",
   "theme": "Common C-7: security items from this module",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:2",
@@ -4768,8 +4776,8 @@
   "severity": "high",
   "title": "Natural keys not unique (inventory_balance, inventory_dimension, channel_allocation, lot_master, approval_request)",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "No unique constraints on inventory_balance/channel_allocation/lot_master in V1__initial_schema.sql or entity @Table",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -4779,7 +4787,11 @@
   ],
   "size": "",
   "theme": "Theme 1: Missing lock, race, duplicates (stock and cost)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:30",
@@ -4808,8 +4820,8 @@
   "severity": "high",
   "title": "Bin transfer leaks reserved quantity",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "BinTransferDomainService.startWorkflowIfConfigured:321 and applyRestartOnEdit:352 call completeWithoutWorkflow; onDirectApproval (handler:~98) never releases reservation",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -4818,7 +4830,11 @@
   ],
   "size": "",
   "theme": "Theme 2: Wrong stock after workflow, reservation and undo paths",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:6",
@@ -4827,8 +4843,8 @@
   "severity": "high",
   "title": "Packing house undoLine has no status check",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "PackingHouseBookDomainService.undoLine:395 has no status or salesOrderId check",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -4837,7 +4853,11 @@
   ],
   "size": "",
   "theme": "Theme 2: Wrong stock after workflow, reservation and undo paths",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:7",
@@ -4846,8 +4866,8 @@
   "severity": "high",
   "title": "Deleting an APPROVED packing house booking leaves stock moved",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "PackingHouseBookDomainService.validateDelete:531 still empty",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -4856,7 +4876,11 @@
   ],
   "size": "",
   "theme": "Theme 2: Wrong stock after workflow, reservation and undo paths",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:1",
@@ -4884,8 +4908,8 @@
   "severity": "high",
   "title": "T3-a Complete Pack ignores edits after Save & Exit; unnamed lines ship loose",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D06-1",
+  "status": "fixed",
+  "status_evidence": "pack-items-page.tsx always sends cartons, never applyDraft; packing/utils.ts seeds 0 for lines missing from draft",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -4894,7 +4918,11 @@
   ],
   "size": "S",
   "theme": "Theme 3: Wrong stock and money numbers",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:2",
@@ -4903,8 +4931,8 @@
   "severity": "high",
   "title": "T1-b Invented options, dead buttons, overwritten inputs, unvalidated URL query",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "Transfer Order routes now notFound(); feature folder and fake options deleted (e87ae369)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -4916,7 +4944,11 @@
   ],
   "size": "M",
   "theme": "Theme 1: Transfer Order and Courier Status are one fake feature (decision: finish or hide)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "e87ae369",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:45",
@@ -4925,8 +4957,8 @@
   "severity": "high",
   "title": "T9-a Opening one item loads 1000 items, then all of them",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "erp-api/inventory/items/index.ts overviewLookupPath uses search=<sku>&size=50; size=1000 scan gone",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -4936,7 +4968,11 @@
   ],
   "size": "M",
   "theme": "Theme 9: Request volume",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:6",
@@ -4945,8 +4981,8 @@
   "severity": "high",
   "title": "T2-c Packing house edit discards warehouse, items, quantities, lots",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D03-1",
+  "status": "fixed",
+  "status_evidence": "packing-house-form-view.tsx: warehouse disabled and items table locked={isEdit} with note",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -4955,7 +4991,11 @@
   ],
   "size": "M",
   "theme": "Theme 2: Saved-but-not-sent fields",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "saleschain:SC-3",
@@ -4964,8 +5004,8 @@
   "severity": "high",
   "title": "Returned units never go back into the channel pool",
   "summary": "After receive stock returns to 720 but channel_allocation stays 230; item list shows 710; later delivery refused 'Not enough channel allocation'.",
-  "status": "open",
-  "status_evidence": "D-31 reported; beta blocker SC-3 (meeting backend)",
+  "status": "still-bug",
+  "status_evidence": "sales itemreceive/itemreturn code never touches ChannelAllocation (only delivery and distribution do), so returns do not refill channel pool",
   "evidence_level": "verified",
   "found": "2026-10-31",
   "source": "backend-saleschain-bugs-2026-10-31.md SC-3",
@@ -4977,7 +5017,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:12",
@@ -4986,8 +5030,8 @@
   "severity": "medium",
   "title": "Moving average counts damaged and in-transit stock",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "InventoryStockDomainService.java:342 still uses sumOnHandQtyByItemId (all statuses/locations), not sumCostedOnHandQtyByItemId",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -4996,7 +5040,11 @@
   ],
   "size": "",
   "theme": "Theme 3: Wrong money or calculation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:13",
@@ -5005,8 +5053,8 @@
   "severity": "medium",
   "title": "Tax rate decided by channel display name",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "ItemInventoryQueryService.java:348 still name.startsWith(\"Retail\") decides VAT/AIT 0",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5015,7 +5063,11 @@
   ],
   "size": "",
   "theme": "Theme 3: Wrong money or calculation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:14",
@@ -5024,8 +5076,8 @@
   "severity": "medium",
   "title": "Promotional price stored but never applied",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "ItemPriceQueryService.java:97-105 returns basePrice only; promotionalPrice never read",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5034,7 +5086,11 @@
   ],
   "size": "",
   "theme": "Theme 3: Wrong money or calculation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:16",
@@ -5043,8 +5099,8 @@
   "severity": "medium",
   "title": "Inventory adjustment: requesterId taken from request body",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "InventoryAdjustmentDomainService.resolveAndSetRequester:330 still honours dto.getRequesterId()",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5053,7 +5109,11 @@
   ],
   "size": "",
   "theme": "Common C-7: security items from this module",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:17",
@@ -5062,8 +5122,8 @@
   "severity": "medium",
   "title": "BinTransferMapper.toEntity copies id, sequence, status, workflowInstanceId from the request",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "BinTransferMapper.toEntity:64-69 copies id, sequence, status, workflowInstanceId from DTO",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5072,7 +5132,11 @@
   ],
   "size": "",
   "theme": "Common C-7: security items from this module",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:18",
@@ -5081,8 +5145,8 @@
   "severity": "medium",
   "title": "Blank code stored as \"\" on Brand, Manufacturer, ItemCategory",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "BrandMapper.java:29 stores dto code as-is; BrandDomainService.java:52 skips check on blank, so empty string is stored",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5091,7 +5155,11 @@
   ],
   "size": "",
   "theme": "Common C-3: request validation (inventory items)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:19",
@@ -5100,8 +5168,8 @@
   "severity": "medium",
   "title": "Duplicate sales channels in an item's channelPrices",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "ItemDomainService.validateChannelPrices:321-335 has no duplicate salesChannelId check",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5110,7 +5178,11 @@
   ],
   "size": "",
   "theme": "Common C-3: request validation (inventory items)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:20",
@@ -5119,8 +5191,8 @@
   "severity": "medium",
   "title": "Item request: numeric fields without range checks; two required fields marked optional",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "ItemRequestDTO/ItemDTO carry no @Min/@DecimalMin/@NotNull constraints",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5129,7 +5201,11 @@
   ],
   "size": "",
   "theme": "Common C-3: request validation (inventory items)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:22",
@@ -5138,8 +5214,8 @@
   "severity": "medium",
   "title": "Budget allocator: no period validation, overlap, unlocked update",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "BudgetAllocatorServiceImpl.java:32-33 update sets dates with no period/overlap validation or lock",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5148,7 +5224,11 @@
   ],
   "size": "",
   "theme": "Common C-3: request validation (inventory items)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:27",
@@ -5157,8 +5237,8 @@
   "severity": "medium",
   "title": "Brand and Sales Channel delete: false \"no references\" comment",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "BrandDomainService.java:73 and SalesChannelDomainService.java:70 validateDelete still empty with 'no references' comment",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5167,7 +5247,11 @@
   ],
   "size": "",
   "theme": "Theme 6: Data left behind, delete rules, files",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:28",
@@ -5176,8 +5260,8 @@
   "severity": "medium",
   "title": "Location delete relies on DB errors; depth not enforced",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "InventoryLocationDomainService.validateDelete:162 empty, relies on DB cascade/errors",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5186,7 +5270,11 @@
   ],
   "size": "",
   "theme": "Theme 6: Data left behind, delete rules, files",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:3",
@@ -5195,8 +5283,8 @@
   "severity": "medium",
   "title": "Item.averageCost lost update",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "No Item findByIdForUpdate or @Version; InventoryStockDomainService.resolveItemByIdOrSku unlocked",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5205,7 +5293,11 @@
   ],
   "size": "",
   "theme": "Theme 1: Missing lock, race, duplicates (stock and cost)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:31",
@@ -5214,8 +5306,8 @@
   "severity": "medium",
   "title": "List endpoints return everything without page/size",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "ItemController.getAll:132-158 returns full list unless both page and size supplied; overview same",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5224,7 +5316,11 @@
   ],
   "size": "",
   "theme": "Common C-4: batch fetching",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:32",
@@ -5233,8 +5329,8 @@
   "severity": "medium",
   "title": "Lot breakdown and item/location lists page in memory",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "LotBreakdownQueryService.query:106 builds all rows then paginate() slices in memory (l.193)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5243,7 +5339,11 @@
   ],
   "size": "",
   "theme": "Common C-4: batch fetching",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:33",
@@ -5252,8 +5352,8 @@
   "severity": "medium",
   "title": "ItemPriceQueryService.queryBatch does about 4 queries per entry",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "ItemPriceQueryService.queryBatch:59-76 maps entries one by one with findById per entry",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5262,7 +5362,11 @@
   ],
   "size": "",
   "theme": "Common C-4: batch fetching",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:34",
@@ -5271,8 +5375,8 @@
   "severity": "medium",
   "title": "Descendant walks and path resolution: one query per node",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "InventoryLocationDomainService.collectSelfAndDescendantIds:290-295 one query per node (BFS)",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5282,7 +5386,11 @@
   ],
   "size": "",
   "theme": "Common C-4: batch fetching",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:36",
@@ -5291,8 +5399,8 @@
   "severity": "medium",
   "title": "Reorder alert query scans the whole balance table twice per page",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "ReorderAlertRepository.find:71 and count:95 each rebuild the full STOCK_PER_WAREHOUSE aggregate per page",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5301,7 +5409,11 @@
   ],
   "size": "",
   "theme": "Common C-4: batch fetching",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:37",
@@ -5310,8 +5422,8 @@
   "severity": "medium",
   "title": "Mappers do per-row lookups (bin transfer, packing house lists); one lookup swallows every exception",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "PackingHouseBookMapper.java:147-155 catch (Exception) around customer lookup; per-row itemFacade.getById at :194; BinTransferMapper:205",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5320,7 +5432,11 @@
   ],
   "size": "",
   "theme": "Common C-4: batch fetching",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:38",
@@ -5329,8 +5445,8 @@
   "severity": "medium",
   "title": "Stock transfer list paginates in memory",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "StockTransferRepository.java:60-71 paged methods still use @EntityGraph with items collection; no batch fetch setting",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5339,7 +5455,11 @@
   ],
   "size": "",
   "theme": "Common C-4: batch fetching",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:39",
@@ -5348,8 +5468,8 @@
   "severity": "medium",
   "title": "Inventory adjustment export: unbounded, lazy N+1",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "InventoryAdjustmentExportDataSource runs unpaged readEntities; InventoryAdjustmentRepository has no EntityGraph",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5358,7 +5478,11 @@
   ],
   "size": "",
   "theme": "Common C-4: batch fetching",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:4",
@@ -5367,8 +5491,8 @@
   "severity": "medium",
   "title": "Link-and-fulfill race on packing house booking",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "PackingHouseLinkFulfillService.requireBook (~l.158-168) unlocked read of salesOrderId; repository has no lock query",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5377,7 +5501,11 @@
   ],
   "size": "",
   "theme": "Theme 1: Missing lock, race, duplicates (stock and cost)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:41",
@@ -5386,8 +5514,8 @@
   "severity": "medium",
   "title": "Serial numbers accepted but never stored or returned; read-back merges lines",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "transfer ItemLine model has no serial field; BinTransferMapper uses serial only to resolve dimension, not stored or returned",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5396,7 +5524,11 @@
   ],
   "size": "",
   "theme": "Theme 8: Wrong or confusing API contract",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:8",
@@ -5405,8 +5537,8 @@
   "severity": "medium",
   "title": "Stock transfer without workflow ignores reserved quantity",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "StockTransferFacadeImpl.create:105 no-workflow branch applies stock with no reserve/available check",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5415,7 +5547,11 @@
   ],
   "size": "",
   "theme": "Theme 2: Wrong stock after workflow, reservation and undo paths",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:9",
@@ -5424,8 +5560,8 @@
   "severity": "medium",
   "title": "Serial lookup in bin transfer ignores item and location; serial not re-pointed",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "ItemFacadeImpl.getInventoryDimension:315-317 serial lookup ignores item/location; BinTransferWorkflowHandler does not re-point serial",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -5434,7 +5570,11 @@
   ],
   "size": "",
   "theme": "Theme 2: Wrong stock after workflow, reservation and undo paths",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:12",
@@ -5443,8 +5583,8 @@
   "severity": "medium",
   "title": "T3-b Purchasing tab prints the item-wide channel stock on every location row",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "inventory-item-purchasing-inventory-tab.tsx hasManyLocations shows '-' instead of repeating item-wide channel stock",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5453,7 +5593,11 @@
   ],
   "size": "S",
   "theme": "Theme 3: Wrong stock and money numbers",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:13",
@@ -5462,8 +5606,8 @@
   "severity": "medium",
   "title": "T3-c Bin-transfer list quantity adds different units",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D01-3",
+  "status": "fixed",
+  "status_evidence": "bin-transfers/mappers.ts:52-66 sums quantity only when all lines share a unit, else '-'",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5472,7 +5616,11 @@
   ],
   "size": "S",
   "theme": "Theme 3: Wrong stock and money numbers",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:14",
@@ -5481,8 +5629,8 @@
   "severity": "medium",
   "title": "T3-d Inventory Snapshot: mixed-unit total, shifting columns, stale rows on error",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "inventory-snapshot-view.tsx:94-102 channel columns still derived from current page rows only",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5491,7 +5639,11 @@
   ],
   "size": "S",
   "theme": "Theme 3: Wrong stock and money numbers",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:15",
@@ -5500,8 +5652,8 @@
   "severity": "medium",
   "title": "T3-e createCurrencyFormatter rounds petty cash to whole taka",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D44-1",
+  "status": "fixed",
+  "status_evidence": "shared/utils/format.ts:46-56 createCurrencyFormatter now 2 fraction digits",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5510,7 +5662,11 @@
   ],
   "size": "S",
   "theme": "Theme 3: Wrong stock and money numbers",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:17",
@@ -5519,8 +5675,8 @@
   "severity": "medium",
   "title": "T3-g Quantity min 1 / integer rules disagree with backend",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "stock-transfer/bin-transfer/adjustment schemas use gt(0); carton and return inputs step 1 integers; pick scan partial match needs 3+ chars",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5532,7 +5688,11 @@
   ],
   "size": "S",
   "theme": "Theme 3: Wrong stock and money numbers",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:18",
@@ -5541,8 +5701,8 @@
   "severity": "medium",
   "title": "T4-a Changing warehouse keeps bins of the old warehouse (adjustment, packing house, product distribution)",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-A14-7",
+  "status": "fixed",
+  "status_evidence": "Warehouse change clears row picks in adjustment row, packing-house items table, product-distribution items table",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5553,7 +5713,11 @@
   ],
   "size": "M",
   "theme": "Theme 4: Stale state after header or row change",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:19",
@@ -5562,8 +5726,8 @@
   "severity": "medium",
   "title": "T4-b Item change keeps old quantity; new row inherits deleted row's lock",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "packing-house items table resets qty to 0 on item replace; adjustment row lock is per-row state, not index lookup",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5573,7 +5737,11 @@
   ],
   "size": "S",
   "theme": "Theme 4: Stale state after header or row change",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:22",
@@ -5603,8 +5771,8 @@
   "severity": "medium",
   "title": "T5-a Complete Pick with nothing scanned marks everything picked",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D06-4",
+  "status": "fixed",
+  "status_evidence": "pick-items-page.tsx confirmingEmpty confirm before completing with nothing scanned",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5613,7 +5781,11 @@
   ],
   "size": "S",
   "theme": "Theme 5: One-click irreversible actions, double submit, screens that lie",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:24",
@@ -5622,8 +5794,8 @@
   "severity": "medium",
   "title": "T5-b Pack and pick: button re-enabled after success; failed carton read drops the label step",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D06-5",
+  "status": "fixed",
+  "status_evidence": "pack-items-page.tsx keeps submitting via packed flag; failed plate read keeps user on page with error",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5632,7 +5804,11 @@
   ],
   "size": "S",
   "theme": "Theme 5: One-click irreversible actions, double submit, screens that lie",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:25",
@@ -5641,8 +5817,8 @@
   "severity": "medium",
   "title": "T5-c Dispatch is one click; busy flag stuck if the action throws",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D38-5",
+  "status": "fixed",
+  "status_evidence": "ship-items-page.tsx confirmDispatch wrapped in try/catch, AppConfirmAction before dispatch",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5651,7 +5827,11 @@
   ],
   "size": "S",
   "theme": "Theme 5: One-click irreversible actions, double submit, screens that lie",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:26",
@@ -5660,8 +5840,8 @@
   "severity": "medium",
   "title": "T5-d Edit destination dialog preselects the first saved address",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D38-4",
+  "status": "fixed",
+  "status_evidence": "ship-destination-dialog.tsx preselects currentAddressId (detail.shippingInfo.shipToAddressId)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5670,7 +5850,11 @@
   ],
   "size": "S",
   "theme": "Theme 5: One-click irreversible actions, double submit, screens that lie",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:27",
@@ -5717,8 +5901,8 @@
   "severity": "medium",
   "title": "T5-g Petty cash add-category: Enter submits again; item form Save clickable during redirect",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D03-8",
+  "status": "fixed",
+  "status_evidence": "Petty cash add-category uses saveGuard + disabled={saving}; item form Save locked during redirect (bc39277e)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5728,7 +5912,11 @@
   ],
   "size": "S",
   "theme": "Theme 5: One-click irreversible actions, double submit, screens that lie",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "bc39277e",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:3",
@@ -5737,8 +5925,8 @@
   "severity": "medium",
   "title": "T1-c Courier Status fixture page reachable by URL",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "courier-status/page.tsx now calls notFound() (e87ae369)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5747,7 +5935,11 @@
   ],
   "size": "S",
   "theme": "Theme 1: Transfer Order and Courier Status are one fake feature (decision: finish or hide)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "e87ae369",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:31",
@@ -5756,8 +5948,8 @@
   "severity": "medium",
   "title": "T5-i Petty cash and distribution forms default to the first option",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D04-4",
+  "status": "fixed",
+  "status_evidence": "petty-cash-form-view.tsx applyDefaultOption never pre-picks first option; product-distribution form has no first-option default",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5766,7 +5958,11 @@
   ],
   "size": "S",
   "theme": "Theme 5: One-click irreversible actions, double submit, screens that lie",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:32",
@@ -5775,8 +5971,8 @@
   "severity": "medium",
   "title": "T6-a No permission check on new/detail/action pages; gate-pass, pick, pack, ship have none",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "app/(erp)/pick-items/page.tsx has no permission check (gate-pass/pack/ship/new pages now use denyWithoutPermission)",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5785,7 +5981,11 @@
   ],
   "size": "M",
   "theme": "Theme 6: Permission and access",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:33",
@@ -5794,8 +5994,8 @@
   "severity": "medium",
   "title": "T6-b Whole packing-house subtree is a public route",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "proxy.ts PUBLIC_ROUTES is only login, slo, guide; packing-house no longer public (e87ae369)",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5804,7 +6004,11 @@
   ],
   "size": "S",
   "theme": "Theme 6: Permission and access",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "e87ae369",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:35",
@@ -5832,8 +6036,8 @@
   "severity": "medium",
   "title": "T7-b Raw `error.message` shown; failed approvals give no reason",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "No raw error.message shown in adjustments/bin/stock-transfer/lot-breakdown; translated keys; shared reject dialog requires reason",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5845,7 +6049,11 @@
   ],
   "size": "S",
   "theme": "Theme 7: Failures shown as empty, or raw backend text",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:37",
@@ -5877,8 +6085,8 @@
   "severity": "medium",
   "title": "T8-a Stock transfer list hides rows when URL size is not the default",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D05-3",
+  "status": "fixed",
+  "status_evidence": "stock-transfer-list-page.tsx effect syncs table page size to response itemsPerPage",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5887,7 +6095,11 @@
   ],
   "size": "S",
   "theme": "Theme 8: Wrong filters, paging, status maps and validation",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:4",
@@ -5896,8 +6108,8 @@
   "severity": "medium",
   "title": "T2-a Item form Accounting tab: 13 account fields never sent or loaded",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D01-1",
+  "status": "fixed",
+  "status_evidence": "Form Accounting tab removed; details tab is a pointer note (bc39277e)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5907,7 +6119,11 @@
   ],
   "size": "M",
   "theme": "Theme 2: Saved-but-not-sent fields",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "bc39277e",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:42",
@@ -5955,8 +6171,8 @@
   "severity": "medium",
   "title": "T9-c Sequential location walks and unbounded fallbacks",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "erp-api/inventory/locations/index.ts:192,219 fallback fetches all SHELF/BIN locations system-wide (walks now Promise.all)",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5965,7 +6181,11 @@
   ],
   "size": "M",
   "theme": "Theme 9: Request volume",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:49",
@@ -5974,8 +6194,8 @@
   "severity": "medium",
   "title": "T10-a Fake demo data on live routes (picking, adjustment accounts)",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-A01-4",
+  "status": "still-bug",
+  "status_evidence": "Picking fixtures gone, but adjustments/constants.ts:20 hard-coded accounts, form-view:114 and mappers.ts:88,193 default account",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -5985,7 +6205,11 @@
   ],
   "size": "S",
   "theme": "Theme 10: Hardcoded text, fake or dead code, tidy-ups",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:5",
@@ -5994,8 +6218,8 @@
   "severity": "medium",
   "title": "T2-b Items Status filter and sort do nothing; every item shown \"active\"",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-A04-4",
+  "status": "fixed",
+  "status_evidence": "Status filter and badge removed from item list/details (bc39277e); leftover status URL key only",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -6005,7 +6229,11 @@
   ],
   "size": "S",
   "theme": "Theme 2: Saved-but-not-sent fields",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "bc39277e",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:7",
@@ -6014,8 +6242,8 @@
   "severity": "medium",
   "title": "T2-d Packing house edit resets booking date to today",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D03-2",
+  "status": "fixed",
+  "status_evidence": "packing-house/mappers.ts:298 edit initial bookingDate = dto.bookingDate; today only as create fallback",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -6024,7 +6252,11 @@
   ],
   "size": "S",
   "theme": "Theme 2: Saved-but-not-sent fields",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:8",
@@ -6033,8 +6265,8 @@
   "severity": "medium",
   "title": "T2-e Petty cash add-category overwrites carry-forward with 1",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D03-7",
+  "status": "fixed",
+  "status_evidence": "petty-cash-add-category-form.tsx:111 carryForwardMonths: allocator?.carryForwardMonths ?? 1",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -6043,7 +6275,11 @@
   ],
   "size": "S",
   "theme": "Theme 2: Saved-but-not-sent fields",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:10",
@@ -6052,8 +6288,8 @@
   "severity": "low",
   "title": "Adjustment validation resolves a serial without item/location/status check",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "InventoryAdjustmentDomainService:162 uses same serial-only getInventoryDimension, no item/location/status check",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -6062,7 +6298,11 @@
   ],
   "size": "",
   "theme": "Theme 2: Wrong stock after workflow, reservation and undo paths",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:11",
@@ -6090,8 +6330,8 @@
   "severity": "low",
   "title": "Sales channel name not unique",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "V1__initial_schema.sql:446 sales_channel.name has no unique constraint; no later migration adds one",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -6100,7 +6340,11 @@
   ],
   "size": "",
   "theme": "Common C-3: request validation (inventory items)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:23",
@@ -6147,8 +6391,8 @@
   "severity": "low",
   "title": "Item create/update: duplicated validation, UOM auto-created from free text",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "ItemDomainService.java:360-361 auto-creates UOM from free text name",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -6157,7 +6401,11 @@
   ],
   "size": "",
   "theme": "Common C-3: request validation (inventory items)",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:26",
@@ -6223,8 +6471,8 @@
   "severity": "low",
   "title": "Whole location table loaded on every stock query",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "InventoryBalanceFacadeImpl.java:148 loads inventoryLocationRepository.findAll() per stock query (also LotBreakdownQueryService:94)",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -6233,7 +6481,11 @@
   ],
   "size": "",
   "theme": "Common C-4: batch fetching",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:40",
@@ -6242,8 +6494,8 @@
   "severity": "low",
   "title": "Transfer export filters turn bad values into 500",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "BinTransferExportDataSource.java:119 Enum valueOf and :149 LocalDate.parse on raw filter strings, unguarded",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -6252,7 +6504,11 @@
   ],
   "size": "",
   "theme": "Theme 8: Wrong or confusing API contract",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:42",
@@ -6261,8 +6517,8 @@
   "severity": "low",
   "title": "StockTransfer line unitId required but ignored; response unitId mixes id spaces",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "ItemLineRequestDTO.java:28-29 unitId @NotNull but never read; ItemLineResponseDTO.resolveUnitId:61 returns conversion id or UOM id",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -6271,7 +6527,11 @@
   ],
   "size": "",
   "theme": "Theme 8: Wrong or confusing API contract",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:43",
@@ -6280,8 +6540,8 @@
   "severity": "low",
   "title": "ItemPackingHouseBookDTO embeds a JPA entity; misspelled JSON key",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "ItemPackingHouseBookDTO.java:3,20 embeds ItemUOMConversion entity; field packingHosueBookId misspelled (l.25)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -6290,7 +6550,11 @@
   ],
   "size": "",
   "theme": "Theme 8: Wrong or confusing API contract",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:44",
@@ -6318,8 +6582,8 @@
   "severity": "low",
   "title": "Requester name shows \"Ali null\"",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "PettyCashResponseDTO.java:60 and workflow handlers concatenate firstName + space + lastName with null lastName -> 'Ali null'",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -6328,7 +6592,11 @@
   ],
   "size": "",
   "theme": "Theme 8: Wrong or confusing API contract",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:46",
@@ -6356,8 +6624,8 @@
   "severity": "low",
   "title": "Same \"move stock between bins\" code copied four times",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "Private deductSourceOnHand/findOrCreateDestinationDimension copies remain in BinTransferWorkflowHandler, PackingHouseBookDomainService, adjustment handler",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -6366,7 +6634,11 @@
   ],
   "size": "",
   "theme": "Theme 9: Dead code and tidy-ups",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:inventory:48",
@@ -6375,8 +6647,8 @@
   "severity": "low",
   "title": "Dead model classes and two reservation statuses for one meaning",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "TransferOrder model still present and unused; EReservationStatus has both ACTIVE and RESERVE",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -6385,7 +6657,11 @@
   ],
   "size": "",
   "theme": "Theme 9: Dead code and tidy-ups",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:10",
@@ -6394,8 +6670,8 @@
   "severity": "low",
   "title": "T2-g Item form mapper rewrites values on save",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "erp-api/inventory/items/mapper.ts:1036-1042 categoryId ?? 0, unknown profile -> STANDARD, unknown tracking -> LOT, units default Pcs",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -6404,7 +6680,11 @@
   ],
   "size": "S",
   "theme": "Theme 2: Saved-but-not-sent fields",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:16",
@@ -6413,8 +6693,8 @@
   "severity": "low",
   "title": "T3-f Float math for amounts",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "product-distribution items table uses shared roundMoney (@/shared/utils/money); no inline float rounding found in inventory features",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -6423,7 +6703,11 @@
   ],
   "size": "S",
   "theme": "Theme 3: Wrong stock and money numbers",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:20",
@@ -6432,8 +6716,8 @@
   "severity": "low",
   "title": "T4-c Stock transfer form silently changes or clears choices",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "stock-transfer-form-page.tsx has AppConfirmAction on location change, load-error notFoundContent, requestId guard",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -6442,7 +6726,11 @@
   ],
   "size": "S",
   "theme": "Theme 4: Stale state after header or row change",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:21",
@@ -6451,8 +6739,8 @@
   "severity": "low",
   "title": "T4-d Stale responses overwrite newer ones; gate-pass return preselects a line",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "gate-pass-workspace.tsx uses detailRequestRef/returnRequestRef to drop late responses; lines start unselected",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -6461,7 +6749,11 @@
   ],
   "size": "S",
   "theme": "Theme 4: Stale state after header or row change",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:30",
@@ -6470,8 +6762,8 @@
   "severity": "low",
   "title": "T5-h Approve/Reject locked after success; link-sales-order toast lost and first order preselected",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "adjustment-record-header.tsx:82 setPendingDecision(null) only in catch; (link dialog preselect part is fixed)",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -6481,7 +6773,11 @@
   ],
   "size": "S",
   "theme": "Theme 5: One-click irreversible actions, double submit, screens that lie",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:34",
@@ -6490,8 +6786,8 @@
   "severity": "low",
   "title": "T6-c Path ids from the browser put into URLs without encoding",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "erp-api/inventory/locations/index.ts:158,165 build /locations/${id}/children paths without encodeURIComponent",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -6500,7 +6796,11 @@
   ],
   "size": "S",
   "theme": "Theme 6: Permission and access",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:38",
@@ -6552,8 +6852,8 @@
   "severity": "low",
   "title": "T8-c Status colours and labels",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "stock-transfers/status.ts single status map (IN_PROGRESS info, unknown neutral) used by list and detail",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -6562,7 +6862,11 @@
   ],
   "size": "S",
   "theme": "Theme 8: Wrong filters, paging, status maps and validation",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:43",
@@ -6590,8 +6894,8 @@
   "severity": "low",
   "title": "T8-f Month range uses the server clock; item min/max not cross-checked",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "stock-transfers/query.ts uses companyMonthRange; item form schema superRefine max<min (l.147-155)",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -6601,7 +6905,11 @@
   ],
   "size": "S",
   "theme": "Theme 8: Wrong filters, paging, status maps and validation",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:inventory:48",
@@ -6703,8 +7011,8 @@
   "severity": "low",
   "title": "T2-f Petty cash edit shows editable Requester that update ignores; dead form defaults",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D04-5",
+  "status": "fixed",
+  "status_evidence": "petty-cash-form-view.tsx:499 requester select disabled in edit mode",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -6713,7 +7021,11 @@
   ],
   "size": "S",
   "theme": "Theme 2: Saved-but-not-sent fields",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "saleschain:P3-B8",
@@ -6722,8 +7034,8 @@
   "severity": "low",
   "title": "Unit names are case-sensitive free text; no UoM master API",
   "summary": "Units 'pcs' and 'Pcs' give two uom rows; no UoM/item group/attributes API though sidebar lists them.",
-  "status": "open",
-  "status_evidence": "No follow-up evidence in source files",
+  "status": "still-bug",
+  "status_evidence": "ItemDomainService.java:360 findFirstByNameOrderByIdAsc is case-sensitive; UOM only has a repository, no controller/API",
   "evidence_level": "verified",
   "found": "2026-10-31",
   "source": "backend-saleschain-bugs-2026-10-31.md P3-B8",
@@ -6732,7 +7044,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "saleschain:SC-12",
@@ -6777,15 +7093,19 @@
   "severity": "unrated",
   "title": "Form-made lot adjustment has no destination bin; approval answers 400",
   "summary": "Lot adjustment created from the form lacks a destination bin so approval fails with 400.",
-  "status": "open",
-  "status_evidence": "'backend (kept) ... Still test.fail (expected failure holds)'",
+  "status": "fixed",
+  "status_evidence": "InventoryAdjustmentWorkflowHandler.destinationLocationId falls back to source location when no destination bin; commit bb4c85afe removed the destination requirement",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "INV-01-03",
   "refs": [],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "inv:INV-06",
@@ -7781,8 +8101,8 @@
   "severity": "high",
   "title": "Two parallel vendor payments overpay one bill (paid 1200 of 1000)",
   "summary": "Both 600 payments accepted and approved; remaining-due check misses the sibling and approval does not re-check; AP debit balance. Needs row lock or re-validation at approval.",
-  "status": "open",
-  "status_evidence": "Beta blocker list (meeting backend sec.5); no fix recorded",
+  "status": "still-bug",
+  "status_evidence": "VendorPaymentDomainService.java:189-205 checks remainingDue without row lock; VendorPaymentWorkflowHandler.post (l.118) approves with no re-check of bill due",
   "evidence_level": "verified",
   "found": "2026-11-01",
   "source": "backend-purchase-bugs-2026-11-01.md B-P11",
@@ -7792,7 +8112,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "purchase:B-P12",
@@ -7801,8 +8125,8 @@
   "severity": "high",
   "title": "DELETE vendor with 25 bills/POs/payments hard-deletes it (204), leaving orphans and HTTP 500s",
   "summary": "After delete GET vendor-bills/61 returns 500, VENDOR_AGING lists 'Vendor #1', GL payable keeps balance. Expected: refuse or soft-deactivate.",
-  "status": "open",
-  "status_evidence": "Beta blocker list (meeting backend sec.5); no fix recorded",
+  "status": "still-bug",
+  "status_evidence": "VendorDomainService.validateDelete (l.133-136) is an empty TODO; handleDeleteDependencies empty, so a vendor with documents is hard-deleted",
   "evidence_level": "verified",
   "found": "2026-11-01",
   "source": "backend-purchase-bugs-2026-11-01.md B-P12",
@@ -7812,7 +8136,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "purchase:B-P2",
@@ -7821,8 +8149,8 @@
   "severity": "high",
   "title": "Rejected receipt can never be billed again: HTTP 500 orphan VendorChallan.extraCosts",
   "summary": "POST /api/purchase/vendor-bills after a REJECTED bill of the same receipt returns 500 JpaSystemException; no DELETE for bills. UI only shows 'Failed to generate vendor bill'.",
-  "status": "open",
-  "status_evidence": "Beta blocker list (meeting backend 2026-11-01 sec.5); no fix recorded",
+  "status": "still-bug",
+  "status_evidence": "VendorChallanService.upsert reuses existing challan and does setExtraCosts(new list) on an orphanRemoval=true collection (VendorChallan.java:63); entity unchanged since creation",
   "evidence_level": "verified",
   "found": "2026-11-01",
   "source": "backend-purchase-bugs-2026-11-01.md B-P2",
@@ -7832,7 +8160,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "purchase:B-P6",
@@ -7841,8 +8173,8 @@
   "severity": "high",
   "title": "Debit note can be created and approved before the vendor return is fulfilled",
   "summary": "AP and Purchases drop while goods are still on hand; no link to fulfilledQty. UI debit-note form also saves for an unfulfilled APPROVED return.",
-  "status": "open",
-  "status_evidence": "Beta blocker list (meeting backend sec.5); no fix recorded",
+  "status": "still-bug",
+  "status_evidence": "BillCreditDomainService validateSourceReturn checks only APPROVED status, vendor, live credit; no fulfilledQty check anywhere in the file",
   "evidence_level": "verified",
   "found": "2026-11-01",
   "source": "backend-purchase-bugs-2026-11-01.md B-P6",
@@ -7852,7 +8184,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:1",
@@ -7861,8 +8197,8 @@
   "severity": "high",
   "title": "Concurrent payments over-pay a bill",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "No lock or @Version in purchase payment path; VendorPaymentDomainService:196-205 remainingDue check is a plain read, so parallel payments both pass",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -7871,7 +8207,11 @@
   ],
   "size": "",
   "theme": "Theme 1: Wrong money and wrong calculation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:14",
@@ -7880,8 +8220,8 @@
   "severity": "high",
   "title": "Vendor return fulfilment race",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "VendorReturnFulfillmentService.fulfill loads the request via plain findById (l.90), no lock on it; fulfilledQty updated after the fact (l.131-133)",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -7890,7 +8230,11 @@
   ],
   "size": "",
   "theme": "Theme 2: Missing lock or race",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:2",
@@ -7899,8 +8243,8 @@
   "severity": "high",
   "title": "Bill credit and payment do not see each other; no re-check at approval",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "BillCreditDomainService.outstandingOf counts only APPROVED payments; BillCreditWorkflowHandler.onApproved has no re-check; payment post() also none",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -7909,7 +8253,11 @@
   ],
   "size": "",
   "theme": "Theme 1: Wrong money and wrong calculation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:3",
@@ -7918,8 +8266,8 @@
   "severity": "high",
   "title": "Prepayment of another vendor can fund a payment",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "VendorPrepaymentDomainService.loadUsable (l.203-215) checks status and amount, never vendor; VendorPaymentDomainService:140 passes only id and amount",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -7928,7 +8276,11 @@
   ],
   "size": "",
   "theme": "Theme 1: Wrong money and wrong calculation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "purchase:B-P1",
@@ -7937,8 +8289,8 @@
   "severity": "medium",
   "title": "PO create accepts negative/oversized money fields and trusts client taxAmount",
   "summary": "POST /api/purchase/orders returns 201 for unit price -1, discount > gross, negative discount/taxRate, rate 150, and taxAmount 999 for rate 15 (never recomputed).",
-  "status": "open",
-  "status_evidence": "No follow-up evidence in source files",
+  "status": "still-bug",
+  "status_evidence": "PurchaseOrderDomainService.validateCommon (l.78-105) checks qty only; computeAndSetTotals (l.303) trusts client taxAmount; no negative price/discount/rate checks",
   "evidence_level": "verified",
   "found": "2026-11-01",
   "source": "backend-purchase-bugs-2026-11-01.md B-P1",
@@ -7948,7 +8300,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "purchase:B-P10",
@@ -7977,8 +8333,8 @@
   "severity": "medium",
   "title": "Vendor bill accepts billed qty above received qty",
   "summary": "Bill qty 110 for a receipt of 100 accepted (201, grand 880); no check bill qty <= received qty.",
-  "status": "open",
-  "status_evidence": "No follow-up evidence in source files",
+  "status": "still-bug",
+  "status_evidence": "VendorBillDomainService.validateLines/validateCreate: no check billedQty <= receipt qty",
   "evidence_level": "verified",
   "found": "2026-11-01",
   "source": "backend-purchase-bugs-2026-11-01.md B-P3",
@@ -7988,7 +8344,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "purchase:B-P4",
@@ -7997,8 +8357,8 @@
   "severity": "medium",
   "title": "Vendor bill accepts negative price/tax and 1e12 price",
   "summary": "billUnitPrice -3 gives grand -30, taxRate -15 gives tax -12; only challanUnitPrice is checked non-negative.",
-  "status": "open",
-  "status_evidence": "No follow-up evidence in source files",
+  "status": "still-bug",
+  "status_evidence": "VendorBillDomainService has no negative or range check on billUnitPrice/taxRate; only VendorChallanService.requirePositive covers challan price",
   "evidence_level": "verified",
   "found": "2026-11-01",
   "source": "backend-purchase-bugs-2026-11-01.md B-P4",
@@ -8008,7 +8368,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "purchase:B-P5",
@@ -8017,8 +8381,8 @@
   "severity": "medium",
   "title": "Bill credit accepts refundQty above returned qty and a client-supplied unit price",
   "summary": "refundQty 25 for a return of 20 and unit price 30 for goods bought at 8 are accepted; only the bill outstanding cap limits it.",
-  "status": "open",
-  "status_evidence": "No follow-up evidence in source files",
+  "status": "still-bug",
+  "status_evidence": "BillCreditDomainService.validateCommon only checks refundQty>0; unitPrice taken from the line, no ceiling vs return qty",
   "evidence_level": "verified",
   "found": "2026-11-01",
   "source": "backend-purchase-bugs-2026-11-01.md B-P5",
@@ -8029,7 +8393,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "purchase:B-P8",
@@ -8038,8 +8406,8 @@
   "severity": "medium",
   "title": "INACTIVE vendor and INACTIVE payment term accepted on new documents",
   "summary": "Quotations, vendor selections and POs accept an inactive vendor/term (PO 201), although the payment-term API says new documents cannot select an inactive term.",
-  "status": "open",
-  "status_evidence": "D-29 reported to backend (meeting 2026-11-01)",
+  "status": "still-bug",
+  "status_evidence": "No inactive vendor or payment-term check in quotation, selection or order create/validate code (status/active grep in those packages is empty)",
   "evidence_level": "verified",
   "found": "2026-11-01",
   "source": "backend-purchase-bugs-2026-11-01.md B-P8",
@@ -8049,7 +8417,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "purchase:B-P9",
@@ -8058,8 +8430,8 @@
   "severity": "medium",
   "title": "Approved vendor bill with FAILED journal posting (missing mapping) is payable and invisible in UI",
   "summary": "Bill approved while journal FAILED (no AP booked); only posting log shows it. UI shows nothing; asks backend to expose postingStatus/postingError on bill DTO.",
-  "status": "open",
-  "status_evidence": "D-28 reported to backend; FE-5 waits on D-40 (meetings 2026-11-01)",
+  "status": "still-bug",
+  "status_evidence": "VendorBillDTO has no postingStatus/postingError field (only period dates) and frontend shows none for bills; failures only in the posting log",
   "evidence_level": "verified",
   "found": "2026-11-01",
   "source": "backend-purchase-bugs-2026-11-01.md B-P9",
@@ -8071,7 +8443,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:12",
@@ -8080,8 +8456,8 @@
   "severity": "medium",
   "title": "Optimistic locking missing on all purchase and sales entities",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "@Version exists only on WorkflowInstance and WorkflowTask in backend main source; no purchase or sales entity has it",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8090,7 +8466,11 @@
   ],
   "size": "",
   "theme": "Theme 2: Missing lock or race",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:13",
@@ -8099,8 +8479,8 @@
   "severity": "medium",
   "title": "Prepayment draw-down",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "VendorPrepaymentDomainService.drawDown (l.230-238) is findById + set unusedAmount + save, no lock or version",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8109,7 +8489,11 @@
   ],
   "size": "",
   "theme": "Theme 2: Missing lock or race",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:15",
@@ -8118,8 +8502,8 @@
   "severity": "medium",
   "title": "Approval handlers not idempotent",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "VendorPaymentWorkflowHandler.post (l.118) runs on any entity status, no PENDING guard before draw-down and posting",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8128,7 +8512,11 @@
   ],
   "size": "",
   "theme": "Theme 2: Missing lock or race",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:16",
@@ -8137,8 +8525,8 @@
   "severity": "medium",
   "title": "Read-modify-write on PO / PI line quantities",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "PurchaseOrderReturnQuantityService.applyFulfillment (l.174-181) findById then returnedQty += qty, no lock or @Version",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8148,7 +8536,11 @@
   ],
   "size": "",
   "theme": "Theme 2: Missing lock or race",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:17",
@@ -8157,8 +8549,8 @@
   "severity": "medium",
   "title": "Duplicate purchase order for one requisition",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "PurchaseOrderConversionService:62-67 is check-then-create (findByRequisitionId); no unique constraint or requisition lock found",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8167,7 +8559,11 @@
   ],
   "size": "",
   "theme": "Theme 2: Missing lock or race",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:18",
@@ -8214,8 +8610,8 @@
   "severity": "medium",
   "title": "Postings endpoint returns any document type",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "PurchasePostingController.getPosting accepts any EFinanceDocumentType with anyOf purchase view permissions; no type-to-permission match",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8224,7 +8620,11 @@
   ],
   "size": "",
   "theme": "Theme 3: Missing permission or client-controlled field",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:22",
@@ -8233,8 +8633,8 @@
   "severity": "medium",
   "title": "Item receipt edit trusts source line ids, type and item",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "ItemReceiptDomainService.mergeItems (l.166-200) copies sourceDocumentItemId and itemId from the client onto existing lines without validation",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8243,7 +8643,11 @@
   ],
   "size": "",
   "theme": "Theme 3: Missing permission or client-controlled field",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:23",
@@ -8252,8 +8656,8 @@
   "severity": "medium",
   "title": "Editing a PO skips every conversion check and ignores a running approval",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "PurchaseOrderDomainService.validateUpdate = validateCommon only; conversion validateAndResolve runs only in facade create",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8262,7 +8666,11 @@
   ],
   "size": "",
   "theme": "Foreign child ids accepted when updating (merge helpers)  [MEDIUM] [LIKELY]  (source IDs: be-A12-3, be-C05-1, be-A10-11 (second bullet))",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:24",
@@ -8271,8 +8679,8 @@
   "severity": "medium",
   "title": "LOCAL PO can be created from a vendor selection that is not APPROVED",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "PurchaseOrderConversionService.resolveLocalVendor (l.84-100) checks requisition match only, never selection status APPROVED",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8281,7 +8689,11 @@
   ],
   "size": "",
   "theme": "Foreign child ids accepted when updating (merge helpers)  [MEDIUM] [LIKELY]  (source IDs: be-A12-3, be-C05-1, be-A10-11 (second bullet))",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:25",
@@ -8290,8 +8702,8 @@
   "severity": "medium",
   "title": "Vendor selection update trusts requisitionId from the body",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "VendorSelectionDomainService.updateFields (l.154-158) validates quotation against dto.requisitionId from the body, not the stored selection's requisition",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8300,7 +8712,11 @@
   ],
   "size": "",
   "theme": "Foreign child ids accepted when updating (merge helpers)  [MEDIUM] [LIKELY]  (source IDs: be-A12-3, be-C05-1, be-A10-11 (second bullet))",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:31",
@@ -8328,8 +8744,8 @@
   "severity": "medium",
   "title": "Quotation lines and spreadsheet upload accept duplicates, zero, negatives; bad cells give 500",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "VendorQuotationDomainService has no signum or range checks on item qty/price and no duplicate-line check; no @Valid on quotation create",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8338,7 +8754,11 @@
   ],
   "size": "",
   "theme": "Theme 4: Missing validation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:33",
@@ -8347,8 +8767,8 @@
   "severity": "medium",
   "title": "Quotation stays editable and deletable after a vendor selection used it",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "VendorQuotationStatusPolicy editable/deletable depend only on status DRAFT/SUBMITTED/ACTIVE; selection use never changes quotation status",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8357,7 +8777,11 @@
   ],
   "size": "",
   "theme": "Theme 4: Missing validation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:35",
@@ -8445,8 +8869,8 @@
   "severity": "medium",
   "title": "Three-way match: bill quantity not compared with received quantity",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "VendorBillGenerationService.buildItemsFromRequest copies billedQty from request; VendorBillDomainService.validateLines has no billed<=received check",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8455,7 +8879,11 @@
   ],
   "size": "",
   "theme": "Theme 1: Wrong money and wrong calculation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:40",
@@ -8521,8 +8949,8 @@
   "severity": "medium",
   "title": "Partial or duplicate bill lines",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "buildItemsFromRequest has no duplicate itemReceiptItemId check nor all-lines-required check; validateLines only needs itemId and receipt item id",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8531,7 +8959,11 @@
   ],
   "size": "",
   "theme": "Theme 1: Wrong money and wrong calculation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:6",
@@ -8540,8 +8972,8 @@
   "severity": "medium",
   "title": "Bill credit: lines not tied to the return; price, quantity ceiling, VAT range, rounding",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "BillCreditDomainService.validateCommon only needs refundQty>0; no ceiling vs return qty, price/vat taken from client (updateFields l.304-305)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8550,7 +8982,11 @@
   ],
   "size": "",
   "theme": "Purchase order money trusted from the client; lines not tied to requisition  [MEDIUM] [VERIFIED]  (source IDs: be-A11-4, be-B02-4 (PO part))",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:7",
@@ -8578,8 +9014,8 @@
   "severity": "medium",
   "title": "Vendor return request: money, item and vendor taken from the client",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "VendorReturnRequestDomainService updateFields (l.196-203) sets itemId, unitPrice, vatRate from the client line",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -8588,7 +9024,11 @@
   ],
   "size": "",
   "theme": "Tax rate unit differs between documents (percent vs fraction), posting guesses  [MEDIUM] [VERIFIED]  (source IDs: be-A13-5, be-B02-5, be-A12-10 (third bullet))",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:1.1",
@@ -8597,8 +9037,8 @@
   "severity": "medium",
   "title": "Bill credit total rounded, backend wants exact",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D06-2",
+  "status": "still-bug",
+  "status_evidence": "bill-credit-edit-view.tsx:336 grandTotal = roundMoney(subtotal+vat) at 2dp; backend validateAppliedInFull compares the exact unrounded total",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8607,7 +9047,11 @@
   ],
   "size": "M",
   "theme": "Theme 1. Wrong money, quantity or calculation (Common: F-C6)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:1.10",
@@ -8616,8 +9060,8 @@
   "severity": "medium",
   "title": "PO edit sends the old pack breakdown and demand splits",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "orders/index.ts mapFormItemToOrderDto refits packSizes to qty and always sends packSizes/demandSplits; commit e9eff38b",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8626,7 +9070,11 @@
   ],
   "size": "M",
   "theme": "Theme 1. Wrong money, quantity or calculation (Common: F-C6)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "e9eff38b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:1.12",
@@ -8635,8 +9083,8 @@
   "severity": "medium",
   "title": "PO VAT switch and rate are never sent; edit invents an average",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "orders/index.ts sends per-line taxRate/taxAmount; header vatRate = mostCommonTaxRate, not an average; commit e9eff38b",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8645,7 +9093,11 @@
   ],
   "size": "M",
   "theme": "Theme 1. Wrong money, quantity or calculation (Common: F-C6)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "e9eff38b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:1.13",
@@ -8654,8 +9106,8 @@
   "severity": "medium",
   "title": "Comparative statement: rounded unit price, wrong \"Best\" for warranty and delivery",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "comparative-scoring.ts converts warranty to days (month 30, year 365), unit price shown at 2dp; commit e9eff38b",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8665,7 +9117,11 @@
   ],
   "size": "M",
   "theme": "Theme 1. Wrong money, quantity or calculation (Common: F-C6)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "e9eff38b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:1.2",
@@ -8674,8 +9130,8 @@
   "severity": "medium",
   "title": "Bill credit edit has no refund quantity ceiling",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D06-3",
+  "status": "fixed",
+  "status_evidence": "bill-credit-edit-view.tsx:443-447 rejects refundQty > returnQty and input has max={row.returnQty}",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8684,7 +9140,11 @@
   ],
   "size": "M",
   "theme": "Theme 1. Wrong money, quantity or calculation (Common: F-C6)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:1.3",
@@ -8693,8 +9153,8 @@
   "severity": "medium",
   "title": "Payment total is a float sum sent for exact compare",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names F-1",
+  "status": "fixed",
+  "status_evidence": "bill-payment-create-view.tsx:174 and form-model.ts:259,286 use sumMoney/roundMoney, not float sums",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8703,7 +9163,11 @@
   ],
   "size": "S",
   "theme": "Theme 1. Wrong money, quantity or calculation (Common: F-C6)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:1.4",
@@ -8712,8 +9176,8 @@
   "severity": "medium",
   "title": "Vendor bill price check counts transport as variance",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D15-1",
+  "status": "fixed",
+  "status_evidence": "vendor-bill/utils.ts challanLineTotals variance = item totals only (no landing cost); generation view compares item rates",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8722,7 +9186,11 @@
   ],
   "size": "M",
   "theme": "Theme 1. Wrong money, quantity or calculation (Common: F-C6)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:1.5",
@@ -8731,8 +9199,8 @@
   "severity": "medium",
   "title": "Landed cost rounded to whole taka per line",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D15-2",
+  "status": "fixed",
+  "status_evidence": "vendor-bill-generation-view.tsx:199 allocateByWeight to the paisa with last-line remainder, no whole-taka rounding",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8741,7 +9209,11 @@
   ],
   "size": "S",
   "theme": "Theme 1. Wrong money, quantity or calculation (Common: F-C6)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:1.6",
@@ -8750,8 +9222,8 @@
   "severity": "medium",
   "title": "Challan lines matched to bill lines by array index",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D15-3",
+  "status": "fixed",
+  "status_evidence": "vendor-bill-generation-view.tsx:129-134,646 match challan to bill lines by itemReceiptItemId, not index",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8760,7 +9232,11 @@
   ],
   "size": "S",
   "theme": "Theme 1. Wrong money, quantity or calculation (Common: F-C6)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:1.7",
@@ -8769,8 +9245,8 @@
   "severity": "medium",
   "title": "Challan modal re-submit overwrites edited bill lines",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "vendor-bill-generation-view.tsx handleModalSubmit uses keepEditedBillLines so hand-edited bill lines survive re-submit",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8779,7 +9255,11 @@
   ],
   "size": "M",
   "theme": "Theme 1. Wrong money, quantity or calculation (Common: F-C6)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:1.8",
@@ -8788,8 +9268,8 @@
   "severity": "medium",
   "title": "Negative, zero or over-100 values accepted in bill, LC bill and PI line inputs",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D15-5",
+  "status": "fixed",
+  "status_evidence": "min/max on bill, LC bill, challan modal inputs; PI actions.ts validateProformaInvoice rejects negative price and vat outside 0-100",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8800,7 +9280,11 @@
   ],
   "size": "M",
   "theme": "Theme 1. Wrong money, quantity or calculation (Common: F-C6)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:1.9",
@@ -8809,8 +9293,8 @@
   "severity": "medium",
   "title": "Proforma invoice pack breakdown recomputed with `Math.ceil`",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "proforma-invoices/index.ts exactPackBreakdown uses fitPurchasePackSizes (no Math.ceil); commit e9eff38b",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8819,7 +9303,11 @@
   ],
   "size": "S",
   "theme": "Theme 1. Wrong money, quantity or calculation (Common: F-C6)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "e9eff38b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:10.1",
@@ -8828,8 +9316,8 @@
   "severity": "medium",
   "title": "N+1 on payment detail and PO save",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "vendor-payments/index.ts documentNumbersById is one filter call; orders/index.ts itemReads map dedupes item GETs",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8839,7 +9327,11 @@
   ],
   "size": "M",
   "theme": "Theme 10. Request volume (Common: F-C11)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:10.2",
@@ -8868,8 +9360,8 @@
   "severity": "medium",
   "title": "LC \"Terms\" is sent as `paymentTermId`; backend ignores it and wipes `billingTerms`",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "lc-import-form-view.tsx:354 sends billing.paymentTermId; backend LcBillingDTO has paymentTermId",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8878,7 +9370,11 @@
   ],
   "size": "S",
   "theme": "Theme 2. Saved but not sent, or silently changed (Common: F-C5)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:2.2",
@@ -8887,8 +9383,8 @@
   "severity": "medium",
   "title": "\"Link Existing\" PI shows and requires fields the backend ignores",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "proforma-invoice-form-view.tsx:301-308 isLinkMode drops justification, delivery, billing requirements; commit e9eff38b",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8897,7 +9393,11 @@
   ],
   "size": "M",
   "theme": "Theme 2. Saved but not sent, or silently changed (Common: F-C5)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "e9eff38b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:2.3",
@@ -8906,8 +9406,8 @@
   "severity": "medium",
   "title": "Quotation edit resets line discount, tax and remarks to 0",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D14-1",
+  "status": "fixed",
+  "status_evidence": "requisitions/index.ts:1814-1816 quotation update sends discountAmount, taxAmount, remarks per item; mapper l.907-909 loads them",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8916,7 +9416,11 @@
   ],
   "size": "M",
   "theme": "Theme 2. Saved but not sent, or silently changed (Common: F-C5)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:2.4",
@@ -8925,8 +9429,8 @@
   "severity": "medium",
   "title": "Quotation warranty and delivery days accept text or decimals that are dropped",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D14-2",
+  "status": "fixed",
+  "status_evidence": "quotation modal zod: deliveryTimeDays int, warranty numeric >= 0 only (l.289-302)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8935,7 +9439,11 @@
   ],
   "size": "S",
   "theme": "Theme 2. Saved but not sent, or silently changed (Common: F-C5)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:2.7",
@@ -8963,8 +9471,8 @@
   "severity": "medium",
   "title": "LC master approve/reject: wrong visibility, no permission check, result discarded",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D09-3",
+  "status": "fixed",
+  "status_evidence": "lc-master/actions.ts:102-110 checks PURCHASE_LC_MASTER_APPROVE; detail view guards on canTakeAction and permission",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8974,7 +9482,11 @@
   ],
   "size": "S",
   "theme": "Theme 3. Permission and access (Common: F-C4)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:3.2",
@@ -8983,8 +9495,8 @@
   "severity": "medium",
   "title": "PO cancel action allows edit-only users",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D12-3",
+  "status": "fixed",
+  "status_evidence": "shared/permissions/purchase.ts:140 canCancelOrder = canDeleteOrder; actions.ts:266 checks it (not edit)",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -8993,7 +9505,11 @@
   ],
   "size": "S",
   "theme": "Theme 3. Permission and access (Common: F-C4)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:3.3",
@@ -9002,8 +9518,8 @@
   "severity": "medium",
   "title": "Detail and edit routes read the record in `generateMetadata` before the permission check",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "PO, PR, receipt, bill etc detail pages use readForTitleIfAllowed in generateMetadata, permission checked first",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9012,7 +9528,11 @@
   ],
   "size": "M",
   "theme": "Theme 3. Permission and access (Common: F-C4)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:4.1",
@@ -9021,8 +9541,8 @@
   "severity": "medium",
   "title": "Backend failure shown as \"no documents\" or \"not found\"",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-A01-2",
+  "status": "fixed",
+  "status_evidence": "bill-payment page uses readForTitleIfAllowed; item-receipts, lc, lc-master, MR APIs throw/loadError instead of empty (spot-checked, not every listed file)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9033,7 +9553,11 @@
   ],
   "size": "L",
   "theme": "Theme 4. Failures shown as empty, \"not found\" or a blank form (Common: F-C1)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:4.2",
@@ -9042,8 +9566,8 @@
   "severity": "medium",
   "title": "PI edit page opens a blank form when the invoice cannot be loaded",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "proforma-invoices/index.ts:1037-1054 getProformaInvoiceCreateSeed throws on read failure, null only on 404; edit page notFound()",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9052,7 +9576,11 @@
   ],
   "size": "M",
   "theme": "Theme 4. Failures shown as empty, \"not found\" or a blank form (Common: F-C1)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:4.3",
@@ -9061,8 +9589,8 @@
   "severity": "medium",
   "title": "Vendor return \"new\" opens without vendor when the PO read fails",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "vendor-return/actions.ts:208-219 reads PO and preview together, throws on failure, null only if missing",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9071,7 +9599,11 @@
   ],
   "size": "S",
   "theme": "Theme 4. Failures shown as empty, \"not found\" or a blank form (Common: F-C1)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:4.5",
@@ -9099,8 +9631,8 @@
   "severity": "medium",
   "title": "Backend reason not shown on payment, bill and PI forms",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names F-2",
+  "status": "fixed",
+  "status_evidence": "bill-payment, vendor-bill, vendor-prepayment actions return backend_message via cleanBackendBusinessMessage; PI path not individually confirmed",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9112,7 +9644,11 @@
   ],
   "size": "S",
   "theme": "Theme 5. Backend reason hidden or raw error shown (Common: F-C5 for dropped messages, F-C8 for text)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:5.2",
@@ -9121,8 +9657,8 @@
   "severity": "medium",
   "title": "Item receipt and vendor sidebar show raw `error.message`",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "no raw error.message left in features/purchase/vendor or item-receipt (only commented code); commit e9eff38b",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9132,7 +9668,11 @@
   ],
   "size": "S",
   "theme": "Theme 5. Backend reason hidden or raw error shown (Common: F-C5 for dropped messages, F-C8 for text)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "e9eff38b",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:6.1",
@@ -9141,8 +9681,8 @@
   "severity": "medium",
   "title": "Vendor-return edit falls back to the opposite document type by id",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-A01-3",
+  "status": "fixed",
+  "status_evidence": "vendor-return/[id]/edit/page.tsx reads source type from stored relatedRecords; no cross-type fallback by id",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9151,7 +9691,11 @@
   ],
   "size": "S",
   "theme": "Theme 6. Wrong document or wrong data used",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:6.2",
@@ -9160,8 +9704,8 @@
   "severity": "medium",
   "title": "First quotation becomes \"Preferred\" and can be sent for approval",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D13-2",
+  "status": "fixed",
+  "status_evidence": "purchase-requisition-detail-view.tsx:36 initial state = preferred quotation id ?? selectedQuotationId, not quotations[0]",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9170,7 +9714,11 @@
   ],
   "size": "S",
   "theme": "Theme 6. Wrong document or wrong data used",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:7.1",
@@ -9179,8 +9727,8 @@
   "severity": "medium",
   "title": "PO cancel and reject run on one click",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D13-3",
+  "status": "fixed",
+  "status_evidence": "purchase-order-record-actions.tsx:97,200,248 cancel and reject open PurchaseCancelConfirm/RejectConfirm before acting",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9189,7 +9737,11 @@
   ],
   "size": "S",
   "theme": "Theme 7. Double submit and one-click actions (Common: F-C2, F-C3)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:8.1",
@@ -9198,8 +9750,8 @@
   "severity": "medium",
   "title": "Requisition procurement stage list is stale",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "erp-api/purchase/types.ts:108 stage list has 'converted' and 'pi-converted'; constants.ts:86,116 map it",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9208,7 +9760,11 @@
   ],
   "size": "M",
   "theme": "Theme 8. Wrong filters, status maps, columns and labels (Common: F-C12 where noted)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:8.2",
@@ -9217,8 +9773,8 @@
   "severity": "medium",
   "title": "Vendor-return list has a Customer Type filter",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "no customerType/Customer filter anywhere in features/purchase/vendor-return",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9227,7 +9783,11 @@
   ],
   "size": "S",
   "theme": "Theme 8. Wrong filters, status maps, columns and labels (Common: F-C12 where noted)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:8.3",
@@ -9236,8 +9796,8 @@
   "severity": "medium",
   "title": "Vendor Bill list column \"DATE\" shows the due date",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "vendor-bill/components/columns.tsx:85 renders formatDate(row.date)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9246,7 +9806,11 @@
   ],
   "size": "S",
   "theme": "Theme 8. Wrong filters, status maps, columns and labels (Common: F-C12 where noted)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:8.4",
@@ -9255,8 +9819,8 @@
   "severity": "medium",
   "title": "MR list \"Request Date\" and \"Require Date\" show the same field",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "material-requisition columns.tsx:80 Request Date = createdAt, :138 Require Date = requisitionDate",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9265,7 +9829,11 @@
   ],
   "size": "S",
   "theme": "Theme 8. Wrong filters, status maps, columns and labels (Common: F-C12 where noted)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:8.5",
@@ -9274,8 +9842,8 @@
   "severity": "medium",
   "title": "LC list \"LC MARGIN AMOUNT\" prints a share percentage",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "lc-import/components/columns.tsx:184 renders row.lcMarginAmount ?? marginAmount",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9284,7 +9852,11 @@
   ],
   "size": "S",
   "theme": "Theme 8. Wrong filters, status maps, columns and labels (Common: F-C12 where noted)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:8.6",
@@ -9293,8 +9865,8 @@
   "severity": "medium",
   "title": "Payment detail hides account and cheque, shows raw method and English month",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "bill-payment-primary-information-section.tsx adds fundingAccount, chequeNo and a translated method map",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9303,7 +9875,11 @@
   ],
   "size": "S",
   "theme": "Theme 8. Wrong filters, status maps, columns and labels (Common: F-C12 where noted)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:8.9",
@@ -9312,8 +9888,8 @@
   "severity": "medium",
   "title": "Vendor Transactions tab says \"under development\" for orders and receipts",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "no 'underDevelopment' use in src outside messages; vendor-purchase-order-transactions.tsx and vendor-item-receipt-transactions.tsx exist",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9322,7 +9898,11 @@
   ],
   "size": "M",
   "theme": "Theme 8. Wrong filters, status maps, columns and labels (Common: F-C12 where noted)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:9.1",
@@ -9351,8 +9931,8 @@
   "severity": "low",
   "title": "Extra-cost allocation drops the rounding remainder",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "ExtraCostAllocator.allocate (l.47) divides each share HALF_UP at scale 4 with no remainder assigned to the last line",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -9361,7 +9941,11 @@
   ],
   "size": "",
   "theme": "Tax rate unit differs between documents (percent vs fraction), posting guesses  [MEDIUM] [VERIFIED]  (source IDs: be-A13-5, be-B02-5, be-A12-10 (third bullet))",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:11",
@@ -9370,8 +9954,8 @@
   "severity": "low",
   "title": "PO \"Related Records\" shows the whole payment amount",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "PurchaseOrderRelatedRecordsService.java:153 shows payment.getPaymentAmount() (whole payment), not the amount applied to this PO's bills",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -9380,7 +9964,11 @@
   ],
   "size": "",
   "theme": "Tax rate unit differs between documents (percent vs fraction), posting guesses  [MEDIUM] [VERIFIED]  (source IDs: be-A13-5, be-B02-5, be-A12-10 (third bullet))",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:21",
@@ -9389,8 +9977,8 @@
   "severity": "low",
   "title": "workflow-decision endpoints complete any task, not the task of {id}",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "PurchaseOrderFacadeImpl.workflowDecision (l.303-315) checks APPROVE on order {id} then completes decision.taskId; task never tied to {id}",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -9400,7 +9988,11 @@
   ],
   "size": "",
   "theme": "Theme 3: Missing permission or client-controlled field",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:26",
@@ -9409,8 +10001,8 @@
   "severity": "low",
   "title": "Attachment id linked to a receipt without any check",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "ItemReceiptDomainService.updateFields replaceCollection(attachments) takes client attachment rows with no existence or ownership check",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -9419,7 +10011,11 @@
   ],
   "size": "",
   "theme": "Foreign child ids accepted when updating (merge helpers)  [MEDIUM] [LIKELY]  (source IDs: be-A12-3, be-C05-1, be-A10-11 (second bullet))",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:27",
@@ -9466,8 +10062,8 @@
   "severity": "low",
   "title": "Payment request: negative bank charge, exchange rate, no bean validation",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "VendorPaymentDomainService validateCommon checks amount, VDS, AIT only; bankChargeAmount and exchangeRate unchecked; purchase controllers have no @Valid",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -9476,7 +10072,11 @@
   ],
   "size": "",
   "theme": "Theme 4: Missing validation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:30",
@@ -9485,8 +10085,8 @@
   "severity": "low",
   "title": "LC master, material requisition, PO: no @Valid, negative values accepted",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "Only one @Valid in the purchase package (quotation preferred); PO validateCommon checks qty only, no negative price, discount or tax checks",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -9495,7 +10095,11 @@
   ],
   "size": "",
   "theme": "Theme 4: Missing validation",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:34",
@@ -9523,8 +10127,8 @@
   "severity": "low",
   "title": "Detail reads take a write lock and write rows",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "BillCreditFacadeImpl.getById is plain @Transactional (l.128) and enrichApprovals calls syncMainWorkflow (l.266) which locks via findCurrentForUpdate; same in ItemReceipt getApprovals",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -9533,7 +10137,11 @@
   ],
   "size": "",
   "theme": "Attachment files stored and deleted inside the DB transaction  [LOW] [LIKELY]  (source IDs: be-A11-9, be-A10-11 (third bullet))",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:purchase:43",
@@ -9601,8 +10209,8 @@
   "severity": "low",
   "title": "Bill credit initialAmount copied from the request",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "BillCreditDomainService.java:331 existingLine.setInitialAmount(incomingLine.getInitialAmount()) copied from the request",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/02-purchase.md",
@@ -9611,7 +10219,11 @@
   ],
   "size": "",
   "theme": "Tax rate unit differs between documents (percent vs fraction), posting guesses  [MEDIUM] [VERIFIED]  (source IDs: be-A13-5, be-B02-5, be-A12-10 (third bullet))",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:1.11",
@@ -9680,8 +10292,8 @@
   "severity": "low",
   "title": "Exact float equality in allocation and split checks",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D17-7",
+  "status": "fixed",
+  "status_evidence": "item-receipt/schema.ts:108 and vendor-return schema/fulfill view use 0.0001 tolerance, no exact float equality",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9691,7 +10303,11 @@
   ],
   "size": "S",
   "theme": "Theme 1. Wrong money, quantity or calculation (Common: F-C6)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:1.17",
@@ -9719,8 +10335,8 @@
   "severity": "low",
   "title": "LC bill line VAT stays at the LC amount when rate is empty",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D16-6",
+  "status": "fixed",
+  "status_evidence": "vendor-bill-lc-items-table.tsx lcLineTax recomputes VAT from billed qty, price and rate (lcLineVatRate); no stale LC amount",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -9729,7 +10345,11 @@
   ],
   "size": "S",
   "theme": "Theme 1. Wrong money, quantity or calculation (Common: F-C6)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:1.19",
@@ -9991,8 +10611,8 @@
   "severity": "low",
   "title": "Catch blocks without `unstable_rethrow`",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "unstable_rethrow absent in lc, lc-master, vendor-bills, vendor-payments, vendor-prepayments, proforma-invoices, item-receipts index.ts despite many catch blocks",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -10001,7 +10621,11 @@
   ],
   "size": "S",
   "theme": "Theme 13. Tidy-ups: dead code, duplicates, tests",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:13.4",
@@ -10010,8 +10634,8 @@
   "severity": "low",
   "title": "No unit tests for money code",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "money.test.ts, bill-payment/form-model.test.ts, vendor-bill/utils.test.ts exist",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -10020,7 +10644,11 @@
   ],
   "size": "M",
   "theme": "Theme 13. Tidy-ups: dead code, duplicates, tests",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:13.5",
@@ -10089,8 +10717,8 @@
   "severity": "low",
   "title": "Server actions without a permission check or error handling",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "bill-payment, item-receipt, lc-import actions.ts all check permission first and return denied results",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -10100,7 +10728,11 @@
   ],
   "size": "S",
   "theme": "Theme 3. Permission and access (Common: F-C4)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:3.5",
@@ -10149,8 +10781,8 @@
   "severity": "low",
   "title": "Lookup and save calls with no catch, so the select is just empty",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D14-5",
+  "status": "fixed",
+  "status_evidence": "purchase-pack-sizes.tsx loadPackSizeOptions has .catch returning []; pack-size actions guarded (spot-check of listed spots)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -10162,7 +10794,11 @@
   ],
   "size": "S",
   "theme": "Theme 4. Failures shown as empty, \"not found\" or a blank form (Common: F-C1)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:4.6",
@@ -10228,8 +10864,8 @@
   "severity": "low",
   "title": "Vendor website link doubles the scheme",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "vendor-overview-sidebar.tsx:39-40 toExternalHref keeps http(s) scheme else prefixes https",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -10238,7 +10874,11 @@
   ],
   "size": "S",
   "theme": "Theme 6. Wrong document or wrong data used",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:7.2",
@@ -10247,8 +10887,8 @@
   "severity": "low",
   "title": "Save buttons re-enable during the redirect; handlers rely on state to block double clicks",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log mentions item 7.2",
+  "status": "fixed",
+  "status_evidence": "lc-import and lc-master form views use a redirecting flag so Save stays locked during redirect (spot-check)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -10259,7 +10899,11 @@
   ],
   "size": "S",
   "theme": "Theme 7. Double submit and one-click actions (Common: F-C2, F-C3)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:8.10",
@@ -10288,8 +10932,8 @@
   "severity": "low",
   "title": "Paid and partly paid bills get no status colour; edit header shows \"Not Paid\" for pending",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "vendor-bill-edit-view.tsx:301 status = paymentStatus ?? approvalStatus, so a pending bill under edit shows Not Paid; paid badge colours are fixed",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -10298,7 +10942,11 @@
   ],
   "size": "S",
   "theme": "Theme 8. Wrong filters, status maps, columns and labels (Common: F-C12 where noted)",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:purchase:8.8",
@@ -12064,8 +12712,8 @@
   "severity": "high",
   "title": "Demand gates and status come from the request",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "SalesDemandDomainService.updateFields:961-965 and SalesDemandMapper:40-41 copy quantityValidated/creditLimitChecked/vatValidated/paymentValidated/paymentVerifiedAmount from request",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12075,7 +12723,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:1.2",
@@ -12103,8 +12755,8 @@
   "severity": "high",
   "title": "Credit memo lines are not checked against the sales return",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "CreditMemoService.buildRefundLines checks line belongs to the return, qty>0 and cumulative credited <= returned (sumRefundedQtyByReturnLineIds); fix 5113a9e19",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12114,7 +12766,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:2.2",
@@ -12123,8 +12779,8 @@
   "severity": "high",
   "title": "Credit memo edited after approval, cancelled after refund, approval not restarted",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "CreditMemoService.update only PENDING; cancel refuses when refunds applied; update restarts workflow (restartOnEdit)",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12133,7 +12789,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:2.3",
@@ -12142,8 +12802,8 @@
   "severity": "high",
   "title": "Customer refund accepts unapproved memos, duplicates and unbacked amounts",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "CustomerRefundService.validateCreate locks memos, requires APPROVED, rejects duplicate memo ids, caps by remaining balance, applied total must equal refund",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12152,7 +12812,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:2.4",
@@ -12180,8 +12844,8 @@
   "severity": "high",
   "title": "Delivery order allowed for a sales order that is not approved",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "DeliveryOrderFulfillmentService.requireApprovedSalesOrder on create/pick/ship (SO status must be APPROVED); fix e21e150dc",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12190,7 +12854,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:2.6",
@@ -12199,8 +12867,8 @@
   "severity": "high",
   "title": "Coordination verify works on a demand in any status",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "SalesDemandCoordinationService.assertCoordinatable: verify only when status PENDING_COORDINATION; fix 87581a7ea",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12209,7 +12877,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:2.7",
@@ -12237,8 +12909,8 @@
   "severity": "high",
   "title": "Concurrent invoices, receipts and delivery orders over-bill, over-apply, over-deliver",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "Invoice create/edit lock the SO (findByIdForUpdate), receipt create locks invoices (lockInvoices), delivery create locks SO; fix 5113a9e19",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12247,7 +12919,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:3.2",
@@ -12256,8 +12932,8 @@
   "severity": "high",
   "title": "Gate-out verify can consume stock twice",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "GatePassService.verifyAndRelease:85 loads gate pass with plain findById, no lock; two verifies can both pass the status check",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12266,7 +12942,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:3.3",
@@ -12294,8 +12974,8 @@
   "severity": "high",
   "title": "Customer and vendor can be hard-deleted while documents point at them",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "CustomerDomainService.validateDelete:323-327 and VendorDomainService.validateDelete:133 are TODO no-ops; hard delete allowed",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12304,7 +12984,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:7.1",
@@ -12336,8 +13020,8 @@
   "severity": "high",
   "title": "Credit memo edit open on every status",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D22-1",
+  "status": "fixed",
+  "status_evidence": "credit-memos/constants.ts canEditCreditMemo returns status === DRAFT",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -12346,7 +13030,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:10",
@@ -12355,8 +13043,8 @@
   "severity": "high",
   "title": "Deposit Apply Save can be double-clicked",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names F-5",
+  "status": "fixed",
+  "status_evidence": "customer-deposit-apply-view.tsx:175 useSubmitGuard, Save loading/disabled while pending",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -12365,7 +13053,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:13",
@@ -12394,8 +13086,8 @@
   "severity": "high",
   "title": "Demand detail posts the old VAT after \"Confirm quantities\"",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D28-1",
+  "status": "fixed",
+  "status_evidence": "sales-demand-detail-view.tsx: vatAmountById removed, quantity/offer maps reset after confirm, router.refresh",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -12405,7 +13097,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:27",
@@ -12414,8 +13110,8 @@
   "severity": "high",
   "title": "Pricing scheme: uncapped cashback gets a cap of 500, new scheme pre-filled, paused saved as DRAFT",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D35-1",
+  "status": "fixed",
+  "status_evidence": "pricing-scheme-form-defaults.ts: cashbackMaxValue empty when null, no invented rewards, PAUSED stays PAUSED",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -12426,7 +13122,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:52",
@@ -12455,8 +13155,8 @@
   "severity": "high",
   "title": "Deposit Apply invents money and never caps by the deposit balance",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D23-1",
+  "status": "fixed",
+  "status_evidence": "customer-deposit-apply-view.tsx: no 5000/10000 fallbacks, unused amount used, per-invoice amount capped by due and remaining",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -12465,7 +13165,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "sales:B10",
@@ -12494,8 +13198,8 @@
   "severity": "high",
   "title": "Credit memo trusts caller's unit price, tax rate and quantity",
   "summary": "POST /api/sales/credit-memos with unitPrice 90 on a 9.00 line returns 201, total 90, tax 12.28; approval posts inflated refund.",
-  "status": "open",
-  "status_evidence": "Beta blocker list S-B4 (meeting backend sec.5); no fix recorded",
+  "status": "still-bug",
+  "status_evidence": "CreditMemoMapper.toRefundLineEntity:96-101 uses dto unitPrice and taxRate when supplied, not the return line's",
   "evidence_level": "verified",
   "found": "2026-10-31",
   "source": "backend-sales-bugs-2026-10-31.md B4",
@@ -12505,7 +13209,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "sales:B8",
@@ -12514,8 +13222,8 @@
   "severity": "high",
   "title": "Editing application of a posted receipt leaves invoice and ledger apart",
   "summary": "PUT /api/sales/receipts/{id} appliedAmount 30 to 5 returns 200; invoice due 60 to 85 while journal stays 30.",
-  "status": "open",
-  "status_evidence": "Beta blocker list S-B8 (meeting backend sec.5); no fix recorded",
+  "status": "fixed",
+  "status_evidence": "ReceiptDomainService.refuseChangedApplications refuses changing the applied amount of a posted receipt",
   "evidence_level": "verified",
   "found": "2026-10-31",
   "source": "backend-sales-bugs-2026-10-31.md B8",
@@ -12525,7 +13233,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "sales:B9",
@@ -12615,8 +13327,8 @@
   "severity": "high",
   "title": "Pricing schemes (DISCOUNT, CASHBACK) do nothing to the order; budget/redemption caps never used",
   "summary": "appliedPricingSchemaId stored but order discount stays 0; total_redemption/total_budget_used stay 0; ASE picker shows offers clerks think are applied.",
-  "status": "open",
-  "status_evidence": "D-32 client unanswered; beta blocker SC-1 (meeting backend)",
+  "status": "still-bug",
+  "status_evidence": "Only PROMO rewards are applied (SalesDemandDomainService.injectPromoFreeLines); DISCOUNT/CASHBACK unused; totalRedemption/totalBudgetUsed never written",
   "evidence_level": "verified",
   "found": "2026-10-31",
   "source": "backend-saleschain-bugs-2026-10-31.md SC-1",
@@ -12628,7 +13340,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "saleschain:SC-2",
@@ -12637,8 +13353,8 @@
   "severity": "high",
   "title": "Scheme id on demand line not checked: status, dates, minimums, customer type",
   "summary": "injectPromoFreeLines gives free units for a PAUSED scheme, below minOrderQuantity, or for another customer type/item.",
-  "status": "open",
-  "status_evidence": "Beta blocker SC-2 (meeting backend sec.5); no fix recorded",
+  "status": "still-bug",
+  "status_evidence": "SalesDemandDomainService.injectPromoFreeLines:1366-1369 uses appliedPricingSchemaId with no status/date/minimum/customer-type check",
   "evidence_level": "verified",
   "found": "2026-10-31",
   "source": "backend-saleschain-bugs-2026-10-31.md SC-2",
@@ -12648,7 +13364,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:1.3",
@@ -12657,8 +13377,8 @@
   "severity": "medium",
   "title": "Credit-limit override authoriser can be any user id",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "SalesDemandCoordinationService.verifyCredit:256 override user only checked with userRepository.existsById, no authority check",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12667,7 +13387,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:1.4",
@@ -12676,8 +13400,8 @@
   "severity": "medium",
   "title": "Vendor create copies id, status and code from the request",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "VendorMapper.toEntity:26-29 copies id, partnerCode and status from the request DTO",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12686,7 +13410,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:1.5",
@@ -12695,8 +13423,8 @@
   "severity": "medium",
   "title": "Customer update overwrites credit limit, status, rep and territory with no audit",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "CustomerDomainService.updateFields:523,535-536 overwrites status, creditLimit, salesRepresentative from request, no audit/validation",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12706,7 +13434,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:1.6",
@@ -12772,8 +13504,8 @@
   "severity": "medium",
   "title": "Receipt may apply twice to the same invoice in one request",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "ReceiptDomainService.validateCreate:186-189 validates each application on its own against stored balance; same invoice twice in one request not detected",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12782,7 +13514,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:2.12",
@@ -12791,8 +13527,8 @@
   "severity": "medium",
   "title": "Order from a demand copies the demand's whole customer discount",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "SalesOrderDomainService.snapshotCustomerCategoryDiscount:620-624 copies demand's full discount % and amount onto each order",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12801,7 +13537,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:2.13",
@@ -12810,8 +13550,8 @@
   "severity": "medium",
   "title": "A demand can be turned into several sales orders",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "SalesOrderDomainService.validateHeader:754 accepts demand in SO_CREATED, so a second order can link to the same demand",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12820,7 +13560,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:2.14",
@@ -12829,8 +13573,8 @@
   "severity": "medium",
   "title": "Category `taxInclusive` default: code says false, docs and resolver say true",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "SalesChannelCategorySetting:75 and SalesChannelCategoryService:377 default taxInclusive false while resolver treats null as true",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12840,7 +13584,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:2.15",
@@ -12906,8 +13654,8 @@
   "severity": "medium",
   "title": "Two coordinators verifying different gates can overwrite each other",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "SalesDemandCoordinationService.loadDetailed:322 no lock/version; each verify saves the whole demand so parallel gates can overwrite",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12916,7 +13664,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:4.1",
@@ -12925,8 +13677,8 @@
   "severity": "medium",
   "title": "Order and demand lines accept any quantity, price, total and tax",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "SalesOrderDomainService.validateLines:774 and SalesDemandDomainService.validateLines:1249 only null-check quantity; no sign/price/total/tax checks",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12937,7 +13689,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:4.2",
@@ -12946,8 +13702,8 @@
   "severity": "medium",
   "title": "Pricing scheme reward numbers are not range-checked",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "PricingSchemeDomainService.validateDiscountReward/validateCashbackReward/validatePromoReward:448-495 only null checks, no range checks",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12956,7 +13712,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:4.3",
@@ -12965,8 +13725,8 @@
   "severity": "medium",
   "title": "Sales channel category: DRAFT skips the name check (500 on blank, duplicates accepted)",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "SalesChannelCategoryService:249-257 name required and unique (ignore case) for DRAFT and active alike",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12975,7 +13735,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:4.4",
@@ -12984,8 +13748,8 @@
   "severity": "medium",
   "title": "Geography PUT/POST without `userId` retires the manager or inserts a null-user manager",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "SalesGeographyManagerDomainService.reassignOnGeographyUpdate:76-90 null userId retires current manager and creates assignment with null user",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -12994,7 +13758,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:5.2",
@@ -13022,8 +13790,8 @@
   "severity": "medium",
   "title": "`FinancialLedgerService.recordInvoiceCancelled` has no caller",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "FinancialLedgerService.recordInvoiceCancelled has no caller in main code (only a test)",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -13032,7 +13800,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:6.1",
@@ -13177,8 +13949,8 @@
   "severity": "medium",
   "title": "Whole-table `findAll()` of customers and of the geography tree",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "SalesGeographyScopeService:49, SalesGeographyDomainService:270 findAll() of geography tree; SalesByCustomerSummaryReportGenerator:96 customerRepository.findAll()",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -13187,7 +13959,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:7.3",
@@ -13367,8 +14143,8 @@
   "severity": "medium",
   "title": "Geography name filter silently ignored",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "SalesGeographyRepository.findByTierLevelAndNameContaining:15-20 query has only tierLevel in WHERE; name param not used",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -13377,7 +14153,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:9.2",
@@ -13462,8 +14242,8 @@
   "severity": "medium",
   "title": "Deposit Apply invoice list: first 20 only, stale response, no error, ticked rows survive",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D23-2",
+  "status": "fixed",
+  "status_evidence": "apply view: active flag in effect, loadError message, filterInvoices size constant",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13472,7 +14252,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:12",
@@ -13481,8 +14265,8 @@
   "severity": "medium",
   "title": "Deposit Apply facade returns raw DTOs, hides errors, English fallback",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-A07-5",
+  "status": "fixed",
+  "status_evidence": "erp-api/sales/invoices/index.ts returns loadError instead of silent empty page",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13492,7 +14276,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:14",
@@ -13501,8 +14289,8 @@
   "severity": "medium",
   "title": "Deposit detail Edit button can never show",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "customer-deposit/edit-rule.ts canEditCustomerDeposit = DEPOSITED; header and edit route use it",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13511,7 +14299,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:17",
@@ -13520,8 +14312,8 @@
   "severity": "medium",
   "title": "Corporate demand: offer price divided by packs but sent as per-unit",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D29-1",
+  "status": "fixed",
+  "status_evidence": "sales-demand/utils.ts:419 corporateOfferTpPrice = lineTotal / totalQty",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13530,7 +14322,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:18",
@@ -13559,8 +14355,8 @@
   "severity": "medium",
   "title": "Demand grid: typed-over cells not validated and they feed the payload",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "sales-demand/schema.ts:100-125 override cells validated non-negative, whole-number for Total QTY",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13569,7 +14365,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:2",
@@ -13578,8 +14378,8 @@
   "severity": "medium",
   "title": "Credit memo unit price and VAT rate can be raised above the sale",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D22-4",
+  "status": "fixed",
+  "status_evidence": "credit-memo-create-items-table: maxUnitPrice cap, isUnitPriceExceeded in credit-memo-create-types.ts",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13588,7 +14388,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:20",
@@ -13636,8 +14440,8 @@
   "severity": "medium",
   "title": "Order payload and totals on the order screens",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D30-8",
+  "status": "fixed",
+  "status_evidence": "sales-order-form-view.tsx:803-872 finite guards for qty/rate/exchange rate, salesRepId only when >0; invoice orderQtyOf fixed",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13648,7 +14452,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:23",
@@ -13676,8 +14484,8 @@
   "severity": "medium",
   "title": "Rounding helper copied seven times",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names F-9",
+  "status": "fixed",
+  "status_evidence": "No Math.round(x*100) money copies left in features/sales; roundMoney shared",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13686,7 +14494,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:25",
@@ -13695,8 +14507,8 @@
   "severity": "medium",
   "title": "No tests for tax, rounding or allocation",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names F-11",
+  "status": "fixed",
+  "status_evidence": "sales/shared/sales-tax.test.ts, sales-demand/utils.test.ts, status-tables.test.ts exist",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13705,7 +14517,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:28",
@@ -13714,8 +14530,8 @@
   "severity": "medium",
   "title": "Pricing scheme item scope: \"Select all\" means all items; unticking narrows to one page",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "settings/sales/components/pricing-scheme-form-page.tsx:644-647 unticking with all selected builds list from loaded itemOptions page only",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13724,7 +14540,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:29",
@@ -13733,8 +14553,8 @@
   "severity": "medium",
   "title": "Create-customer form drops the type when the type list fails",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D48-1",
+  "status": "fixed",
+  "status_evidence": "No CUSTOMER_TYPE_FALLBACK_OPTIONS left in features/sales/customer",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13743,7 +14563,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:30",
@@ -13752,8 +14576,8 @@
   "severity": "medium",
   "title": "Customer form: credit limit and e-mail not validated, phone rules too strict",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D24-2",
+  "status": "fixed",
+  "status_evidence": "customer/schema.ts creditLimitString and optionalEmail validators; phone pattern in input-constraints",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13764,7 +14588,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:31",
@@ -13792,8 +14620,8 @@
   "severity": "medium",
   "title": "Demand deposit and payment fields: mandatory deposit, \"Verify\" with 0",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D28-7",
+  "status": "still-bug",
+  "status_evidence": "sales-demand/schema.ts:220-226 depositAmount still required and > 0 on every create/edit (Verify-with-0 part is fixed)",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13804,7 +14632,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:36",
@@ -13813,8 +14645,8 @@
   "severity": "medium",
   "title": "Receipt: no way to enter VDS, TDS or cheque data",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "features/sales/receipt has no VDS/TDS/cheque input fields (only print and payment method)",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13824,7 +14656,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:37",
@@ -13833,8 +14669,8 @@
   "severity": "medium",
   "title": "`?depositDone=1&depositAmount=...` verifies the advance payment",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D28-2",
+  "status": "fixed",
+  "status_evidence": "sales-demand-detail-view.tsx:53-91 depositDone only prefills Verify; nothing posted from URL",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13843,7 +14679,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:38",
@@ -13896,8 +14736,8 @@
   "severity": "medium",
   "title": "Sales return \"Refund\" button: no permission guard, shown when nothing is left to refund",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D31-2",
+  "status": "fixed",
+  "status_evidence": "sales-return-record-header.tsx:78-80,255 showRefundAction needs refunded<returnQty, AccessGuard SALES_CREDIT_MEMO_CREATE",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13906,7 +14746,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:40",
@@ -13938,8 +14782,8 @@
   "severity": "medium",
   "title": "Deposit save shows raw backend text",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-A06-1",
+  "status": "fixed",
+  "status_evidence": "erp-api/sales/customer-deposits/index.ts:353-355 fixed translated messages; commit e615597d",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13948,7 +14792,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:42",
@@ -13957,8 +14805,8 @@
   "severity": "medium",
   "title": "Status maps and filters miss backend states",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D49-1",
+  "status": "fixed",
+  "status_evidence": "status-tables.test.ts asserts demand/order/return filters offer every backend label",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13974,7 +14822,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:43",
@@ -13983,8 +14835,8 @@
   "severity": "medium",
   "title": "Sales order badge says \"Pending approval\" on approved orders; local approval state overrides the server",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-A07-1",
+  "status": "fixed",
+  "status_evidence": "sales-order-detail-view.tsx localDecision tied to detail object; commit e615597d",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -13994,7 +14846,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:44",
@@ -14084,8 +14940,8 @@
   "severity": "medium",
   "title": "Deposit list date range returns empty for anything but one whole month",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D24-1",
+  "status": "fixed",
+  "status_evidence": "customer-deposits/index.ts:128-150 transactionDate from/to criterion; commit e615597d",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -14094,7 +14950,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:5",
@@ -14103,8 +14963,8 @@
   "severity": "medium",
   "title": "Customer refund edit is stricter than create and sums floats",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D23-6",
+  "status": "fixed",
+  "status_evidence": "customer-refund-edit-view uses roundMoney comparison and settle-in-full like create",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -14113,7 +14973,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:51",
@@ -14144,8 +15008,8 @@
   "severity": "medium",
   "title": "Item Receive list with a filter scans only 500 receipts",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "erp-api/sales/item-receives/index.ts:381,391 filtered list scans first 500 receipts",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -14154,7 +15018,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:54",
@@ -14186,8 +15054,8 @@
   "severity": "medium",
   "title": "Return receive: line quantity can disagree with the putaway split",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D23-4",
+  "status": "fixed",
+  "status_evidence": "return-receive-create-view.tsx:84-92 blocks when placed total differs from qtyToReceive; grid follows putaway rows",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -14196,7 +15064,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:8",
@@ -14205,8 +15077,8 @@
   "severity": "medium",
   "title": "Return receive: bin shows as raw id, only GOOD/DAMAGED conditions",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "sales-return-receive-view.tsx binLabels map keeps bin names; return-receive-types.ts lists EXPIRED and NEEDS_INSPECTION",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -14216,7 +15088,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "sales:B1",
@@ -14267,8 +15143,8 @@
   "severity": "medium",
   "title": "Demand line totalValue stored as client sent it",
   "summary": "totalValue 999 on 3 x 8.00 stored as 999 and order follows; server should compute.",
-  "status": "open",
-  "status_evidence": "No follow-up evidence in source files",
+  "status": "still-bug",
+  "status_evidence": "SalesDemandMapper:137 line.setTotalValue(dto.getTotalValue()); never recomputed",
   "evidence_level": "verified",
   "found": "2026-10-31",
   "source": "backend-sales-bugs-2026-10-31.md B12",
@@ -14278,7 +15154,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "sales:B13",
@@ -14287,8 +15167,8 @@
   "severity": "medium",
   "title": "Credit limit checked only on demand path, not on direct order create",
   "summary": "Customer limit 10,000,000: order of 12,000,000 via POST /api/sales/orders is 201 APPROVED.",
-  "status": "open",
-  "status_evidence": "No follow-up evidence in source files",
+  "status": "still-bug",
+  "status_evidence": "SalesOrderDomainService has no credit-limit check on direct order create (only demand path autoCheckCreditLimit)",
   "evidence_level": "verified",
   "found": "2026-10-31",
   "source": "backend-sales-bugs-2026-10-31.md B13",
@@ -14298,7 +15178,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "sales:B5",
@@ -14307,8 +15191,8 @@
   "severity": "medium",
   "title": "Credit memo with negative or zero refund quantity accepted",
   "summary": "refundQty -1 gives total -9.00; refundQty 0 gives zero memo; expected 400.",
-  "status": "open",
-  "status_evidence": "No follow-up evidence in source files",
+  "status": "fixed",
+  "status_evidence": "CreditMemoService.buildRefundLines rejects refundQty null or <= 0",
   "evidence_level": "verified",
   "found": "2026-10-31",
   "source": "backend-sales-bugs-2026-10-31.md B5",
@@ -14317,7 +15201,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "sales:B6",
@@ -14326,8 +15214,8 @@
   "severity": "medium",
   "title": "Second credit memo for the same returned units accepted",
   "summary": "Return of 3, two memos of 3 x 9 both 201; 54 refundable for 27 returned.",
-  "status": "open",
-  "status_evidence": "No follow-up evidence in source files",
+  "status": "fixed",
+  "status_evidence": "CreditMemoService.buildRefundLines sums already credited per return line over non-cancelled memos and caps at returned qty",
   "evidence_level": "verified",
   "found": "2026-10-31",
   "source": "backend-sales-bugs-2026-10-31.md B6",
@@ -14337,7 +15225,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "sales:B7",
@@ -14346,8 +15238,8 @@
   "severity": "medium",
   "title": "Sales return above quantity sold accepted (also cumulative)",
   "summary": "POST /api/sales/item-returns returnQty 11 on a line of 10 returns 201; 3 then 8 also accepted. UI blocks it (D-16); API does not.",
-  "status": "open",
-  "status_evidence": "D-16: UI ok; API validation is backend's job; see P3-B4",
+  "status": "fixed",
+  "status_evidence": "SalesOrderReturnQuantityService.requireWithinReturnable caps return qty by fulfilled minus returned minus in-flight claims; ItemReturnDomainService.validateLines",
   "evidence_level": "verified",
   "found": "2026-10-31",
   "source": "backend-sales-bugs-2026-10-31.md B7",
@@ -14358,7 +15250,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "saleschain:P2-1",
@@ -14407,8 +15303,8 @@
   "severity": "medium",
   "title": "No way to cancel or void an invoice, order or receipt",
   "summary": "cancel/void/reverse/DELETE all 404/405 although frontend facade cancelInvoice exists; wrong invoice fixable only by credit memo.",
-  "status": "open",
-  "status_evidence": "D-22 client unanswered; stays open (meeting backend sec.4)",
+  "status": "still-bug",
+  "status_evidence": "InvoiceController/ReceiptController/SalesOrderController expose no cancel/void endpoint (order only DELETE)",
   "evidence_level": "verified",
   "found": "2026-10-31",
   "source": "backend-saleschain-bugs-2026-10-31.md P3-B7",
@@ -14419,7 +15315,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "saleschain:SC-4",
@@ -14467,8 +15367,8 @@
   "severity": "medium",
   "title": "Pricing scheme validation missing (150%, negatives, buyQty 0 accepted)",
   "summary": "POST /api/sales/pricing-schemes returns 201 for invalid discount, tier, budget and PROMO values; expected 400.",
-  "status": "open",
-  "status_evidence": "No follow-up evidence in source files",
+  "status": "still-bug",
+  "status_evidence": "PricingSchemeDomainService reward validation only null-checks; 150%, negatives, buyQty 0 pass",
   "evidence_level": "verified",
   "found": "2026-10-31",
   "source": "backend-saleschain-bugs-2026-10-31.md SC-6",
@@ -14478,7 +15378,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "saleschain:SC-7",
@@ -14487,8 +15391,8 @@
   "severity": "medium",
   "title": "Offer picker lists PAUSED/DRAFT/CANCELLED/disabled schemes",
   "summary": "GET /api/sales/pricing-schemes/by-items drops only ARCHIVED; ASE 'Add trade offer' shows paused/draft offers. Frontend can pass status=ACTIVE but dates/enabled need backend.",
-  "status": "open",
-  "status_evidence": "No follow-up evidence in source files",
+  "status": "still-bug",
+  "status_evidence": "PricingSchemeDomainService.searchByItems:168-200 status filter optional, no default ACTIVE/date filter",
   "evidence_level": "verified",
   "found": "2026-10-31",
   "source": "backend-saleschain-bugs-2026-10-31.md SC-7",
@@ -14499,7 +15403,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "saleschain:SC-8",
@@ -14508,8 +15416,8 @@
   "severity": "medium",
   "title": "Duplicate customer category names accepted (Retailer / retailer)",
   "summary": "POST /api/sales/channel-categories answers 201 for case-variant duplicates although service code rejects them; live build differs from source.",
-  "status": "open",
-  "status_evidence": "No follow-up evidence in source files",
+  "status": "fixed",
+  "status_evidence": "SalesChannelCategoryService:253 findByNameIgnoreCase rejects duplicate category names",
   "evidence_level": "verified",
   "found": "2026-10-31",
   "source": "backend-saleschain-bugs-2026-10-31.md SC-8",
@@ -14518,7 +15426,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-B"
+  "set": "notes-B",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:1.8",
@@ -14584,8 +15496,8 @@
   "severity": "low",
   "title": "`SalesGeographyManagerDomainService` throws `UnsupportedOperationException` in 7 overrides",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "SalesGeographyManagerDomainService:322-373 eight overrides still throw UnsupportedOperationException",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -14594,7 +15506,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:10.3",
@@ -14660,8 +15576,8 @@
   "severity": "low",
   "title": "Manual ACTIVE/resume of a pricing scheme ignores the effective window",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "PricingSchemeDomainService.updateStatus:103-114 manual transition only checks status policy, not effective window",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -14670,7 +15586,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:2.18",
@@ -14698,8 +15618,8 @@
   "severity": "low",
   "title": "Customer create/update accepts a negative credit limit and any status",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "CustomerDomainService.updateFields:523,535 accepts any status/credit limit; negative check exists only in updateCreditLimit:274",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -14708,7 +15628,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:4.6",
@@ -14832,8 +15756,8 @@
   "severity": "low",
   "title": "`getOpenInvoicesByCustomer` loads and filters the whole invoice history in Java",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "InvoiceDomainService.getOpenInvoicesByCustomer:1375 findByPartnerIdAndStatusNot loads whole invoice history, filtering done in Java",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -14842,7 +15766,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:7.18",
@@ -15022,8 +15950,8 @@
   "severity": "low",
   "title": "Customer overview NPE when a receipt has no `transactionDate`",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "SalesOrderCustomerOverviewService:116 Collectors.toMap with receipt.getTransactionDate() as value throws NPE when null",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -15032,7 +15960,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:9.7",
@@ -15060,8 +15992,8 @@
   "severity": "low",
   "title": "Demand line `originalTaxAmount` reads the wrong key and is always null",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "SalesDemandMapper.applyPackSizing:179 originalTaxAmount reads attributes 'vatAmount' while the comment/attribute is 'vat'",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -15070,7 +16002,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-be:sales:9.9",
@@ -15079,8 +16015,8 @@
   "severity": "low",
   "title": "Gate pass count truncates fractional quantities",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "GatePassDetailMapper:129 count = totalQuantity.longValue() truncates fractions",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/03-sales.md",
@@ -15089,7 +16025,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "review-be"
+  "set": "review-be",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:15",
@@ -15098,8 +16038,8 @@
   "severity": "low",
   "title": "Apply screen header status and links are fake; hardcoded English",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D23-9",
+  "status": "fixed",
+  "status_evidence": "apply view uses getCustomerDepositStatusLabel/Tone, Link hrefs, formatDate, translations",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -15109,7 +16049,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:26",
@@ -15118,8 +16062,8 @@
   "severity": "low",
   "title": "`toTaxFraction` guesses percent vs fraction; tax unit differs between facades; ratePercent float",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "still-bug",
+  "status_evidence": "sales/shared/sales-tax.ts toTaxFraction still guesses: rate > 1 divided by 100, so 1 stays 100 percent",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -15130,7 +16074,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:3",
@@ -15139,8 +16087,8 @@
   "severity": "low",
   "title": "Credit memo action leftovers",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D22-5",
+  "status": "fixed",
+  "status_evidence": "credit-memos/actions.ts: invalid lines now return null/error, refundAmount via roundMoney",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -15149,7 +16097,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:32",
@@ -15178,8 +16130,8 @@
   "severity": "low",
   "title": "Free-goods rows look editable on demand edit but are dropped on save",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "sales-demand-form-item-row.tsx:604-605 offer rows inert/read-only",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -15189,7 +16141,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:35",
@@ -15241,8 +16197,8 @@
   "severity": "low",
   "title": "Sales settings tab carries the other tab's filters and page",
   "summary": "",
-  "status": "fixed-per-log",
-  "status_evidence": "fix log names fe-D35-12",
+  "status": "fixed",
+  "status_evidence": "settings/sales/search-params.ts parseTradeDiscountListQuery uses own trade* keys, no fallback",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -15251,7 +16207,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:sales:55",
@@ -15353,8 +16313,8 @@
   "severity": "low",
   "title": "Refund screens: no status guard on edit route, create with no customer stays usable",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "customer-refunds edit page redirects cancelled refund; create view saveBlocked includes !partnerId",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/03-sales.md",
@@ -15364,7 +16324,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "a03704c99",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "sales:B2",
@@ -15436,8 +16400,8 @@
   "severity": "unrated",
   "title": "Item return larger than shipped quantity accepted",
   "summary": "POST /api/sales/item-returns with returnQty 11 on a line shipped 10 returns 200; expected 400.",
-  "status": "open",
-  "status_evidence": "E2E file: tests pass only as known-bug; no retest",
+  "status": "fixed",
+  "status_evidence": "ItemReturnDomainService.validateLines + SalesOrderReturnQuantityService.requireWithinReturnable refuse qty above returnable",
   "evidence_level": "verified",
   "found": "2026-10-27",
   "source": "E2E bugs #1",
@@ -15447,7 +16411,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "e2e27:2",
@@ -15456,8 +16424,8 @@
   "severity": "unrated",
   "title": "Fulfilment can be raised on a REJECTED sales order",
   "summary": "POST /api/sales/delivery-orders for a REJECTED order returns 200; expected 400.",
-  "status": "open",
-  "status_evidence": "E2E file: tests pass only as known-bug; no retest",
+  "status": "fixed",
+  "status_evidence": "DeliveryOrderFulfillmentService create locks SO and calls requireApprovedSalesOrder; REJECTED refused; fix e21e150dc",
   "evidence_level": "verified",
   "found": "2026-10-27",
   "source": "E2E bugs #2",
@@ -15467,7 +16435,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "e2e27:3",
@@ -15476,8 +16448,8 @@
   "severity": "unrated",
   "title": "Credit memo can refund more than was returned",
   "summary": "POST /api/sales/credit-memos with refundQty above returned minus refunded returns 200.",
-  "status": "open",
-  "status_evidence": "E2E file: tests pass only as known-bug; no retest",
+  "status": "fixed",
+  "status_evidence": "CreditMemoService.buildRefundLines: 'Cannot credit more than the quantity returned' (cumulative)",
   "evidence_level": "verified",
   "found": "2026-10-27",
   "source": "E2E bugs #3",
@@ -15487,7 +16459,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "e2e27:4",
@@ -15516,8 +16492,8 @@
   "severity": "unrated",
   "title": "Edit Customer Refund: changed amount silently ignored",
   "summary": "PUT /api/sales/customer-refunds/{id} 500->600 returns 200 but refund and credit memo keep 500.",
-  "status": "open",
-  "status_evidence": "E2E file: tests pass only as known-bug; no retest",
+  "status": "still-bug",
+  "status_evidence": "CustomerRefundService.update:97-111 never reads refundAmount/applications; changed amount neither applied nor rejected",
   "evidence_level": "verified",
   "found": "2026-10-27",
   "source": "E2E bugs #5",
@@ -15527,7 +16503,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "321870e96",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "integ:SAL-stockUp",

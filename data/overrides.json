@@ -1,0 +1,1472 @@
+{
+ "rv-be:sales:2.1": {
+  "status": "fixed",
+  "note": "CreditMemoService.buildRefundLines checks line belongs to the return, qty>0 and cumulative credited <= returned (sumRefundedQtyByReturnLineIds); fix 5113a9e19",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.2": {
+  "status": "fixed",
+  "note": "CreditMemoService.update only PENDING; cancel refuses when refunds applied; update restarts workflow (restartOnEdit)",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.3": {
+  "status": "fixed",
+  "note": "CustomerRefundService.validateCreate locks memos, requires APPROVED, rejects duplicate memo ids, caps by remaining balance, applied total must equal refund",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.5": {
+  "status": "fixed",
+  "note": "DeliveryOrderFulfillmentService.requireApprovedSalesOrder on create/pick/ship (SO status must be APPROVED); fix e21e150dc",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.6": {
+  "status": "fixed",
+  "note": "SalesDemandCoordinationService.assertCoordinatable: verify only when status PENDING_COORDINATION; fix 87581a7ea",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:3.1": {
+  "status": "fixed",
+  "note": "Invoice create/edit lock the SO (findByIdForUpdate), receipt create locks invoices (lockInvoices), delivery create locks SO; fix 5113a9e19",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:4.3": {
+  "status": "fixed",
+  "note": "SalesChannelCategoryService:249-257 name required and unique (ignore case) for DRAFT and active alike",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "sales:B5": {
+  "status": "fixed",
+  "note": "CreditMemoService.buildRefundLines rejects refundQty null or <= 0",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "sales:B6": {
+  "status": "fixed",
+  "note": "CreditMemoService.buildRefundLines sums already credited per return line over non-cancelled memos and caps at returned qty",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "sales:B7": {
+  "status": "fixed",
+  "note": "SalesOrderReturnQuantityService.requireWithinReturnable caps return qty by fulfilled minus returned minus in-flight claims; ItemReturnDomainService.validateLines",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "sales:B8": {
+  "status": "fixed",
+  "note": "ReceiptDomainService.refuseChangedApplications refuses changing the applied amount of a posted receipt",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "saleschain:SC-8": {
+  "status": "fixed",
+  "note": "SalesChannelCategoryService:253 findByNameIgnoreCase rejects duplicate category names",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "e2e27:1": {
+  "status": "fixed",
+  "note": "ItemReturnDomainService.validateLines + SalesOrderReturnQuantityService.requireWithinReturnable refuse qty above returnable",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "e2e27:2": {
+  "status": "fixed",
+  "note": "DeliveryOrderFulfillmentService create locks SO and calls requireApprovedSalesOrder; REJECTED refused; fix e21e150dc",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "e2e27:3": {
+  "status": "fixed",
+  "note": "CreditMemoService.buildRefundLines: 'Cannot credit more than the quantity returned' (cumulative)",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:1.1": {
+  "status": "still-bug",
+  "note": "SalesDemandDomainService.updateFields:961-965 and SalesDemandMapper:40-41 copy quantityValidated/creditLimitChecked/vatValidated/paymentValidated/paymentVerifiedAmount from request",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:1.3": {
+  "status": "still-bug",
+  "note": "SalesDemandCoordinationService.verifyCredit:256 override user only checked with userRepository.existsById, no authority check",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:1.4": {
+  "status": "still-bug",
+  "note": "VendorMapper.toEntity:26-29 copies id, partnerCode and status from the request DTO",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:1.5": {
+  "status": "still-bug",
+  "note": "CustomerDomainService.updateFields:523,535-536 overwrites status, creditLimit, salesRepresentative from request, no audit/validation",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.11": {
+  "status": "still-bug",
+  "note": "ReceiptDomainService.validateCreate:186-189 validates each application on its own against stored balance; same invoice twice in one request not detected",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.12": {
+  "status": "still-bug",
+  "note": "SalesOrderDomainService.snapshotCustomerCategoryDiscount:620-624 copies demand's full discount % and amount onto each order",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.13": {
+  "status": "still-bug",
+  "note": "SalesOrderDomainService.validateHeader:754 accepts demand in SO_CREATED, so a second order can link to the same demand",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.14": {
+  "status": "still-bug",
+  "note": "SalesChannelCategorySetting:75 and SalesChannelCategoryService:377 default taxInclusive false while resolver treats null as true",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:3.2": {
+  "status": "still-bug",
+  "note": "GatePassService.verifyAndRelease:85 loads gate pass with plain findById, no lock; two verifies can both pass the status check",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:3.4": {
+  "status": "still-bug",
+  "note": "SalesDemandCoordinationService.loadDetailed:322 no lock/version; each verify saves the whole demand so parallel gates can overwrite",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:4.1": {
+  "status": "still-bug",
+  "note": "SalesOrderDomainService.validateLines:774 and SalesDemandDomainService.validateLines:1249 only null-check quantity; no sign/price/total/tax checks",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:4.2": {
+  "status": "still-bug",
+  "note": "PricingSchemeDomainService.validateDiscountReward/validateCashbackReward/validatePromoReward:448-495 only null checks, no range checks",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:4.4": {
+  "status": "still-bug",
+  "note": "SalesGeographyManagerDomainService.reassignOnGeographyUpdate:76-90 null userId retires current manager and creates assignment with null user",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:4.5": {
+  "status": "still-bug",
+  "note": "CustomerDomainService.updateFields:523,535 accepts any status/credit limit; negative check exists only in updateCreditLimit:274",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:5.1": {
+  "status": "still-bug",
+  "note": "CustomerDomainService.validateDelete:323-327 and VendorDomainService.validateDelete:133 are TODO no-ops; hard delete allowed",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:5.3": {
+  "status": "still-bug",
+  "note": "FinancialLedgerService.recordInvoiceCancelled has no caller in main code (only a test)",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:9.1": {
+  "status": "still-bug",
+  "note": "SalesGeographyRepository.findByTierLevelAndNameContaining:15-20 query has only tierLevel in WHERE; name param not used",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:9.6": {
+  "status": "still-bug",
+  "note": "SalesOrderCustomerOverviewService:116 Collectors.toMap with receipt.getTransactionDate() as value throws NPE when null",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:9.8": {
+  "status": "still-bug",
+  "note": "SalesDemandMapper.applyPackSizing:179 originalTaxAmount reads attributes 'vatAmount' while the comment/attribute is 'vat'",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:9.9": {
+  "status": "still-bug",
+  "note": "GatePassDetailMapper:129 count = totalQuantity.longValue() truncates fractions",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:10.2": {
+  "status": "still-bug",
+  "note": "SalesGeographyManagerDomainService:322-373 eight overrides still throw UnsupportedOperationException",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:2.17": {
+  "status": "still-bug",
+  "note": "PricingSchemeDomainService.updateStatus:103-114 manual transition only checks status policy, not effective window",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.17": {
+  "status": "still-bug",
+  "note": "InvoiceDomainService.getOpenInvoicesByCustomer:1375 findByPartnerIdAndStatusNot loads whole invoice history, filtering done in Java",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:sales:7.2": {
+  "status": "still-bug",
+  "note": "SalesGeographyScopeService:49, SalesGeographyDomainService:270 findAll() of geography tree; SalesByCustomerSummaryReportGenerator:96 customerRepository.findAll()",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "sales:B4": {
+  "status": "still-bug",
+  "note": "CreditMemoMapper.toRefundLineEntity:96-101 uses dto unitPrice and taxRate when supplied, not the return line's",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "sales:B12": {
+  "status": "still-bug",
+  "note": "SalesDemandMapper:137 line.setTotalValue(dto.getTotalValue()); never recomputed",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "sales:B13": {
+  "status": "still-bug",
+  "note": "SalesOrderDomainService has no credit-limit check on direct order create (only demand path autoCheckCreditLimit)",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "saleschain:P3-B7": {
+  "status": "still-bug",
+  "note": "InvoiceController/ReceiptController/SalesOrderController expose no cancel/void endpoint (order only DELETE)",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "saleschain:SC-1": {
+  "status": "still-bug",
+  "note": "Only PROMO rewards are applied (SalesDemandDomainService.injectPromoFreeLines); DISCOUNT/CASHBACK unused; totalRedemption/totalBudgetUsed never written",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "saleschain:SC-2": {
+  "status": "still-bug",
+  "note": "SalesDemandDomainService.injectPromoFreeLines:1366-1369 uses appliedPricingSchemaId with no status/date/minimum/customer-type check",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "saleschain:SC-6": {
+  "status": "still-bug",
+  "note": "PricingSchemeDomainService reward validation only null-checks; 150%, negatives, buyQty 0 pass",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "saleschain:SC-7": {
+  "status": "still-bug",
+  "note": "PricingSchemeDomainService.searchByItems:168-200 status filter optional, no default ACTIVE/date filter",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "e2e27:5": {
+  "status": "still-bug",
+  "note": "CustomerRefundService.update:97-111 never reads refundAmount/applications; changed amount neither applied nor rejected",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:1": {
+  "status": "fixed",
+  "note": "credit-memos/constants.ts canEditCreditMemo returns status === DRAFT",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:2": {
+  "status": "fixed",
+  "note": "credit-memo-create-items-table: maxUnitPrice cap, isUnitPriceExceeded in credit-memo-create-types.ts",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:3": {
+  "status": "fixed",
+  "note": "credit-memos/actions.ts: invalid lines now return null/error, refundAmount via roundMoney",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:4": {
+  "status": "fixed",
+  "note": "sales-return-record-header.tsx:78-80,255 showRefundAction needs refunded<returnQty, AccessGuard SALES_CREDIT_MEMO_CREATE",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:5": {
+  "status": "fixed",
+  "note": "customer-refund-edit-view uses roundMoney comparison and settle-in-full like create",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:6": {
+  "status": "fixed",
+  "note": "customer-refunds edit page redirects cancelled refund; create view saveBlocked includes !partnerId",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:7": {
+  "status": "fixed",
+  "note": "return-receive-create-view.tsx:84-92 blocks when placed total differs from qtyToReceive; grid follows putaway rows",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:8": {
+  "status": "fixed",
+  "note": "sales-return-receive-view.tsx binLabels map keeps bin names; return-receive-types.ts lists EXPIRED and NEEDS_INSPECTION",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:9": {
+  "status": "fixed",
+  "note": "customer-deposit-apply-view.tsx: no 5000/10000 fallbacks, unused amount used, per-invoice amount capped by due and remaining",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:10": {
+  "status": "fixed",
+  "note": "customer-deposit-apply-view.tsx:175 useSubmitGuard, Save loading/disabled while pending",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:11": {
+  "status": "fixed",
+  "note": "apply view: active flag in effect, loadError message, filterInvoices size constant",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:12": {
+  "status": "fixed",
+  "note": "erp-api/sales/invoices/index.ts returns loadError instead of silent empty page",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:14": {
+  "status": "fixed",
+  "note": "customer-deposit/edit-rule.ts canEditCustomerDeposit = DEPOSITED; header and edit route use it",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:15": {
+  "status": "fixed",
+  "note": "apply view uses getCustomerDepositStatusLabel/Tone, Link hrefs, formatDate, translations",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:16": {
+  "status": "fixed",
+  "note": "sales-demand-detail-view.tsx: vatAmountById removed, quantity/offer maps reset after confirm, router.refresh",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:17": {
+  "status": "fixed",
+  "note": "sales-demand/utils.ts:419 corporateOfferTpPrice = lineTotal / totalQty",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:19": {
+  "status": "fixed",
+  "note": "sales-demand/schema.ts:100-125 override cells validated non-negative, whole-number for Total QTY",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:22": {
+  "status": "fixed",
+  "note": "sales-order-form-view.tsx:803-872 finite guards for qty/rate/exchange rate, salesRepId only when >0; invoice orderQtyOf fixed",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:24": {
+  "status": "fixed",
+  "note": "No Math.round(x*100) money copies left in features/sales; roundMoney shared",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:25": {
+  "status": "fixed",
+  "note": "sales/shared/sales-tax.test.ts, sales-demand/utils.test.ts, status-tables.test.ts exist",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:27": {
+  "status": "fixed",
+  "note": "pricing-scheme-form-defaults.ts: cashbackMaxValue empty when null, no invented rewards, PAUSED stays PAUSED",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:29": {
+  "status": "fixed",
+  "note": "No CUSTOMER_TYPE_FALLBACK_OPTIONS left in features/sales/customer",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:30": {
+  "status": "fixed",
+  "note": "customer/schema.ts creditLimitString and optionalEmail validators; phone pattern in input-constraints",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:33": {
+  "status": "fixed",
+  "note": "sales-demand-form-item-row.tsx:604-605 offer rows inert/read-only",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:37": {
+  "status": "fixed",
+  "note": "sales-demand-detail-view.tsx:53-91 depositDone only prefills Verify; nothing posted from URL",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:41": {
+  "status": "fixed",
+  "note": "erp-api/sales/customer-deposits/index.ts:353-355 fixed translated messages; commit e615597d",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:42": {
+  "status": "fixed",
+  "note": "status-tables.test.ts asserts demand/order/return filters offer every backend label",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:43": {
+  "status": "fixed",
+  "note": "sales-order-detail-view.tsx localDecision tied to detail object; commit e615597d",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:49": {
+  "status": "fixed",
+  "note": "customer-deposits/index.ts:128-150 transactionDate from/to criterion; commit e615597d",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:50": {
+  "status": "fixed",
+  "note": "settings/sales/search-params.ts parseTradeDiscountListQuery uses own trade* keys, no fallback",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:34": {
+  "status": "still-bug",
+  "note": "sales-demand/schema.ts:220-226 depositAmount still required and > 0 on every create/edit (Verify-with-0 part is fixed)",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:26": {
+  "status": "still-bug",
+  "note": "sales/shared/sales-tax.ts toTaxFraction still guesses: rate > 1 divided by 100, so 1 stays 100 percent",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:28": {
+  "status": "still-bug",
+  "note": "settings/sales/components/pricing-scheme-form-page.tsx:644-647 unticking with all selected builds list from loaded itemOptions page only",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:36": {
+  "status": "still-bug",
+  "note": "features/sales/receipt has no VDS/TDS/cheque input fields (only print and payment method)",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:sales:53": {
+  "status": "still-bug",
+  "note": "erp-api/sales/item-receives/index.ts:381,391 filtered list scans first 500 receipts",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "saleschain:SC-3": {
+  "status": "still-bug",
+  "note": "sales itemreceive/itemreturn code never touches ChannelAllocation (only delivery and distribution do), so returns do not refill channel pool",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "saleschain:P3-B8": {
+  "status": "still-bug",
+  "note": "ItemDomainService.java:360 findFirstByNameOrderByIdAsc is case-sensitive; UOM only has a repository, no controller/API",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "inv:INV-01-03": {
+  "status": "fixed",
+  "note": "InventoryAdjustmentWorkflowHandler.destinationLocationId falls back to source location when no destination bin; commit bb4c85afe removed the destination requirement",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "purchase:B-P11": {
+  "status": "still-bug",
+  "note": "VendorPaymentDomainService.java:189-205 checks remainingDue without row lock; VendorPaymentWorkflowHandler.post (l.118) approves with no re-check of bill due",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "purchase:B-P12": {
+  "status": "still-bug",
+  "note": "VendorDomainService.validateDelete (l.133-136) is an empty TODO; handleDeleteDependencies empty, so a vendor with documents is hard-deleted",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "purchase:B-P2": {
+  "status": "still-bug",
+  "note": "VendorChallanService.upsert reuses existing challan and does setExtraCosts(new list) on an orphanRemoval=true collection (VendorChallan.java:63); entity unchanged since creation",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "purchase:B-P6": {
+  "status": "still-bug",
+  "note": "BillCreditDomainService validateSourceReturn checks only APPROVED status, vendor, live credit; no fulfilledQty check anywhere in the file",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:1": {
+  "status": "still-bug",
+  "note": "No lock or @Version in purchase payment path; VendorPaymentDomainService:196-205 remainingDue check is a plain read, so parallel payments both pass",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:2": {
+  "status": "still-bug",
+  "note": "BillCreditDomainService.outstandingOf counts only APPROVED payments; BillCreditWorkflowHandler.onApproved has no re-check; payment post() also none",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:3": {
+  "status": "still-bug",
+  "note": "VendorPrepaymentDomainService.loadUsable (l.203-215) checks status and amount, never vendor; VendorPaymentDomainService:140 passes only id and amount",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:12": {
+  "status": "still-bug",
+  "note": "@Version exists only on WorkflowInstance and WorkflowTask in backend main source; no purchase or sales entity has it",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:13": {
+  "status": "still-bug",
+  "note": "VendorPrepaymentDomainService.drawDown (l.230-238) is findById + set unusedAmount + save, no lock or version",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:14": {
+  "status": "still-bug",
+  "note": "VendorReturnFulfillmentService.fulfill loads the request via plain findById (l.90), no lock on it; fulfilledQty updated after the fact (l.131-133)",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:15": {
+  "status": "still-bug",
+  "note": "VendorPaymentWorkflowHandler.post (l.118) runs on any entity status, no PENDING guard before draw-down and posting",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:16": {
+  "status": "still-bug",
+  "note": "PurchaseOrderReturnQuantityService.applyFulfillment (l.174-181) findById then returnedQty += qty, no lock or @Version",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:17": {
+  "status": "still-bug",
+  "note": "PurchaseOrderConversionService:62-67 is check-then-create (findByRequisitionId); no unique constraint or requisition lock found",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:20": {
+  "status": "still-bug",
+  "note": "PurchasePostingController.getPosting accepts any EFinanceDocumentType with anyOf purchase view permissions; no type-to-permission match",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:21": {
+  "status": "still-bug",
+  "note": "PurchaseOrderFacadeImpl.workflowDecision (l.303-315) checks APPROVE on order {id} then completes decision.taskId; task never tied to {id}",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:22": {
+  "status": "still-bug",
+  "note": "ItemReceiptDomainService.mergeItems (l.166-200) copies sourceDocumentItemId and itemId from the client onto existing lines without validation",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:23": {
+  "status": "still-bug",
+  "note": "PurchaseOrderDomainService.validateUpdate = validateCommon only; conversion validateAndResolve runs only in facade create",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:24": {
+  "status": "still-bug",
+  "note": "PurchaseOrderConversionService.resolveLocalVendor (l.84-100) checks requisition match only, never selection status APPROVED",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:25": {
+  "status": "still-bug",
+  "note": "VendorSelectionDomainService.updateFields (l.154-158) validates quotation against dto.requisitionId from the body, not the stored selection's requisition",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:26": {
+  "status": "still-bug",
+  "note": "ItemReceiptDomainService.updateFields replaceCollection(attachments) takes client attachment rows with no existence or ownership check",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:29": {
+  "status": "still-bug",
+  "note": "VendorPaymentDomainService validateCommon checks amount, VDS, AIT only; bankChargeAmount and exchangeRate unchecked; purchase controllers have no @Valid",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:30": {
+  "status": "still-bug",
+  "note": "Only one @Valid in the purchase package (quotation preferred); PO validateCommon checks qty only, no negative price, discount or tax checks",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:32": {
+  "status": "still-bug",
+  "note": "VendorQuotationDomainService has no signum or range checks on item qty/price and no duplicate-line check; no @Valid on quotation create",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:33": {
+  "status": "still-bug",
+  "note": "VendorQuotationStatusPolicy editable/deletable depend only on status DRAFT/SUBMITTED/ACTIVE; selection use never changes quotation status",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:37": {
+  "status": "still-bug",
+  "note": "BillCreditFacadeImpl.getById is plain @Transactional (l.128) and enrichApprovals calls syncMainWorkflow (l.266) which locks via findCurrentForUpdate; same in ItemReceipt getApprovals",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:4": {
+  "status": "still-bug",
+  "note": "VendorBillGenerationService.buildItemsFromRequest copies billedQty from request; VendorBillDomainService.validateLines has no billed<=received check",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:5": {
+  "status": "still-bug",
+  "note": "buildItemsFromRequest has no duplicate itemReceiptItemId check nor all-lines-required check; validateLines only needs itemId and receipt item id",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:6": {
+  "status": "still-bug",
+  "note": "BillCreditDomainService.validateCommon only needs refundQty>0; no ceiling vs return qty, price/vat taken from client (updateFields l.304-305)",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:8": {
+  "status": "still-bug",
+  "note": "VendorReturnRequestDomainService updateFields (l.196-203) sets itemId, unitPrice, vatRate from the client line",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:9": {
+  "status": "still-bug",
+  "note": "BillCreditDomainService.java:331 existingLine.setInitialAmount(incomingLine.getInitialAmount()) copied from the request",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:10": {
+  "status": "still-bug",
+  "note": "ExtraCostAllocator.allocate (l.47) divides each share HALF_UP at scale 4 with no remainder assigned to the last line",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:purchase:11": {
+  "status": "still-bug",
+  "note": "PurchaseOrderRelatedRecordsService.java:153 shows payment.getPaymentAmount() (whole payment), not the amount applied to this PO's bills",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "purchase:B-P1": {
+  "status": "still-bug",
+  "note": "PurchaseOrderDomainService.validateCommon (l.78-105) checks qty only; computeAndSetTotals (l.303) trusts client taxAmount; no negative price/discount/rate checks",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "purchase:B-P3": {
+  "status": "still-bug",
+  "note": "VendorBillDomainService.validateLines/validateCreate: no check billedQty <= receipt qty",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "purchase:B-P4": {
+  "status": "still-bug",
+  "note": "VendorBillDomainService has no negative or range check on billUnitPrice/taxRate; only VendorChallanService.requirePositive covers challan price",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "purchase:B-P5": {
+  "status": "still-bug",
+  "note": "BillCreditDomainService.validateCommon only checks refundQty>0; unitPrice taken from the line, no ceiling vs return qty",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "purchase:B-P8": {
+  "status": "still-bug",
+  "note": "No inactive vendor or payment-term check in quotation, selection or order create/validate code (status/active grep in those packages is empty)",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "purchase:B-P9": {
+  "status": "still-bug",
+  "note": "VendorBillDTO has no postingStatus/postingError field (only period dates) and frontend shows none for bills; failures only in the posting log",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.2": {
+  "status": "fixed",
+  "note": "bill-credit-edit-view.tsx:443-447 rejects refundQty > returnQty and input has max={row.returnQty}",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.3": {
+  "status": "fixed",
+  "note": "bill-payment-create-view.tsx:174 and form-model.ts:259,286 use sumMoney/roundMoney, not float sums",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.4": {
+  "status": "fixed",
+  "note": "vendor-bill/utils.ts challanLineTotals variance = item totals only (no landing cost); generation view compares item rates",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.5": {
+  "status": "fixed",
+  "note": "vendor-bill-generation-view.tsx:199 allocateByWeight to the paisa with last-line remainder, no whole-taka rounding",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.6": {
+  "status": "fixed",
+  "note": "vendor-bill-generation-view.tsx:129-134,646 match challan to bill lines by itemReceiptItemId, not index",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.7": {
+  "status": "fixed",
+  "note": "vendor-bill-generation-view.tsx handleModalSubmit uses keepEditedBillLines so hand-edited bill lines survive re-submit",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.8": {
+  "status": "fixed",
+  "note": "min/max on bill, LC bill, challan modal inputs; PI actions.ts validateProformaInvoice rejects negative price and vat outside 0-100",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.9": {
+  "status": "fixed",
+  "note": "proforma-invoices/index.ts exactPackBreakdown uses fitPurchasePackSizes (no Math.ceil); commit e9eff38b",
+  "ref": "e9eff38b",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.10": {
+  "status": "fixed",
+  "note": "orders/index.ts mapFormItemToOrderDto refits packSizes to qty and always sends packSizes/demandSplits; commit e9eff38b",
+  "ref": "e9eff38b",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.12": {
+  "status": "fixed",
+  "note": "orders/index.ts sends per-line taxRate/taxAmount; header vatRate = mostCommonTaxRate, not an average; commit e9eff38b",
+  "ref": "e9eff38b",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.13": {
+  "status": "fixed",
+  "note": "comparative-scoring.ts converts warranty to days (month 30, year 365), unit price shown at 2dp; commit e9eff38b",
+  "ref": "e9eff38b",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.16": {
+  "status": "fixed",
+  "note": "item-receipt/schema.ts:108 and vendor-return schema/fulfill view use 0.0001 tolerance, no exact float equality",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.18": {
+  "status": "fixed",
+  "note": "vendor-bill-lc-items-table.tsx lcLineTax recomputes VAT from billed qty, price and rate (lcLineVatRate); no stale LC amount",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:2.1": {
+  "status": "fixed",
+  "note": "lc-import-form-view.tsx:354 sends billing.paymentTermId; backend LcBillingDTO has paymentTermId",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:2.2": {
+  "status": "fixed",
+  "note": "proforma-invoice-form-view.tsx:301-308 isLinkMode drops justification, delivery, billing requirements; commit e9eff38b",
+  "ref": "e9eff38b",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:2.3": {
+  "status": "fixed",
+  "note": "requisitions/index.ts:1814-1816 quotation update sends discountAmount, taxAmount, remarks per item; mapper l.907-909 loads them",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:2.4": {
+  "status": "fixed",
+  "note": "quotation modal zod: deliveryTimeDays int, warranty numeric >= 0 only (l.289-302)",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:3.1": {
+  "status": "fixed",
+  "note": "lc-master/actions.ts:102-110 checks PURCHASE_LC_MASTER_APPROVE; detail view guards on canTakeAction and permission",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:3.2": {
+  "status": "fixed",
+  "note": "shared/permissions/purchase.ts:140 canCancelOrder = canDeleteOrder; actions.ts:266 checks it (not edit)",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:3.3": {
+  "status": "fixed",
+  "note": "PO, PR, receipt, bill etc detail pages use readForTitleIfAllowed in generateMetadata, permission checked first",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:3.4": {
+  "status": "fixed",
+  "note": "bill-payment, item-receipt, lc-import actions.ts all check permission first and return denied results",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:4.1": {
+  "status": "fixed",
+  "note": "bill-payment page uses readForTitleIfAllowed; item-receipts, lc, lc-master, MR APIs throw/loadError instead of empty (spot-checked, not every listed file)",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:4.2": {
+  "status": "fixed",
+  "note": "proforma-invoices/index.ts:1037-1054 getProformaInvoiceCreateSeed throws on read failure, null only on 404; edit page notFound()",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:4.3": {
+  "status": "fixed",
+  "note": "vendor-return/actions.ts:208-219 reads PO and preview together, throws on failure, null only if missing",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:4.4": {
+  "status": "fixed",
+  "note": "purchase-pack-sizes.tsx loadPackSizeOptions has .catch returning []; pack-size actions guarded (spot-check of listed spots)",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:5.1": {
+  "status": "fixed",
+  "note": "bill-payment, vendor-bill, vendor-prepayment actions return backend_message via cleanBackendBusinessMessage; PI path not individually confirmed",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:5.2": {
+  "status": "fixed",
+  "note": "no raw error.message left in features/purchase/vendor or item-receipt (only commented code); commit e9eff38b",
+  "ref": "e9eff38b",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:6.1": {
+  "status": "fixed",
+  "note": "vendor-return/[id]/edit/page.tsx reads source type from stored relatedRecords; no cross-type fallback by id",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:6.2": {
+  "status": "fixed",
+  "note": "purchase-requisition-detail-view.tsx:36 initial state = preferred quotation id ?? selectedQuotationId, not quotations[0]",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:7.1": {
+  "status": "fixed",
+  "note": "purchase-order-record-actions.tsx:97,200,248 cancel and reject open PurchaseCancelConfirm/RejectConfirm before acting",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:7.2": {
+  "status": "fixed",
+  "note": "lc-import and lc-master form views use a redirecting flag so Save stays locked during redirect (spot-check)",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:8.1": {
+  "status": "fixed",
+  "note": "erp-api/purchase/types.ts:108 stage list has 'converted' and 'pi-converted'; constants.ts:86,116 map it",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:8.2": {
+  "status": "fixed",
+  "note": "no customerType/Customer filter anywhere in features/purchase/vendor-return",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:8.3": {
+  "status": "fixed",
+  "note": "vendor-bill/components/columns.tsx:85 renders formatDate(row.date)",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:8.4": {
+  "status": "fixed",
+  "note": "material-requisition columns.tsx:80 Request Date = createdAt, :138 Require Date = requisitionDate",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:8.5": {
+  "status": "fixed",
+  "note": "lc-import/components/columns.tsx:184 renders row.lcMarginAmount ?? marginAmount",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:8.6": {
+  "status": "fixed",
+  "note": "bill-payment-primary-information-section.tsx adds fundingAccount, chequeNo and a translated method map",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:8.9": {
+  "status": "fixed",
+  "note": "no 'underDevelopment' use in src outside messages; vendor-purchase-order-transactions.tsx and vendor-item-receipt-transactions.tsx exist",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:6.5": {
+  "status": "fixed",
+  "note": "vendor-overview-sidebar.tsx:39-40 toExternalHref keeps http(s) scheme else prefixes https",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:10.1": {
+  "status": "fixed",
+  "note": "vendor-payments/index.ts documentNumbersById is one filter call; orders/index.ts itemReads map dedupes item GETs",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:13.4": {
+  "status": "fixed",
+  "note": "money.test.ts, bill-payment/form-model.test.ts, vendor-bill/utils.test.ts exist",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:1.1": {
+  "status": "still-bug",
+  "note": "bill-credit-edit-view.tsx:336 grandTotal = roundMoney(subtotal+vat) at 2dp; backend validateAppliedInFull compares the exact unrounded total",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:8.7": {
+  "status": "still-bug",
+  "note": "vendor-bill-edit-view.tsx:301 status = paymentStatus ?? approvalStatus, so a pending bill under edit shows Not Paid; paid badge colours are fixed",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:purchase:13.3": {
+  "status": "still-bug",
+  "note": "unstable_rethrow absent in lc, lc-master, vendor-bills, vendor-payments, vendor-prepayments, proforma-invoices, item-receipts index.ts despite many catch blocks",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:1": {
+  "status": "still-bug",
+  "note": "InventoryStockDomainService.java:191 reads balance unlocked (findByItemIdAndDimensionId); no @Version on InventoryBalance/ChannelAllocation; ForUpdate only used by sales/purchase",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:2": {
+  "status": "still-bug",
+  "note": "No unique constraints on inventory_balance/channel_allocation/lot_master in V1__initial_schema.sql or entity @Table",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:3": {
+  "status": "still-bug",
+  "note": "No Item findByIdForUpdate or @Version; InventoryStockDomainService.resolveItemByIdOrSku unlocked",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:4": {
+  "status": "still-bug",
+  "note": "PackingHouseLinkFulfillService.requireBook (~l.158-168) unlocked read of salesOrderId; repository has no lock query",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:5": {
+  "status": "still-bug",
+  "note": "BinTransferDomainService.startWorkflowIfConfigured:321 and applyRestartOnEdit:352 call completeWithoutWorkflow; onDirectApproval (handler:~98) never releases reservation",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:6": {
+  "status": "still-bug",
+  "note": "PackingHouseBookDomainService.undoLine:395 has no status or salesOrderId check",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:7": {
+  "status": "still-bug",
+  "note": "PackingHouseBookDomainService.validateDelete:531 still empty",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:8": {
+  "status": "still-bug",
+  "note": "StockTransferFacadeImpl.create:105 no-workflow branch applies stock with no reserve/available check",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:9": {
+  "status": "still-bug",
+  "note": "ItemFacadeImpl.getInventoryDimension:315-317 serial lookup ignores item/location; BinTransferWorkflowHandler does not re-point serial",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:10": {
+  "status": "still-bug",
+  "note": "InventoryAdjustmentDomainService:162 uses same serial-only getInventoryDimension, no item/location/status check",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:12": {
+  "status": "still-bug",
+  "note": "InventoryStockDomainService.java:342 still uses sumOnHandQtyByItemId (all statuses/locations), not sumCostedOnHandQtyByItemId",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:13": {
+  "status": "still-bug",
+  "note": "ItemInventoryQueryService.java:348 still name.startsWith(\"Retail\") decides VAT/AIT 0",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:14": {
+  "status": "still-bug",
+  "note": "ItemPriceQueryService.java:97-105 returns basePrice only; promotionalPrice never read",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:15": {
+  "status": "still-bug",
+  "note": "PettyCashRequestController.java:51 no @Valid; PettyCashRequestDTO amount (l.26) has no constraints",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:16": {
+  "status": "still-bug",
+  "note": "InventoryAdjustmentDomainService.resolveAndSetRequester:330 still honours dto.getRequesterId()",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:17": {
+  "status": "still-bug",
+  "note": "BinTransferMapper.toEntity:64-69 copies id, sequence, status, workflowInstanceId from DTO",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:18": {
+  "status": "still-bug",
+  "note": "BrandMapper.java:29 stores dto code as-is; BrandDomainService.java:52 skips check on blank, so empty string is stored",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:19": {
+  "status": "still-bug",
+  "note": "ItemDomainService.validateChannelPrices:321-335 has no duplicate salesChannelId check",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:20": {
+  "status": "still-bug",
+  "note": "ItemRequestDTO/ItemDTO carry no @Min/@DecimalMin/@NotNull constraints",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:21": {
+  "status": "still-bug",
+  "note": "V1__initial_schema.sql:446 sales_channel.name has no unique constraint; no later migration adds one",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:22": {
+  "status": "still-bug",
+  "note": "BudgetAllocatorServiceImpl.java:32-33 update sets dates with no period/overlap validation or lock",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:25": {
+  "status": "still-bug",
+  "note": "ItemDomainService.java:360-361 auto-creates UOM from free text name",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:27": {
+  "status": "still-bug",
+  "note": "BrandDomainService.java:73 and SalesChannelDomainService.java:70 validateDelete still empty with 'no references' comment",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:28": {
+  "status": "still-bug",
+  "note": "InventoryLocationDomainService.validateDelete:162 empty, relies on DB cascade/errors",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:31": {
+  "status": "still-bug",
+  "note": "ItemController.getAll:132-158 returns full list unless both page and size supplied; overview same",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:32": {
+  "status": "still-bug",
+  "note": "LotBreakdownQueryService.query:106 builds all rows then paginate() slices in memory (l.193)",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:33": {
+  "status": "still-bug",
+  "note": "ItemPriceQueryService.queryBatch:59-76 maps entries one by one with findById per entry",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:34": {
+  "status": "still-bug",
+  "note": "InventoryLocationDomainService.collectSelfAndDescendantIds:290-295 one query per node (BFS)",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:35": {
+  "status": "still-bug",
+  "note": "InventoryBalanceFacadeImpl.java:148 loads inventoryLocationRepository.findAll() per stock query (also LotBreakdownQueryService:94)",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:36": {
+  "status": "still-bug",
+  "note": "ReorderAlertRepository.find:71 and count:95 each rebuild the full STOCK_PER_WAREHOUSE aggregate per page",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:37": {
+  "status": "still-bug",
+  "note": "PackingHouseBookMapper.java:147-155 catch (Exception) around customer lookup; per-row itemFacade.getById at :194; BinTransferMapper:205",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:38": {
+  "status": "still-bug",
+  "note": "StockTransferRepository.java:60-71 paged methods still use @EntityGraph with items collection; no batch fetch setting",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:39": {
+  "status": "still-bug",
+  "note": "InventoryAdjustmentExportDataSource runs unpaged readEntities; InventoryAdjustmentRepository has no EntityGraph",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:40": {
+  "status": "still-bug",
+  "note": "BinTransferExportDataSource.java:119 Enum valueOf and :149 LocalDate.parse on raw filter strings, unguarded",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:41": {
+  "status": "still-bug",
+  "note": "transfer ItemLine model has no serial field; BinTransferMapper uses serial only to resolve dimension, not stored or returned",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:42": {
+  "status": "still-bug",
+  "note": "ItemLineRequestDTO.java:28-29 unitId @NotNull but never read; ItemLineResponseDTO.resolveUnitId:61 returns conversion id or UOM id",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:43": {
+  "status": "still-bug",
+  "note": "ItemPackingHouseBookDTO.java:3,20 embeds ItemUOMConversion entity; field packingHosueBookId misspelled (l.25)",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:45": {
+  "status": "still-bug",
+  "note": "PettyCashResponseDTO.java:60 and workflow handlers concatenate firstName + space + lastName with null lastName -> 'Ali null'",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:47": {
+  "status": "still-bug",
+  "note": "Private deductSourceOnHand/findOrCreateDestinationDimension copies remain in BinTransferWorkflowHandler, PackingHouseBookDomainService, adjustment handler",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-be:inventory:48": {
+  "status": "still-bug",
+  "note": "TransferOrder model still present and unused; EReservationStatus has both ACTIVE and RESERVE",
+  "ref": "321870e96",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:2": {
+  "status": "fixed",
+  "note": "Transfer Order routes now notFound(); feature folder and fake options deleted (e87ae369)",
+  "ref": "e87ae369",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:3": {
+  "status": "fixed",
+  "note": "courier-status/page.tsx now calls notFound() (e87ae369)",
+  "ref": "e87ae369",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:33": {
+  "status": "fixed",
+  "note": "proxy.ts PUBLIC_ROUTES is only login, slo, guide; packing-house no longer public (e87ae369)",
+  "ref": "e87ae369",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:4": {
+  "status": "fixed",
+  "note": "Form Accounting tab removed; details tab is a pointer note (bc39277e)",
+  "ref": "bc39277e",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:5": {
+  "status": "fixed",
+  "note": "Status filter and badge removed from item list/details (bc39277e); leftover status URL key only",
+  "ref": "bc39277e",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:29": {
+  "status": "fixed",
+  "note": "Petty cash add-category uses saveGuard + disabled={saving}; item form Save locked during redirect (bc39277e)",
+  "ref": "bc39277e",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:6": {
+  "status": "fixed",
+  "note": "packing-house-form-view.tsx: warehouse disabled and items table locked={isEdit} with note",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:7": {
+  "status": "fixed",
+  "note": "packing-house/mappers.ts:298 edit initial bookingDate = dto.bookingDate; today only as create fallback",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:8": {
+  "status": "fixed",
+  "note": "petty-cash-add-category-form.tsx:111 carryForwardMonths: allocator?.carryForwardMonths ?? 1",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:9": {
+  "status": "fixed",
+  "note": "petty-cash-form-view.tsx:499 requester select disabled in edit mode",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:11": {
+  "status": "fixed",
+  "note": "pack-items-page.tsx always sends cartons, never applyDraft; packing/utils.ts seeds 0 for lines missing from draft",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:12": {
+  "status": "fixed",
+  "note": "inventory-item-purchasing-inventory-tab.tsx hasManyLocations shows '-' instead of repeating item-wide channel stock",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:13": {
+  "status": "fixed",
+  "note": "bin-transfers/mappers.ts:52-66 sums quantity only when all lines share a unit, else '-'",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:15": {
+  "status": "fixed",
+  "note": "shared/utils/format.ts:46-56 createCurrencyFormatter now 2 fraction digits",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:16": {
+  "status": "fixed",
+  "note": "product-distribution items table uses shared roundMoney (@/shared/utils/money); no inline float rounding found in inventory features",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:17": {
+  "status": "fixed",
+  "note": "stock-transfer/bin-transfer/adjustment schemas use gt(0); carton and return inputs step 1 integers; pick scan partial match needs 3+ chars",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:18": {
+  "status": "fixed",
+  "note": "Warehouse change clears row picks in adjustment row, packing-house items table, product-distribution items table",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:19": {
+  "status": "fixed",
+  "note": "packing-house items table resets qty to 0 on item replace; adjustment row lock is per-row state, not index lookup",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:20": {
+  "status": "fixed",
+  "note": "stock-transfer-form-page.tsx has AppConfirmAction on location change, load-error notFoundContent, requestId guard",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:21": {
+  "status": "fixed",
+  "note": "gate-pass-workspace.tsx uses detailRequestRef/returnRequestRef to drop late responses; lines start unselected",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:23": {
+  "status": "fixed",
+  "note": "pick-items-page.tsx confirmingEmpty confirm before completing with nothing scanned",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:24": {
+  "status": "fixed",
+  "note": "pack-items-page.tsx keeps submitting via packed flag; failed plate read keeps user on page with error",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:25": {
+  "status": "fixed",
+  "note": "ship-items-page.tsx confirmDispatch wrapped in try/catch, AppConfirmAction before dispatch",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:26": {
+  "status": "fixed",
+  "note": "ship-destination-dialog.tsx preselects currentAddressId (detail.shippingInfo.shipToAddressId)",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:31": {
+  "status": "fixed",
+  "note": "petty-cash-form-view.tsx applyDefaultOption never pre-picks first option; product-distribution form has no first-option default",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:36": {
+  "status": "fixed",
+  "note": "No raw error.message shown in adjustments/bin/stock-transfer/lot-breakdown; translated keys; shared reject dialog requires reason",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:39": {
+  "status": "fixed",
+  "note": "stock-transfer-list-page.tsx effect syncs table page size to response itemsPerPage",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:41": {
+  "status": "fixed",
+  "note": "stock-transfers/status.ts single status map (IN_PROGRESS info, unknown neutral) used by list and detail",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:44": {
+  "status": "fixed",
+  "note": "stock-transfers/query.ts uses companyMonthRange; item form schema superRefine max<min (l.147-155)",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:45": {
+  "status": "fixed",
+  "note": "erp-api/inventory/items/index.ts overviewLookupPath uses search=<sku>&size=50; size=1000 scan gone",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:10": {
+  "status": "still-bug",
+  "note": "erp-api/inventory/items/mapper.ts:1036-1042 categoryId ?? 0, unknown profile -> STANDARD, unknown tracking -> LOT, units default Pcs",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:14": {
+  "status": "still-bug",
+  "note": "inventory-snapshot-view.tsx:94-102 channel columns still derived from current page rows only",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:30": {
+  "status": "still-bug",
+  "note": "adjustment-record-header.tsx:82 setPendingDecision(null) only in catch; (link dialog preselect part is fixed)",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:32": {
+  "status": "still-bug",
+  "note": "app/(erp)/pick-items/page.tsx has no permission check (gate-pass/pack/ship/new pages now use denyWithoutPermission)",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:34": {
+  "status": "still-bug",
+  "note": "erp-api/inventory/locations/index.ts:158,165 build /locations/${id}/children paths without encodeURIComponent",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:47": {
+  "status": "still-bug",
+  "note": "erp-api/inventory/locations/index.ts:192,219 fallback fetches all SHELF/BIN locations system-wide (walks now Promise.all)",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ },
+ "rv-fe:inventory:49": {
+  "status": "still-bug",
+  "note": "Picking fixtures gone, but adjustments/constants.ts:20 hard-coded accounts, form-view:114 and mappers.ts:88,193 default account",
+  "ref": "a03704c99",
+  "date": "2026-11-09"
+ }
+}

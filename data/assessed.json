@@ -1,0 +1,4 @@
+{
+ "frontend": {"branch": "release_beta_1.0.0", "sha": "a03704c99", "head_time": "2026-11-09 09:47 UTC", "assessed": "2026-11-09", "scope": "sales, inventory, purchase (in progress)"},
+ "backend":  {"branch": "release_beta_1.0.0", "sha": "321870e96", "head_time": "2026-11-09 09:56 UTC", "assessed": "2026-11-09", "scope": "sales, inventory, purchase (in progress)"}
+}
