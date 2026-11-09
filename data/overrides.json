@@ -2980,5 +2980,155 @@
   "note": "[release_beta_copy e9a75ca2b] PartyNameResolver now uses PartyDirectoryLookup (NOT_SUPPORTED, WARN log); f2d36c379. YearEndCarryForwardService l.126 still returns e.getMessage()",
   "ref": "release_beta_copy@e9a75ca2b",
   "date": "2026-11-09"
+ },
+ "vqa:budget-total-col": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] TOTAL column sticky-right in grid and detail",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "rv-fe:accounting:6": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] budgets/tree.ts keeps own rows of a parent account; test added",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "vqa:bankcash-history": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] history now includes DRAFT",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "rv-fe:accounting:44": {
+  "status": "in-progress",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] reconciliation history pages server-side (size<=100); approval queue not changed",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "vqa:fa-form-fields": {
+  "status": "in-progress",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] Serial, Location, Custodian added; Cost centre still hidden by COST_CENTERS_ENABLED=false",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "vqa:fa-depr-labels": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] posted heading reworded, Last run hidden",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "vqa:fa-dispose-zero": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] -0.00 removed",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "vqa:fa-transfer-hint": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] spacing fixed in feature CSS",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "assets:UI-02": {
+  "status": "in-progress",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] type list search + delete added; column sorting and register search not added",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "assets:UI-08": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] already mapped to validation.codeExists",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "assets:UI-10": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] NONE method already offered in the type form",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "rv-fe:accounting:38": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] parent picker already blocks self/descendants and keeps inactive parent",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "rv-fe:accounting:37": {
+  "status": "in-progress",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] best-guess fix, not reproduced",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "rv-fe:accounting:41": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] readAllPages loads every page of the register (still full download)",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "rv-fe:accounting:48": {
+  "status": "in-progress",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] 50-asset cap fixed by readAllPages; one extra preview call remains",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "rv-fe:accounting:5": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] 4-decimal money check, balance compared at 4 places",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "rv-fe:accounting:58": {
+  "status": "in-progress",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] journal validation tests added; other posting forms still untested",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "rv-fe:accounting:24": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] report table stays mounted on refetch",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "rv-fe:accounting:49": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] edit route no longer resolves a party; getJournalPartyNames removed",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "rv-fe:accounting:25": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] applyBook clears optionKey; double request on open not checked",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "rv-fe:accounting:33": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] screen is read-only, no create/edit",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "vqa:journal-reject-banner": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] rejection banner on Draft detail; filter-chip wording not touched",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "vqa:journal-export-label": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] group captions All results / This page",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "vqa:contra-reject-comment": {
+  "status": "in-progress",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] comment shows on journal detail; contra modal unchanged",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
+ },
+ "journals:F1": {
+  "status": "fixed-per-log",
+  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] search box and type filter already exist",
+  "ref": "feat/backend-accounting-alignment",
+  "date": "2026-11-09"
  }
 }

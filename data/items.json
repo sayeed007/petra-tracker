@@ -1180,8 +1180,8 @@
   "severity": "medium",
   "title": "Fixed-asset pages download the whole asset register",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] readAllPages loads every page of the register (still full download)",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -1190,7 +1190,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:accounting:42",
@@ -1275,8 +1279,8 @@
   "severity": "medium",
   "title": "Posting-critical form logic has no test",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] journal validation tests added; other posting forms still untested",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -1285,7 +1289,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:accounting:7",
@@ -2208,8 +2216,8 @@
   "severity": "low",
   "title": "Report table is unmounted on every refetch",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] report table stays mounted on refetch",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2218,7 +2226,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:accounting:25",
@@ -2227,8 +2239,8 @@
   "severity": "low",
   "title": "Trial Balance: book switch keeps the old \"End of\" option; two requests on open",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] applyBook clears optionKey; double request on open not checked",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2237,7 +2249,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:accounting:26",
@@ -2342,8 +2358,8 @@
   "severity": "low",
   "title": "Hidden \"Accounting Book\" screen is reachable and offers writes the backend refuses",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] screen is read-only, no create/edit",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2352,7 +2368,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:accounting:36",
@@ -2380,8 +2400,8 @@
   "severity": "low",
   "title": "Editing depreciation of a \"not depreciated\" unit always fails validation",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] best-guess fix, not reproduced",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2390,7 +2410,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:accounting:38",
@@ -2399,8 +2423,8 @@
   "severity": "low",
   "title": "Asset-type parent picker allows loops and drops an inactive parent",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] parent picker already blocks self/descendants and keeps inactive parent",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2409,7 +2433,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:accounting:4",
@@ -2437,8 +2465,8 @@
   "severity": "low",
   "title": "Approval queue and reconciliation history page through everything",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] reconciliation history pages server-side (size<=100); approval queue not changed",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2447,7 +2475,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:accounting:45",
@@ -2513,8 +2545,8 @@
   "severity": "low",
   "title": "Fixed Assets close panel: preview requested twice; asset list capped at 50",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] 50-asset cap fixed by readAllPages; one extra preview call remains",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2523,7 +2555,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:accounting:49",
@@ -2532,8 +2568,8 @@
   "severity": "low",
   "title": "Journal edit route resolves a party the form never shows",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] edit route no longer resolves a party; getJournalPartyNames removed",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2542,7 +2578,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:accounting:5",
@@ -2551,8 +2591,8 @@
   "severity": "low",
   "title": "Money inputs accept any decimals; journal balance check rounds to 2 places, backend uses 4",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] 4-decimal money check, balance compared at 4 places",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2562,7 +2602,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "rv-fe:accounting:52",
@@ -2711,8 +2755,8 @@
   "severity": "low",
   "title": "Budget grid hides own rows of a budgeted account that has budgeted children",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] budgets/tree.ts keeps own rows of a parent account; test added",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2721,7 +2765,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "vqa:contra-reject-comment",
@@ -2730,8 +2778,8 @@
   "severity": "low",
   "title": "Rejected contra shows Draft without the comment",
   "summary": "Comment not visible.",
-  "status": "open",
-  "status_evidence": "Visual QA: not marked fixed",
+  "status": "in-progress",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] comment shows on journal detail; contra modal unchanged",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA contra-reject-comment",
@@ -2740,7 +2788,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "vqa:journal-export-label",
@@ -2749,8 +2801,8 @@
   "severity": "low",
   "title": "Journals export strip: whole-set vs this-page buttons differ only by tooltip",
   "summary": "No visible label.",
-  "status": "open",
-  "status_evidence": "Visual QA: not marked fixed",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] group captions All results / This page",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA journal-export-label",
@@ -2759,7 +2811,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "vqa:journal-reject-banner",
@@ -2768,8 +2824,8 @@
   "severity": "low",
   "title": "No rejection banner on Draft journal detail; status filter chip reads 'Pending approval Status:'",
   "summary": "Rejection comment only on the Approval Details tab.",
-  "status": "open",
-  "status_evidence": "Visual QA: not marked fixed",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] rejection banner on Draft detail; filter-chip wording not touched",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA journal-reject-banner",
@@ -2778,7 +2834,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "closing:ret5",
@@ -2867,15 +2927,19 @@
   "severity": "unrated",
   "title": "Journals list has no search box / type filter",
   "summary": "Listed as frontend finding F1 in HARD-TEST-JOURNALS.md.",
-  "status": "open",
-  "status_evidence": "Reference only; no fix recorded",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] search box and type filter already exist",
   "evidence_level": "likely",
   "found": "2026-10-29",
   "source": "Journals Frontend (F1)",
   "refs": [],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "merge:A2",
@@ -3327,8 +3391,8 @@
   "severity": "low",
   "title": "Bank & Cash History tab says no reconciliation started although a Draft exists",
   "summary": "History shows only finalized/pending by design.",
-  "status": "open",
-  "status_evidence": "Visual QA: not marked fixed",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] history now includes DRAFT",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA bankcash-history",
@@ -3337,7 +3401,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "bank:A-103b",
@@ -3908,8 +3976,8 @@
   "severity": "low",
   "title": "Budget monthly grid TOTAL column needs horizontal scroll",
   "summary": "Cosmetic.",
-  "status": "open",
-  "status_evidence": "Visual QA: not marked fixed",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] TOTAL column sticky-right in grid and detail",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA budget-total-col",
@@ -3918,7 +3986,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "closing:B-03",
@@ -4648,8 +4720,8 @@
   "severity": "medium",
   "title": "Add-asset form has no Location, Custodian or Cost centre fields though API takes them",
   "summary": "Form lacks fields available in the API.",
-  "status": "open",
-  "status_evidence": "Visual QA: 'M (not fixed)'",
+  "status": "in-progress",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] Serial, Location, Custodian added; Cost centre still hidden by COST_CENTERS_ENABLED=false",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA fa-form-fields",
@@ -4658,7 +4730,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "vqa:fa-register-width",
@@ -4840,8 +4916,8 @@
   "severity": "low",
   "title": "Depreciation posted period still titled 'Journal entry this run will raise'; 'Last run' shows previous month",
   "summary": "Labels wrong after posting.",
-  "status": "open",
-  "status_evidence": "Visual QA: not marked fixed",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] posted heading reworded, Last run hidden",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA fa-depr-labels",
@@ -4850,7 +4926,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "vqa:fa-dispose-zero",
@@ -4859,8 +4939,8 @@
   "severity": "low",
   "title": "Dispose dialog shows '-0.00' for nil depreciation",
   "summary": "Cosmetic.",
-  "status": "open",
-  "status_evidence": "Visual QA: not marked fixed",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] -0.00 removed",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA fa-dispose-zero",
@@ -4869,7 +4949,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "vqa:fa-raw-enums",
@@ -4897,8 +4981,8 @@
   "severity": "low",
   "title": "Transfer modal hint text touches the next label",
   "summary": "Cosmetic.",
-  "status": "open",
-  "status_evidence": "Visual QA: not marked fixed",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] spacing fixed in feature CSS",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA fa-transfer-hint",
@@ -4907,7 +4991,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "assets:UI-02",
@@ -4916,15 +5004,19 @@
   "severity": "unrated",
   "title": "Asset type list and register have no search/sorting; type list has no delete",
   "summary": "Described as feature gaps.",
-  "status": "open",
-  "status_evidence": "Frontend list in the file; feature gap",
+  "status": "in-progress",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] type list search + delete added; column sorting and register search not added",
   "evidence_level": "likely",
   "found": "2026-10-29",
   "source": "Assets Frontend #3 (ASSET-UI-02, UI-22)",
   "refs": [],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "assets:UI-08",
@@ -4933,15 +5025,19 @@
   "severity": "unrated",
   "title": "Duplicate asset-type code shows raw backend sentence",
   "summary": "Screen prints 'type code already exists: ...' raw from the backend.",
-  "status": "open",
-  "status_evidence": "Frontend list in the file; no fix recorded",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] already mapped to validation.codeExists",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Assets Frontend #1 (ASSET-UI-08)",
   "refs": [],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "assets:UI-10",
@@ -4950,15 +5046,19 @@
   "severity": "unrated",
   "title": "Asset-type form cannot create a non-depreciable (land) type",
   "summary": "Method list offers only Straight line / Reducing balance, no NONE.",
-  "status": "open",
-  "status_evidence": "Frontend list in the file; no fix recorded",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] NONE method already offered in the type form",
   "evidence_level": "verified",
   "found": "2026-10-29",
   "source": "Assets Frontend #2 (ASSET-UI-10)",
   "refs": [],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "feat/backend-accounting-alignment",
+   "date": "2026-11-09"
+  }
  },
  {
   "id": "closing:A-02",
