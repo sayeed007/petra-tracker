@@ -4320,6 +4320,29 @@
   "set": "notes-B"
  },
  {
+  "id": "rv-fe:reports:27",
+  "module": "dashboard",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Dashboard waterfalls",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "moved from reports to dashboard 2026-11-10 for that module's developer",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "RF12"
+  ],
+  "size": "S",
+  "theme": "Theme 6. Request volume",
+  "set": "review-fe",
+  "checked": {
+   "ref": "",
+   "date": "2026-11-10"
+  }
+ },
+ {
   "id": "dash:income-expense",
   "module": "dashboard",
   "side": "backend",
@@ -4342,6 +4365,52 @@
   "size": "",
   "theme": "",
   "set": "notes-A"
+ },
+ {
+  "id": "rv-fe:reports:7",
+  "module": "field-force",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Commission slabs overlapping or duplicate",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "fe-D34-7"
+  ],
+  "size": "S",
+  "theme": "Theme 1. Wrong money, filters that cut data",
+  "set": "review-fe",
+  "checked": {
+   "ref": "",
+   "date": "2026-11-10"
+  }
+ },
+ {
+  "id": "rv-fe:reports:8",
+  "module": "field-force",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "REJECTED shown as pending; Acknowledge offered at wrong stage",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "fe-A12-3"
+  ],
+  "size": "M",
+  "theme": "Theme 2. Wrong status maps and labels",
+  "set": "review-fe",
+  "checked": {
+   "ref": "",
+   "date": "2026-11-10"
+  }
  },
  {
   "id": "saleschain:P2-2",
@@ -4423,6 +4492,147 @@
   "size": "",
   "theme": "",
   "set": "notes-B"
+ },
+ {
+  "id": "rv-fe:reports:16",
+  "module": "field-force",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Manager target chart: unencoded id, calendar-year default, empty on error",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "fe-A07-11"
+  ],
+  "size": "S",
+  "theme": "Theme 3. Failures shown as empty, zero, or raw text",
+  "set": "review-fe",
+  "checked": {
+   "ref": "",
+   "date": "2026-11-10"
+  }
+ },
+ {
+  "id": "rv-fe:reports:20",
+  "module": "field-force",
+  "side": "frontend",
+  "severity": "low",
+  "title": "IMS drawer: late draft load overwrites CSV; 500-row customer picker",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "fe-A12-7"
+  ],
+  "size": "S",
+  "theme": "IMS review modal keeps page number, \"Jun\" fallback  [MEDIUM] [LIKELY]  [size S]  (source IDs: fe-A13-3, fe-D50-1 (month part), fe-D41-2 (icon part))",
+  "set": "review-fe",
+  "checked": {
+   "ref": "",
+   "date": "2026-11-10"
+  }
+ },
+ {
+  "id": "rv-fe:reports:32",
+  "module": "field-force",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Duplicated formatters, charts, colours, helpers",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "RF9",
+   "fe-A13-8",
+   "fe-A13-10",
+   "RF10"
+  ],
+  "size": "M",
+  "theme": "Hardcoded English and non-preference formatting in field-force  [MEDIUM] [VERIFIED]  [size L]  (source IDs: fe-A12-4, RF6, RF9, fe-D50-1, fe-A13-10 (formatBDT part), fe-A06-5 (IMS template message))",
+  "set": "review-fe",
+  "checked": {
+   "ref": "",
+   "date": "2026-11-10"
+  }
+ },
+ {
+  "id": "rv-fe:reports:33",
+  "module": "field-force",
+  "side": "frontend",
+  "severity": "low",
+  "title": "create-demand zod schema looser than data",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "fe-D47-10"
+  ],
+  "size": "S",
+  "theme": "Hardcoded English and non-preference formatting in field-force  [MEDIUM] [VERIFIED]  [size L]  (source IDs: fe-A12-4, RF6, RF9, fe-D50-1, fe-A13-10 (formatBDT part), fe-A06-5 (IMS template message))",
+  "set": "review-fe",
+  "checked": {
+   "ref": "",
+   "date": "2026-11-10"
+  }
+ },
+ {
+  "id": "rv-fe:reports:34",
+  "module": "field-force",
+  "side": "frontend",
+  "severity": "low",
+  "title": "No tests for money-adjacent logic",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "RF14"
+  ],
+  "size": "M",
+  "theme": "Hardcoded English and non-preference formatting in field-force  [MEDIUM] [VERIFIED]  [size L]  (source IDs: fe-A12-4, RF6, RF9, fe-D50-1, fe-A13-10 (formatBDT part), fe-A06-5 (IMS template message))",
+  "set": "review-fe",
+  "checked": {
+   "ref": "",
+   "date": "2026-11-10"
+  }
+ },
+ {
+  "id": "rv-fe:reports:6",
+  "module": "field-force",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Commission number input and error row keys",
+  "summary": "",
+  "status": "open",
+  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
+  "refs": [
+   "fe-D34-8"
+  ],
+  "size": "S",
+  "theme": "Theme 1. Wrong money, filters that cut data",
+  "set": "review-fe",
+  "checked": {
+   "ref": "",
+   "date": "2026-11-10"
+  }
  },
  {
   "id": "saleschain:FP2-1",
@@ -12503,52 +12713,6 @@
   "set": "review-fe"
  },
  {
-  "id": "rv-fe:reports:7",
-  "module": "reports",
-  "side": "frontend",
-  "severity": "medium",
-  "title": "Commission slabs overlapping or duplicate",
-  "summary": "",
-  "status": "open",
-  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
-  "evidence_level": "suspect",
-  "found": "2026-11-02",
-  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
-  "refs": [
-   "fe-D34-7"
-  ],
-  "size": "S",
-  "theme": "Theme 1. Wrong money, filters that cut data",
-  "set": "review-fe",
-  "checked": {
-   "ref": "",
-   "date": "2026-11-10"
-  }
- },
- {
-  "id": "rv-fe:reports:8",
-  "module": "reports",
-  "side": "frontend",
-  "severity": "medium",
-  "title": "REJECTED shown as pending; Acknowledge offered at wrong stage",
-  "summary": "",
-  "status": "open",
-  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
-  "evidence_level": "verified",
-  "found": "2026-11-02",
-  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
-  "refs": [
-   "fe-A12-3"
-  ],
-  "size": "M",
-  "theme": "Theme 2. Wrong status maps and labels",
-  "set": "review-fe",
-  "checked": {
-   "ref": "",
-   "date": "2026-11-10"
-  }
- },
- {
   "id": "vqa:bank-register-width",
   "module": "reports",
   "side": "frontend",
@@ -12852,29 +13016,6 @@
   }
  },
  {
-  "id": "rv-fe:reports:16",
-  "module": "reports",
-  "side": "frontend",
-  "severity": "low",
-  "title": "Manager target chart: unencoded id, calendar-year default, empty on error",
-  "summary": "",
-  "status": "open",
-  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
-  "evidence_level": "suspect",
-  "found": "2026-11-02",
-  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
-  "refs": [
-   "fe-A07-11"
-  ],
-  "size": "S",
-  "theme": "Theme 3. Failures shown as empty, zero, or raw text",
-  "set": "review-fe",
-  "checked": {
-   "ref": "",
-   "date": "2026-11-10"
-  }
- },
- {
   "id": "rv-fe:reports:19",
   "module": "reports",
   "side": "frontend",
@@ -12892,29 +13033,6 @@
   "size": "S",
   "theme": "IMS review modal keeps page number, \"Jun\" fallback  [MEDIUM] [LIKELY]  [size S]  (source IDs: fe-A13-3, fe-D50-1 (month part), fe-D41-2 (icon part))",
   "set": "review-fe"
- },
- {
-  "id": "rv-fe:reports:20",
-  "module": "reports",
-  "side": "frontend",
-  "severity": "low",
-  "title": "IMS drawer: late draft load overwrites CSV; 500-row customer picker",
-  "summary": "",
-  "status": "open",
-  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
-  "evidence_level": "likely",
-  "found": "2026-11-02",
-  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
-  "refs": [
-   "fe-A12-7"
-  ],
-  "size": "S",
-  "theme": "IMS review modal keeps page number, \"Jun\" fallback  [MEDIUM] [LIKELY]  [size S]  (source IDs: fe-A13-3, fe-D50-1 (month part), fe-D41-2 (icon part))",
-  "set": "review-fe",
-  "checked": {
-   "ref": "",
-   "date": "2026-11-10"
-  }
  },
  {
   "id": "rv-fe:reports:21",
@@ -12975,29 +13093,6 @@
   "set": "review-fe"
  },
  {
-  "id": "rv-fe:reports:27",
-  "module": "reports",
-  "side": "frontend",
-  "severity": "low",
-  "title": "Dashboard waterfalls",
-  "summary": "",
-  "status": "open",
-  "status_evidence": "moved from reports to dashboard 2026-11-10 for that module's developer",
-  "evidence_level": "likely",
-  "found": "2026-11-02",
-  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
-  "refs": [
-   "RF12"
-  ],
-  "size": "S",
-  "theme": "Theme 6. Request volume",
-  "set": "review-fe",
-  "checked": {
-   "ref": "",
-   "date": "2026-11-10"
-  }
- },
- {
   "id": "rv-fe:reports:31",
   "module": "reports",
   "side": "frontend",
@@ -13015,78 +13110,6 @@
   "size": "S",
   "theme": "Theme 8. Fake, dead and hardcoded",
   "set": "review-fe"
- },
- {
-  "id": "rv-fe:reports:32",
-  "module": "reports",
-  "side": "frontend",
-  "severity": "low",
-  "title": "Duplicated formatters, charts, colours, helpers",
-  "summary": "",
-  "status": "open",
-  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
-  "evidence_level": "verified",
-  "found": "2026-11-02",
-  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
-  "refs": [
-   "RF9",
-   "fe-A13-8",
-   "fe-A13-10",
-   "RF10"
-  ],
-  "size": "M",
-  "theme": "Hardcoded English and non-preference formatting in field-force  [MEDIUM] [VERIFIED]  [size L]  (source IDs: fe-A12-4, RF6, RF9, fe-D50-1, fe-A13-10 (formatBDT part), fe-A06-5 (IMS template message))",
-  "set": "review-fe",
-  "checked": {
-   "ref": "",
-   "date": "2026-11-10"
-  }
- },
- {
-  "id": "rv-fe:reports:33",
-  "module": "reports",
-  "side": "frontend",
-  "severity": "low",
-  "title": "create-demand zod schema looser than data",
-  "summary": "",
-  "status": "open",
-  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
-  "evidence_level": "likely",
-  "found": "2026-11-02",
-  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
-  "refs": [
-   "fe-D47-10"
-  ],
-  "size": "S",
-  "theme": "Hardcoded English and non-preference formatting in field-force  [MEDIUM] [VERIFIED]  [size L]  (source IDs: fe-A12-4, RF6, RF9, fe-D50-1, fe-A13-10 (formatBDT part), fe-A06-5 (IMS template message))",
-  "set": "review-fe",
-  "checked": {
-   "ref": "",
-   "date": "2026-11-10"
-  }
- },
- {
-  "id": "rv-fe:reports:34",
-  "module": "reports",
-  "side": "frontend",
-  "severity": "low",
-  "title": "No tests for money-adjacent logic",
-  "summary": "",
-  "status": "open",
-  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
-  "evidence_level": "verified",
-  "found": "2026-11-02",
-  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
-  "refs": [
-   "RF14"
-  ],
-  "size": "M",
-  "theme": "Hardcoded English and non-preference formatting in field-force  [MEDIUM] [VERIFIED]  [size L]  (source IDs: fe-A12-4, RF6, RF9, fe-D50-1, fe-A13-10 (formatBDT part), fe-A06-5 (IMS template message))",
-  "set": "review-fe",
-  "checked": {
-   "ref": "",
-   "date": "2026-11-10"
-  }
  },
  {
   "id": "rv-fe:reports:4",
@@ -13131,29 +13154,6 @@
   "set": "review-fe",
   "checked": {
    "ref": "feat/reports-ui-polish",
-   "date": "2026-11-10"
-  }
- },
- {
-  "id": "rv-fe:reports:6",
-  "module": "reports",
-  "side": "frontend",
-  "severity": "low",
-  "title": "Commission number input and error row keys",
-  "summary": "",
-  "status": "open",
-  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
-  "evidence_level": "verified",
-  "found": "2026-11-02",
-  "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
-  "refs": [
-   "fe-D34-8"
-  ],
-  "size": "S",
-  "theme": "Theme 1. Wrong money, filters that cut data",
-  "set": "review-fe",
-  "checked": {
-   "ref": "",
    "date": "2026-11-10"
   }
  },

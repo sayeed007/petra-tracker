@@ -31,6 +31,7 @@ def load():
         o = ov.get(it["id"])
         if o:
             it["status"] = o.get("status", it["status"])
+            it["module"] = o.get("module", it["module"])
             it["status_evidence"] = o.get("note", it["status_evidence"])
             it["checked"] = {"ref": o.get("ref", ""), "date": o.get("date", "")}
         if it["status"] not in STATUSES:
