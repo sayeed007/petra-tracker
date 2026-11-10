@@ -1,0 +1,18 @@
+[
+ {
+  "id": "be-req:accounting:voucher-register-account",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Voucher register rows carry no account (accountId, accountName)",
+  "summary": "VoucherRegisterLineDTO has only particulars (the other side or party). The Account column on the Voucher Register cannot name or link each row's account; today it shows the filtered account only. Add accountId and accountName per row so the frontend can link to the ledger.",
+  "status": "open",
+  "status_evidence": "reported to backend 2026-11-10",
+  "evidence_level": "verified",
+  "found": "2026-11-10",
+  "source": "frontend reports polish round",
+  "refs": [],
+  "size": "small",
+  "theme": "Reports"
+ }
+]
