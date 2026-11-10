@@ -13135,8 +13135,8 @@
   "severity": "low",
   "title": "Bank Register prints 0.00 on the unused side; rows 55px tall",
   "summary": "A dash would read better.",
-  "status": "open",
-  "status_evidence": "Visual QA: not marked fixed",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/reports-ui-polish (uncommitted, not merged)] Bank Register shows a dash for a zero deposit/payment (row height not changed)",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA bankreg-zero",
@@ -13145,7 +13145,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "feat/reports-ui-polish",
+   "date": "2026-11-10"
+  }
  },
  {
   "id": "vqa:bva-range",
@@ -13173,8 +13177,8 @@
   "severity": "low",
   "title": "Cash Statement voucher type stays English in Bangla (humanizeEnum)",
   "summary": "Cash Receipt/Payment/Contra not translated.",
-  "status": "open",
-  "status_evidence": "Visual QA: not marked fixed",
+  "status": "fixed-per-log",
+  "status_evidence": "[feat/reports-ui-polish (uncommitted, not merged)] Cash Statement voucher type uses the translated voucher label",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA cash-bn-voucher",
@@ -13183,7 +13187,11 @@
   ],
   "size": "",
   "theme": "",
-  "set": "notes-A"
+  "set": "notes-A",
+  "checked": {
+   "ref": "feat/reports-ui-polish",
+   "date": "2026-11-10"
+  }
  },
  {
   "id": "vqa:hub-count",

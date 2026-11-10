@@ -3130,5 +3130,17 @@
   "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] search box and type filter already exist",
   "ref": "feat/backend-accounting-alignment",
   "date": "2026-11-09"
+ },
+ "vqa:bankreg-zero": {
+  "status": "fixed-per-log",
+  "note": "[feat/reports-ui-polish (uncommitted, not merged)] Bank Register shows a dash for a zero deposit/payment (row height not changed)",
+  "ref": "feat/reports-ui-polish",
+  "date": "2026-11-10"
+ },
+ "vqa:cash-bn-voucher": {
+  "status": "fixed-per-log",
+  "note": "[feat/reports-ui-polish (uncommitted, not merged)] Cash Statement voucher type uses the translated voucher label",
+  "ref": "feat/reports-ui-polish",
+  "date": "2026-11-10"
  }
 }
