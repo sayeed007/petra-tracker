@@ -3142,5 +3142,116 @@
   "note": "[feat/reports-ui-polish (uncommitted, not merged)] Cash Statement voucher type uses the translated voucher label",
   "ref": "feat/reports-ui-polish",
   "date": "2026-11-10"
+ },
+ "rv-fe:reports:9": {
+  "status": "fixed-per-log",
+  "note": "[feat/reports-ui-polish (uncommitted, not merged)] Open Sales Orders status is translated on screen and in export; the purchase history exports use the same translated status as the screen",
+  "ref": "feat/reports-ui-polish",
+  "date": "2026-11-10"
+ },
+ "rv-fe:reports:15": {
+  "status": "fixed-per-log",
+  "note": "[feat/reports-ui-polish (uncommitted, not merged)] a failed account read now sets accountsFailed and the report shows a warning, as it does for books",
+  "ref": "feat/reports-ui-polish",
+  "date": "2026-11-10"
+ },
+ "vqa:bva-range": {
+  "status": "fixed-per-log",
+  "note": "[feat/reports-ui-polish (uncommitted, not merged)] Budget vs Actual opens on the financial year containing today (book's own year), calendar year only if none matches",
+  "ref": "feat/reports-ui-polish",
+  "date": "2026-11-10"
+ },
+ "vqa:recon-bank-select": {
+  "status": "fixed-per-log",
+  "note": "[feat/reports-ui-polish (uncommitted, not merged)] bank select widened to 28rem",
+  "ref": "feat/reports-ui-polish",
+  "date": "2026-11-10"
+ },
+ "vqa:hub-count": {
+  "status": "fixed-per-log",
+  "note": "[feat/reports-ui-polish (uncommitted, not merged)] checked by reading the hub: category, chip and header counts all go through the permission filter; not tried with a limited account",
+  "ref": "feat/reports-ui-polish",
+  "date": "2026-11-10"
+ },
+ "rv-fe:reports:5": {
+  "status": "decision",
+  "note": "[feat/reports-ui-polish (uncommitted, not merged)] no code change: BDT only, so every screen is one currency and shows Tk; the multi-currency branches never run",
+  "ref": "feat/reports-ui-polish",
+  "date": "2026-11-10"
+ },
+ "rv-fe:reports:4": {
+  "status": "decision",
+  "note": "[feat/reports-ui-polish (uncommitted, not merged)] backend sums line quantity per item, category and in total with no unit conversion visible; asked backend whether it is a base unit. Frontend unchanged until answered",
+  "ref": "feat/reports-ui-polish",
+  "date": "2026-11-10"
+ },
+ "merge:B3": {
+  "status": "open",
+  "note": "reported to backend 2026-11-10 (labels need a stable code to translate)",
+  "ref": "",
+  "date": "2026-11-10"
+ },
+ "rv-fe:reports:6": {
+  "status": "open",
+  "note": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "ref": "",
+  "date": "2026-11-10",
+  "module": "field-force"
+ },
+ "rv-fe:reports:7": {
+  "status": "open",
+  "note": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "ref": "",
+  "date": "2026-11-10",
+  "module": "field-force"
+ },
+ "rv-fe:reports:8": {
+  "status": "open",
+  "note": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "ref": "",
+  "date": "2026-11-10",
+  "module": "field-force"
+ },
+ "rv-fe:reports:16": {
+  "status": "open",
+  "note": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "ref": "",
+  "date": "2026-11-10",
+  "module": "field-force"
+ },
+ "rv-fe:reports:20": {
+  "status": "open",
+  "note": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "ref": "",
+  "date": "2026-11-10",
+  "module": "field-force"
+ },
+ "rv-fe:reports:32": {
+  "status": "open",
+  "note": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "ref": "",
+  "date": "2026-11-10",
+  "module": "field-force"
+ },
+ "rv-fe:reports:33": {
+  "status": "open",
+  "note": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "ref": "",
+  "date": "2026-11-10",
+  "module": "field-force"
+ },
+ "rv-fe:reports:34": {
+  "status": "open",
+  "note": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "ref": "",
+  "date": "2026-11-10",
+  "module": "field-force"
+ },
+ "rv-fe:reports:27": {
+  "status": "open",
+  "note": "moved from reports to dashboard 2026-11-10 for that module's developer",
+  "ref": "",
+  "date": "2026-11-10",
+  "module": "dashboard"
  }
 }
