@@ -327,7 +327,24 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B2",
   "refs": [],
   "size": "",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Accounting segment (accounting developer)",
+  "set": "purchase-test-2026-11-10"
+ },
+ {
+  "id": "pt1110:B7",
+  "module": "accounting",
+  "side": "both",
+  "severity": "medium",
+  "title": "GL Impact tab says 'Not posted yet' and never refreshes; posting takes 5-15 s",
+  "summary": "Backend posts asynchronously (outbox, RabbitMQ, accounting). Frontend shows no hint or refresh, so a transaction looks missing. No event was lost or stuck in the test.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, purchase test 2026-11-10",
+  "evidence_level": "verified",
+  "found": "2026-11-10",
+  "source": "TEST-OBSERVATIONS-2026-11-10.md B7",
+  "refs": [],
+  "size": "",
+  "theme": "Accounting segment (accounting developer)",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -5773,7 +5790,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md A2",
   "refs": [],
   "size": "",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Inventory segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -5793,7 +5810,7 @@
    "rv-be:inventory:11"
   ],
   "size": "S",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Inventory segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -5810,7 +5827,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B9",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Inventory segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -7085,7 +7102,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B10",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Inventory segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -8373,7 +8390,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B16",
   "refs": [],
   "size": "",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Shared segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -8973,7 +8990,7 @@
    "rv-fe:other:24"
   ],
   "size": "",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Purchase segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -8990,7 +9007,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B1",
   "refs": [],
   "size": "",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Purchase segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -9177,24 +9194,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B3",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10",
-  "set": "purchase-test-2026-11-10"
- },
- {
-  "id": "pt1110:B7",
-  "module": "purchase",
-  "side": "both",
-  "severity": "medium",
-  "title": "GL Impact tab says 'Not posted yet' and never refreshes; posting takes 5-15 s",
-  "summary": "Backend posts asynchronously (outbox, RabbitMQ, accounting). Frontend shows no hint or refresh, so a transaction looks missing. No event was lost or stuck in the test.",
-  "status": "open",
-  "status_evidence": "reproduced in the browser, purchase test 2026-11-10",
-  "evidence_level": "verified",
-  "found": "2026-11-10",
-  "source": "TEST-OBSERVATIONS-2026-11-10.md B7",
-  "refs": [],
-  "size": "",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Purchase segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -10884,7 +10884,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B11",
   "refs": [],
   "size": "",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Purchase segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -10901,7 +10901,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B12",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Purchase segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -10918,7 +10918,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B13",
   "refs": [],
   "size": "",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Purchase segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -10935,7 +10935,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B14",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Purchase segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -10952,7 +10952,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B17",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Purchase segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -10969,7 +10969,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B18",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Purchase segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -10986,7 +10986,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B4",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Purchase segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -11003,7 +11003,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B5",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Purchase segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -11020,7 +11020,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B6",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Purchase segment",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -12702,7 +12702,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md A3",
   "refs": [],
   "size": "",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Accounting segment (accounting developer)",
   "set": "purchase-test-2026-11-10"
  },
  {
@@ -21065,7 +21065,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B15",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10",
+  "theme": "Accounting segment (accounting developer)",
   "set": "purchase-test-2026-11-10"
  },
  {

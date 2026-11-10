@@ -16,7 +16,7 @@
    "rv-fe:other:24"
   ],
   "size": "",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Purchase segment"
  },
  {
   "id": "pt1110:A2",
@@ -32,7 +32,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md A2",
   "refs": [],
   "size": "",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Inventory segment"
  },
  {
   "id": "pt1110:A3",
@@ -48,7 +48,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md A3",
   "refs": [],
   "size": "",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Accounting segment (accounting developer)"
  },
  {
   "id": "pt1110:B1",
@@ -64,7 +64,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B1",
   "refs": [],
   "size": "",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Purchase segment"
  },
  {
   "id": "pt1110:B2",
@@ -80,7 +80,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B2",
   "refs": [],
   "size": "",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Accounting segment (accounting developer)"
  },
  {
   "id": "pt1110:B3",
@@ -96,7 +96,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B3",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Purchase segment"
  },
  {
   "id": "pt1110:B4",
@@ -112,7 +112,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B4",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Purchase segment"
  },
  {
   "id": "pt1110:B5",
@@ -128,7 +128,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B5",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Purchase segment"
  },
  {
   "id": "pt1110:B6",
@@ -144,11 +144,11 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B6",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Purchase segment"
  },
  {
   "id": "pt1110:B7",
-  "module": "purchase",
+  "module": "accounting",
   "side": "both",
   "severity": "medium",
   "title": "GL Impact tab says 'Not posted yet' and never refreshes; posting takes 5-15 s",
@@ -160,7 +160,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B7",
   "refs": [],
   "size": "",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Accounting segment (accounting developer)"
  },
  {
   "id": "pt1110:B8",
@@ -179,7 +179,7 @@
    "rv-be:inventory:11"
   ],
   "size": "S",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Inventory segment"
  },
  {
   "id": "pt1110:B9",
@@ -195,7 +195,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B9",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Inventory segment"
  },
  {
   "id": "pt1110:B10",
@@ -211,7 +211,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B10",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Inventory segment"
  },
  {
   "id": "pt1110:B11",
@@ -227,7 +227,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B11",
   "refs": [],
   "size": "",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Purchase segment"
  },
  {
   "id": "pt1110:B12",
@@ -243,7 +243,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B12",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Purchase segment"
  },
  {
   "id": "pt1110:B13",
@@ -259,7 +259,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B13",
   "refs": [],
   "size": "",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Purchase segment"
  },
  {
   "id": "pt1110:B14",
@@ -275,7 +275,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B14",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Purchase segment"
  },
  {
   "id": "pt1110:B15",
@@ -291,7 +291,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B15",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Accounting segment (accounting developer)"
  },
  {
   "id": "pt1110:B16",
@@ -307,7 +307,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B16",
   "refs": [],
   "size": "",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Shared segment"
  },
  {
   "id": "pt1110:B17",
@@ -323,7 +323,7 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B17",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Purchase segment"
  },
  {
   "id": "pt1110:B18",
@@ -339,6 +339,6 @@
   "source": "TEST-OBSERVATIONS-2026-11-10.md B18",
   "refs": [],
   "size": "S",
-  "theme": "Purchase test 2026-11-10"
+  "theme": "Purchase segment"
  }
 ]
