@@ -1343,7 +1343,7 @@
   "title": "Financial-year writes are switched off by a hard-coded constant",
   "summary": "",
   "status": "decision",
-  "status_evidence": "Needs the decision in the review: delete the ~1,500 lines of dead financial-year write UI (Period Closing owns it) or drive the flag from a permission or setting. Not touched.",
+  "status_evidence": "Decided 2026-11-11: keep the financial-year write UI and the FINANCIAL_YEAR_WRITE_ENABLED=false flag as they are for now. Revisit when Period Closing scope is settled.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",

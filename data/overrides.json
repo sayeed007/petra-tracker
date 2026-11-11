@@ -3352,7 +3352,7 @@
  },
  "rv-fe:accounting:50": {
   "status": "decision",
-  "note": "Needs the decision in the review: delete the ~1,500 lines of dead financial-year write UI (Period Closing owns it) or drive the flag from a permission or setting. Not touched.",
+  "note": "Decided 2026-11-11: keep the financial-year write UI and the FINANCIAL_YEAR_WRITE_ENABLED=false flag as they are for now. Revisit when Period Closing scope is settled.",
   "ref": "",
   "date": "2026-11-11"
  }
