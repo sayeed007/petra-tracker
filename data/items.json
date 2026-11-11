@@ -157,6 +157,40 @@
   "set": "review-fe"
  },
  {
+  "id": "st1111:S14",
+  "module": "accounting",
+  "side": "both",
+  "severity": "high",
+  "title": "Credit Memo lets the user change the VAT rate and the backend accepts it",
+  "summary": "Credit Memo lets the user change the VAT rate and the backend accepts it. CM-000001 for 5 x 8 (sold at 15.8%, VAT 6.32 on screen) was saved with VAT rate 25% and posted: Dr 4900 Sales Return 30.51, Dr 2135 Output VAT 9.49, Cr 1130 Sundry Debtors 40.00. The original invoice posted VAT 6.00 per 40, so Output VAT is over-reversed by about 3.49. The unit-price field is guarded (\"cannot be more than the price it was sold at\"), the VAT rate is not. Fix: rate must be read-only (from the invoice line) and checked in the backend.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S14",
+  "refs": [],
+  "size": "",
+  "theme": "Accounting segment (accounting developer)",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S2",
+  "module": "accounting",
+  "side": "both",
+  "severity": "high",
+  "title": "VAT shown is not the VAT posted",
+  "summary": "VAT shown is not the VAT posted. Document screens show \"VAT 15.8%, 25.28\" on a 160.00 Modern Trade line. The invoice line holds tax_rate 0.158, tax_amount 25.28 but vat_amount 24.00 (15%) and ait_amount 1.28 (0.8%). The ledger gets Output VAT 24.00 and the AIT 1.28 stays inside Sales (136.00 = 160 - 24) because no AIT ledger is mapped. By design the Modern Trade channel is flat: 15.8% of the inclusive price, not the tax inside the price (that would be 20.87). The UI calls the whole 15.8% \"VAT\".",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S2",
+  "refs": [],
+  "size": "",
+  "theme": "Accounting segment (accounting developer)",
+  "set": "sales-test-2026-11-11"
+ },
+ {
   "id": "be-req:accounting:voucher-register-account",
   "module": "accounting",
   "side": "backend",
@@ -1192,8 +1226,8 @@
   "severity": "medium",
   "title": "Opening balance read fetches every entry one by one, twice per screen, and stops silently at 10 pages",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "Opening-balance state is read once for the checklist and the section (shared 5 s promise in the tab), the facade caps pages and errors beyond the cap, status filter uppercased; getOpeningBalance removed; branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -1203,7 +1237,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "9e4688f0",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:40",
@@ -1212,8 +1250,8 @@
   "severity": "medium",
   "title": "Customer ledger scans the customer list to find credit limits",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "The Customer Ledger remembers the limits it has read for a minute so a date change does not rescan the customer list; the real fix is a batch endpoint or creditLimit on the ledger report (backend). branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -1222,7 +1260,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "9e4688f0",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:41",
@@ -1254,8 +1296,8 @@
   "severity": "medium",
   "title": "Budget list loads every budget with every line, then shows none of it",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "accountCount/totalBudgeted are gone from the budget list mapper and type; branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -1264,7 +1306,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "509183bf",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:43",
@@ -1273,8 +1319,8 @@
   "severity": "medium",
   "title": "General Ledger and Voucher Register read every backend page in sequence",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "General Ledger and Voucher Register read pages 4 at a time in order, both capped at 20 pages with the narrow-the-dates message; branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -1283,7 +1329,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "94072758",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:50",
@@ -1292,8 +1342,8 @@
   "severity": "medium",
   "title": "Financial-year writes are switched off by a hard-coded constant",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "decision",
+  "status_evidence": "Needs the decision in the review: delete the ~1,500 lines of dead financial-year write UI (Period Closing owns it) or drive the flag from a permission or setting. Not touched.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -1302,7 +1352,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:51",
@@ -1311,8 +1365,8 @@
   "severity": "medium",
   "title": "`COST_CENTERS_ENABLED = false` hides only some cost-center UI",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "COST_CENTERS_ENABLED defined once in features/accounting/config.ts; settings nav and asset transfer dialog follow it (other pickers already did); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -1321,7 +1375,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "12edcc97",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:58",
@@ -1331,7 +1389,7 @@
   "title": "Posting-critical form logic has no test",
   "summary": "",
   "status": "in-progress",
-  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] journal validation tests added; other posting forms still untested",
+  "status_evidence": "journals/schema tests already existed (incl. 100.00004); party-ledger netting extracted and tested (6 tests); bank-reconciliation difference and period-close gating still have none. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -1342,8 +1400,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "feat/backend-accounting-alignment",
-   "date": "2026-11-09"
+   "ref": "12edcc97",
+   "date": "2026-11-11"
   }
  },
  {
@@ -1403,6 +1461,40 @@
   "size": "S",
   "theme": "",
   "set": "review-fe"
+ },
+ {
+  "id": "st1111:S17",
+  "module": "accounting",
+  "side": "both",
+  "severity": "medium",
+  "title": "Sales journals carry no COGS or stock entry (Periodic valuation, expected), but the stock quantities also do not move (S10), so neither the ",
+  "summary": "Sales journals carry no COGS or stock entry (Periodic valuation, expected), but the stock quantities also do not move (S10), so neither the books nor the stock card show the sale. Sales Return posts to 4900 Sales Return, not the channel account (4114).",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S17",
+  "refs": [],
+  "size": "",
+  "theme": "Accounting segment (accounting developer)",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S39",
+  "module": "accounting",
+  "side": "both",
+  "severity": "medium",
+  "title": "VAT return exists but is thin: Output VAT only, no AIT, no invoice drill-down, not listed in Reports",
+  "summary": "The VAT return exists (Accounting > VAT Returns, `/accounting-finance/vat-returns`) but is not in the Reports hub and is thin. November 2026 return: Output VAT 58.96 (equals ledger 2135, so it ties out), Input VAT 0.00, net 58.96. It shows no AIT at all (AIT is not posted anywhere, S2), no breakdown by invoice or customer, and the Reports hub search for \"vat\" and \"tax\" finds nothing, so people look for it in the wrong place. (Corrected 2026-11-11: this row first said no VAT report existed; I had only searched the Reports hub.)",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S39",
+  "refs": [],
+  "size": "",
+  "theme": "Accounting segment (accounting developer)",
+  "set": "sales-test-2026-11-11"
  },
  {
   "id": "vqa:contra-cols",
@@ -2150,8 +2242,8 @@
   "severity": "low",
   "title": "Smaller \"empty or wrong message\" cases",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "(a) Budget vs Actual says when nothing falls in the range and (d) the setup checklist says when it could not load, with retry: done. (b) and (c) only matter once financial-year writes are switched on (item 50). branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2163,7 +2255,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "3f9592df",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:18",
@@ -2313,8 +2409,8 @@
   "severity": "low",
   "title": "URL ids not validated against the options (Voucher Register, bank/cash registers, reconciliation)",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "Bank register and cash statement now validate the URL account against the report's type and book (the other views already did); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2324,7 +2420,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "2b2c3415..509183bf",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:27",
@@ -2451,8 +2551,8 @@
   "severity": "low",
   "title": "Editing depreciation of a \"not depreciated\" unit always fails validation",
   "summary": "",
-  "status": "in-progress",
-  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] best-guess fix, not reproduced",
+  "status": "fixed",
+  "status_evidence": "Already fixed on this branch before the round: NONE method allows life 0 (batch-form refine); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2463,8 +2563,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "feat/backend-accounting-alignment",
-   "date": "2026-11-09"
+   "ref": "509183bf",
+   "date": "2026-11-11"
   }
  },
  {
@@ -2517,7 +2617,7 @@
   "title": "Approval queue and reconciliation history page through everything",
   "summary": "",
   "status": "in-progress",
-  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] reconciliation history pages server-side (size<=100); approval queue not changed",
+  "status_evidence": "Reconciliation history was already paged; the approval queue reads its pages 4 at a time but still filters 'mine' on the client because the backend has no such filter. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2528,8 +2628,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "feat/backend-accounting-alignment",
-   "date": "2026-11-09"
+   "ref": "efea7ab2",
+   "date": "2026-11-11"
   }
  },
  {
@@ -2539,8 +2639,8 @@
   "severity": "low",
   "title": "Chart-of-accounts list refetches everything on any filter change",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "Chart list: chart and cost centres follow the status filter, balances follow the month, rows are derived; stale balances cleared on month change; branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2549,7 +2649,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "13d52133",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:46",
@@ -2558,8 +2662,8 @@
   "severity": "low",
   "title": "Budget variance view refetches on every tab switch",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "Budget variance already skips a read it has (loadedFor); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2568,7 +2672,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "509183bf",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:47",
@@ -2577,8 +2685,8 @@
   "severity": "low",
   "title": "Budget screens redo tree maths on every keystroke",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "descendantAccountIds builds the child map once per chart (WeakMap); tree tests pass; branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2587,7 +2695,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "94072758",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:48",
@@ -2596,8 +2708,8 @@
   "severity": "low",
   "title": "Fixed Assets close panel: preview requested twice; asset list capped at 50",
   "summary": "",
-  "status": "in-progress",
-  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] 50-asset cap fixed by readAllPages; one extra preview call remains",
+  "status": "fixed",
+  "status_evidence": "Close panel: preview asked once for a posted month; the class asset list has Previous/Next (50 per page); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2608,8 +2720,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "feat/backend-accounting-alignment",
-   "date": "2026-11-09"
+   "ref": "efea7ab2",
+   "date": "2026-11-11"
   }
  },
  {
@@ -2666,8 +2778,8 @@
   "severity": "low",
   "title": "Dead facades: branches, dashboard mock, `getJournalPartyNames`, misplaced JSDoc",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "Dashboard mock facade and getDashboardGettingStarted removed, chart JSDoc moved (branches and getJournalPartyNames were already gone); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2677,7 +2789,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "2b2c3415",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:53",
@@ -2686,8 +2802,8 @@
   "severity": "low",
   "title": "BDT-only and Periodic-only decisions are not reflected in the types and fields",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "Journal form and detail no longer show the always-1 exchange rate, one StockValuationMethod type; the exchange-rate fields in purchase, inventory and chart types remain. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2698,7 +2814,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "509183bf",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:54",
@@ -2707,8 +2827,8 @@
   "severity": "low",
   "title": "Hardcoded currency and English text in accounting components",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "SKU, GL and the screen code now come from messages (en, bn); journals path from the config constant; Tk/BDT literals were already gone; branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2718,7 +2838,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "2b2c3415",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:55",
@@ -2727,8 +2851,8 @@
   "severity": "low",
   "title": "Duplicate constants and dead exports across config files",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "One features/accounting/config.ts for the settings and financial-year paths, asset-type option lists reuse the depreciation ones (dead budget/report exports were already gone); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2737,7 +2861,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "2b2c3415",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:56",
@@ -2746,8 +2874,8 @@
   "severity": "low",
   "title": "Feature CSS overrides AntD form internals with `!important`",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "fixed",
+  "status_evidence": "chart-of-accounts.css no longer exists; branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2756,7 +2884,11 @@
   ],
   "size": "S",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "509183bf",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:57",
@@ -2765,8 +2897,8 @@
   "severity": "low",
   "title": "Small tidy-ups in budgets, charts, journals, payroll, fixed assets",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "Document delete now confirms, literal blue replaced by the info token; most other tidy-ups were already done; a few (payslip sub-columns, batch upload concurrency, rowKey) were not re-checked. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2776,7 +2908,11 @@
   ],
   "size": "M",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "12edcc97",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:59",
@@ -5777,6 +5913,40 @@
   }
  },
  {
+  "id": "st1111:S10",
+  "module": "inventory",
+  "side": "both",
+  "severity": "high",
+  "title": "Stock is not reduced by fulfilment or dispatch",
+  "summary": "Stock is not reduced by fulfilment or dispatch. After IF-000001 was dispatched (20 pcs shipped, gate pass and delivery slip created) BIN-1 on hand is still 90, reserved still counts the shipped 20 (50 = 20 + 30 of SO-000002). The demand form keeps showing Stock 90. Nothing posts COGS or inventory either (see S17).",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S10",
+  "refs": [],
+  "size": "",
+  "theme": "Inventory segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S29",
+  "module": "inventory",
+  "side": "both",
+  "severity": "high",
+  "title": "Demand taken, paid and approved above channel stock; only fulfilment refuses and quantity cannot be reduced",
+  "summary": "A demand can be taken, paid and approved for more than the channel stock. ASE screen has no stock cap (34 units against 20 in Retail Stationary), coordination \"Stock qty\" shows 50 (all channels) and passes, the deposit of 100 is already booked, and only Item Fulfillment refuses. The fulfilment Qty box is read-only, so the 20 that exist cannot be shipped either; the order is stuck.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11 (field force ASE)",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S29",
+  "refs": [],
+  "size": "",
+  "theme": "Inventory segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
   "id": "pt1110:A2",
   "module": "inventory",
   "side": "both",
@@ -7089,6 +7259,57 @@
   }
  },
  {
+  "id": "st1111:S16",
+  "module": "inventory",
+  "side": "both",
+  "severity": "medium",
+  "title": "Return Receive bin list is empty: bins with storage purpose NONE cannot be chosen",
+  "summary": "Return Receive: bin list is empty for every storage type, because the seeded bins have `storage_purpose = NONE`; the dialog filters bins by purpose. I set BIN-2 = RETURNS and BIN-1 = STANDARD in the database to continue. A bin with no purpose cannot be chosen anywhere. The return is received into its own balance row (BIN-2: 5), so Item A shows two rows.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S16",
+  "refs": [],
+  "size": "",
+  "theme": "Inventory segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S8",
+  "module": "inventory",
+  "side": "both",
+  "severity": "medium",
+  "title": "Only Modern Trade has stock; other channels show \"No data\" with no explanation",
+  "summary": "Only Modern Trade can be tested: item select on the demand form says \"No data\" for Other Corporate / Retail channels, because stock is allocated per channel and only purchase allocation puts stock there. No message tells the user why. WORKAROUND FOUND: Inventory > Stock Transfer (/inventory-warehouse/stock-transfer/new) moves stock between channels (needs an Approve); the gap is that nothing tells the user.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S8",
+  "refs": [],
+  "size": "",
+  "theme": "Inventory segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S9",
+  "module": "inventory",
+  "side": "both",
+  "severity": "medium",
+  "title": "No way to add channel stock from the UI except a purchase receipt (adjustments are write-offs only)",
+  "summary": "There is no way to add stock from the UI other than a purchase receipt. Inventory Adjustment types are write-offs only (Damaged, Stolen, Expired, Inventory Asset, Other). Tests of other channels need a full purchase round first. WORKAROUND FOUND: Inventory > Stock Transfer (/inventory-warehouse/stock-transfer/new) moves stock between channels (needs an Approve); the gap is that nothing tells the user.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S9",
+  "refs": [],
+  "size": "",
+  "theme": "Inventory segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
   "id": "pt1110:B10",
   "module": "inventory",
   "side": "frontend",
@@ -8125,6 +8346,23 @@
   "size": "M",
   "theme": "",
   "set": "review-fe"
+ },
+ {
+  "id": "st1111:S26",
+  "module": "other",
+  "side": "both",
+  "severity": "high",
+  "title": "SPO role seeded with no permissions: field officers cannot sign in (\"No ERP access\")",
+  "summary": "SPO role is seeded with no permissions, so a field officer cannot sign in (\"No ERP access\"); the seeded passwords in the seed state also no longer match. Roles must be filled in Settings > Users & Roles before any ASE test. A role cache (Redis `rbac:user:<id>:v1:permissions`) keeps the old empty list until it is cleared.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11 (field force ASE)",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S26",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
  },
  {
   "id": "rv-fe:other:1",
@@ -13595,6 +13833,23 @@
   }
  },
  {
+  "id": "st1111:S40",
+  "module": "reports",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Sales Order by Item Summary is gross, not net of discount or returns",
+  "summary": "Sales Order by Item Summary is gross (before trade discount) and not net of returns or invoice edits, but is labelled as amount sold; free goods are not counted in quantity.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S40",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
   "id": "vqa:bankreg-zero",
   "module": "reports",
   "side": "frontend",
@@ -14620,6 +14875,74 @@
    "ref": "321870e96",
    "date": "2026-11-09"
   }
+ },
+ {
+  "id": "st1111:S1",
+  "module": "sales",
+  "side": "both",
+  "severity": "high",
+  "title": "Pricing schemes never apply on the Sales demand form (they do on the Field Force ASE screen)",
+  "summary": "Schemes made in Settings > Sales never apply on `/sales-demand/demand-order/new`. An active \"10% off Item A for Modern Trade, 10+ units\" scheme (SCH-000001) gave discount 0.00 on a 20-unit Modern Trade demand. Only the Field Force ASE create-demand screen sends `appliedPricingSchemaId`; the sales demand form sends none (code comment in `sales-demand-form-item-row.tsx`). The backend only injects promo free lines when the line carries a scheme id. So discount, cashback and promo schemes cannot be used from the Sales module at all. Decision: should the sales demand form suggest or auto-apply schemes? UPDATE after the ASE round: schemes DO apply on the ASE create-demand screen (discount, cashback, promo), but not on /sales-demand/demand-order/new, and discount/cashback are lost after Confirm Quantities (S25).",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S1",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S15",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "high",
+  "title": "Credit Memo cannot be approved from the UI",
+  "summary": "Credit Memo cannot be approved from the UI. It is saved as \"Pending Approval\" (workflow task for role TENANT_SUPER_ADMIN) but the detail page has no Approve/Reject button (the header only has Edit and Apply refund). The facade already carries `workflowTaskId`. I approved it with the backend workflow API (`POST /api/workflow/tasks/{id}/complete`) to continue. After that: Open, button \"Apply\".",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S15",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S20",
+  "module": "sales",
+  "side": "both",
+  "severity": "high",
+  "title": "Invoice can be raised and posted before anything is fulfilled or shipped",
+  "summary": "An invoice can be raised and posted (revenue, VAT, receivable) before anything is fulfilled or shipped. INV-000003 exists while SO-000003 is \"Not Fulfilled\". Over-invoicing (12 > 10) is blocked, but delivery is not required. Decide: invoice only after dispatch, or allow it for prepaid corporate sales.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S20",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S25",
+  "module": "sales",
+  "side": "both",
+  "severity": "high",
+  "title": "Pricing-scheme discount and cashback lost after Confirm Quantities: demand, invoice and journal carry the higher price",
+  "summary": "The pricing-scheme discount is lost between the ASE screen and the invoice. ASE review shows 66.96 (scheme 8.00 + trade 5.04). After \"Confirm Quantities\" the demand is re-priced to 74.40 (gross 80, trade discount 7% of 80 = 5.60), so SO-000004, INV-000004 and the journal carry 74.40; the customer is billed 7.44 too much and the 8.00 never appears (no scheme discount account line). `applied_pricing_schema_id` is stored on the line, but the recalculation ignores it. Also the trade discount base differs: 7% of 72 (after scheme) on the ASE screen, 7% of 80 afterwards. (S1 is therefore wrong in one sense: schemes do apply on the ASE screen, but not on the Sales form, and not after coordination.) CASHBACK AS WELL: SD-000008 ASE review 83.30, after Confirm Quantities 88.20 (cashback 5.00 gone). Only Promo free goods survive.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11 (field force ASE)",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S25",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
  },
  {
   "id": "rv-be:sales:1.3",
@@ -16718,6 +17041,329 @@
   }
  },
  {
+  "id": "st1111:S11",
+  "module": "sales",
+  "side": "both",
+  "severity": "medium",
+  "title": "Sales Return is blocked until the goods are shipped",
+  "summary": "Sales Return is blocked until the goods are shipped: Fulfilled shows 0 after the Item Fulfillment says \"Fulfilled\" and the invoice exists, and the toast says only \"A return quantity is higher than what the line allows\". After dispatch Fulfilled shows 20.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S11",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S12",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Dispatch needs a shipping carrier; carrier dialog fails silently with Time To Delivery 0",
+  "summary": "Dispatch is hidden behind a missing carrier: \"No shipping carrier is configured\" with no link to where to create one. Shipping Carrier dialog: Time To Delivery defaults to 0 and is invalid, the field turns red with no message, and Create does nothing (no request, no toast). Typing 2 fixed it. Step buttons are mislabeled (\"Start Picking\" on the packing step). \"Print Labels & Ship\" opens a native print dialog that blocks the tab.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S12",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S13",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Sales Order Payment Summary shows deposit as a payment (Deposit Applied 0.00)",
+  "summary": "Sales Order Payment Summary after deposit applied: Deposit Applied 0.00, Payments Received 160.00 (deposit counted as payment, not shown as deposit).",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S13",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S19",
+  "module": "sales",
+  "side": "both",
+  "severity": "medium",
+  "title": "VAT method differs by channel and nothing says so",
+  "summary": "VAT method differs by channel and nothing says so. Modern Trade (flat): 15.8% of the price (160 -> 25.28, ledger VAT 24.00). Other Corporate: 15.8% taken out of the inclusive price (100 -> 13.64, ledger VAT 12.95 + AIT 0.69 left inside sales 87.05). Same item, same 15.8% label, different result. Needs the business rule written down.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S19",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S21",
+  "module": "sales",
+  "side": "both",
+  "severity": "medium",
+  "title": "Other Corporate demand saves a negative Sales TP; total value not tied to qty x TP",
+  "summary": "Other Corporate demand: Sales TP and VAT columns come out wrong when costs are entered. Costs 5+3+2 per unit against an offer TP of 10 gave Sales TP -1.36 and the demand saved with a negative Sales TP, no warning. \"Total value\" (100) is free text and not tied to qty x TP (80). Per-unit versus per-line meaning of the cost boxes is not shown.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S21",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S22",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Corporate demand needs a deposit greater than 0 (message \"Enter a number greater than zero\") but the field is not marked as depending on cus",
+  "summary": "Corporate demand needs a deposit greater than 0 (message \"Enter a number greater than zero\") but the field is not marked as depending on customer type; the Save error first says only \"Fix the highlighted fields\" while the field is off screen.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S22",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S23",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Demand form QTY validation \"Stock qty\" shows 95 (all channels, all bins, including the 5 returned pieces) for Other Corporate whose own stoc",
+  "summary": "Demand form QTY validation \"Stock qty\" shows 95 (all channels, all bins, including the 5 returned pieces) for Other Corporate whose own stock is 30. Channel stock is not what the check shows.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S23",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S27",
+  "module": "sales",
+  "side": "both",
+  "severity": "medium",
+  "title": "Modern Trade scheme offered and applied to a Retail Food customer in ASE trade offers",
+  "summary": "Scheme \"MT 10% off Item A (10+ units)\" was created for Modern Trade but is offered to a Retail Food customer in the ASE trade-offer list (and applied). Check that the scheme's customer-type targeting is enforced. CONFIRMED: SCH-000001 applicability shows customer type Modern Trade only.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11 (field force ASE)",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S27",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S28",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "ASE demand: status wording differs, no Location for the sales order, deposit slip mandatory",
+  "summary": "ASE success screen says \"sent to BOTM for approval\" and status \"Pending Approval\"; the same demand shows \"Pending Verification\" on the sales screen. Create Sales Order from an ASE demand needs Location, which the ASE flow never sets. Bank deposit slip and deposit amount are both mandatory in ASE (no way to create a demand without paying first).",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11 (field force ASE)",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S28",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S3",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Sales Order form subtitle reads \"Transfer inventory from one location to another\" (copy of the stock transfer text)",
+  "summary": "Sales Order form subtitle reads \"Transfer inventory from one location to another\" (copy of the stock transfer text).",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S3",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S30",
+  "module": "sales",
+  "side": "both",
+  "severity": "medium",
+  "title": "Super Trader slab is a cliff on the whole order (2% -> 4% at 300)",
+  "summary": "Super Trader slab is a cliff on the whole order: order value 297 pays 2% (5.94, total 291.06), value 306 pays 4% (12.24, total 293.76); the customer pays more for a bigger order only on the way into the next band. Needs a business decision (whole-order versus marginal) and a visible hint \"add X to reach 4%\".",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11 (field force ASE)",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S30",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S31",
+  "module": "sales",
+  "side": "both",
+  "severity": "medium",
+  "title": "Unapplied deposit of a rejected demand cannot be refunded (refund starts only from a credit memo)",
+  "summary": "A deposit that belongs to a rejected or cancelled demand cannot be returned: Customer Refunds only starts from a credit memo, so CD-000006 (10) sits in Unearned Revenue with no screen to refund or reassign it. Same for any unapplied deposit.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S31",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S32",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Reject Demand has no confirmation or reason",
+  "summary": "Reject Demand has no confirm dialog and asks no reason, one click on a button that sits where Approve was a moment ago (the buttons move between steps). Rejection is not reversible from the screen.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S32",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S35",
+  "module": "sales",
+  "side": "both",
+  "severity": "medium",
+  "title": "Scheme redemption and budget counters never move, so limits cannot be enforced",
+  "summary": "Scheme counters never move: after SD-000004 (SCH-000001) and SD-000007 (SCH-000002) both schemes still show Total redemptions 0 and Budget used 0. Max redemptions and total budget limits (fields on the form) therefore cannot be enforced.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S35",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S36",
+  "module": "sales",
+  "side": "both",
+  "severity": "medium",
+  "title": "Field collection only becomes an unapplied deposit; ASE shows outstanding 0 and accepts overpay",
+  "summary": "A field collection is not a receipt: approving COL-000001 (200) only creates an unapplied customer deposit, no invoice is settled, yet the ASE screen already shows \"outstanding 0\" and advance 91.2. Overpaying beyond the dues (200 against 108.8) is accepted with no warning.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S36",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S38",
+  "module": "sales",
+  "side": "both",
+  "severity": "medium",
+  "title": "Posted invoice can be edited without approval or lock",
+  "summary": "A posted invoice can be edited by the creator with no approval, lock or reason (reversal + repost is correct, but anyone with edit can change posted revenue; also from 10 to 5 units while the order stays at 10).",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S38",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S4",
+  "module": "sales",
+  "side": "both",
+  "severity": "medium",
+  "title": "Newly created scheme is saved as Draft even though the form has an Active/Draft choice; setting Active on the edit form and saving did not c",
+  "summary": "Newly created scheme is saved as Draft even though the form has an Active/Draft choice; setting Active on the edit form and saving did not change it. It only activates through the toggle in the list (with a confirm). NOTE: a new Promo scheme and a new Cashback scheme saved as Active on first save; the Draft problem was seen on the Discount scheme edit.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S4",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S5",
+  "module": "sales",
+  "side": "both",
+  "severity": "medium",
+  "title": "Demand approval dialog says it will \"create a sales order\", but the demand only becomes Approved; the sales order is a second manual step (C",
+  "summary": "Demand approval dialog says it will \"create a sales order\", but the demand only becomes Approved; the sales order is a second manual step (Create Sales Order).",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S5",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S6",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "medium",
+  "title": "Invoice INV-000001 shows Amount Due 160.00 although a 100 deposit exists for the same order; the deposit is applied only later from the depo",
+  "summary": "Invoice INV-000001 shows Amount Due 160.00 although a 100 deposit exists for the same order; the deposit is applied only later from the deposit page. Receipt form \"Customer balance 60.00\" is the net of invoice 160 and deposit 100, which is not labelled.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S6",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
   "id": "rv-be:sales:1.8",
   "module": "sales",
   "side": "backend",
@@ -17809,6 +18455,108 @@
    "ref": "",
    "date": "2026-11-09"
   }
+ },
+ {
+  "id": "st1111:S18",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "low",
+  "title": "The demand/order summary says \"Discount (VAT exclusive) 0.00\" although the offer price was below the trade price (TP 7 vs 8)",
+  "summary": "The demand/order summary says \"Discount (VAT exclusive) 0.00\" although the offer price was below the trade price (TP 7 vs 8): an offer-price discount is not recognised as a discount.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S18",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S24",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Retail channels are visible but greyed in Customer Type on `/sales-demand/demand-order/new` (they go through Field Force ASE)",
+  "summary": "Retail channels are visible but greyed in Customer Type on `/sales-demand/demand-order/new` (they go through Field Force ASE). Pricing schemes and trade discounts (S1) therefore cannot be tested from this module at all.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S24",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S33",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Credit-limit override disabled without explanation; creator can authorise own override",
+  "summary": "Credit-limit Request Override is disabled with only a hover title; the screen never says \"verify the deposit and confirm quantities first\". The override can be authorised by the creator (maker = checker, as in B13).",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S33",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S34",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Deposit application silently cuts an over-typed amount to the unused deposit",
+  "summary": "Deposit Application accepts an amount above the unused deposit and silently applies the unused amount (80 typed, 50 applied) instead of showing an error.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S34",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S37",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "low",
+  "title": "IMS upload says success when 0 items were updated",
+  "summary": "IMS upload reports success when 0 items were updated (nothing to match); the screen does not say why (no delivered products).",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S37",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
+ },
+ {
+  "id": "st1111:S7",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Receipt form defaults the customer to the first one alphabetically (RPL Corporate Customer), not empty",
+  "summary": "Receipt form defaults the customer to the first one alphabetically (RPL Corporate Customer), not empty.",
+  "status": "open",
+  "status_evidence": "reproduced in the browser, sales test 2026-11-11",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S7",
+  "refs": [],
+  "size": "",
+  "theme": "Sales segment",
+  "set": "sales-test-2026-11-11"
  },
  {
   "id": "e2e27:4",

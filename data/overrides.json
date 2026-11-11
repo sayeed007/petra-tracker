@@ -3001,9 +3001,9 @@
  },
  "rv-fe:accounting:44": {
   "status": "in-progress",
-  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] reconciliation history pages server-side (size<=100); approval queue not changed",
-  "ref": "feat/backend-accounting-alignment",
-  "date": "2026-11-09"
+  "note": "Reconciliation history was already paged; the approval queue reads its pages 4 at a time but still filters 'mine' on the client because the backend has no such filter. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "efea7ab2",
+  "date": "2026-11-11"
  },
  "vqa:fa-form-fields": {
   "status": "in-progress",
@@ -3054,10 +3054,10 @@
   "date": "2026-11-09"
  },
  "rv-fe:accounting:37": {
-  "status": "in-progress",
-  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] best-guess fix, not reproduced",
-  "ref": "feat/backend-accounting-alignment",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Already fixed on this branch before the round: NONE method allows life 0 (batch-form refine); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "509183bf",
+  "date": "2026-11-11"
  },
  "rv-fe:accounting:41": {
   "status": "fixed-per-log",
@@ -3066,10 +3066,10 @@
   "date": "2026-11-09"
  },
  "rv-fe:accounting:48": {
-  "status": "in-progress",
-  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] 50-asset cap fixed by readAllPages; one extra preview call remains",
-  "ref": "feat/backend-accounting-alignment",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Close panel: preview asked once for a posted month; the class asset list has Previous/Next (50 per page); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "efea7ab2",
+  "date": "2026-11-11"
  },
  "rv-fe:accounting:5": {
   "status": "fixed-per-log",
@@ -3079,9 +3079,9 @@
  },
  "rv-fe:accounting:58": {
   "status": "in-progress",
-  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] journal validation tests added; other posting forms still untested",
-  "ref": "feat/backend-accounting-alignment",
-  "date": "2026-11-09"
+  "note": "journals/schema tests already existed (incl. 100.00004); party-ledger netting extracted and tested (6 tests); bank-reconciliation difference and period-close gating still have none. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "12edcc97",
+  "date": "2026-11-11"
  },
  "rv-fe:accounting:24": {
   "status": "fixed-per-log",
@@ -3253,5 +3253,107 @@
   "ref": "",
   "date": "2026-11-10",
   "module": "dashboard"
+ },
+ "rv-fe:accounting:26": {
+  "status": "fixed",
+  "note": "Bank register and cash statement now validate the URL account against the report's type and book (the other views already did); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "2b2c3415..509183bf",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:39": {
+  "status": "fixed",
+  "note": "Opening-balance state is read once for the checklist and the section (shared 5 s promise in the tab), the facade caps pages and errors beyond the cap, status filter uppercased; getOpeningBalance removed; branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "9e4688f0",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:42": {
+  "status": "fixed",
+  "note": "accountCount/totalBudgeted are gone from the budget list mapper and type; branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "509183bf",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:43": {
+  "status": "fixed",
+  "note": "General Ledger and Voucher Register read pages 4 at a time in order, both capped at 20 pages with the narrow-the-dates message; branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "94072758",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:45": {
+  "status": "fixed",
+  "note": "Chart list: chart and cost centres follow the status filter, balances follow the month, rows are derived; stale balances cleared on month change; branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "13d52133",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:46": {
+  "status": "fixed",
+  "note": "Budget variance already skips a read it has (loadedFor); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "509183bf",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:47": {
+  "status": "fixed",
+  "note": "descendantAccountIds builds the child map once per chart (WeakMap); tree tests pass; branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "94072758",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:51": {
+  "status": "fixed",
+  "note": "COST_CENTERS_ENABLED defined once in features/accounting/config.ts; settings nav and asset transfer dialog follow it (other pickers already did); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "12edcc97",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:52": {
+  "status": "fixed",
+  "note": "Dashboard mock facade and getDashboardGettingStarted removed, chart JSDoc moved (branches and getJournalPartyNames were already gone); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "2b2c3415",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:54": {
+  "status": "fixed",
+  "note": "SKU, GL and the screen code now come from messages (en, bn); journals path from the config constant; Tk/BDT literals were already gone; branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "2b2c3415",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:55": {
+  "status": "fixed",
+  "note": "One features/accounting/config.ts for the settings and financial-year paths, asset-type option lists reuse the depreciation ones (dead budget/report exports were already gone); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "2b2c3415",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:56": {
+  "status": "fixed",
+  "note": "chart-of-accounts.css no longer exists; branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "509183bf",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:16": {
+  "status": "in-progress",
+  "note": "(a) Budget vs Actual says when nothing falls in the range and (d) the setup checklist says when it could not load, with retry: done. (b) and (c) only matter once financial-year writes are switched on (item 50). branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "3f9592df",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:40": {
+  "status": "in-progress",
+  "note": "The Customer Ledger remembers the limits it has read for a minute so a date change does not rescan the customer list; the real fix is a batch endpoint or creditLimit on the ledger report (backend). branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "9e4688f0",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:53": {
+  "status": "in-progress",
+  "note": "Journal form and detail no longer show the always-1 exchange rate, one StockValuationMethod type; the exchange-rate fields in purchase, inventory and chart types remain. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "509183bf",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:57": {
+  "status": "in-progress",
+  "note": "Document delete now confirms, literal blue replaced by the info token; most other tidy-ups were already done; a few (payslip sub-columns, batch upload concurrency, rowKey) were not re-checked. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "ref": "12edcc97",
+  "date": "2026-11-11"
+ },
+ "rv-fe:accounting:50": {
+  "status": "decision",
+  "note": "Needs the decision in the review: delete the ~1,500 lines of dead financial-year write UI (Period Closing owns it) or drive the flag from a permission or setting. Not touched.",
+  "ref": "",
+  "date": "2026-11-11"
  }
 }
