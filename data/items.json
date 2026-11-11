@@ -12937,15 +12937,19 @@
   "severity": "medium",
   "title": "Voucher Register footer TOTAL adds every voucher type (2,050.00)",
   "summary": "Backend sends one totalAmount across purchase, bank payment and journal vouchers, counting the same money twice; frontend prints it as TOTAL without a label. Quickest fix: hide it for All types or show per type. Repro: /reports/financial/voucher-register.",
-  "status": "open",
-  "status_evidence": "reproduced in the browser, purchase test 2026-11-10",
+  "status": "fixed",
+  "status_evidence": "Frontend: the Voucher Register footer total is removed (decided 2026-11-11), branch fix/accounting-fe-review-items. The backend still sends one totalAmount over every type; the register's PDF/Excel export is built by the backend and was not checked for a total row. Not browser-tested.",
   "evidence_level": "verified",
   "found": "2026-11-10",
   "source": "TEST-OBSERVATIONS-2026-11-10.md A3",
   "refs": [],
   "size": "",
   "theme": "Accounting segment (accounting developer)",
-  "set": "purchase-test-2026-11-10"
+  "set": "purchase-test-2026-11-10",
+  "checked": {
+   "ref": "",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-be:reports:10",
