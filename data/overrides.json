@@ -3373,5 +3373,11 @@
   "note": "Branch fix/accounting-fe-review-items, commit 2594d847; typecheck and lint, not browser-tested. The General Ledger and ledger views already link their Document No to the journal entry.",
   "ref": "2594d847",
   "date": "2026-11-11"
+ },
+ "req:vr-sort": {
+  "status": "fixed",
+  "note": "Branch fix/accounting-fe-review-items; sort logic in voucher-sort.ts with 5 unit tests; typecheck and lint, not browser-tested.",
+  "ref": "",
+  "date": "2026-11-11"
  }
 }

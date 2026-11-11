@@ -94,5 +94,21 @@
     "refs": [],
     "size": "",
     "theme": "Reports"
+  },
+  {
+    "id": "req:vr-sort",
+    "module": "reports",
+    "side": "frontend",
+    "severity": "low",
+    "title": "Voucher Register: latest voucher on top, sortable columns",
+    "summary": "The register listed vouchers in the order the backend sent them. It now opens newest first (date, then entry id) and the Date, Voucher No, Voucher Type, Document No and Amount columns sort, because the whole window is already loaded into one list. Requested 2026-11-11.",
+    "status": "open",
+    "status_evidence": "requested by the user 2026-11-11",
+    "evidence_level": "verified",
+    "found": "2026-11-11",
+    "source": "user request",
+    "refs": [],
+    "size": "",
+    "theme": "Reports"
   }
 ]
