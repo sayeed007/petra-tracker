@@ -13474,6 +13474,27 @@
   }
  },
  {
+  "id": "req:vr-document-link",
+  "module": "reports",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Voucher Register: Document No is plain text, it should open the document",
+  "summary": "The Document No column of the Voucher Register showed text only. It now opens the document behind the voucher through the same source-document path the journal detail uses (vendor bill, payment, prepayment, return, bill credit, invoice, receipt, deposit, sales return, credit memo, refund, fixed asset, petty cash); kinds with no screen stay plain text. Requested 2026-11-11.",
+  "status": "fixed",
+  "status_evidence": "Branch fix/accounting-fe-review-items, commit 2594d847; typecheck and lint, not browser-tested. The General Ledger and ledger views already link their Document No to the journal entry.",
+  "evidence_level": "verified",
+  "found": "2026-11-11",
+  "source": "user request",
+  "refs": [],
+  "size": "",
+  "theme": "Reports",
+  "set": "requests-2026-11",
+  "checked": {
+   "ref": "2594d847",
+   "date": "2026-11-11"
+  }
+ },
+ {
   "id": "rv-be:reports:1",
   "module": "reports",
   "side": "backend",

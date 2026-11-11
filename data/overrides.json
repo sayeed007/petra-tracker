@@ -3367,5 +3367,11 @@
   "note": "Frontend: the Voucher Register footer total is removed (decided 2026-11-11), branch fix/accounting-fe-review-items. The backend still sends one totalAmount over every type; the register's PDF/Excel export is built by the backend and was not checked for a total row. Not browser-tested.",
   "ref": "",
   "date": "2026-11-11"
+ },
+ "req:vr-document-link": {
+  "status": "fixed",
+  "note": "Branch fix/accounting-fe-review-items, commit 2594d847; typecheck and lint, not browser-tested. The General Ledger and ledger views already link their Document No to the journal entry.",
+  "ref": "2594d847",
+  "date": "2026-11-11"
  }
 }
