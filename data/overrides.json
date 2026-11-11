@@ -3355,5 +3355,11 @@
   "note": "Decided 2026-11-11: keep the financial-year write UI and the FINANCIAL_YEAR_WRITE_ENABLED=false flag as they are for now. Revisit when Period Closing scope is settled.",
   "ref": "",
   "date": "2026-11-11"
+ },
+ "rv-fe:accounting:59": {
+  "status": "in-progress",
+  "note": "Component size: accounting-report-views.tsx (2,795 lines) split into 8 files, code moved unchanged (branch fix/accounting-fe-review-items, commit 4a9e942). Decided 2026-11-11: files under 1,000 lines are acceptable, so the other large components are left. Still open: the unsafe `as unknown as Resolver` casts (9 accounting forms, 50+ in the app), three bare eslint-disable lines, and the two loading patterns.",
+  "ref": "4a9e942",
+  "date": "2026-11-11"
  }
 }

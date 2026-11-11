@@ -2921,8 +2921,8 @@
   "severity": "low",
   "title": "Very large components, two loading patterns, and unsafe resolver casts",
   "summary": "",
-  "status": "open",
-  "status_evidence": "listed in the review work plan; not re-checked",
+  "status": "in-progress",
+  "status_evidence": "Component size: accounting-report-views.tsx (2,795 lines) split into 8 files, code moved unchanged (branch fix/accounting-fe-review-items, commit 4a9e942). Decided 2026-11-11: files under 1,000 lines are acceptable, so the other large components are left. Still open: the unsafe `as unknown as Resolver` casts (9 accounting forms, 50+ in the app), three bare eslint-disable lines, and the two loading patterns.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2933,7 +2933,11 @@
   ],
   "size": "L",
   "theme": "",
-  "set": "review-fe"
+  "set": "review-fe",
+  "checked": {
+   "ref": "4a9e942",
+   "date": "2026-11-11"
+  }
  },
  {
   "id": "rv-fe:accounting:6",
