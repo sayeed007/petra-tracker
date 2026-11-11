@@ -446,5 +446,37 @@
     "refs": [],
     "size": "",
     "theme": "Sales segment"
+  },
+  {
+    "id": "st1111:S29",
+    "module": "inventory",
+    "side": "both",
+    "severity": "high",
+    "title": "Demand taken, paid and approved above channel stock; only fulfilment refuses and quantity cannot be reduced",
+    "summary": "A demand can be taken, paid and approved for more than the channel stock. ASE screen has no stock cap (34 units against 20 in Retail Stationary), coordination \"Stock qty\" shows 50 (all channels) and passes, the deposit of 100 is already booked, and only Item Fulfillment refuses. The fulfilment Qty box is read-only, so the 20 that exist cannot be shipped either; the order is stuck.",
+    "status": "open",
+    "status_evidence": "reproduced in the browser, sales test 2026-11-11 (field force ASE)",
+    "evidence_level": "verified",
+    "found": "2026-11-11",
+    "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S29",
+    "refs": [],
+    "size": "",
+    "theme": "Inventory segment"
+  },
+  {
+    "id": "st1111:S30",
+    "module": "sales",
+    "side": "both",
+    "severity": "medium",
+    "title": "Super Trader slab is a cliff on the whole order (2% -> 4% at 300)",
+    "summary": "Super Trader slab is a cliff on the whole order: order value 297 pays 2% (5.94, total 291.06), value 306 pays 4% (12.24, total 293.76); the customer pays more for a bigger order only on the way into the next band. Needs a business decision (whole-order versus marginal) and a visible hint \"add X to reach 4%\".",
+    "status": "open",
+    "status_evidence": "reproduced in the browser, sales test 2026-11-11 (field force ASE)",
+    "evidence_level": "verified",
+    "found": "2026-11-11",
+    "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S30",
+    "refs": [],
+    "size": "",
+    "theme": "Sales segment"
   }
 ]
