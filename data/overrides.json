@@ -2160,10 +2160,10 @@
   "date": "2026-11-09"
  },
  "rv-fe:purchase:3.5": {
-  "status": "still-bug",
-  "note": "Status gates added for prepayment, payment, bill-credit edit routes and receipt/PO links, but vendor-bill/[id]/edit and proforma-invoice/[id]/edit pages open the form for any status; PO list Edit link ignores permission. | Repro: Open the vendor-bill edit URL of an approved bill by typing it: full edit form opens instead of redirecting to detail.",
-  "ref": "a03704c99",
-  "date": "2026-11-09"
+  "status": "in-progress",
+  "note": "Partly addressed by merge request feature/purchase-complete (not merged yet): the LC list now shows Edit only for a pending LC, Purchase Order Cancel only while pending approval. Still open: item receipt list, vendor prepayment, proforma and vendor bill edit routes and links (permission or status). Reviewed 2026-11-12, typecheck and lint clean.",
+  "ref": "b0567e42",
+  "date": "2026-11-12"
  },
  "rv-fe:purchase:3.6": {
   "status": "fixed",
