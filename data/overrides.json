@@ -3158,18 +3158,6 @@
   "ref": "509183bf",
   "date": "2026-11-11"
  },
- "rv-fe:accounting:16": {
-  "status": "in-progress",
-  "note": "(a) Budget vs Actual says when nothing falls in the range and (d) the setup checklist says when it could not load, with retry: done. (b) and (c) only matter once financial-year writes are switched on (item 50). branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
-  "ref": "3f9592df",
-  "date": "2026-11-11"
- },
- "rv-fe:accounting:57": {
-  "status": "in-progress",
-  "note": "Document delete now confirms, literal blue replaced by the info token; most other tidy-ups were already done; a few (payslip sub-columns, batch upload concurrency, rowKey) were not re-checked. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
-  "ref": "12edcc97",
-  "date": "2026-11-11"
- },
  "rv-fe:accounting:50": {
   "status": "decision",
   "note": "Decided 2026-11-11: keep the financial-year write UI and the FINANCIAL_YEAR_WRITE_ENABLED=false flag as they are for now. Revisit when Period Closing scope is settled.",

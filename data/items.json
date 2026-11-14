@@ -2822,8 +2822,8 @@
   "severity": "low",
   "title": "Smaller \"empty or wrong message\" cases",
   "summary": "Some screens showed an empty or wrong message when data was missing or a request failed: Budget vs Actual with no rows, a failed month lock, financial-year detail before months load, and the setup panel when the book read fails. Users could read an error as 'no data'.",
-  "status": "in-progress",
-  "status_evidence": "(a) Budget vs Actual says when nothing falls in the range and (d) the setup checklist says when it could not load, with retry: done. (b) and (c) only matter once financial-year writes are switched on (item 50). branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "status": "decision",
+  "status_evidence": "Done for every screen that exists today. Items (b) and (c) only matter once financial-year writes are switched on (tracker item 50); reopen them then.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2837,8 +2837,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "3f9592df",
-   "date": "2026-11-11"
+   "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Open Banking/Budgeting > Budget vs Actual for a range with no data.",
@@ -3803,8 +3803,8 @@
   "severity": "low",
   "title": "Small tidy-ups in budgets, charts, journals, payroll, fixed assets",
   "summary": "A list of small tidy-ups across budgets, charts, journals, payroll and fixed assets, such as a one-click document delete, a literal colour and sequential uploads.",
-  "status": "in-progress",
-  "status_evidence": "Document delete now confirms, literal blue replaced by the info token; most other tidy-ups were already done; a few (payslip sub-columns, batch upload concurrency, rowKey) were not re-checked. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "status": "fixed",
+  "status_evidence": "Checked 2026-11-14: the document delete already asks for confirmation, no literal colour is left in src/features/accounting, and parallel uploads would not help because client server actions already run one at a time. Nothing left to change.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -3816,8 +3816,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "12edcc97",
-   "date": "2026-11-11"
+   "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Fixed Assets > asset > Documents > delete a file."
