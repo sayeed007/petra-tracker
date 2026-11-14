@@ -1,0 +1,116 @@
+{
+ "e2e:accounting:vat-settle-paid-from": {
+  "status": "fixed",
+  "note": "Paid-from field, picker and false text removed from vat-return-detail-view.tsx; only settledDate is sent (the backend DTO has only settledDate). ACC-11-04 asserts no 'paid from' text and passes in the accounting run of 2026-11-14.",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "vqa:contra-reject-comment": {
+  "status": "fixed",
+  "note": "contra-voucher-form-modal.tsx shows who rejected a draft contra and the comment (latestJournalRejection). Not browser-tested.",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:accounting:14": {
+  "status": "fixed",
+  "note": "fixed-assets-panel.tsx, inventory-panel.tsx and map-step.tsx show fixed translated sentences, no raw backend reason text.",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:accounting:18": {
+  "status": "fixed",
+  "note": "Remove button in sales-mapping-section.tsx wrapped in AccessGuard for ACCOUNTING_SETTING_DELETE (the backend delete endpoints use accounting.setting.delete).",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:accounting:25": {
+  "status": "fixed",
+  "note": "trial-balance-view.tsx optionsReady flag: one request on open.",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:accounting:32": {
+  "status": "fixed",
+  "note": "vat-panel.tsx, inventory-panel.tsx and fixed-assets-panel.tsx run()/post() use try/catch/finally: busy state released, error shown.",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:accounting:5": {
+  "status": "fixed",
+  "note": "fixed-assets/schema.ts: roundMoney refine on disposalProceeds.",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:accounting:9": {
+  "status": "fixed",
+  "note": "accounting-books/index.ts wraps the primary-book read in React cache(): one read per request, errors never cached.",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:accounting:40": {
+  "status": "fixed",
+  "note": "customer-ledger/index.ts getCustomerCreditLimits sends one id-IN filter in parallel chunks of 200 (backend DomainService turns an array value into IN). Not tested against a live backend.",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:accounting:58": {
+  "status": "fixed",
+  "note": "Tests added: period-close gating (period-end/close-gating.ts) and bank-reconciliation history difference (bank-cash/history-row.ts).",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:accounting:59": {
+  "status": "fixed",
+  "note": "The nine resolver casts replaced by one typed helper src/shared/utils/zod-resolver.ts; one documented cast remains inside it. Large components deliberately not split (owner: 1000 lines is fine).",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:accounting:31": {
+  "status": "in-progress",
+  "note": "The toggle now re-reads the record before the PUT (bank-account-root.tsx), which narrows the stale-data window. The backend has no status-only endpoint, so the PUT is still a full replace; fully fixing it needs a backend status endpoint.",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:accounting:41": {
+  "status": "still-bug",
+  "note": "Needs an owner decision: backend GET /api/accounting/fixed-assets has paging and status/assetTypeId/vendorId filters but no name or code search, so the duplicate-name shortcut and the disposal select still need the whole non-disposed list. Options: ask the backend for a search parameter, or drop the shortcut and use an async server search for disposal.",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:accounting:44": {
+  "status": "still-bug",
+  "note": "Needs a backend change: no server-side 'mine' filter for the approval queue (the reconciliation history is already paged).",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "pt1110:B7": {
+  "status": "decision",
+  "note": "Owner decision 2026-11-14: leave as is. Polling would cost up to ~10 requests per open tab and users know posting is asynchronous and refresh the page.",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:accounting:53": {
+  "status": "decision",
+  "note": "Owner decision 2026-11-14: keep the exchange-rate fields and currency types; international purchasing from PO to Bill can be in USD.",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "st1111:S14": {
+  "status": "decision",
+  "note": "Owner decision 2026-11-14: this is business logic, no change now.",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "st1111:S2": {
+  "status": "decision",
+  "note": "Owner decision 2026-11-14: on hold, needs a team discussion (VAT shown vs VAT and AIT posted).",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "st1111:S17": {
+  "status": "decision",
+  "note": "Owner decision 2026-11-14: freezing stock after picking is a backend matter; business does not want stock frozen at the sales order.",
+  "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ }
+}

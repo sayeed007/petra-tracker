@@ -2981,12 +2981,6 @@
   "ref": "release_beta_copy@e9a75ca2b",
   "date": "2026-11-09"
  },
- "rv-fe:accounting:44": {
-  "status": "in-progress",
-  "note": "Reconciliation history was already paged; the approval queue reads its pages 4 at a time but still filters 'mine' on the client because the backend has no such filter. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
-  "ref": "efea7ab2",
-  "date": "2026-11-11"
- },
  "vqa:fa-form-fields": {
   "status": "in-progress",
   "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] Serial, Location, Custodian added; Cost centre still hidden by COST_CENTERS_ENABLED=false",
@@ -3010,18 +3004,6 @@
   "note": "Close panel: preview asked once for a posted month; the class asset list has Previous/Next (50 per page); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
   "ref": "efea7ab2",
   "date": "2026-11-11"
- },
- "rv-fe:accounting:58": {
-  "status": "in-progress",
-  "note": "journals/schema tests already existed (incl. 100.00004); party-ledger netting extracted and tested (6 tests); bank-reconciliation difference and period-close gating still have none. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
-  "ref": "12edcc97",
-  "date": "2026-11-11"
- },
- "vqa:contra-reject-comment": {
-  "status": "in-progress",
-  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] comment shows on journal detail; contra modal unchanged",
-  "ref": "feat/backend-accounting-alignment",
-  "date": "2026-11-09"
  },
  "rv-fe:reports:5": {
   "status": "decision",
@@ -3182,18 +3164,6 @@
   "ref": "3f9592df",
   "date": "2026-11-11"
  },
- "rv-fe:accounting:40": {
-  "status": "in-progress",
-  "note": "The Customer Ledger remembers the limits it has read for a minute so a date change does not rescan the customer list; the real fix is a batch endpoint or creditLimit on the ledger report (backend). branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
-  "ref": "9e4688f0",
-  "date": "2026-11-11"
- },
- "rv-fe:accounting:53": {
-  "status": "in-progress",
-  "note": "Journal form and detail no longer show the always-1 exchange rate, one StockValuationMethod type; the exchange-rate fields in purchase, inventory and chart types remain. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
-  "ref": "509183bf",
-  "date": "2026-11-11"
- },
  "rv-fe:accounting:57": {
   "status": "in-progress",
   "note": "Document delete now confirms, literal blue replaced by the info token; most other tidy-ups were already done; a few (payslip sub-columns, batch upload concurrency, rowKey) were not re-checked. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
@@ -3204,12 +3174,6 @@
   "status": "decision",
   "note": "Decided 2026-11-11: keep the financial-year write UI and the FINANCIAL_YEAR_WRITE_ENABLED=false flag as they are for now. Revisit when Period Closing scope is settled.",
   "ref": "",
-  "date": "2026-11-11"
- },
- "rv-fe:accounting:59": {
-  "status": "in-progress",
-  "note": "Component size: accounting-report-views.tsx (2,795 lines) split into 8 files, code moved unchanged (branch fix/accounting-fe-review-items, commit 4a9e942). Decided 2026-11-11: files under 1,000 lines are acceptable, so the other large components are left. Still open: the unsafe `as unknown as Resolver` casts (9 accounting forms, 50+ in the app), three bare eslint-disable lines, and the two loading patterns.",
-  "ref": "4a9e942",
   "date": "2026-11-11"
  },
  "pt1110:A3": {

@@ -192,8 +192,8 @@
   "severity": "high",
   "title": "Credit Memo lets the user change the VAT rate and the backend accepts it",
   "summary": "When a credit memo is created, the user can type any VAT rate and the backend stores and posts it. A memo for goods sold at 15.8% was saved at 25%, so Output VAT was reversed by too much (about 3.49 on a 40.00 return) and the sales-return and receivable lines no longer match the original invoice.",
-  "status": "still-bug",
-  "status_evidence": "Frontend: credit-memo-create-items-table.tsx l.213-226 still renders the VAT rate as an editable input. Backend: CreditMemoMapper.toRefundLineEntity l.101 uses dto.getTaxRate() when sent and CreditMemoService does not compare it with the return line's rate. Both halves are visible in code.",
+  "status": "decision",
+  "status_evidence": "Owner decision 2026-11-14: this is business logic, no change now.",
   "evidence_level": "verified",
   "found": "2026-11-11",
   "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S14",
@@ -202,8 +202,8 @@
   "theme": "Accounting segment (accounting developer)",
   "set": "sales-test-2026-11-11",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15; backend deployment/dev@b2597ef11",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Create and approve a sales invoice with VAT, then a sales return for it.",
@@ -224,8 +224,8 @@
   "severity": "high",
   "title": "VAT shown is not the VAT posted",
   "summary": "Sales document screens show one combined 'VAT 15.8% = 25.28' for a Modern Trade line, but the books get Output VAT 24.00 (15%) and the remaining 1.28 is AIT (advance income tax, 0.8%), which stays inside Sales revenue because no AIT account is mapped. So the VAT a user sees is not the VAT posted.",
-  "status": "open",
-  "status_evidence": "open, partly by design: the invoice line keeps tax_amount 25.28 = vat_amount 24.00 + ait_amount 1.28 (SalesTax.vatPart/aitPart, e.g. CreditMemoMapper l.111-112); the posted journal takes only the VAT part. AccountingBaseSeeder (l.265) leaves SALES_AIT_ACCOUNT_ID unset so AIT folds into revenue; AccountingDevSeeder (l.438-469) now maps it for dev. The screens still label the whole 15.8% as 'VAT'.",
+  "status": "decision",
+  "status_evidence": "Owner decision 2026-11-14: on hold, needs a team discussion (VAT shown vs VAT and AIT posted).",
   "evidence_level": "verified",
   "found": "2026-11-11",
   "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S2",
@@ -234,8 +234,8 @@
   "theme": "Accounting segment (accounting developer)",
   "set": "sales-test-2026-11-11",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15; backend deployment/dev@b2597ef11",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Create a Modern Trade sales demand with a 160.00 line and carry it to an invoice.",
@@ -336,12 +336,12 @@
   ],
   "verify": "Remove the 'Paid from' field and the money-leaves-account text (or send and use the account); ACC-11-04 asserts what the backend books.",
   "owner": "Frontend (Accounting)",
-  "status": "open",
-  "status_evidence": "Found by the e2e refresh 2026-11-14: ACC-11-04 now asserts the booked entry; the dialog text was read on screen.",
+  "status": "fixed",
+  "status_evidence": "Paid-from field, picker and false text removed from vat-return-detail-view.tsx; only settledDate is sent (the backend DTO has only settledDate). ACC-11-04 asserts no 'paid from' text and passes in the accounting run of 2026-11-14.",
   "evidence_level": "verified",
   "found": "2026-11-14",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15 + deployment/dev@b2597ef11",
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
    "date": "2026-11-14"
   },
   "refs": [
@@ -545,8 +545,8 @@
   "severity": "medium",
   "title": "GL Impact tab says 'Not posted yet' and never refreshes; posting takes 5-15 s",
   "summary": "Purchase documents post to accounting asynchronously (outbox, message broker), which takes 5-15 seconds. The GL Impact tab shows 'not posted yet' during that time and never refreshes, so a transaction looks missing until the page is reloaded.",
-  "status": "open",
-  "status_evidence": "open: SalesDocumentPosting (features/sales/shared/sales-document-posting.tsx l.44-51), used by vendor-bill-detail-tabs.tsx l.471-474, now distinguishes FAILED / WAITING / not posted but never refetches or polls; posting is asynchronous so the tab can say 'Not posted' for 5-15 s.",
+  "status": "decision",
+  "status_evidence": "Owner decision 2026-11-14: leave as is. Polling would cost up to ~10 requests per open tab and users know posting is asynchronous and refresh the page.",
   "evidence_level": "verified",
   "found": "2026-11-10",
   "source": "TEST-OBSERVATIONS-2026-11-10.md B7",
@@ -555,8 +555,8 @@
   "theme": "Accounting segment (accounting developer)",
   "set": "purchase-test-2026-11-10",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15; backend deployment/dev@b2597ef11",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Approve a vendor bill.",
@@ -1771,8 +1771,8 @@
   "severity": "medium",
   "title": "Sales journals carry no COGS or stock entry (Periodic valuation, expected), but the stock quantities also do not move (S10), so neither the ",
   "summary": "After a sale is invoiced and shipped, neither the books (no cost of goods sold, expected under Periodic valuation) nor the stock card show the sale, because stock quantities do not move on dispatch (S10). Sales returns also post to the single Sales Return account rather than the sales channel's revenue account.",
-  "status": "open",
-  "status_evidence": "open, depends on S10 (inventory): no COGS in Periodic valuation is expected; the open part is that dispatch does not reduce stock (see sales/inventory findings). Sales Return uses the global SALES_RETURN_ACCOUNT_ID setting (AccountingBaseSeeder l.162), so it posts to 4900 by design, not to the channel account 4114. Not re-tested here.",
+  "status": "decision",
+  "status_evidence": "Owner decision 2026-11-14: freezing stock after picking is a backend matter; business does not want stock frozen at the sales order.",
   "evidence_level": "verified",
   "found": "2026-11-11",
   "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S17",
@@ -1781,8 +1781,8 @@
   "theme": "Accounting segment (accounting developer)",
   "set": "sales-test-2026-11-11",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15; backend deployment/dev@b2597ef11",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Dispatch an invoiced sale (IF-000001, 20 pcs).",
@@ -2788,8 +2788,8 @@
   "severity": "low",
   "title": "Close panels show backend `unavailableReason`, `cannotPostReason`, and wizard `reason` text raw",
   "summary": "Month-end close panels used to print backend text such as 'The Sales module could not be read: <exception>' in a warning banner. The unavailable banners are now a fixed translated sentence, but a few reason fields and the reconciliation wizard's problem reasons are still shown as sent by the backend (English only, unsanitised).",
-  "status": "in-progress",
-  "status_evidence": "partly fixed: the close panels (documents-panel l.74-75, bank-cash-panel l.22-23, general-ledger-panel l.48) now show the fixed t('close.unavailable') instead of unavailableReason. Still raw backend text: fixed-assets-panel.tsx l.466-468 and inventory-panel.tsx l.548,579 (cannotPostReason/lockedReason) and map-step.tsx l.268 (problem.reason).",
+  "status": "fixed",
+  "status_evidence": "fixed-assets-panel.tsx, inventory-panel.tsx and map-step.tsx show fixed translated sentences, no raw backend reason text.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2801,8 +2801,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Open Accounting > Period Closing > a month > Fixed Assets with a blocked depreciation post.",
@@ -2857,8 +2857,8 @@
   "severity": "low",
   "title": "Mapping sections use EDIT for create and delete; a removed override is not confirmed",
   "summary": "The ledger-mapping settings let a user with only the edit permission queue creates and deletes, which the backend then refuses row by row. Removing an override changes where new invoices post, so it must be confirmed.",
-  "status": "in-progress",
-  "status_evidence": "Removal now counts in the confirm: sales-mapping.ts ~l.126-132 pushes removed rows into plan.changedStored. Not fixed: the Remove button (sales-mapping-section.tsx ~l.347-353) is gated only by ACCOUNTING_SETTING_EDIT, not a delete permission; purchase mapping not re-read.",
+  "status": "fixed",
+  "status_evidence": "Remove button in sales-mapping-section.tsx wrapped in AccessGuard for ACCOUNTING_SETTING_DELETE (the backend delete endpoints use accounting.setting.delete).",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -2869,8 +2869,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Log in as a user with accounting.setting edit but not delete.",
@@ -3051,8 +3051,8 @@
   "severity": "low",
   "title": "Trial Balance: book switch keeps the old \"End of\" option; two requests on open",
   "summary": "On the Trial Balance, after choosing 'Last Quarter' and then another book the report used old option dates. That is fixed. On first open two report requests are sent (one for the preset, one when the period options arrive); this is a small waste, not a wrong result.",
-  "status": "in-progress",
-  "status_evidence": "Book switch part is fixed: applyBook calls setOptionKey('') (trial-balance-view.tsx:225-237). The double request on open remains: the report effect (lines 151-194) runs once on the preset period and again when the options effect (94-125) sets optionKey, so two requests go out.",
+  "status": "fixed",
+  "status_evidence": "trial-balance-view.tsx optionsReady flag: one request on open.",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -3063,7 +3063,7 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
    "date": "2026-11-14"
   },
   "steps": [
@@ -3171,7 +3171,7 @@
   "title": "Bank-account status switch sends a full replace from the list row",
   "summary": "Toggling a bank account active/inactive sends a full replace of name, number, branch and opening balance taken from the list as loaded, so edits made by someone else in the meantime are lost.",
   "status": "in-progress",
-  "status_evidence": "Double click fixed: bank-account-root.tsx ~l.39-76 keeps a pendingToggles set. Still open: the PUT body is built from the list row (toBankAccountWritePayload(row ...)), so another user's edit is overwritten.",
+  "status_evidence": "The toggle now re-reads the record before the PUT (bank-account-root.tsx), which narrows the stale-data window. The backend has no status-only endpoint, so the PUT is still a full replace; fully fixing it needs a backend status endpoint.",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -3182,8 +3182,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Edit the account name in tab 2.",
@@ -3202,8 +3202,8 @@
   "severity": "low",
   "title": "Busy state is not released when a server action rejects",
   "summary": "If a server action throws (network drop, deploy mismatch) the buttons stay in loading state and the user cannot tell whether the post happened.",
-  "status": "in-progress",
-  "status_evidence": "Fixed in fixed-assets-panel.tsx (l.109), period-closing-list.tsx, vat-return-*.tsx, year-end-closing-workspace.tsx (l.158) with try/finally. Still bare: close/vat-panel.tsx run() (~l.51-57) and close/inventory-panel.tsx run() (~l.150-165) call setBusy(false) after await with no finally.",
+  "status": "fixed",
+  "status_evidence": "vat-panel.tsx, inventory-panel.tsx and fixed-assets-panel.tsx run()/post() use try/catch/finally: busy state released, error shown.",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -3214,8 +3214,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Accounting > Period Closing > VAT step or Inventory step.",
@@ -3384,8 +3384,8 @@
   "severity": "low",
   "title": "Customer ledger scans the customer list to find credit limits",
   "summary": "The Customer Ledger finds each customer's credit limit by paging through the customer list after the report loads, up to 10 pages of 200. This is a slow second step and a failure silently removes the credit-limit column. A short cache reduces repeats but the scan remains.",
-  "status": "in-progress",
-  "status_evidence": "The Customer Ledger remembers the limits it has read for a minute so a date change does not rescan the customer list; the real fix is a batch endpoint or creditLimit on the ledger report (backend). branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "status": "fixed",
+  "status_evidence": "customer-ledger/index.ts getCustomerCreditLimits sends one id-IN filter in parallel chunks of 200 (backend DomainService turns an array value into IN). Not tested against a live backend.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -3396,8 +3396,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "9e4688f0",
-   "date": "2026-11-11"
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Accounting > Customer Ledger, open devtools Network.",
@@ -3420,7 +3420,7 @@
   "title": "Fixed-asset pages download the whole asset register",
   "summary": "'New asset' downloads every asset just to build a duplicate-name shortcut, and 'Asset disposal' downloads every asset and filters out disposed ones in the browser. With thousands of bulk-purchased assets both pages become slow and heavy.",
   "status": "still-bug",
-  "status_evidence": "Both pages still read the whole register: asset/fixed-asset/new/page.tsx:22 calls getFixedAssets() with no filter, and getDisposableFixedAssetOptions (erp-api/accounting/fixed-assets/index.ts:101-119) calls getFixedAssets() then filters DISPOSED on the client; getFixedAssets walks every page via readAllPages (line 91).",
+  "status_evidence": "Needs an owner decision: backend GET /api/accounting/fixed-assets has paging and status/assetTypeId/vendorId filters but no name or code search, so the duplicate-name shortcut and the disposal select still need the whole non-disposed list. Options: ask the backend for a search parameter, or drop the shortcut and use an async server search for disposal.",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -3431,7 +3431,7 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
    "date": "2026-11-14"
   },
   "steps": [
@@ -3453,8 +3453,8 @@
   "severity": "low",
   "title": "Approval queue and reconciliation history page through everything",
   "summary": "The approval queue downloads all pending entries to keep the few the user can act on, and the reconciliation history may load every finalized month. This is slow on large data.",
-  "status": "in-progress",
-  "status_evidence": "Reconciliation history was already paged; the approval queue reads its pages 4 at a time but still filters 'mine' on the client because the backend has no such filter. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "status": "still-bug",
+  "status_evidence": "Needs a backend change: no server-side 'mine' filter for the approval queue (the reconciliation history is already paged).",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -3465,8 +3465,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "efea7ab2",
-   "date": "2026-11-11"
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Accounting > Approvals queue with many pending entries; watch the network tab."
@@ -3608,8 +3608,8 @@
   "severity": "low",
   "title": "Money inputs accept any decimals; journal balance check rounds to 2 places, backend uses 4",
   "summary": "Money fields should refuse more decimals than the backend stores. Most forms now do; the asset disposal proceeds field does not check decimals, so 1000.005 is sent as typed and the backend decides.",
-  "status": "in-progress",
-  "status_evidence": "Journals (journals/schema.ts:25-32, balance check at 237-240 at 4 decimals), contra vouchers (contra-vouchers/schema.ts:26-28 roundMoney check) and account code/name .max(50/255) (chart-of-accounts/schema.ts:25-26) are fixed. Still open: fixed-asset dispose proceeds (fixed-assets/schema.ts:199-201 only checks >= 0; input step 0.01 in asset-dispose-drawer.tsx:359-366) accepts more decimals; journal totals row shows the difference with toFixed(2) (journal-form-entries-table.tsx:286).",
+  "status": "fixed",
+  "status_evidence": "fixed-assets/schema.ts: roundMoney refine on disposalProceeds.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -3621,7 +3621,7 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
    "date": "2026-11-14"
   },
   "steps": [
@@ -3699,8 +3699,8 @@
   "severity": "low",
   "title": "BDT-only and Periodic-only decisions are not reflected in the types and fields",
   "summary": "The owner decided BDT only and Periodic only, but types and screens still carry exchange-rate fields and a Perpetual valuation option.",
-  "status": "in-progress",
-  "status_evidence": "Journal form and detail no longer show the always-1 exchange rate, one StockValuationMethod type; the exchange-rate fields in purchase, inventory and chart types remain. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "status": "decision",
+  "status_evidence": "Owner decision 2026-11-14: keep the exchange-rate fields and currency types; international purchasing from PO to Bill can be in USD.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -3713,8 +3713,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "509183bf",
-   "date": "2026-11-11"
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Settings > Accounting book form: look for the valuation method choices.",
@@ -3835,8 +3835,8 @@
   "severity": "low",
   "title": "Posting-critical form logic has no test",
   "summary": "Logic that decides whether an unbalanced entry reaches the backend, and how ledger totals are computed, had no tests. The journal schema and party-ledger totals now have tests; the bank-reconciliation difference and period-close gating do not.",
-  "status": "in-progress",
-  "status_evidence": "journals/schema tests already existed (incl. 100.00004); party-ledger netting extracted and tested (6 tests); bank-reconciliation difference and period-close gating still have none. branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
+  "status": "fixed",
+  "status_evidence": "Tests added: period-close gating (period-end/close-gating.ts) and bank-reconciliation history difference (bank-cash/history-row.ts).",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -3847,8 +3847,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "12edcc97",
-   "date": "2026-11-11"
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Run pnpm test (vitest) and list test files under src/features/accounting."
@@ -3867,8 +3867,8 @@
   "severity": "low",
   "title": "Very large components, two loading patterns, and unsafe resolver casts",
   "summary": "Large components, two ways of loading data, and type-check-defeating casts on money forms make logic hard to test and let type errors slip through.",
-  "status": "in-progress",
-  "status_evidence": "Component size: accounting-report-views.tsx (2,795 lines) split into 8 files, code moved unchanged (branch fix/accounting-fe-review-items, commit 4a9e942). Decided 2026-11-11: files under 1,000 lines are acceptable, so the other large components are left. Still open: the unsafe `as unknown as Resolver` casts (9 accounting forms, 50+ in the app), three bare eslint-disable lines, and the two loading patterns.",
+  "status": "fixed",
+  "status_evidence": "The nine resolver casts replaced by one typed helper src/shared/utils/zod-resolver.ts; one documented cast remains inside it. Large components deliberately not split (owner: 1000 lines is fine).",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -3881,8 +3881,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "4a9e942",
-   "date": "2026-11-11"
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "grep -rn 'as unknown as Resolver' src/features/accounting"
@@ -3935,8 +3935,8 @@
   "severity": "low",
   "title": "Primary-book lookup failure is treated as \"no book\", and every chart read repeats the book request",
   "summary": "A failed primary-book lookup used to be treated as 'no book set up', sending users to the first-run screen or giving empty account pickers during an outage. That is fixed. The review also asked for the book lookup to be cached so that every chart read does not repeat it; that is not done.",
-  "status": "in-progress",
-  "status_evidence": "main defect fixed: chart-of-accounts/index.ts l.55-65 and account-roles/index.ts l.47-50 no longer catch a failed primary-book read (only a 404 null means 'no book'). Missing part: getPrimaryAccountingBook is still uncached (accounting-books/index.ts l.85), so each chart read still makes two sequential requests.",
+  "status": "fixed",
+  "status_evidence": "accounting-books/index.ts wraps the primary-book read in React cache(): one read per request, errors never cached.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -3948,8 +3948,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Block /api/accounting/books/primary in devtools and open the chart of accounts: an error state shows (fixed).",
@@ -4003,8 +4003,8 @@
   "severity": "low",
   "title": "Rejected contra shows Draft without the comment",
   "summary": "When an approver rejects a contra (transfer) voucher with a comment, the maker sees only 'Draft' and never learns why it was rejected.",
-  "status": "in-progress",
-  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] comment shows on journal detail; contra modal unchanged",
+  "status": "fixed",
+  "status_evidence": "contra-voucher-form-modal.tsx shows who rejected a draft contra and the comment (latestJournalRejection). Not browser-tested.",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA contra-reject-comment",
@@ -4015,8 +4015,8 @@
   "theme": "",
   "set": "notes-A",
   "checked": {
-   "ref": "feat/backend-accounting-alignment",
-   "date": "2026-11-09"
+   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Create a contra voucher, submit, reject it with a comment as approver.",
