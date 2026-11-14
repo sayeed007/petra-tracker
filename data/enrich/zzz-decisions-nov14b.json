@@ -1,0 +1,48 @@
+{
+ "vqa:fa-form-fields": {
+  "status": "wontfix",
+  "note": "Owner decision 2026-11-14: no cost-centre and no custodian field for now. Closed.",
+  "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "st1111:S40": {
+  "side": "both",
+  "note": "Owner 2026-11-14: flag for the backend as well. Backend: SalesByItemSummaryReportGenerator reports gross, other sales reports are net: decide whether the report should be net of discount and returns. Frontend: the column is being labelled 'gross' meanwhile.",
+  "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:other:14": {
+  "module": "sales",
+  "note": "Owner 2026-11-14: moved to the sales bug list (item pricing tab). Not fixed yet: the Sales pricing tab drops a price saved on a channel that is no longer offered, and saving sends the item without it. Fixing it changes what is saved, so it waits for a decision.",
+  "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:other:21": {
+  "module": "purchase",
+  "note": "Owner 2026-11-14: moved to the purchase bug list (PO inventory modal). Not fixed yet: first pack becomes the default (25 units show as 1.25 packs) and Save accepts expiry before manufacturing date and duplicate lot/serial numbers; new validation rules need a decision.",
+  "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:other:9": {
+  "module": "inventory",
+  "note": "Owner 2026-11-14: moved to the inventory module (new items get two invented price levels; English strings in facades). Not fixed yet: removing the default price levels changes what a new item starts with.",
+  "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:other:8": {
+  "status": "decision",
+  "note": "Owner decision 2026-11-14: keep as is. Preselecting the first wing/region/area/SPO is good UX, better than a blank page.",
+  "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:reports:25": {
+  "note": "Blocked on the backend: ReportService.run builds the whole report then cuts the page, so each page click re-runs it. Needs a backend page cache or a way to fetch once and page in the browser.",
+  "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:other:13": {
+  "note": "Blocked on the backend: the requester dropdown needs a light lookup endpoint instead of GET /api/admin/users (all users with emails).",
+  "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ }
+}

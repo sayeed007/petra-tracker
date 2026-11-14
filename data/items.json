@@ -6804,8 +6804,8 @@
   "severity": "medium",
   "title": "Add-asset form has no Location, Custodian or Cost centre fields though API takes them",
   "summary": "The Add Asset form lacked the Location, Custodian and Cost centre fields the API accepts. Serial, Location and Custodian were added; Cost centre stays hidden while the cost-centre feature is switched off.",
-  "status": "in-progress",
-  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] Serial, Location, Custodian added; Cost centre still hidden by COST_CENTERS_ENABLED=false",
+  "status": "wontfix",
+  "status_evidence": "Owner decision 2026-11-14: no cost-centre and no custodian field for now. Closed.",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA fa-form-fields",
@@ -6816,8 +6816,8 @@
   "theme": "",
   "set": "notes-A",
   "checked": {
-   "ref": "feat/backend-accounting-alignment",
-   "date": "2026-11-09"
+   "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Accounting > Fixed Assets > Add asset.",
@@ -10939,6 +10939,38 @@
   }
  },
  {
+  "id": "rv-fe:other:9",
+  "module": "inventory",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Visible English text and invented dropdown values inside facades",
+  "summary": "Facades return English text and invented dropdown values: new items get two price levels nobody asked for, and Bangla users see English in places like the gate-pass timeline.",
+  "status": "still-bug",
+  "status_evidence": "Owner 2026-11-14: moved to the inventory module (new items get two invented price levels; English strings in facades). Not fixed yet: removing the default price levels changes what a new item starts with.",
+  "evidence_level": "verified",
+  "found": "2026-11-02",
+  "source": "FRONTEND-BY-MODULE/08-moved-in.md",
+  "refs": [
+   "fe-A04-11"
+  ],
+  "size": "M",
+  "theme": "",
+  "set": "review-fe",
+  "checked": {
+   "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "steps": [
+   "Switch to Bangla and open a gate pass timeline.",
+   "Create a new item and open its Sales pricing tab."
+  ],
+  "expected": "Codes translated in components; no invented price levels.",
+  "actual": "Invented price levels and English strings remain.",
+  "where": "src/erp-api/inventory/items/mapper.ts l.502-527, 613; src/erp-api/gate-pass/index.ts",
+  "verify": "New item has no price levels; Bangla shows no English.",
+  "owner": "Frontend inventory"
+ },
+ {
   "id": "saleschain:P3-B8",
   "module": "inventory",
   "side": "backend",
@@ -11888,7 +11920,7 @@
   "title": "Product distribution facade: reads throw a hidden code; requester list is an unparameterised read of all users",
   "summary": "The Requester dropdown on a product distribution loads every ERP user (with emails) into the browser through the admin users endpoint, and would show an empty list if the backend ever answered with a page envelope.",
   "status": "in-progress",
-  "status_evidence": "Part fixed: facade reads now throw a stable code (product-distributions/index.ts throwDistributionApiError ~l.56-60). Still left: getProductDistributionRequesters (l.150-160) calls GET /api/admin/users with no paging or filter and accepts only a bare array. Backend returns the full array when page/size are absent (UserAdminController.listErpUsers l.99-111) so it works today; backend also gained a lighter petty-cash requester-options endpoint (commit 122f355f8). Source fe-A07-10.",
+  "status_evidence": "Blocked on the backend: the requester dropdown needs a light lookup endpoint instead of GET /api/admin/users (all users with emails).",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/08-moved-in.md",
@@ -11899,8 +11931,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Open Inventory > Product Distribution > New and open the Requester dropdown with the network tab open."
@@ -11910,38 +11942,6 @@
   "where": "src/erp-api/sales/product-distributions/index.ts l.150-160; backend UserAdminController GET /api/admin/users",
   "verify": "Open the dropdown: request is a light lookup; list includes users beyond the first page.",
   "owner": "Frontend sales/inventory"
- },
- {
-  "id": "rv-fe:other:14",
-  "module": "other",
-  "side": "frontend",
-  "severity": "low",
-  "title": "Sales-pricing tab drops channel prices for channels not in the options list",
-  "summary": "On the item form's Sales pricing tab, a price saved on a channel that is no longer offered (deactivated or removed) is silently dropped from the form, and saving the item sends it without that price.",
-  "status": "still-bug",
-  "status_evidence": "Still in code: inventory-item-form-sales-pricing-tab.tsx l.58-85 rebuilds channelPrices from options.salesChannels only, so a price row for a channel not in the options list disappears when the tab mounts. Source fe-D01-10; backend delete behaviour on omitted rows not verified.",
-  "evidence_level": "suspect",
-  "found": "2026-11-02",
-  "source": "FRONTEND-BY-MODULE/08-moved-in.md",
-  "refs": [
-   "fe-D01-10"
-  ],
-  "size": "S",
-  "theme": "",
-  "set": "review-fe",
-  "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
-  },
-  "steps": [
-   "Give an item a price on a channel, then deactivate that channel in Inventory > Sales Channels.",
-   "Open Inventory > Items > edit the item > Sales pricing tab, Save."
-  ],
-  "expected": "Row kept (read-only) and still sent.",
-  "actual": "Row is removed from the form values on mount.",
-  "where": "src/features/inventory/items/components/inventory-item-form-sales-pricing-tab.tsx l.58-85",
-  "verify": "Edit an item with a price on an inactive channel and Save: the payload still contains the channel price.",
-  "owner": "Frontend inventory"
  },
  {
   "id": "rv-fe:other:15",
@@ -12102,38 +12102,6 @@
   "actual": "fixed.",
   "where": "src/features/purchase/**/purchase-order-inventory-detail-modal.tsx",
   "verify": "grep console.log in the file: none.",
-  "owner": "Frontend purchase"
- },
- {
-  "id": "rv-fe:other:21",
-  "module": "other",
-  "side": "frontend",
-  "severity": "low",
-  "title": "PO inventory modal: first pack becomes default; no date or duplicate checks",
-  "summary": "In the purchase order inventory modal the first pack size (for example Carton 1x20) becomes the default for a line, so 25 units show as 1.25 packs; and Save accepts an expiry date before the manufacturing date and duplicate lot or serial numbers.",
-  "status": "still-bug",
-  "status_evidence": "Still in code: purchase-order-inventory-detail-modal.tsx l.283 defaultPackSize = packSizeOptions[0].value (first pack) and handleSave (l.503-545) checks only lot, bin, quantity and total, never expiry >= manufacturing date or duplicate lot/serial. Source fe-D12-10.",
-  "evidence_level": "likely",
-  "found": "2026-11-02",
-  "source": "FRONTEND-BY-MODULE/08-moved-in.md",
-  "refs": [
-   "fe-D12-10"
-  ],
-  "size": "S",
-  "theme": "",
-  "set": "review-fe",
-  "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
-  },
-  "steps": [
-   "Open a PO whose item has several pack sizes > inventory details modal.",
-   "Enter expiry earlier than manufacturing date, or the same serial on two rows, Save."
-  ],
-  "expected": "Default is the line's pack (or base unit); bad dates or duplicates block Save.",
-  "actual": "Defaults to the first pack; no date or duplicate checks.",
-  "where": "src/features/purchase/**/purchase-order-inventory-detail-modal.tsx l.283, l.503-545",
-  "verify": "Repeat the steps: Save is blocked with a message.",
   "owner": "Frontend purchase"
  },
  {
@@ -12519,8 +12487,8 @@
   "severity": "low",
   "title": "Sales Performance auto-selects the first wing/region/area/SPO; stuck loading if the tree fails",
   "summary": "Opening Sales Performance without parameters automatically selects the first SPO and shows that person's numbers as if they were the default.",
-  "status": "in-progress",
-  "status_evidence": "Half fixed: error handling added (use-sales-geography-cascade.ts has treeError/retry, used at sales-performance-view.tsx l.63). Still left: allowAll defaults to false (hook l.56, auto-select l.145-160), so with no URL params the first wing/region/area/SPO is selected and shown as the default. Needs a decision (all vs own territory). Source fe-D44-7.",
+  "status": "decision",
+  "status_evidence": "Owner decision 2026-11-14: keep as is. Preselecting the first wing/region/area/SPO is good UX, better than a blank page.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/08-moved-in.md",
@@ -12531,8 +12499,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Open Field Force > Sales Performance with no query string."
@@ -12542,38 +12510,6 @@
   "where": "src/shared/hooks/use-sales-geography-cascade.ts l.56, l.145-160",
   "verify": "Open the page: no SPO preselected.",
   "owner": "Frontend field force"
- },
- {
-  "id": "rv-fe:other:9",
-  "module": "other",
-  "side": "frontend",
-  "severity": "low",
-  "title": "Visible English text and invented dropdown values inside facades",
-  "summary": "Facades return English text and invented dropdown values: new items get two price levels nobody asked for, and Bangla users see English in places like the gate-pass timeline.",
-  "status": "still-bug",
-  "status_evidence": "Still in code: erp-api/inventory/items/mapper.ts l.502-527 defaultPriceLevels() creates '10% Discount' and '5% Discount' for every new item (called l.613); gate-pass facade still maps verifiedAt (erp-api/gate-pass/index.ts l.294) for the Released step; English fallbacks in sales facades (see rv-fe:other:31). Source fe-A04-11.",
-  "evidence_level": "verified",
-  "found": "2026-11-02",
-  "source": "FRONTEND-BY-MODULE/08-moved-in.md",
-  "refs": [
-   "fe-A04-11"
-  ],
-  "size": "M",
-  "theme": "",
-  "set": "review-fe",
-  "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
-  },
-  "steps": [
-   "Switch to Bangla and open a gate pass timeline.",
-   "Create a new item and open its Sales pricing tab."
-  ],
-  "expected": "Codes translated in components; no invented price levels.",
-  "actual": "Invented price levels and English strings remain.",
-  "where": "src/erp-api/inventory/items/mapper.ts l.502-527, 613; src/erp-api/gate-pass/index.ts",
-  "verify": "New item has no price levels; Bangla shows no English.",
-  "owner": "Frontend inventory"
  },
  {
   "id": "vqa:guide-export",
@@ -15937,6 +15873,38 @@
   }
  },
  {
+  "id": "rv-fe:other:21",
+  "module": "purchase",
+  "side": "frontend",
+  "severity": "low",
+  "title": "PO inventory modal: first pack becomes default; no date or duplicate checks",
+  "summary": "In the purchase order inventory modal the first pack size (for example Carton 1x20) becomes the default for a line, so 25 units show as 1.25 packs; and Save accepts an expiry date before the manufacturing date and duplicate lot or serial numbers.",
+  "status": "still-bug",
+  "status_evidence": "Owner 2026-11-14: moved to the purchase bug list (PO inventory modal). Not fixed yet: first pack becomes the default (25 units show as 1.25 packs) and Save accepts expiry before manufacturing date and duplicate lot/serial numbers; new validation rules need a decision.",
+  "evidence_level": "likely",
+  "found": "2026-11-02",
+  "source": "FRONTEND-BY-MODULE/08-moved-in.md",
+  "refs": [
+   "fe-D12-10"
+  ],
+  "size": "S",
+  "theme": "",
+  "set": "review-fe",
+  "checked": {
+   "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "steps": [
+   "Open a PO whose item has several pack sizes > inventory details modal.",
+   "Enter expiry earlier than manufacturing date, or the same serial on two rows, Save."
+  ],
+  "expected": "Default is the line's pack (or base unit); bad dates or duplicates block Save.",
+  "actual": "Defaults to the first pack; no date or duplicate checks.",
+  "where": "src/features/purchase/**/purchase-order-inventory-detail-modal.tsx l.283, l.503-545",
+  "verify": "Repeat the steps: Save is blocked with a message.",
+  "owner": "Frontend purchase"
+ },
+ {
   "id": "rv-fe:purchase:1.11",
   "module": "purchase",
   "side": "frontend",
@@ -17698,7 +17666,7 @@
   "title": "Engine reports with no range and full re-run per page",
   "summary": "Engine reports (A/R register, payment history, sales and purchase reports) used to open with no date range, so the first load ran the whole history, and each page click asked the backend to regenerate the full report again. The first part is fixed (current month default); the page-click re-run is still there.",
   "status": "in-progress",
-  "status_evidence": "Range reports now open on the current month (features/reports/shared/default-range.ts; used by ar-register, payment-history, physical-inventory, purchase and sales report views, commit 8b2f4970). Missing part: use-engine-report.ts l.35-62 still lists page and size in the effect deps, so every page click re-POSTs /api/reports/{key} and the backend regenerates the whole report; aging, Open Invoices/Bills, open sales/purchase orders deliberately have no default range.",
+  "status_evidence": "Blocked on the backend: ReportService.run builds the whole report then cuts the page, so each page click re-runs it. Needs a backend page cache or a way to fetch once and page in the browser.",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
@@ -17709,8 +17677,8 @@
   "theme": "Theme 6. Request volume",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Open Reports > Receivables > A/R Register.",
@@ -19161,12 +19129,12 @@
  {
   "id": "st1111:S40",
   "module": "reports",
-  "side": "frontend",
+  "side": "both",
   "severity": "low",
   "title": "Sales Order by Item Summary is gross, not net of discount or returns",
   "summary": "Sales Order by Item Summary shows gross amounts before trade discount and does not subtract returns or invoice edits, but the heading reads like the amount sold. It disagrees with the customer summary and the receivable, which are net.",
   "status": "open",
-  "status_evidence": "Backend-driven: SalesByItemSummaryQueryRepository sums line quantity and amount per item without trade discount or returns, the frontend only displays it. Same as sales:N6.",
+  "status_evidence": "Owner 2026-11-14: flag for the backend as well. Backend: SalesByItemSummaryReportGenerator reports gross, other sales reports are net: decide whether the report should be net of discount and returns. Frontend: the column is being labelled 'gross' meanwhile.",
   "evidence_level": "verified",
   "found": "2026-11-11",
   "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S40",
@@ -19175,8 +19143,8 @@
   "theme": "Sales segment",
   "set": "sales-test-2026-11-11",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Create a sales order with a trade discount and one item.",
@@ -24874,6 +24842,38 @@
   "where": "backend modules/sales/document/gatepass/mapper/GatePassDetailMapper:129; GatePassVerifyLineRequestDTO; GatePassService.expectedGateCount",
   "verify": "A 12.5 line shows the agreed count and a verify with a different count is rejected.",
   "owner": "Backend, sales"
+ },
+ {
+  "id": "rv-fe:other:14",
+  "module": "sales",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Sales-pricing tab drops channel prices for channels not in the options list",
+  "summary": "On the item form's Sales pricing tab, a price saved on a channel that is no longer offered (deactivated or removed) is silently dropped from the form, and saving the item sends it without that price.",
+  "status": "still-bug",
+  "status_evidence": "Owner 2026-11-14: moved to the sales bug list (item pricing tab). Not fixed yet: the Sales pricing tab drops a price saved on a channel that is no longer offered, and saving sends the item without it. Fixing it changes what is saved, so it waits for a decision.",
+  "evidence_level": "suspect",
+  "found": "2026-11-02",
+  "source": "FRONTEND-BY-MODULE/08-moved-in.md",
+  "refs": [
+   "fe-D01-10"
+  ],
+  "size": "S",
+  "theme": "",
+  "set": "review-fe",
+  "checked": {
+   "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "steps": [
+   "Give an item a price on a channel, then deactivate that channel in Inventory > Sales Channels.",
+   "Open Inventory > Items > edit the item > Sales pricing tab, Save."
+  ],
+  "expected": "Row kept (read-only) and still sent.",
+  "actual": "Row is removed from the form values on mount.",
+  "where": "src/features/inventory/items/components/inventory-item-form-sales-pricing-tab.tsx l.58-85",
+  "verify": "Edit an item with a price on an inactive channel and Save: the payload still contains the channel price.",
+  "owner": "Frontend inventory"
  },
  {
   "id": "rv-fe:sales:15",

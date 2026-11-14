@@ -58,6 +58,7 @@ def load():
                 it["severity"] = o["severity"]
             it["status"] = o.get("status", it["status"])
             it["module"] = o.get("module", it["module"])
+            it["side"] = o.get("side", it["side"])
             it["status_evidence"] = o.get("note", it["status_evidence"])
             it["checked"] = {"ref": o.get("ref", ""), "date": o.get("date", "")}
             for k in DETAIL:

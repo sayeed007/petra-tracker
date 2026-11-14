@@ -2981,12 +2981,6 @@
   "ref": "release_beta_copy@e9a75ca2b",
   "date": "2026-11-09"
  },
- "vqa:fa-form-fields": {
-  "status": "in-progress",
-  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] Serial, Location, Custodian added; Cost centre still hidden by COST_CENTERS_ENABLED=false",
-  "ref": "feat/backend-accounting-alignment",
-  "date": "2026-11-09"
- },
  "assets:UI-02": {
   "status": "in-progress",
   "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] type list search + delete added; column sorting and register search not added",
