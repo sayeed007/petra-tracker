@@ -6241,6 +6241,114 @@
   "owner": "Backend, dashboard / accounting"
  },
  {
+  "id": "e2e:dashboard:ap-card-vs-aging-report",
+  "module": "dashboard",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Accounts Payable card and KPI (ledger) do not match the A/P Aging Summary report",
+  "summary": "The Accounts Payable card and the Payables KPI show 407,623.69 while the A/P Aging Summary (POST /api/reports/VENDOR_AGING, built from bills) shows 45,436.19, a difference of 362,187.50. The trial balance has Sundry Creditors 2111 at 375,946.19 and 2112 at 33,877.50. A bill the test makes moves card, KPI and report by exactly its total, so the gap is in older documents; goods received but not billed may be posted to the vendor in the ledger and be absent from the bill report (not verified). Receivables agree.",
+  "steps": [
+   "Run the e2e stack with its seeded and test documents.",
+   "Compare the dashboard Accounts Payable card with the A/P Aging Summary total."
+  ],
+  "expected": "Both read the same payable (or the difference is explained on screen).",
+  "actual": "407,623.69 on the card against 45,436.19 in the report.",
+  "where": "Backend: ledger-based payable (2111/2112) against the bill-based aging report; dashboard aging card query.",
+  "tests": [
+   "DASH-04-02"
+  ],
+  "verify": "Card and report totals agree, or the card says it includes goods received not billed.",
+  "owner": "Backend (dashboard)",
+  "status": "open",
+  "status_evidence": "Found by the role-matrix port and the new dashboard e2e suite, 2026-11-14; kept as test.fail() with a BUG comment.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@3a78ce85 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "e2e/tests/settings/11-role-presets-access.spec.ts",
+   "e2e/tests/dashboard"
+  ],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-f",
+  "set": "e2e-refresh-2026-11-f"
+ },
+ {
+  "id": "e2e:dashboard:pending-actions-date-null",
+  "module": "dashboard",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Pending Actions drops a pending purchase requisition that has no document date when a date range is set",
+  "summary": "GET /api/dashboard/pending-actions returns a pending purchase requisition with docDate null, and any date range removes it: with from/to set the total and every module count are 0. The card opens on the current month, so the Purchase tab shows 0 and the list is empty until the user clears the dates.",
+  "steps": [
+   "Create a purchase requisition and leave it pending.",
+   "Open the dashboard Pending Actions card on its default (this month) range.",
+   "Clear the dates on the card."
+  ],
+  "expected": "The requisition counts in the current month and is listed.",
+  "actual": "Count 0 and an empty list until the dates are cleared.",
+  "where": "Backend: dashboard pending-actions query (requisition docDate is null at that stage, date filter excludes it).",
+  "tests": [
+   "DASH-02-04"
+  ],
+  "verify": "With the default range the Purchase tab counts the pending requisition.",
+  "owner": "Backend (dashboard)",
+  "status": "open",
+  "status_evidence": "Found by the role-matrix port and the new dashboard e2e suite, 2026-11-14; kept as test.fail() with a BUG comment.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@3a78ce85 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "e2e/tests/settings/11-role-presets-access.spec.ts",
+   "e2e/tests/dashboard"
+  ],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-f",
+  "set": "e2e-refresh-2026-11-f"
+ },
+ {
+  "id": "e2e:dashboard:empty-title-missing",
+  "module": "dashboard",
+  "side": "frontend",
+  "severity": "low",
+  "title": "The empty dashboard shows its hint but not the title 'Your dashboard is empty'",
+  "summary": "When every card is hidden the dashboard draws the hint text but not the title the message set defines for this state.",
+  "steps": [
+   "Dashboard > Personalize: hide every card and save."
+  ],
+  "expected": "The title and the hint are shown.",
+  "actual": "Only the hint is shown.",
+  "where": "Frontend: src/features/dashboard (empty state).",
+  "tests": [
+   "DASH-07-05"
+  ],
+  "verify": "The empty state shows the title.",
+  "owner": "Frontend (dashboard)",
+  "status": "open",
+  "status_evidence": "Found by the role-matrix port and the new dashboard e2e suite, 2026-11-14; kept as an assertion on the hint only.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@3a78ce85 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "e2e/tests/settings/11-role-presets-access.spec.ts",
+   "e2e/tests/dashboard"
+  ],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-f",
+  "set": "e2e-refresh-2026-11-f"
+ },
+ {
   "id": "rv-fe:reports:27",
   "module": "dashboard",
   "side": "frontend",
@@ -26814,6 +26922,42 @@
   "owner": "Frontend settings-platform"
  },
  {
+  "id": "e2e:platform:permission-lookup-stalls-401",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Parallel requests as a freshly created role user stall for 30 seconds and some answer 401 once",
+  "summary": "With 16 parallel GETs as a newly made role user, about 15 requests wait exactly 30 seconds (/api/sales/orders, /api/sales/receipts/1, /api/sales/postings/triggers and others). Single requests also answer 401 once and then succeed on retry (inventory-account-mappings/write-offs, material-requisitions/1, lc/1/landed-cost, invoices/by-customer/1). A pool starved by permission lookups is the likely cause (30 s is a typical pool timeout); not verified. At 4 parallel requests there are no stalls and no 401. A screen that fires parallel requests could be logged out by the 401.",
+  "steps": [
+   "Create a role and a user, sign in as that user.",
+   "Send 16 GET requests at once to different sales and purchase endpoints."
+  ],
+  "expected": "All answer promptly; no 401 for a valid token.",
+  "actual": "About 15 of 16 stall 30 s; some single calls give 401 first.",
+  "where": "Backend: authentication / permission lookup and the datasource pool (see also e2e:platform:connection-pool-starvation).",
+  "tests": [
+   "SET-11"
+  ],
+  "verify": "16 parallel requests as a fresh role user all answer within a second or two with no 401.",
+  "owner": "Backend (settings-platform)",
+  "status": "open",
+  "status_evidence": "Found by the role-matrix port and the new dashboard e2e suite, 2026-11-14; kept as a probe at concurrency 4 with a 401 re-check.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@3a78ce85 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "e2e/tests/settings/11-role-presets-access.spec.ts",
+   "e2e/tests/dashboard"
+  ],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-f",
+  "set": "e2e-refresh-2026-11-f"
+ },
+ {
   "id": "e2e:settings:commission-slabs-overlap",
   "module": "settings-platform",
   "side": "frontend",
@@ -26847,6 +26991,46 @@
   "theme": "",
   "source": "e2e-refresh-2026-11-b",
   "set": "e2e-refresh-2026-11-b"
+ },
+ {
+  "id": "e2e:settings:purchase-preset-saves-wider-permissions",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "A role built like the Local Purchase or International Purchase preset is saved with more permissions than the form selects",
+  "summary": "When a role is saved exactly as the role form builds the Local Purchase preset (58 permissions selected), the backend stores extra permissions: purchase order and requisition approve/create/delete/edit, vendor bill view/create/edit/delete/approve, material requisition view and the international order and requisition view. International Purchase gets the mirror (local view permissions). The role then reaches records the form's Access Summary says it cannot: a Local Purchase user gets 200 on vendor bills, related records, previews and material requisitions; an International Purchase user gets 200 on GET /api/purchase/requisitions.",
+  "steps": [
+   "Settings > Users & Roles > New role: pick the Local Purchase preset and save.",
+   "Open the saved role's permission list and compare with the 58 selected.",
+   "Sign in as a user with that role and call GET /api/purchase/vendor-bills/1."
+  ],
+  "expected": "The role holds exactly the permissions selected in the form.",
+  "actual": "The role holds extra purchase permissions (permission expansion on save) and reaches vendor bills and requisitions it should not.",
+  "where": "Backend: role save / permission expansion (companion-permission rules). Frontend: role form Access Summary shows the smaller set.",
+  "tests": [
+   "SET-11-07",
+   "SET-11-08",
+   "SET-11-09",
+   "SET-11-10"
+  ],
+  "verify": "Save the Local Purchase preset and read the stored permissions: equal to the selection; vendor-bill GET answers 403.",
+  "owner": "Backend (settings-platform)",
+  "status": "open",
+  "status_evidence": "Found by the role-matrix port and the new dashboard e2e suite, 2026-11-14; kept as test.fail() with a BUG comment.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@3a78ce85 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "e2e/tests/settings/11-role-presets-access.spec.ts",
+   "e2e/tests/dashboard"
+  ],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-f",
+  "set": "e2e-refresh-2026-11-f"
  },
  {
   "id": "purchase:B-P7",
@@ -28742,6 +28926,41 @@
   "theme": "",
   "source": "e2e-refresh-2026-11-e",
   "set": "e2e-refresh-2026-11-e"
+ },
+ {
+  "id": "e2e:platform:external-endpoints-slow",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "SSO initiate and HRMS employee lookup take about 42 seconds when the external system is unreachable",
+  "summary": "GET /api/auth/sso/initiate (502) and GET /api/admin/users/hrms-employees (400) answer after about 42 seconds on the test stack because the external systems are missing, which freezes the screens that call them for that long.",
+  "steps": [
+   "Call GET /api/admin/users/hrms-employees with the HRMS not reachable."
+  ],
+  "expected": "A quick, readable failure (a few seconds, with a clear message).",
+  "actual": "A 400 or 502 after about 42 seconds.",
+  "where": "Backend: HTTP client timeout for the HRMS and SSO calls.",
+  "tests": [
+   "SET-11"
+  ],
+  "verify": "The call fails within about 5 seconds with a clear message.",
+  "owner": "Backend (settings-platform)",
+  "status": "open",
+  "status_evidence": "Found by the role-matrix port and the new dashboard e2e suite, 2026-11-14; kept as a check that only asserts the refusal.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@3a78ce85 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "e2e/tests/settings/11-role-presets-access.spec.ts",
+   "e2e/tests/dashboard"
+  ],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-f",
+  "set": "e2e-refresh-2026-11-f"
  },
  {
   "id": "rv-be:settings-platform:14",
