@@ -1,0 +1,178 @@
+[
+ {
+  "id": "be-req:accounting:bank-account-status-endpoint",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Bank account active/inactive needs its own endpoint",
+  "summary": "The only way to switch a bank account active or inactive is a full replace (PUT) of name, number, branch and opening balance. The screen sends what it read from the list, so an edit made by someone else in the meantime is overwritten. The frontend now re-reads the record just before the call, which narrows the window but cannot close it.",
+  "steps": [
+   "Open Accounting > Bank & Cash > Bank accounts in two tabs.",
+   "In tab 2 rename an account and save.",
+   "In tab 1 (list not refreshed) toggle the same account inactive."
+  ],
+  "expected": "Only the status changes; the new name stays.",
+  "actual": "The toggle sends the whole record; with a stale list the rename is lost (the frontend now re-reads first, so only a short window remains).",
+  "where": "Backend: bank account controller (add PATCH /api/accounting/bank-accounts/{id}/status or equivalent). Frontend: src/features/accounting/bank-account/components/bank-account-root.tsx.",
+  "tests": [],
+  "verify": "Toggle with a stale list: the name edited elsewhere survives.",
+  "owner": "Backend (accounting)",
+  "status": "open",
+  "status_evidence": "Backend request raised on 2026-11-14 while fixing the frontend item rv-fe:accounting:31; the frontend side is done as far as it can go without this.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@3374fb74 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "rv-fe:accounting:31"
+  ]
+ },
+ {
+  "id": "be-req:accounting:fixed-asset-search",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Fixed-asset list needs a name/code search parameter",
+  "summary": "GET /api/accounting/fixed-assets pages and filters by status, assetTypeId and vendorId but cannot search by name or code. New asset (duplicate-name shortcut) and Asset disposal (choose a non-disposed asset) therefore download the whole register.",
+  "steps": [
+   "Create several thousand fixed assets (bulk purchase).",
+   "Open Asset > New asset and Asset > Asset disposal and watch the request."
+  ],
+  "expected": "One small page per request, searched on the server.",
+  "actual": "The whole register is downloaded on both pages.",
+  "where": "Backend: fixed asset list endpoint (add `search` over name and code, keep `status`). Frontend: src/erp-api/accounting/fixed-assets/index.ts, asset/fixed-asset/new/page.tsx, asset-disposal/page.tsx.",
+  "tests": [],
+  "verify": "With a large register both pages request one page and the dropdown searches on the server.",
+  "owner": "Backend (accounting)",
+  "status": "open",
+  "status_evidence": "Backend request raised on 2026-11-14 while fixing the frontend item rv-fe:accounting:41; the frontend side is done as far as it can go without this.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@3374fb74 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "rv-fe:accounting:41"
+  ]
+ },
+ {
+  "id": "be-req:accounting:approval-queue-mine-filter",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Approval queue needs a server-side 'mine' (can act) filter",
+  "summary": "The journal approval queue downloads every pending entry and keeps only the few the signed-in user can act on, which is slow on large data. The reconciliation history is already paged.",
+  "steps": [
+   "Have thousands of pending journal approvals.",
+   "Open the approval queue."
+  ],
+  "expected": "The server returns only the entries the user can act on, one page at a time.",
+  "actual": "All pending entries are paged through and filtered in the browser.",
+  "where": "Backend: approval queue / journal list endpoint (add canTakeAction or assignee filter). Frontend: src/erp-api/accounting/journals/index.ts.",
+  "tests": [],
+  "verify": "The queue loads one page and shows only actionable entries.",
+  "owner": "Backend (accounting)",
+  "status": "open",
+  "status_evidence": "Backend request raised on 2026-11-14 while fixing the frontend item rv-fe:accounting:44; the frontend side is done as far as it can go without this.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@3374fb74 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "rv-fe:accounting:44"
+  ]
+ },
+ {
+  "id": "be-req:field-force:collection-by-id",
+  "module": "field-force",
+  "side": "backend",
+  "severity": "low",
+  "title": "Collections need a get-by-id (or id filter) endpoint",
+  "summary": "Approving a collection opens the customer deposit form with the amounts passed in editable URL parameters, because the form cannot load the collection itself: the collections facade has no get-by-id and the filter accepts only status and creation time. The amounts should come from the server using only collectionId.",
+  "steps": [
+   "Field Force > Collections: approve a pending collection.",
+   "Look at the address of the deposit form: it carries amounts.",
+   "Edit the amount in the address."
+  ],
+  "expected": "The deposit form loads the collection by id and shows its real amounts; the address carries only collectionId.",
+  "actual": "The form takes the amounts from the address.",
+  "where": "Backend: collections controller (add GET /api/field-force/collections/{id} or an id filter). Frontend: src/features/field-force/collections/components/collections-data-table.tsx ~209-228 and the deposit form.",
+  "tests": [],
+  "verify": "Editing the address amount changes nothing in the form.",
+  "owner": "Backend (field-force)",
+  "status": "open",
+  "status_evidence": "Backend request raised on 2026-11-14 while fixing the frontend item rv-fe:reports:26; the frontend side is done as far as it can go without this.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@3374fb74 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "rv-fe:reports:26"
+  ]
+ },
+ {
+  "id": "be-req:reports:engine-page-cache",
+  "module": "reports",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Engine reports regenerate the whole report on every page click",
+  "summary": "Each page click sends a new POST /api/reports/{reportKey}?page=..&size=.. and ReportService.run builds the whole report and then cuts one page, so paging a long report repeats the full cost each time.",
+  "steps": [
+   "Open an engine report (A/R register, payment history, sales or purchase report) with several pages.",
+   "Click page 2, page 3 and watch the request time."
+  ],
+  "expected": "Paging is cheap (cached result, or the page is cut from a stored result).",
+  "actual": "Every click regenerates the full report.",
+  "where": "Backend: shared/report/ReportService.run (cache the generated result per request key for a short time). Frontend: src/features/reports/shared/use-engine-report.ts.",
+  "tests": [],
+  "verify": "Page 2 returns in a fraction of the first load's time.",
+  "owner": "Backend (reports)",
+  "status": "open",
+  "status_evidence": "Backend request raised on 2026-11-14 while fixing the frontend item rv-fe:reports:25; the frontend side is done as far as it can go without this.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@3374fb74 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "rv-fe:reports:25"
+  ]
+ },
+ {
+  "id": "be-req:platform:light-user-lookup",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "A light user lookup is needed instead of the full admin user list",
+  "summary": "The Requester dropdown of a product distribution loads every ERP user with email through the admin users endpoint (GET /api/admin/users), which also needs a role most requesters do not have and would show an empty list if the backend answered with a page envelope.",
+  "steps": [
+   "Sales > Product distribution > New: open the Requester dropdown.",
+   "Watch the request."
+  ],
+  "expected": "A small lookup (id, name) with search, paged.",
+  "actual": "The full admin user list is fetched.",
+  "where": "Backend: add GET /api/users/lookup?search= (id and display name only). Frontend: src/erp-api/sales/product-distributions/index.ts ~150-160.",
+  "tests": [],
+  "verify": "The dropdown requests a small page and includes users beyond the first page.",
+  "owner": "Backend (settings-platform)",
+  "status": "open",
+  "status_evidence": "Backend request raised on 2026-11-14 while fixing the frontend item rv-fe:other:13; the frontend side is done as far as it can go without this.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@3374fb74 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "rv-fe:other:13"
+  ]
+ }
+]

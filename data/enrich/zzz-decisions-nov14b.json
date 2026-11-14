@@ -36,12 +36,12 @@
   "date": "2026-11-14"
  },
  "rv-fe:reports:25": {
-  "note": "Blocked on the backend: ReportService.run builds the whole report then cuts the page, so each page click re-runs it. Needs a backend page cache or a way to fetch once and page in the browser.",
+  "note": "Blocked on the backend: ReportService.run builds the whole report then cuts the page, so each page click re-runs it. Needs a backend page cache or a way to fetch once and page in the browser. Backend request: be-req:reports:engine-page-cache.",
   "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
   "date": "2026-11-14"
  },
  "rv-fe:other:13": {
-  "note": "Blocked on the backend: the requester dropdown needs a light lookup endpoint instead of GET /api/admin/users (all users with emails).",
+  "note": "Blocked on the backend: the requester dropdown needs a light lookup endpoint instead of GET /api/admin/users (all users with emails). Backend request: be-req:platform:light-user-lookup.",
   "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
   "date": "2026-11-14"
  },
@@ -112,7 +112,7 @@
   "date": "2026-11-14"
  },
  "rv-fe:reports:26": {
-  "note": "Blocked on the backend: the deposit form cannot load a collection by id (erp-api/field-force/collections has no get-by-id; filterCollections filters only on status and creationTime). Needs a backend get-by-id or id filter, then pass only collectionId.",
+  "note": "Blocked on the backend: the deposit form cannot load a collection by id (erp-api/field-force/collections has no get-by-id; filterCollections filters only on status and creationTime). Needs a backend get-by-id or id filter, then pass only collectionId. Backend request: be-req:field-force:collection-by-id.",
   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
   "date": "2026-11-14"
  },
@@ -120,5 +120,14 @@
   "note": "Frontend part done: login placeholder is name@example.com. Left: the 17 real-looking bank ledgers in the chart seed (backend) and the HRMS lookup failure.",
   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
   "date": "2026-11-14"
+ },
+ "rv-fe:accounting:31": {
+  "note": "Backend request: be-req:accounting:bank-account-status-endpoint."
+ },
+ "rv-fe:accounting:41": {
+  "note": "Backend request: be-req:accounting:fixed-asset-search."
+ },
+ "rv-fe:accounting:44": {
+  "note": "Backend request: be-req:accounting:approval-queue-mine-filter."
  }
 }
