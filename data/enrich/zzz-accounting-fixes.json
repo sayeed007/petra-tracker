@@ -67,19 +67,19 @@
  },
  "rv-fe:accounting:31": {
   "status": "in-progress",
-  "note": "The toggle now re-reads the record before the PUT (bank-account-root.tsx), which narrows the stale-data window. The backend has no status-only endpoint, so the PUT is still a full replace; fully fixing it needs a backend status endpoint.",
+  "note": "The toggle now re-reads the record before the PUT (bank-account-root.tsx), which narrows the stale-data window. The backend has no status-only endpoint, so the PUT is still a full replace; fully fixing it needs a backend status endpoint. Blocked on the backend (status-only endpoint).",
   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
   "date": "2026-11-14"
  },
  "rv-fe:accounting:41": {
   "status": "still-bug",
-  "note": "Needs an owner decision: backend GET /api/accounting/fixed-assets has paging and status/assetTypeId/vendorId filters but no name or code search, so the duplicate-name shortcut and the disposal select still need the whole non-disposed list. Options: ask the backend for a search parameter, or drop the shortcut and use an async server search for disposal.",
+  "note": "Blocked on the backend or an owner decision: backend GET /api/accounting/fixed-assets has paging and status/assetTypeId/vendorId filters but no name or code search, so the duplicate-name shortcut and the disposal select still need the whole non-disposed list. Options: ask the backend for a search parameter, or drop the shortcut and use an async server search for disposal.",
   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
   "date": "2026-11-14"
  },
  "rv-fe:accounting:44": {
   "status": "still-bug",
-  "note": "Needs a backend change: no server-side 'mine' filter for the approval queue (the reconciliation history is already paged).",
+  "note": "Blocked on the backend: no server-side 'mine' filter for the approval queue (the reconciliation history is already paged).",
   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
   "date": "2026-11-14"
  },
@@ -111,6 +111,18 @@
   "status": "decision",
   "note": "Owner decision 2026-11-14: freezing stock after picking is a backend matter; business does not want stock frozen at the sales order.",
   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:accounting:57": {
+  "status": "fixed",
+  "note": "Checked 2026-11-14: the document delete already asks for confirmation, no literal colour is left in src/features/accounting, and parallel uploads would not help because client server actions already run one at a time. Nothing left to change.",
+  "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:accounting:16": {
+  "status": "decision",
+  "note": "Done for every screen that exists today. Items (b) and (c) only matter once financial-year writes are switched on (tracker item 50); reopen them then.",
+  "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
   "date": "2026-11-14"
  }
 }

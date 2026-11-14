@@ -1,10 +1,10 @@
 {
  "frontend": {
   "branch": "release_beta_1.0.0",
-  "sha": "05aecf15",
-  "head_time": "2026-11-13 04:07 UTC",
+  "sha": "efb9a2d8",
+  "head_time": "2026-11-14 09:32 UTC",
   "assessed": "2026-11-14",
-  "scope": "all modules: code check of every non-fixed item plus e2e refresh (11 suites green on this head)"
+  "scope": "all modules: code check of every non-fixed item; e2e suites green on this head except the known fresh-stack stock-up race (gate-pass 04, REP-03-02); accounting frontend fixes included"
  },
  "backend": {
   "branch": "deployment/dev",
