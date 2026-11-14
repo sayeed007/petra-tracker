@@ -7388,8 +7388,8 @@
   "severity": "unrated",
   "title": "Asset type list and register have no search/sorting; type list has no delete",
   "summary": "The asset type list now has search and delete. Column sorting and a search box on the fixed-asset register are still missing.",
-  "status": "in-progress",
-  "status_evidence": "[feat/backend-accounting-alignment (uncommitted, not merged)] type list search + delete added; column sorting and register search not added",
+  "status": "fixed",
+  "status_evidence": "Fixed-asset register search (name, code, serial, type) and 10 sortable columns; asset-type list sortable; the register is not paginated so both run in the browser (fixed-asset-list-view.tsx, shared sortRows with tests).",
   "evidence_level": "likely",
   "found": "2026-10-29",
   "source": "Assets Frontend #3 (ASSET-UI-02, UI-22)",
@@ -7398,8 +7398,8 @@
   "theme": "",
   "set": "notes-A",
   "checked": {
-   "ref": "feat/backend-accounting-alignment",
-   "date": "2026-11-09"
+   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Open Accounting > Asset Types, then Fixed Assets register.",
@@ -11742,8 +11742,8 @@
   "severity": "medium",
   "title": "Channel prices matched by English names; legacy fields restore prices",
   "summary": "Item selling prices per sales channel were matched to channels by English names, and legacy fields brought deleted prices back on save. A renamed channel could get the wrong price. The save path is fixed; the list/detail headline fields still guess by name.",
-  "status": "in-progress",
-  "status_evidence": "Write side fixed: mapChannelPrices now sends only dynamic rows keyed by channel id (erp-api/inventory/items/mapper.ts ~l.985-990). Still left: the read side derives legacy retail/modern/corporate headline prices by English channel name (erp-api/inventory/items/index.ts l.830-835 name.includes('retail')). Source fe-A04-9.",
+  "status": "fixed",
+  "status_evidence": "Name-matched retail_price, modern_trade_price, corporate_price and getChannelPrice removed; per-channel prices come only from channelPrices by salesChannelId. Side effect: the item form's 'at least one channel price' check now needs a real channel price row.",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/08-moved-in.md",
@@ -11754,8 +11754,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Rename a sales channel (e.g. 'Retail' to 'Retailers') in Inventory > Sales Channels.",
@@ -11945,8 +11945,8 @@
   "severity": "medium",
   "title": "Distribution row amount recomputed to 0 and sent; failed lookups shown as \"0 available\"",
   "summary": "On a product distribution row the amount was recomputed as quantity x 0 and saved when the price lookup was slow or failed, and failed availability lookups were shown as '0 available'. The amount and save guard are fixed; the '0' display for a failed lookup remains.",
-  "status": "in-progress",
-  "status_evidence": "Mostly fixed: items-table.tsx l.230-238 no longer overwrites the amount when no price is known and form-view l.361-364 blocks save when the availability pre-check fails. Missing: a failed per-row lookup still renders availability as '0' (items-table.tsx l.319-321). Source fe-D04-2.",
+  "status": "fixed",
+  "status_evidence": "Availability cell shows '-' when the lookup has no figure (product-distribution-form-items-table.tsx ~319).",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/08-moved-in.md",
@@ -11957,8 +11957,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Open Inventory > Product Distribution > edit an existing distribution.",
@@ -12176,7 +12176,7 @@
   "title": "Demo data noise: 17 real-looking bank ledgers, employee lookup fails, real-looking login placeholder",
   "summary": "The demo data is noisy: the cash/bank list holds about 17 real-looking client bank ledgers with real-looking numbers, Add User > Assign Existing Employee fails when HRMS is unreachable, and the login box shows a real-looking address as placeholder.",
   "status": "open",
-  "status_evidence": "Frontend part still there: login-form.tsx l.78 placeholder 'maya.line@petraproducts.com' looks like a real address. Backend seed: petra-chart.json still seeds the client bank ledgers; not re-counted today. Employee lookup needs HRMS (assign-employee-form.tsx).",
+  "status_evidence": "Frontend part done: login placeholder is name@example.com. Left: the 17 real-looking bank ledgers in the chart seed (backend) and the HRMS lookup failure.",
   "evidence_level": "verified",
   "found": "2026-11-10",
   "source": "TEST-OBSERVATIONS-2026-11-10.md B16",
@@ -12185,8 +12185,8 @@
   "theme": "Shared segment",
   "set": "purchase-test-2026-11-10",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15 / deployment/dev@b2597ef11",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Open the Accounting cash/bank ledger list on a freshly seeded backend.",
@@ -12460,8 +12460,8 @@
   "severity": "low",
   "title": "Export files do not say which customer, vendor, category or fiscal year filtered the report",
   "summary": "A report filtered by one vendor or customer exports to PDF or Excel without saying which vendor or customer, so the file cannot be understood alone.",
-  "status": "still-bug",
-  "status_evidence": "Still in code: purchase-engine-views.tsx l.292, 449 pass only the currency filter to the export; payment-history-report-view.tsx l.143 passes filters: []; sales-engine-views.tsx l.42 only currency. The vendor/customer picked on screen is not in the file (physical-inventory and accounting reports do it correctly). Source fe-D21-2.",
+  "status": "fixed",
+  "status_evidence": "Purchase-order, payment-history and sales-order engine report exports list the applied fiscal year, vendor, customer, sales rep or category (reports/shared/export-filter-lines.ts, with a test). The two purchase history reports take dates only.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/08-moved-in.md",
@@ -12472,8 +12472,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Open Reports > Purchase Orders (or Payment History), choose one vendor.",
@@ -12616,8 +12616,8 @@
   "severity": "low",
   "title": "Facade mappers return English and em-dash fallbacks",
   "summary": "Some facade fallbacks and error texts are English strings, so Bangla users see 'Item #5', 'Sales Order #3' or 'Failed to download template'.",
-  "status": "still-bug",
-  "status_evidence": "Still in code: erp-api/sales/delivery-orders/index.ts l.1097 `Item #${...}`, l.1293, l.1362 `Address ${n}`, l.1391 `Sales Order #${id}`; erp-api/sales/ims-reports/index.ts l.251, 266 'Failed to download template'; upload-ims-drawer.tsx l.395-399 English literals. Source fe-A06-5.",
+  "status": "in-progress",
+  "status_evidence": "Fallbacks translated in sales/delivery-orders, ims-reports and upload-ims-drawer. The same 'Item #n' English fallback still exists in gate-pass, sales/invoices and sales/item-returns facades.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/08-moved-in.md",
@@ -12628,8 +12628,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Switch to Bangla, open a delivery order with unnamed items; in Field Force > IMS upload a template download that fails."
@@ -12647,8 +12647,8 @@
   "severity": "low",
   "title": "Rich-text toolbars act on mouse-down only",
   "summary": "The rich-text toolbar buttons (bold, lists and so on) act only on mouse down, so a keyboard user pressing Enter or Space gets nothing.",
-  "status": "still-bug",
-  "status_evidence": "Partly open: app-rich-text-editor.tsx l.230-234 still runs the command on onMouseDown with onClick cancelled and no role=toolbar; the composer has role=toolbar (app-rich-text-composer.tsx l.463) but its buttons also run on mouse down (l.134-137). Keyboard Enter/Space does nothing. Source fe-D42-4.",
+  "status": "fixed",
+  "status_evidence": "Rich-text toolbar buttons (editor, composer, colour swatches) run on click; mouse-down only prevents default to keep the selection.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/08-moved-in.md",
@@ -12659,8 +12659,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Open Settings > email template editor, Tab to Bold, press Enter."
@@ -12805,8 +12805,8 @@
   "severity": "low",
   "title": "In-app guide reports/export page does not explain whole-set vs this-page export",
   "summary": "The in-app guide for reports and export does not tell users whether an export contains the whole filtered result or only the page they are looking at.",
-  "status": "open",
-  "status_evidence": "Not found in guide text: messages/guide/en.json mentions export only as 'use the available export action for the intended filtered scope' (e.g. l.1378, 2236); no sentence explains whole result vs current page. Doc gap still open.",
+  "status": "fixed",
+  "status_evidence": "Reports guide 'exportReports' states that an export holds the whole filtered result; only Journals and Contra Vouchers offer 'current page only' (checked in the export code).",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA guide-export",
@@ -12817,8 +12817,8 @@
   "theme": "",
   "set": "notes-A",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Open Guide > Reports, read the export section."
@@ -12836,8 +12836,8 @@
   "severity": "low",
   "title": "Guide fixed-assets/register per-tab screenshot frames render blank in full-page shot",
   "summary": "In the Fixed Assets register guide the per-tab screenshot frames looked blank in a full-page screenshot.",
-  "status": "open",
-  "status_evidence": "not checked: needs a browser full-page screenshot. Code: guide-blocks.tsx l.220 uses next/image with default lazy loading, which matches the earlier guess that off-screen frames stay blank in a full-page capture; probably a capture artefact, not a user bug.",
+  "status": "fixed",
+  "status_evidence": "Guide images load eagerly (guide-blocks.tsx).",
   "evidence_level": "suspect",
   "found": "2026-10-25",
   "source": "Visual QA guide-frames",
@@ -12848,8 +12848,8 @@
   "theme": "",
   "set": "notes-A",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Open Guide > Fixed Assets > Register, take a full-page screenshot."
@@ -12867,8 +12867,8 @@
   "severity": "low",
   "title": "Module names stay English in the Bangla nav",
   "summary": "In the Bangla guide navigation, three module names (Dashboard, Purchase, Fixed Assets) are still written in English.",
-  "status": "still-bug",
-  "status_evidence": "Still in code: messages/guide/bn.json module titles 'Dashboard', 'Purchase' and 'Fixed Assets' are English (the other modules are Bangla).",
+  "status": "fixed",
+  "status_evidence": "Bangla guide module names: ড্যাশবোর্ড, পারচেজ, স্থায়ী সম্পদ (the app menu's terms).",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA guide-nav-bn",
@@ -12879,8 +12879,8 @@
   "theme": "",
   "set": "notes-A",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Switch to Bangla, open the Guide, read the module list."
@@ -18553,7 +18553,7 @@
   "title": "Dead report views, fixture file, mock page by URL",
   "summary": "The reports area carried about 2,400 lines of unused report views, a fixture file and a coverage-planning page that showed invented data to anyone who typed its URL. Most of this is deleted and the URL now returns 404; leftover mock data and some dead hub controls remain.",
   "status": "in-progress",
-  "status_evidence": "Dead report views and erp-api/reports-preview are deleted, coverage-planning page returns notFound() (app/(erp)/field-force/coverage-planning/page.tsx l.8; commits 7835f63c, ce6b649d). Missing: the feature folder src/features/field-force/coverage-planning (mock-data.ts) is still in the tree, and the hub cleanup (disabled favorite, keyboard hint, disabled New buttons, memo, TradeOfferMockItem rename) was not done per FIX-LOG.",
+  "status_evidence": "Dead hub controls and the empty pinned panel removed (report-catalog-view.tsx). Left: field-force/coverage-planning/mock-data.ts, used by the coverage-planning view the owner has not decided about. The reports guide still talks about pinning.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
@@ -18567,8 +18567,8 @@
   "theme": "Theme 8. Fake, dead and hardcoded",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Open /field-force/coverage-planning: it returns 404.",
@@ -18690,8 +18690,8 @@
   "severity": "medium",
   "title": "Reconciliation Detail section/figure labels and fiscal period label stay English in Bangla",
   "summary": "Reconciliation Detail row labels like 'Reconciled' and 'Total as of <date>' used to be English only, so Bengali users saw English. The backend now sends a labelCode and the date as its own field and the frontend translates it.",
-  "status": "open",
-  "status_evidence": "API proof 2026-11-14 on deployment/dev@b2597ef11: same endpoint as merge:B3: rows carry labelCode (RECONCILED, NO_PREVIOUS_RECONCILED_BALANCE, CURRENT_RECONCILED_BALANCE, STATEMENT_BALANCE_AS_OF, DIFFERENCE, UNRECONCILED, TOTAL_AS_OF) and labelDate on dated rows (2 rows)",
+  "status": "fixed",
+  "status_evidence": "All eight rowLabels codes have en and bn keys; the fiscal-period value is now formatted from statementFrom in the interface language (reconciliation-detail-view.tsx). Not checked in a Bangla browser run.",
   "evidence_level": "verified",
   "found": "2026-10-25",
   "source": "Visual QA recon-detail-bn",
@@ -18702,7 +18702,7 @@
   "theme": "",
   "set": "notes-A",
   "checked": {
-   "ref": "deployment/dev@b2597ef11",
+   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
    "date": "2026-11-14"
   },
   "steps": [
@@ -19257,7 +19257,7 @@
   "title": "URL page/size trusted, collection approval passes amounts in URL",
   "summary": "Page and size came straight from the URL, so ?size=100000 asked the backend for 100k rows and ?size=abc sent NaN. Also the collection approval passes amounts in editable URL parameters to the deposit form. The paging part is fixed; the URL amounts remain.",
   "status": "in-progress",
-  "status_evidence": "Page/size are now parsed and clamped by parsePageParams (features/field-force/shared/parse-page.ts, size max 100, test pnpm test:field-force). Missing: collections-data-table.tsx l.209-228 still puts amount, customerId and chequeNumber into the URL when opening the deposit form (the form lives in the sales module).",
+  "status_evidence": "Blocked on the backend: the deposit form cannot load a collection by id (erp-api/field-force/collections has no get-by-id; filterCollections filters only on status and creationTime). Needs a backend get-by-id or id filter, then pass only collectionId.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
@@ -19269,8 +19269,8 @@
   "theme": "Theme 6. Request volume",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+   "date": "2026-11-14"
   },
   "steps": [
    "Open /field-force/ase/customer?size=100000 (now clamped to 100).",
@@ -19421,7 +19421,7 @@
   "title": "Sales Order by Item Summary is gross, not net of discount or returns",
   "summary": "Sales Order by Item Summary shows gross amounts before trade discount and does not subtract returns or invoice edits, but the heading reads like the amount sold. It disagrees with the customer summary and the receivable, which are net.",
   "status": "open",
-  "status_evidence": "Owner 2026-11-14: flag for the backend as well. Backend: SalesByItemSummaryReportGenerator reports gross, other sales reports are net: decide whether the report should be net of discount and returns. Frontend: the column is being labelled 'gross' meanwhile.",
+  "status_evidence": "Frontend part done: the amount column and export say 'gross, before discount and returns' (en and bn). Backend: decide whether the report should be net.",
   "evidence_level": "verified",
   "found": "2026-11-11",
   "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S40",
@@ -19430,7 +19430,7 @@
   "theme": "Sales segment",
   "set": "sales-test-2026-11-11",
   "checked": {
-   "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+   "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
    "date": "2026-11-14"
   },
   "steps": [

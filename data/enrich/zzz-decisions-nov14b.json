@@ -7,8 +7,8 @@
  },
  "st1111:S40": {
   "side": "both",
-  "note": "Owner 2026-11-14: flag for the backend as well. Backend: SalesByItemSummaryReportGenerator reports gross, other sales reports are net: decide whether the report should be net of discount and returns. Frontend: the column is being labelled 'gross' meanwhile.",
-  "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+  "note": "Frontend part done: the amount column and export say 'gross, before discount and returns' (en and bn). Backend: decide whether the report should be net.",
+  "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
   "date": "2026-11-14"
  },
  "rv-fe:other:14": {
@@ -43,6 +43,82 @@
  "rv-fe:other:13": {
   "note": "Blocked on the backend: the requester dropdown needs a light lookup endpoint instead of GET /api/admin/users (all users with emails).",
   "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "assets:UI-02": {
+  "status": "fixed",
+  "note": "Fixed-asset register search (name, code, serial, type) and 10 sortable columns; asset-type list sortable; the register is not paginated so both run in the browser (fixed-asset-list-view.tsx, shared sortRows with tests).",
+  "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:reports:29": {
+  "status": "in-progress",
+  "note": "Dead hub controls and the empty pinned panel removed (report-catalog-view.tsx). Left: field-force/coverage-planning/mock-data.ts, used by the coverage-planning view the owner has not decided about. The reports guide still talks about pinning.",
+  "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "vqa:recon-detail-bn": {
+  "status": "fixed",
+  "note": "All eight rowLabels codes have en and bn keys; the fiscal-period value is now formatted from statementFrom in the interface language (reconciliation-detail-view.tsx). Not checked in a Bangla browser run.",
+  "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:other:10": {
+  "status": "fixed",
+  "note": "Name-matched retail_price, modern_trade_price, corporate_price and getChannelPrice removed; per-channel prices come only from channelPrices by salesChannelId. Side effect: the item form's 'at least one channel price' check now needs a real channel price row.",
+  "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:other:30": {
+  "status": "fixed",
+  "note": "Availability cell shows '-' when the lookup has no figure (product-distribution-form-items-table.tsx ~319).",
+  "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:other:26": {
+  "status": "fixed",
+  "note": "Purchase-order, payment-history and sales-order engine report exports list the applied fiscal year, vendor, customer, sales rep or category (reports/shared/export-filter-lines.ts, with a test). The two purchase history reports take dates only.",
+  "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:other:31": {
+  "status": "in-progress",
+  "note": "Fallbacks translated in sales/delivery-orders, ims-reports and upload-ims-drawer. The same 'Item #n' English fallback still exists in gate-pass, sales/invoices and sales/item-returns facades.",
+  "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:other:34": {
+  "status": "fixed",
+  "note": "Rich-text toolbar buttons (editor, composer, colour swatches) run on click; mouse-down only prevents default to keep the selection.",
+  "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "vqa:guide-export": {
+  "status": "fixed",
+  "note": "Reports guide 'exportReports' states that an export holds the whole filtered result; only Journals and Contra Vouchers offer 'current page only' (checked in the export code).",
+  "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "vqa:guide-frames": {
+  "status": "fixed",
+  "note": "Guide images load eagerly (guide-blocks.tsx).",
+  "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "vqa:guide-nav-bn": {
+  "status": "fixed",
+  "note": "Bangla guide module names: ড্যাশবোর্ড, পারচেজ, স্থায়ী সম্পদ (the app menu's terms).",
+  "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-fe:reports:26": {
+  "note": "Blocked on the backend: the deposit form cannot load a collection by id (erp-api/field-force/collections has no get-by-id; filterCollections filters only on status and creationTime). Needs a backend get-by-id or id filter, then pass only collectionId.",
+  "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "pt1110:B16": {
+  "note": "Frontend part done: login placeholder is name@example.com. Left: the 17 real-looking bank ledgers in the chart seed (backend) and the HRMS lookup failure.",
+  "ref": "fix/tracker-frontend-2@2714e9c4, backend deployment/dev@b2597ef11",
   "date": "2026-11-14"
  }
 }

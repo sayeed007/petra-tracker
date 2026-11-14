@@ -2981,12 +2981,6 @@
   "ref": "release_beta_copy@e9a75ca2b",
   "date": "2026-11-09"
  },
- "assets:UI-02": {
-  "status": "in-progress",
-  "note": "[feat/backend-accounting-alignment (uncommitted, not merged)] type list search + delete added; column sorting and register search not added",
-  "ref": "feat/backend-accounting-alignment",
-  "date": "2026-11-09"
- },
  "rv-fe:accounting:37": {
   "status": "fixed",
   "note": "Already fixed on this branch before the round: NONE method allows life 0 (batch-form refine); branch fix/accounting-fe-review-items (not merged); typecheck and unit tests, not browser-tested",
