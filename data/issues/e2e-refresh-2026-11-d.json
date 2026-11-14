@@ -1,0 +1,289 @@
+[
+ {
+  "id": "e2e:year:lot-bill-drops-stock-sheet",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "high",
+  "title": "Billing a lot-tracked receipt removes the item from the month-end stock sheet",
+  "summary": "After a lot-tracked item is received and then billed, the stock sheet of a later month no longer lists it: the bill writes a COST_ASSIGNED ledger row dated the booking day, and the sheet counts it as a movement after the sheet date, so on hand 140 minus 140 gives zero.",
+  "steps": [
+   "Create a LOT / LOTBASED item and receive two lots by PO dated in September (80 and 60).",
+   "Bill both receipts today.",
+   "Open the month-end stock sheet of a month before today."
+  ],
+  "expected": "The sheet lists 140 in two lots.",
+  "actual": "The item is absent; before the bill the same sheet shows 140.",
+  "where": "Backend: COST_ASSIGNED ledger row (document_date = booking day) read as a later movement by the stock sheet.",
+  "tests": [
+   "YEAR-07-06"
+  ],
+  "verify": "Run YEAR-07-06; the test.fail turns into a pass when fixed.",
+  "owner": "Backend (inventory)",
+  "status": "open",
+  "status_evidence": "Found by the e2e business-year suite and the y25 port, 2026-11-14; kept as test.fail() with a BUG comment.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@34e26c34 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "e2e/tests/year",
+   "e2e/tests/accounting/18-bank-statement-import.spec.ts"
+  ]
+ },
+ {
+  "id": "e2e:year:post-cogs-numeric-overflow",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "high",
+  "title": "Posting cost of goods sold fails with 'data conflict' when the gross margin percentage overflows",
+  "summary": "Month close cannot post COGS when the margin percentage does not fit its column; the user sees only 409 data conflict.",
+  "steps": [
+   "On the seeded dev data (opening stock 1,800,000, no items behind it) post a month's COGS when the month's sales are a few hundred.",
+   "POST /api/accounting/period-close/{id}/inventory/post-cogs."
+  ],
+  "expected": "The entry posts, or a readable message explains the limit.",
+  "actual": "409 'data conflict'; the database says numeric field overflow, precision 9 scale 4 on period_close_inventory_close (gross margin percentage).",
+  "where": "Backend: period_close_inventory_close column size and error message.",
+  "tests": [
+   "YEAR-04"
+  ],
+  "verify": "Post COGS for a month with tiny sales against the seeded stock value.",
+  "owner": "Backend (accounting)",
+  "status": "open",
+  "status_evidence": "Found by the e2e business-year suite and the y25 port, 2026-11-14; kept as test.fail() with a BUG comment.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@34e26c34 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "e2e/tests/year",
+   "e2e/tests/accounting/18-bank-statement-import.spec.ts"
+  ]
+ },
+ {
+  "id": "e2e:year:ar-one-cent-vat-ait",
+  "module": "sales",
+  "side": "backend",
+  "severity": "medium",
+  "title": "A Modern Trade invoice leaves a permanent 0.01 on the receivable (VAT and AIT rounded separately)",
+  "summary": "The invoice tax 1,691.8825 is posted as VAT 1,606.22 plus AIT 85.67 = 1,691.89, so the receivable debit is 12,400.01 and the full receipt leaves 0.01 forever; the S&R check shows -0.01 (0.12 after a year).",
+  "steps": [
+   "Invoice a Modern Trade line of 12,400.00 with VAT inside the price.",
+   "Read the journal and the receivable after a full receipt."
+  ],
+  "expected": "AR debit 12,400.00; nothing left after the receipt.",
+  "actual": "AR debit 12,400.01.",
+  "where": "Backend: SalesTax vat and AIT parts rounded separately.",
+  "tests": [
+   "YEAR-03-09"
+  ],
+  "verify": "Invoice 12,400.00 and pay it: receivable is 0.00.",
+  "owner": "Backend (sales)",
+  "status": "open",
+  "status_evidence": "Found by the e2e business-year suite and the y25 port, 2026-11-14; kept as test.fail() with a BUG comment.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@34e26c34 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "e2e/tests/year",
+   "e2e/tests/accounting/18-bank-statement-import.spec.ts"
+  ]
+ },
+ {
+  "id": "e2e:year:pp-check-credit-difference",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Purchases and payables check shows a 3,000 difference for a bill paid partly by a credit",
+  "summary": "A bill of 74,000 paid 71,000 plus a 3,000 credit is FULLY_PAID and its ledger payable is 0, but the month-close P&P check shows sub-ledger 3,000, ledger 0, difference 3,000, in this and every later month.",
+  "steps": [
+   "Create a bill 74,000, pay 71,000, apply a 3,000 bill credit.",
+   "Read the month's P&P close check."
+  ],
+  "expected": "Difference 0.",
+  "actual": "Difference 3,000.",
+  "where": "Backend: P&P check sub-ledger side.",
+  "tests": [
+   "YEAR-03-10"
+  ],
+  "verify": "The check shows difference 0 after the credit.",
+  "owner": "Backend (accounting)",
+  "status": "open",
+  "status_evidence": "Found by the e2e business-year suite and the y25 port, 2026-11-14; kept as test.fail() with a BUG comment.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@34e26c34 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "e2e/tests/year",
+   "e2e/tests/accounting/18-bank-statement-import.spec.ts"
+  ]
+ },
+ {
+  "id": "e2e:year:return-not-credited-to-channel",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "A customer return is not credited back to a sales channel balance",
+  "summary": "After a 2-unit customer return the bins hold the story's 944 but the sales channels add up to 941.",
+  "steps": [
+   "Sell, ship, then return 2 units from a customer.",
+   "Compare the bin total and the channel total of the item."
+  ],
+  "expected": "Channel total equals bin total.",
+  "actual": "Channels add to 941 against 944 in the bins.",
+  "where": "Backend: channel allocation on sales return.",
+  "tests": [
+   "YEAR-07-07"
+  ],
+  "verify": "Channel total equals bin total after a return.",
+  "owner": "Backend (inventory)",
+  "status": "open",
+  "status_evidence": "Found by the e2e business-year suite and the y25 port, 2026-11-14; kept as test.fail() with a BUG comment.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@34e26c34 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "e2e/tests/year",
+   "e2e/tests/accounting/18-bank-statement-import.spec.ts"
+  ]
+ },
+ {
+  "id": "e2e:bank:duplicate-line-without-reference",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Importing the same bank statement file twice stores lines without a reference twice",
+  "summary": "The duplicate check uses the reference only, so lines with no reference are imported again.",
+  "steps": [
+   "Import a CSV whose lines have no reference and confirm.",
+   "Upload and confirm the same file again."
+  ],
+  "expected": "The second import adds nothing.",
+  "actual": "The lines are stored a second time.",
+  "where": "Backend: bank statement import duplicate check.",
+  "tests": [
+   "ACC-18-14"
+  ],
+  "verify": "Import the same file twice: the line count does not change.",
+  "owner": "Backend (accounting)",
+  "status": "open",
+  "status_evidence": "Found by the e2e business-year suite and the y25 port, 2026-11-14; kept as test.fail() with a BUG comment.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@34e26c34 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "e2e/tests/year",
+   "e2e/tests/accounting/18-bank-statement-import.spec.ts"
+  ]
+ },
+ {
+  "id": "e2e:bank:signed-amount-column",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Bank statement import cannot map one signed Amount column",
+  "summary": "A CSV with a single signed amount (500 / -200) can never reach a complete mapping, so it cannot be imported at all.",
+  "steps": [
+   "Upload a CSV with columns Date, Description, Amount (signed).",
+   "Read the mapping."
+  ],
+  "expected": "mappingComplete true.",
+  "actual": "mappingComplete false.",
+  "where": "Backend: statement import mapping model; the frontend cannot offer it either.",
+  "tests": [
+   "ACC-18-17"
+  ],
+  "verify": "A signed single-column file maps and imports.",
+  "owner": "Backend (accounting)",
+  "status": "open",
+  "status_evidence": "Found by the e2e business-year suite and the y25 port, 2026-11-14; kept as test.fail() with a BUG comment.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@34e26c34 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "e2e/tests/year",
+   "e2e/tests/accounting/18-bank-statement-import.spec.ts"
+  ]
+ },
+ {
+  "id": "e2e:bank:match-concurrent-overwrite",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Two users matching the same statement line at once: both succeed, last write wins",
+  "summary": "PUT /bank-reconciliation/statement-lines/{id}/match has no lock or version check, so one user's match is silently lost.",
+  "steps": [
+   "Send two match requests for one statement line with different ledger lines at the same time."
+  ],
+  "expected": "One succeeds, the other is refused.",
+  "actual": "Both answer 200.",
+  "where": "Backend: bank reconciliation match endpoint.",
+  "tests": [
+   "ACC-20-07"
+  ],
+  "verify": "Exactly one of two concurrent matches succeeds.",
+  "owner": "Backend (accounting)",
+  "status": "open",
+  "status_evidence": "Found by the e2e business-year suite and the y25 port, 2026-11-14; kept as test.fail() with a BUG comment.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@34e26c34 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "e2e/tests/year",
+   "e2e/tests/accounting/18-bank-statement-import.spec.ts"
+  ]
+ },
+ {
+  "id": "e2e:platform:connection-pool-starvation",
+  "module": "other",
+  "side": "backend",
+  "severity": "medium",
+  "title": "A burst of about 20 parallel requests starves the database pool and turns a 403 into a 500",
+  "summary": "With a pool of 10 connections a burst of parallel writes made a later request wait 30 s and fail with HikariPool 'Connection is not available'; a view-only user's 403 became a 500.",
+  "steps": [
+   "Send about 20 parallel journal drafts or bank requests, then immediately POST /api/accounting/fixed-assets as a view-only user."
+  ],
+  "expected": "403 for the view-only user.",
+  "actual": "500 HikariPool-1 Connection is not available, request timed out after 30001ms (total=10, active=10, waiting=1).",
+  "where": "Backend: datasource pool size / request concurrency.",
+  "tests": [
+   "FAS-08-01"
+  ],
+  "verify": "The permission check answers 403 during a burst.",
+  "owner": "Backend (other)",
+  "status": "open",
+  "status_evidence": "Found by the e2e business-year suite and the y25 port, 2026-11-14; kept as test.fail() with a BUG comment.",
+  "evidence_level": "verified",
+  "found": "2026-11-14",
+  "checked": {
+   "ref": "release_beta_1.0.0@34e26c34 + deployment/dev@b2597ef11",
+   "date": "2026-11-14"
+  },
+  "refs": [
+   "e2e/tests/year",
+   "e2e/tests/accounting/18-bank-statement-import.spec.ts"
+  ]
+ }
+]
