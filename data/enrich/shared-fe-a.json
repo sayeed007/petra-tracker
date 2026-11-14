@@ -1,0 +1,505 @@
+{
+ "rv-fe:shared:1": {
+  "note": "Fixed: columnDecimals rounds before counting decimals (src/shared/export/format.ts ~l.46, roundMoney(Math.abs(n),3)); the document total is rounded at src/shared/export/document-format/specs.ts:292.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Export files (PDF, Word, Excel) of documents with fractional quantities (kg, litre) printed every quantity with 3 decimals when the total carried floating-point noise (1.1 + 2.2 = 3.3000000000000003). It affected every export button that uses the shared export code.",
+  "steps": [
+   "Open a Purchase Order whose lines have quantities 1.1 and 2.2.",
+   "Click Export (PDF).",
+   "Look at the Qty column and the total."
+  ],
+  "expected": "Quantities print as 1.1, 2.2 and total 3.3.",
+  "actual": "Fixed: the fraction length is measured after rounding to 3 decimals, and the document total is rounded the same way.",
+  "where": "src/shared/export/format.ts (columnDecimals), src/shared/export/document-format/specs.ts:292",
+  "verify": "Run src/shared/export/format.test.ts (pnpm test:shared); export a PO with quantities 1.1 and 2.2 and check the PDF shows 1.1 / 2.2 / 3.3.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:10": {
+  "note": "Fixed by code reading: the panel ignores an availability result when the row no longer has that location (app-inventory-detail-lookup-panel.tsx ~l.455-475) and on failure sets availabilityFailed and deletes the cache key (l.470-473); the row error single.errors.availabilityFailed is shown at l.698-699.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "In the inventory lookup panel (bin transfer, adjustment, product distribution, packing house, item fulfillment, vendor return) picking bin A and then bin B quickly could leave bin B showing bin A's available quantity, so the max-quantity check used the wrong number. A failed load also left the quantity box disabled with no message.",
+  "steps": [
+   "Open Inventory > Bin Transfer > New, pick an item and open the lookup panel.",
+   "In dev tools delay the availability request, pick bin A then bin B.",
+   "Let the first response arrive last."
+  ],
+  "expected": "The row keeps bin B's available quantity; a failed load shows an error and can be retried.",
+  "actual": "Fixed: stale results are ignored and a failure shows the availabilityFailed row error.",
+  "where": "src/shared/components/ui/app-inventory-detail-lookup-panel.tsx:455-475,698",
+  "verify": "Throttle the availability call in dev tools and repeat the steps; also block the call and check the row error appears.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:11": {
+  "note": "Fixed: the second effect in app-list-search.tsx returns unless debouncedTerm === term.trim() and unless it differs from requestedTerm (src/shared/components/ui/app-list-search.tsx ~l.60-80), so an external reset is not overwritten by the old term.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "On 21 purchase and sales list pages, searching for a word and then clicking the same list in the sidebar cleared the box but the old search term was written back into the URL a moment later.",
+  "steps": [
+   "Open Purchase > Purchase Orders, type 'abc' in the search box.",
+   "Click the Purchase Orders sidebar link again."
+  ],
+  "expected": "URL and search box become empty and stay empty.",
+  "actual": "Fixed: the push is skipped when the debounced term is not the term in the box.",
+  "where": "src/shared/components/ui/app-list-search.tsx",
+  "verify": "Repeat the steps; the URL must not regain ?search=abc.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:12": {
+  "note": "Fixed: GeneralSettingProvider fetches once (loadedRef guard) and no longer refetches per route change (src/providers/general-setting-provider.tsx:19-60); a failure is exposed as `error` in the context and retried on the next route change.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Company settings (currency, date and number format) were fetched again on every navigation, flipping a loading flag and causing formatting flicker; a failed fetch was invisible.",
+  "steps": [
+   "Open the app with the network tab open.",
+   "Navigate between five pages."
+  ],
+  "expected": "One GET /api/general-setting call in total.",
+  "actual": "Fixed: one call; `error` is available to consumers.",
+  "where": "src/providers/general-setting-provider.tsx",
+  "verify": "Network tab: one /api/general-setting request over five navigations.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:13": {
+  "note": "Fixed: fetchUserAccessFromBackend is wrapped in React cache() (src/erp-api/auth/access/http-provider.ts:11), so the permission checks of one page load share one request.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A single page load called /api/auth/me/access once per permission check (a report page about 4 times), adding latency on every page.",
+  "steps": [
+   "Open Reports > Customer Receivables > any report with the network log open."
+  ],
+  "expected": "One GET /api/auth/me/access per page load.",
+  "actual": "Fixed: calls inside one render share a single request.",
+  "where": "src/erp-api/auth/access/http-provider.ts",
+  "verify": "Count /api/auth/me/access calls in the server log for one page load.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:18": {
+  "note": "Fixed: both selects show the translated common.loadFilterFailed and never raw text (src/shared/components/item-type-select.tsx:45-60, sales-channel-select.tsx:50,57).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "When the item-type or sales-channel filter list failed to load, the user saw a raw technical error (API fetch failed ...) or English text, and the filter looked as if there were no item types.",
+  "steps": [
+   "Open Inventory > Items list.",
+   "Block the item-types request in dev tools and reload."
+  ],
+  "expected": "A translated message appears and no technical text.",
+  "actual": "Fixed: one translated message.",
+  "where": "src/shared/components/item-type-select.tsx, src/shared/components/sales-channel-select.tsx",
+  "verify": "Block the request and read the toast in English and Bangla.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:19": {
+  "note": "Fixed: AppRejectModal uses useTranslations('shared.rejectModal'), wraps onConfirm in Promise.resolve with a catch, and blocks close and Escape while loading (src/shared/components/app-reject-modal.tsx:34-94).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The shared Reject dialog (journals, IMS, collections) had English-only text, an unhandled error when the reject call failed, could be double-submitted and could be closed with Esc while the request ran.",
+  "steps": [
+   "Open a journal waiting for approval and click Reject.",
+   "Switch the UI to Bangla; double-click Confirm; press Esc while it runs."
+  ],
+  "expected": "Bangla text; second click and Esc do nothing during the request; a failure shows an error.",
+  "actual": "Fixed in code.",
+  "where": "src/shared/components/app-reject-modal.tsx",
+  "verify": "Repeat the steps in Bangla.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:2": {
+  "note": "Partly done: the purchase formatAmount copies are now thin wrappers over formatIndianNumber, and number-format.ts has a cached getNumberFormat (src/shared/utils/number-format.ts ~l.57-80). Still about 14 files define their own formatAmount (e.g. features/sales/sales-demand/**, features/settings/accounting/mappers.ts) and 4 files call new Intl.NumberFormat directly. Purchase screens still ignore the company number-format setting by design (comment on formatIndianNumber).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The same amount can be formatted by many different local helpers, so the same figure may appear with different grouping on different screens. Purchase screens always use Indian grouping (12,34,567) regardless of the General Settings number format.",
+  "steps": [
+   "In Settings > General set a different number format.",
+   "Open Purchase > Purchase Orders and Purchase > Vendor Bills lists with the same amount."
+  ],
+  "expected": "All screens follow the one company format.",
+  "actual": "Purchase screens use Indian grouping regardless of the setting; several local formatAmount helpers remain.",
+  "where": "src/features/purchase/*/utils.ts (formatAmount), src/features/sales/sales-demand/components/*, src/shared/utils/number-format.ts",
+  "verify": "Change the format in Settings and compare the PO list and the Vendor Bill list.",
+  "owner": "Frontend, shared",
+  "status": "in-progress"
+ },
+ "rv-fe:shared:20": {
+  "note": "Still present: setIsSaving(true) runs only at product-distribution-form-view.tsx:369, after the sequential awaited getItemChannelCount loop (l.351-366); nothing else (no isSubmitting guard) blocks a second click meanwhile.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "On the Product Distribution form, Save checks available stock item by item before it marks itself busy. A second click during that check can send the same distribution twice, creating two stock reservations.",
+  "steps": [
+   "Inventory > Product Distribution > New, add several lines.",
+   "Throttle the network in dev tools to Slow 3G.",
+   "Double-click Save."
+  ],
+  "expected": "Exactly one distribution is created.",
+  "actual": "The save button stays active during the stock check, so two submissions are possible.",
+  "where": "src/features/inventory/product-distribution/components/product-distribution-form-view.tsx:328-369",
+  "verify": "Throttle the network, double-click Save, confirm one document is created (use useSubmitGuard from the repo).",
+  "owner": "Frontend, shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:24": {
+  "note": "Fixed: getOptionText only includes option.value when the option has no readable label/children/title (src/shared/components/ui/app-select.tsx ~l.60-66).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Typing in a dropdown also matched the hidden option value (often a database id), so searching 'a' or '1' kept rows whose visible label did not contain it.",
+  "steps": [
+   "Open any form with a customer select and type 'ab'."
+  ],
+  "expected": "Only labels containing 'ab' remain.",
+  "actual": "Fixed: the value is searched only for options with no readable text.",
+  "where": "src/shared/components/ui/app-select.tsx",
+  "verify": "Type '1' in a select whose labels have no digit; the list should be empty.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:25": {
+  "note": "Fixed: AppDateRangePicker takes its preset labels from useTranslations('common.dateRangePresets') (src/shared/components/ui/app-date-range-picker.tsx ~l.96-130, getDefaultDateRangePresets(label)); English is only the fallback when no translator is passed. The secondary point (half range emitting an empty-string bound) is unchanged: allowEmpty defaults to [true,true] and onChange emits '' for a missing bound (~l.142-145).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The quick ranges ('This Month', 'Last 7 Days') in about 100 date-range pickers were English even in the Bangla UI.",
+  "steps": [
+   "Switch to Bangla.",
+   "Open any list with a date filter and open the range picker presets."
+  ],
+  "expected": "Presets appear in Bangla.",
+  "actual": "Fixed for labels; half ranges still send an empty-string bound.",
+  "where": "src/shared/components/ui/app-date-range-picker.tsx, src/messages/common (dateRangePresets)",
+  "verify": "Open a date range picker in Bangla.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:3": {
+  "note": "Fixed: src/shared/permissions/source.ts and the ERP_CAPABILITIES scaffold no longer exist; src/shared/permissions/settings.ts now uses checkPermission(PERMISSIONS.*) for warehouse, pricing scheme and channel category (l.22-51).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Three settings permission getters used to grant every capability, so a read-only user saw create and edit buttons on warehouse, pricing scheme and channel category settings (the backend then answered 403).",
+  "steps": [
+   "Log in as a user without the warehouse settings permission.",
+   "Open Settings > Warehouse."
+  ],
+  "expected": "The page and its server actions refuse.",
+  "actual": "Fixed: real permission checks.",
+  "where": "src/shared/permissions/settings.ts",
+  "verify": "Repeat the steps as a limited user.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:31": {
+  "note": "Fixed: loadAssetBytes deletes the cache entry when a load fails (src/shared/export/assets.ts:22-26) and pdf-text.ts resets bengaliFacesReady on failure (l.65-67).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "One failed font or logo request made every later export in the session use the wrong font or no logo (Bengali text unshaped) until the page was reloaded.",
+  "steps": [
+   "Block /fonts/NotoSansBengali-Regular.ttf once and export a PDF.",
+   "Unblock and export again."
+  ],
+  "expected": "The second export is correct.",
+  "actual": "Fixed: failures are not cached.",
+  "where": "src/shared/export/assets.ts, src/shared/export/pdf-text.ts",
+  "verify": "Repeat the steps without reloading.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:33": {
+  "note": "Fixed: print-file.ts has an 8 s timeout that cleans up and rejects (l.15-21) and calls print() after a 300 ms delay (l.28).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Print could leave the button spinning forever on browsers that cannot show a PDF in a hidden frame, or print a blank page.",
+  "steps": [
+   "On a phone or with the PDF viewer blocked, click Print on a Purchase Requisition."
+  ],
+  "expected": "The button recovers within 8 seconds.",
+  "actual": "Fixed in code (what the caller does after the rejection was not checked).",
+  "where": "src/shared/export/print-file.ts",
+  "verify": "Repeat on a phone browser.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:41": {
+  "note": "Fixed: useFormatDate calls .locale(dayjsLocale) in formatDate, formatDateTime and formatMonth (src/shared/hooks/use-format-date.ts ~l.44-88) and exports pass a locale to formatNumberText/localizeDigits (src/shared/export/format.ts ~l.57-75).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "In the Bangla UI amounts used Bangla digits while dates showed English months and Latin digits, and exports printed Latin digits.",
+  "steps": [
+   "Switch to Bangla, open a list with dates and amounts, then export it."
+  ],
+  "expected": "Screen and export use the same digit system and month names.",
+  "actual": "Fixed in code (visual check not done).",
+  "where": "src/shared/hooks/use-format-date.ts, src/shared/export/format.ts",
+  "verify": "Compare a Bangla screen with its export.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:44": {
+  "note": "Mostly fixed: settings/sales/schema.ts now requires discountValue, cashbackValuePerUnit and tier values > 0 (addPositiveIssue) and <= 100 for percentages (addPercentIssue ~l.49-60, used l.110-125 and l.270-272); trade-discount slab starts must increase (l.280-290). Missing: discount-tier minQty is only checked as required and non-negative (l.117), not strictly increasing, so duplicate or descending volume tiers still save.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Pricing scheme and trade discount forms used to accept 0 or over 100 percent. Percent and positive-value checks are now in place, but volume tiers can still be out of order.",
+  "steps": [
+   "Settings > Sales > Pricing Scheme > New (Discount, percentage, tiered).",
+   "Add two tiers with minQty 10 and 5 (or the same value) and save."
+  ],
+  "expected": "The form blocks non-increasing tiers.",
+  "actual": "Percent over 100 and zero values are blocked; descending or duplicate minQty tiers are saved.",
+  "where": "src/features/settings/sales/schema.ts:99-125",
+  "verify": "Add the descending-tier case to a schema unit test; the form should show an error.",
+  "owner": "Frontend, shared",
+  "status": "in-progress"
+ },
+ "rv-fe:shared:45": {
+  "note": "Half fixed: the pricing scheme schema rejects effectiveUntil < effectiveFrom (src/features/settings/sales/schema.ts:131-139) but the trade discount schema (effectiveFrom/effectiveTo, l.242-243, superRefine from l.246) has no such check.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A discount whose end date is before its start date used to save and then never apply. Pricing schemes now refuse it; trade discounts still accept it.",
+  "steps": [
+   "Settings > Sales > Trade Discount > New.",
+   "Set effective from 1 Mar and effective to 1 Jan; save."
+  ],
+  "expected": "The form shows an end-before-start error.",
+  "actual": "Trade discount saves successfully.",
+  "where": "src/features/settings/sales/schema.ts:242-300 (getTradeDiscountFormSchema)",
+  "verify": "Add the same endBeforeStart check on effectiveTo and test with the dates above.",
+  "owner": "Frontend, shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:54": {
+  "note": "Not changed: .ant-form-item-label overrides still appear in 13 feature CSS files and no shared stacked-label class exists (grep for app-form-stacked / app-compact-form finds none). Tidy-up only.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The same 'label above the control' form styling is copied into many feature stylesheets with slightly different values, so required marks and spacing differ between forms.",
+  "steps": [
+   "Open the Customer, Vendor and Sales Order forms side by side and compare label spacing."
+  ],
+  "expected": "One shared class gives the same spacing everywhere.",
+  "actual": "Copies remain in 13 CSS files.",
+  "where": "src/features/**/*.css (customer.css, vendor.css, invoice-order.css, ...), src/app/globals.css ~l.495",
+  "verify": "Add a shared stylesheet class (not editing existing shared rules), remove per-feature blocks, compare the forms.",
+  "owner": "Frontend, shared",
+  "status": "open"
+ },
+ "rv-fe:shared:63": {
+  "note": "Partly done: package.json has a `test` script (tsx --test \"src/**/*.test.ts\", l.15) that covers all 82 test files; but CI is paused (.gitlab-ci.yml workflow `when: never`) and its only quality job is lint, so no test or build runs in CI.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Unit tests exist for posting period, depreciation, mappings and exports. A single pnpm test script now runs them, but no pipeline runs it.",
+  "steps": [
+   "Run pnpm test locally."
+  ],
+  "expected": "CI runs pnpm lint, pnpm test and pnpm build on each merge request.",
+  "actual": "The script works locally; CI is paused and has no test step.",
+  "where": "package.json scripts, .gitlab-ci.yml",
+  "verify": "Add a `pnpm test` step to the quality job and resume CI.",
+  "owner": "Frontend, shared",
+  "status": "in-progress"
+ },
+ "rv-fe:shared:8": {
+  "note": "Fixed: use-infinite-select.ts clears the options on a failed first page and sets error=true (~l.88-96); use-infinite-scroll.ts also sets error (l.93-97). The retry UI in callers was not checked.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Dropdowns and infinite lists swallowed fetch failures, so after a failed search the old term's options stayed and could be picked (wrong customer or vendor saved).",
+  "steps": [
+   "Open a form with an async customer select, block the request, type a search."
+  ],
+  "expected": "The list empties and the failure is visible.",
+  "actual": "Fixed: stale options are cleared and an error flag is returned.",
+  "where": "src/shared/hooks/use-infinite-select.ts, src/shared/hooks/use-infinite-scroll.ts",
+  "verify": "Block the request in dev tools and type a search.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:9": {
+  "note": "Fixed: handleSave awaits onSave and keeps the modal open on failure (saveFailed) (src/shared/components/customize-table-column.tsx ~l.185-200); saveColumns returns Promise<boolean> (use-customized-table-view.ts:137-170).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Customize Columns closed immediately and a failed save only logged to the console, so the layout was lost on refresh with no message.",
+  "steps": [
+   "Open a list > Customize Columns and change a column.",
+   "Fail the save request and click Save."
+  ],
+  "expected": "The modal stays open with an error; a successful save persists after refresh.",
+  "actual": "Fixed in code.",
+  "where": "src/shared/components/customize-table-column.tsx, src/shared/hooks/use-customized-table-view.ts",
+  "verify": "Block the table-view save request and click Save.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "pt1110:B15": {
+  "note": "Still present: accounting report views hard-code currency=\"Tk\" (features/reports/accounting-reports/components/statement-table.tsx:411, general-ledger-view.tsx:117 and 132, ledger-views.tsx:252, 753, 768, balance-sheet-view.tsx:287) while the rest of the app shows the taka sign from shared/constants/currencies.ts.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The currency label is inconsistent: purchase pages show the taka sign, but accounting reports (Trial Balance, ledgers, Balance Sheet) print the text 'Tk'.",
+  "steps": [
+   "Open Purchase > Vendor Bills and note the amount prefix.",
+   "Open Reports > Trial Balance and note the amount prefix."
+  ],
+  "expected": "Both show the same currency symbol.",
+  "actual": "Reports show 'Tk'.",
+  "where": "src/features/reports/accounting-reports/components/*.tsx (currency=\"Tk\")",
+  "verify": "Replace the literal with the shared symbol helper and compare both screens.",
+  "owner": "Frontend, shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:14": {
+  "note": "Fixed: usePagination derives page = min(requestedPage, ceil(total/pageSize)) when total > 0 (src/shared/hooks/use-pagination.ts ~l.47-50).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "After deleting the only row on the last page, the list reloaded the same page index and showed no rows while the paginator showed the previous page.",
+  "steps": [
+   "Open a list with 11 rows and page size 10, go to page 2, delete the only row."
+  ],
+  "expected": "Page 1 loads.",
+  "actual": "Fixed in code.",
+  "where": "src/shared/hooks/use-pagination.ts",
+  "verify": "Repeat the steps.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:15": {
+  "note": "Half fixed: clearing the async search now calls asyncList.search('') (app-inventory-detail-multiple-dialog.tsx:214). The half-typed-rows part (rows with a lot but no bin vanish after Add Multiple) is not clearly resolved: handleMultipleDone reseeds from nextSelections only (app-inventory-detail-dialog.tsx ~l.123-135).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "In the inventory detail dialog, Add Multiple could drop rows the user had started typing, and clearing the async search kept the old result.",
+  "steps": [
+   "Inventory > Adjustment > New, open the item detail panel, type a lot without a bin.",
+   "Open Add Multiple and finish."
+  ],
+  "expected": "The half-typed row remains.",
+  "actual": "Search-clear fixed; row loss not confirmed fixed.",
+  "where": "src/shared/components/ui/app-inventory-detail-dialog.tsx, app-inventory-detail-multiple-dialog.tsx",
+  "verify": "Repeat the steps.",
+  "owner": "Frontend, shared",
+  "status": "in-progress"
+ },
+ "rv-fe:shared:16": {
+  "note": "Still present: email-section.tsx re-mounts the editor via key=`${action.key}:${template id}:${editorRevision}` (l.452) and onSelect={setSelectedTrigger} (l.477) with no dirty check or confirm prompt.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "In Settings > System > Email templates, typing a subject or body and then clicking another action discards the text without asking.",
+  "steps": [
+   "Open Settings > System > Email, select an action and type in the body.",
+   "Click a different action."
+  ],
+  "expected": "A confirm asks before discarding.",
+  "actual": "Edits are lost silently.",
+  "where": "src/features/settings/system/components/email-section.tsx:452,477",
+  "verify": "Type text, click another action; a confirmation must appear.",
+  "owner": "Frontend, settings",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:17": {
+  "note": "Fixed: the error banner in review-step.tsx has a retry that clears loadError and calls reload() (src/features/accounting/bank-cash/components/reconciliation/review-step.tsx:114-120). Note: this file is the bank reconciliation review step; the source note names it as a journals wizard.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "After one failed load the review step showed an error banner for good with no way to retry.",
+  "steps": [
+   "Accounting > Bank & Cash > start a reconciliation and reach Review.",
+   "Fail one request, click retry."
+  ],
+  "expected": "The page returns after retry.",
+  "actual": "Fixed in code.",
+  "where": "src/features/accounting/bank-cash/components/reconciliation/review-step.tsx",
+  "verify": "Fail one reload, click retry.",
+  "owner": "Frontend, accounting",
+  "status": "fixed"
+ },
+ "rv-fe:shared:21": {
+  "note": "Fixed: addingRef guard (src/shared/components/ui/app-creatable-select.tsx:67,103-121), texts via useTranslations('shared.creatableSelect') (l.66) and theme variables for colours (l.137-174). One hex remains at l.153 only as a CSS var fallback.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The shared creatable select could add the same option twice on a fast double Enter, and had English text and fixed colours.",
+  "steps": [
+   "Accounting > Fixed Assets > Batch form: type a new option and press Enter twice quickly."
+  ],
+  "expected": "One option is added.",
+  "actual": "Fixed in code.",
+  "where": "src/shared/components/ui/app-creatable-select.tsx",
+  "verify": "Press Enter twice quickly.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:22": {
+  "note": "Fixed: handleLogout catches a failed doLogout and routes to /login (src/shared/components/app-layout/app-layout.tsx ~l.222-228); the session-expired modal button uses t('sessionExpired.loginAgain') (src/shared/access/session-expired-modal.tsx:72).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A failing sign-out left the menu item disabled with a spinner, and the session-expired button text was the English literal 'OK'.",
+  "steps": [
+   "Make sign-out fail (block the logout request) and click Logout."
+  ],
+  "expected": "The user lands on /login; the expired-session button is translated.",
+  "actual": "Fixed in code.",
+  "where": "src/shared/components/app-layout/app-layout.tsx, src/shared/access/session-expired-modal.tsx",
+  "verify": "Block the sign-out call and click Logout.",
+  "owner": "Frontend, shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:23": {
+  "note": "Fixed: one copyToClipboard(text): Promise<boolean> in src/shared/utils/clipboard.ts; invite-employee-form.tsx:246 and reset-password-modal.tsx:70 show Copied only when it returns true.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The one-time password dialogs showed 'Copied' even when the copy failed, so an admin could close the dialog without the password.",
+  "steps": [
+   "Settings > Users > Reset password; deny clipboard permission; click Copy."
+  ],
+  "expected": "A manual-copy message appears, not 'Copied'.",
+  "actual": "Fixed in code.",
+  "where": "src/shared/utils/clipboard.ts, src/features/settings/users-and-roles/components/*",
+  "verify": "Deny clipboard permission and click Copy.",
+  "owner": "Frontend, settings",
+  "status": "fixed"
+ },
+ "rv-fe:shared:26": {
+  "note": "Still present: AppStatusBadge defaults formatLabel = true and formatBadgeText runs formatStatusLabel on every string child (src/shared/components/ui/app-status-badge.tsx:37-48), so 'VAT Paid' becomes 'Vat paid'.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Status badges lowercase and re-capitalise any text, so acronyms and names are shown wrongly (VAT Paid becomes Vat paid, GRN posted becomes Grn posted).",
+  "steps": [
+   "Open a list where a badge shows a label with an acronym, for example a status text 'VAT Paid'."
+  ],
+  "expected": "Case is kept as given.",
+  "actual": "Text is lowercased then capitalised.",
+  "where": "src/shared/components/ui/app-status-badge.tsx:37-48",
+  "verify": "Render <AppStatusBadge>VAT Paid</AppStatusBadge>; the text must stay 'VAT Paid'.",
+  "owner": "Frontend, shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:27": {
+  "note": "Still present: two components remain (src/shared/components/approval-history-panel.tsx and approval-trail.tsx); cycleTone in approval-history-panel.tsx:29-40 has no APPROVED case, so an approved cycle gets the neutral default tone while the trail component shows it green.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The approval history on purchase and sales orders and the approval trail on journals and budgets are two components that colour the same status differently and show backend status codes untranslated.",
+  "steps": [
+   "Open an approved Purchase Order > Approval tab.",
+   "Open an approved journal and look at its approval trail."
+  ],
+  "expected": "APPROVED is green in both and translated.",
+  "actual": "APPROVED is neutral in the history panel.",
+  "where": "src/shared/components/approval-history-panel.tsx:29-40, src/shared/components/approval-trail.tsx",
+  "verify": "Compare an approved PO and an approved journal.",
+  "owner": "Frontend, shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:28": {
+  "note": "Still present: category-select.tsx onChange sends String(val ?? '') so clear yields '' (~l.92), and load errors are shown raw: message.error(res.error) and error.message / 'Failed to load item categories' (src/shared/components/category-select.tsx ~l.48-60).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The category filter select sends an empty string when cleared and prints raw or English error text when the load fails.",
+  "steps": [
+   "Open Inventory > Items and clear the category filter.",
+   "Block the categories request and reload."
+  ],
+  "expected": "Clear gives the 'all' value; a translated error shows.",
+  "actual": "Clear sends ''; raw error text is shown.",
+  "where": "src/shared/components/category-select.tsx",
+  "verify": "Clear the filter and watch the request; block the request and read the toast.",
+  "owner": "Frontend, shared",
+  "status": "still-bug"
+ }
+}

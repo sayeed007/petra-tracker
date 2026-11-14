@@ -1,0 +1,1005 @@
+{
+ "rv-be:inventory:1": {
+  "status": "still-bug",
+  "note": "still visible in code: InventoryStockDomainService.processEntry (~l.342-350), consumeInTransitLine (~l.191), createOrFindBalance/addOnHandOnly read the balance without a lock; no @Version on InventoryBalance/ChannelAllocation. Only the sales item-receive path now locks (ItemReceiveDomainService ~l.355 via findOrCreateByDimensionForUpdate); bin transfer, adjustment and packing house handlers do not.",
+  "summary": "Stock quantities (on hand, reserved) are read, changed and saved without locking the row. Two requests on the same item and bin at the same moment both start from the same number, so the second save overwrites the first. The result is lost stock, or the last 10 units reserved twice. Anyone moving or receiving stock in parallel is affected, and valuation and accounting postings inherit the wrong quantity.",
+  "steps": [
+   "Pick an item with 10 on hand in one bin and no reservation.",
+   "Send two simultaneous POST /api/inventory/bin-transfers requests (workflow active, so quantity is reserved) each moving 10 from that bin.",
+   "Read GET /api/inventory/items/{itemId}/inventory-balance."
+  ],
+  "expected": "Exactly one request reserves the 10 units; the second is refused with 400 because nothing is free.",
+  "actual": "Both can pass the free-quantity check (read before either commit), so reserved can reach 20 against 10 on hand; two parallel receipts can also end with the quantity of only one.",
+  "where": "backend inventory/stock/service/InventoryStockDomainService (processEntry, consumeInTransitLine, createOrFindBalance, addOnHandOnly); transfer/handler/BinTransferWorkflowHandler.moveStockToDestination; adjustment/handler/InventoryAdjustmentWorkflowHandler; packing_house/service/PackingHouseBookDomainService; InventoryBalanceRepository.findByItemIdAndDimensionIdForUpdate exists but is unused here",
+  "tests": [],
+  "verify": "Run the two-parallel-request step 2 (script with two concurrent HTTP calls). After the fix exactly one succeeds and reserved_qty never exceeds on_hand_qty.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:15": {
+  "status": "still-bug",
+  "note": "still visible in code: PettyCashRequestController.java create (l.48) and update (l.57) have no @Valid; PettyCashRequestDTO.amount (l.26) carries no constraint; PettyCashRequestFacadeImpl.create reads the requester from dto.getRequesterId() (~l.85).",
+  "summary": "A petty cash request can be saved with a negative or empty amount, an expense date outside the budget period, and any requester the caller names. A negative amount raises the available budget and on approval books a negative accounting entry. It also lets one user file requests in another user's name.",
+  "steps": [
+   "Open the Petty Cash request form (Inventory > Petty Cash), or call the API directly.",
+   "POST /api/petty-cash/requests (multipart part 'request') with amount -100 and a valid categoryAllocationId.",
+   "GET /api/petty-cash/budget-allocators and compare reserved/spent before and after."
+  ],
+  "expected": "400 'amount must be greater than zero'; a date outside the allocator period and a requester that is not the caller (without admin right) are refused too.",
+  "actual": "The request is saved and the budget reserved amount goes down by 100.",
+  "where": "backend inventory/pettycash/controller/PettyCashRequestController, dto/PettyCashRequestDTO, facade/PettyCashRequestFacadeImpl.create/update",
+  "tests": [
+   "INV-05, INV-15 (petty cash e2e cover the happy path only)"
+  ],
+  "verify": "POST /api/petty-cash/requests with amount -100: expect HTTP 400 and reserved_amount unchanged; with expenseDate outside the budget period: 400.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:2": {
+  "status": "still-bug",
+  "note": "still visible in code: no unique index or @Table(uniqueConstraints) on inventory_balance, inventory_dimension, channel_allocation, lot_master in V1__initial_schema.sql (the only migration) or the entities; InventoryStockDomainService.createOrFind* do find-then-insert.",
+  "summary": "The stock tables have no unique key on their natural identity (item+dimension, item+location+channel, item+lot number). If two first receipts of a new lot or bin arrive together, both insert a row. From then on every lookup returns two rows and fails with HTTP 500 for that item until someone cleans the database by hand.",
+  "steps": [
+   "Send two simultaneous POST /api/inventory/items/receive calls for the same new item, same bin and same new lot number.",
+   "Then call GET /api/inventory/items/{itemId}/inventory-balance."
+  ],
+  "expected": "Both receipts succeed and add to one balance row.",
+  "actual": "Two balance/dimension rows can exist; the next read throws IncorrectResultSizeDataAccessException (500). Not seen on the dev data (no duplicates today); the risk is the race.",
+  "where": "backend V1__initial_schema.sql; inventory/stock/model InventoryBalance, InventoryDimension; channel/model ChannelAllocation; lot/model LotMaster; InventoryStockDomainService.createOrFindBalance/Dimension/ChannelAllocation, createOrUpdateLotMaster",
+  "tests": [],
+  "verify": "After the fix pg_indexes lists unique indexes on inventory_balance(item_id,dimension_id), channel_allocation(item_id,location_id,channel_id), lot_master(item_id,lot_number); the double receive above ends with one row each. First run a duplicates query on every environment.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:30": {
+  "note": "not re-measured. No default_batch_fetch_size or statistics setting in src/main/resources; ItemFacadeImpl.getAll and ItemInventoryQueryService.buildRow still map lazy associations per item (code shape unchanged), but no query count was taken, so status stays open.",
+  "summary": "The item list and the inventory overview load category, parent category, units, image and type of every item one query at a time (N+1), and without page and size they do this for every item in the system. With about 1100 items on the test stack the screens are slow. The review estimated 100+ statements for a page of 20.",
+  "steps": [
+   "GET /api/inventory/items/overview?page=0&size=20 with SQL statement logging on (spring.jpa.properties.hibernate.generate_statistics=true).",
+   "GET /api/inventory/items?page=0&size=20."
+  ],
+  "expected": "A small constant number of statements per page (under about 15).",
+  "actual": "Not measured on the current build; code still loads associations lazily per row.",
+  "where": "backend inventory/item/facade/ItemFacadeImpl.getAll, service/ItemInventoryQueryService.buildRow(s), repository/ItemRepository.findAllByIdWithPrimarySalesUnit, ItemMapper.toDTO",
+  "tests": [],
+  "verify": "Enable Hibernate statistics, call the two GETs for 20 items and read 'statements prepared': must be under ~15 and not grow with the page size.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:5": {
+  "status": "still-bug",
+  "note": "still visible in code: BinTransferDomainService.handleCreateDependencies reserves (~l.270) then startWorkflowIfConfigured (~l.310-320) and applyRestartOnEdit (~l.349) call completeWithoutWorkflow -> BinTransferWorkflowHandler.onDirectApproval (l.99-103), whose own javadoc assumes no reservation exists, so reserved_qty is never released. onApproved and onRejected do release.",
+  "summary": "When at least one Bin Transfer approval workflow is active but none of its conditions matches a new transfer, the system reserves the quantity and then approves it automatically without giving the reservation back. The source bin ends with on hand 0 and reserved 100, so available is minus 100 and later moves from that bin are refused. Warehouse staff are blocked until the data is fixed by hand.",
+  "steps": [
+   "Activate one BIN_TRANSFER workflow whose condition cannot match (for example a very high quantity rule).",
+   "POST /api/inventory/bin-transfers moving 100 from bin A (on hand 100) to bin B.",
+   "GET /api/inventory/items/{itemId}/inventory-balance for bin A."
+  ],
+  "expected": "on hand 0, reserved unchanged (0), available 0; a later transfer from bin A works.",
+  "actual": "on hand 0, reserved 100 (stuck), available -100.",
+  "where": "backend inventory/transfer/service/BinTransferDomainService (handleCreateDependencies, startWorkflowIfConfigured, applyRestartOnEdit, completeWithoutWorkflow); transfer/handler/BinTransferWorkflowHandler.onDirectApproval",
+  "tests": [],
+  "verify": "Repeat the steps; after the fix inventory_balance.reserved_qty of the source dimension equals its value before the transfer and the reservation rows are RELEASED.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:6": {
+  "status": "still-bug",
+  "note": "still visible in code: PackingHouseBookDomainService.undoLine (l.395-420) loads the booking and undoes lines with no check of status or salesOrderId; request.getPackingHouseBookLineIds() is used unguarded.",
+  "summary": "Undo of a packing house booking line does not check that the booking is APPROVED or that it is not already linked to a sales order. On a pending, rejected or delivery-linked booking it moves stock that never moved, or takes it from under a delivery, and a missing line list gives a server error. The result is silent stock inflation.",
+  "steps": [
+   "Create a packing house booking and link it to a sales order (POST /api/inventory/packing-house-books/{id}/link-with-sales-order).",
+   "POST /api/inventory/packing-house-books/{id}/undo with packingHouseBookLineIds=[lineId] and a reason."
+  ],
+  "expected": "400 'only an APPROVED booking not linked to a sales order can be undone'.",
+  "actual": "Undo runs and changes the balances.",
+  "where": "backend inventory/packing_house/service/PackingHouseBookDomainService.undoLine/undoSingleLine; PackingHouseBookController /{id}/undo",
+  "tests": [
+   "INV-14-05 (UI hides Undo on approved bookings; backend not tested)"
+  ],
+  "verify": "Call undo on a booking linked to a sales order and on a PENDING one: expect 400 and no balance change.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:7": {
+  "status": "still-bug",
+  "note": "still visible in code: PackingHouseBookDomainService.validateDelete (l.531-532) is an empty method. e2e COVERAGE.md notes bookings are created already APPROVED, so this is the normal state, not a corner case.",
+  "summary": "Deleting an APPROVED packing house booking removes the booking and its lines but leaves the stock where it was moved. The ledger rows keep a reference to a document that no longer exists. It is allowed even when the booking is linked to a sales order.",
+  "steps": [
+   "Create a packing house booking (it is approved at once).",
+   "DELETE /api/inventory/packing-house-books/{id}.",
+   "GET /api/inventory/items/location-inventory for the item."
+  ],
+  "expected": "409 'undo the booking lines before deleting an approved booking'; row stays.",
+  "actual": "204 and the stock remains at the packing destination; PACKING_OUT/PACKING_IN ledger rows point to a missing id.",
+  "where": "backend inventory/packing_house/service/PackingHouseBookDomainService.validateDelete; PackingHouseBookController DELETE /{id}",
+  "tests": [],
+  "verify": "DELETE on an APPROVED booking must answer 409 and the booking must still be GET-able.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "saleschain:SC-3": {
+  "status": "still-bug",
+  "note": "still visible in code: sales itemreceive code (ItemReceiveDomainService ~l.340-366) only raises inventory_balance and writes the SALE_RETURN ledger row; ChannelAllocation is touched in sales only by delivery and distribution classes, never by item receive/return.",
+  "summary": "When a customer return is received back into a bin, stock on hand goes up but the units are not given back to the sales-channel pool they came from. The channel keeps the old lower number, so the item list shows less than the warehouse holds and a new delivery can be refused with 'Not enough channel allocation available' although stock is there.",
+  "steps": [
+   "Deliver 10 units of item A to a Retail Food customer (channel allocation 240 -> 230).",
+   "POST /api/sales/item-returns for 10 and approve it.",
+   "POST /api/sales/item-receives to receive 10 into a bin; then GET /api/inventory/items/channel-count?itemId=..&salesChannelId=.. or /api/inventory/items/overview."
+  ],
+  "expected": "channel_allocation for Retail Food returns to 240 and the item list shows 720.",
+  "actual": "inventory_balance is back to 720 but channel_allocation stays 230; list shows 710; a delivery of 240 to that channel is refused.",
+  "where": "backend sales/document/itemreceive/service/ItemReceiveDomainService (receive putaway); inventory/channel ChannelAllocation",
+  "tests": [
+   "e2e/tests/sales/11-return-received.spec.ts (receives a return; does not assert the channel pool)"
+  ],
+  "verify": "After a good-condition receive, GET channel-count for that channel: allocated must rise by the received quantity.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, sales/inventory"
+ },
+ "pt1110:B8": {
+  "note": "same family as saleschain:SC-13 and rv-be:inventory:11. Code: InventoryAdjustmentWorkflowHandler l.285 lowers balance allocated_qty, but BinTransferWorkflowHandler, PackingHouseBookDomainService and ItemReceiveDomainService never change it, so it only grows with receipts. Kept open: the only reader found is consumeInTransitLine (InventoryStockDomainService l.194-197).",
+  "summary": "After a return or other stock change the balance row shows on hand 90 but allocated 100. The allocated figure on inventory_balance is the quantity ever received, not a live number, so it looks wrong to anyone who sees it in a report or the database.",
+  "steps": [
+   "Receive 100 of item A, deliver 10 and receive the return of 10, or adjust 10 down.",
+   "GET /api/inventory/items/{itemId}/inventory-balance (or read the inventory_balance row) for item A."
+  ],
+  "expected": "Either the column is reduced with on hand or it is not exposed or is removed.",
+  "actual": "allocated_qty stays 100 while on_hand_qty is 90.",
+  "where": "backend inventory/stock/model/InventoryBalance.allocatedQty; InventoryStockDomainService.processEntry (adds) and consumeInTransitLine (only reducer); InventoryAdjustmentWorkflowHandler l.285",
+  "tests": [],
+  "verify": "Business answer first (is allocatedQty live?). Then after a delivery the balance allocated_qty must match the rule agreed.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:12": {
+  "status": "still-bug",
+  "note": "still visible in code: InventoryStockDomainService.processEntry l.342 uses inventoryBalanceRepository.sumOnHandQtyByItemId (all statuses and locations) as the old quantity, while applyBilledCost l.286 correctly uses sumCostedOnHandQtyByItemId.",
+  "summary": "When a non-deferred stock receipt updates the item's moving average cost, the old quantity includes damaged and in-transit stock. That pulls the average toward the new cost too slowly, so item cost and stock value are wrong.",
+  "steps": [
+   "Item with 10 AVAILABLE units at average 10, 10 DAMAGED units and 100 advance-receive units.",
+   "POST /api/inventory/items/receive 10 units at unit cost 20 (costDeferred=false).",
+   "GET /api/inventory/items/{id} and read averageCost."
+  ],
+  "expected": "averageCost 15.0000 (10x10 + 10x20 over 20 units).",
+  "actual": "Base is 120 units, average about 10.8 (the review example); the code reads all balances.",
+  "where": "backend inventory/stock/service/InventoryStockDomainService.processEntry l.342, InventoryBalanceRepository.sumOnHandQtyByItemId",
+  "tests": [],
+  "verify": "Run the steps; averageCost must be 15.0000.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:13": {
+  "status": "still-bug",
+  "note": "still visible in code: ItemInventoryQueryService.resolveVatAitRate (~l.342-352) returns 0 when the channel name startsWith(\"Retail\"); the dev seeder has the same coupling.",
+  "summary": "The VAT/AIT rate shown for an item is zero when the sales channel's display name starts with 'Retail'. Renaming 'Retail Food' to 'Food Retail', or adding 'Retailer X', changes the tax shown with no flag to control it.",
+  "steps": [
+   "GET /api/inventory/items/overview?salesChannelId=<Retail Food id> and note vatAitRate (0).",
+   "PUT /api/inventory/sales-channels/{id} renaming it to 'Food Retail', repeat the GET."
+  ],
+  "expected": "Tax treatment follows an explicit tax-exempt flag on the channel.",
+  "actual": "Rate switches from 0 to the configured rate after the rename; a channel called 'Retailer X' becomes tax exempt.",
+  "where": "backend inventory/item/service/ItemInventoryQueryService.resolveVatAitRate; inventory/channel SalesChannel",
+  "tests": [],
+  "verify": "After the fix rename a retail channel and confirm the rate does not change; a new channel 'Retailer X' without the flag gets VAT.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Both, inventory/sales (business answer: which channels are exempt)"
+ },
+ "rv-be:inventory:14": {
+  "status": "still-bug",
+  "note": "still visible in code: ItemPriceQueryService.resolveSellPrice (l.90-110) returns ChannelPriceList.getBasePrice only; promotionalPrice and the promo dates are never read. A product decision (apply or remove the fields) is also wanted.",
+  "summary": "A promotional price and its validity dates can be saved on an item's channel price, but price lookups for orders and quotes ignore them and always return the base price. Negative promo prices and end dates before the start date are accepted too. Users think a promotion is running when it is not.",
+  "steps": [
+   "Save an item channel price with basePrice 100, promotionalPrice 79.99, valid for the whole year (PUT /api/inventory/items/{id}).",
+   "POST /api/inventory/items/price with priceType SELL and that salesChannelId."
+  ],
+  "expected": "unitPrice 79.99 with a promo price source while the promo is valid (or the fields are removed).",
+  "actual": "unitPrice 100, priceSource CHANNEL_BASE_PRICE.",
+  "where": "backend inventory/item/service/ItemPriceQueryService.resolveSellPrice; ItemChannelPriceDTO; ChannelPriceList",
+  "tests": [],
+  "verify": "Price lookup inside, before and after the promo window returns promo, base, base; a negative promo price is rejected with 400.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:16": {
+  "status": "still-bug",
+  "note": "still visible in code: InventoryAdjustmentDomainService.resolveAndSetRequester (l.333-340) takes dto.getRequesterId() first and only falls back to the logged-in user.",
+  "summary": "Whoever creates an inventory adjustment can name any other user as the requester. The approver sees 'raised by B' and B gets the approve/reject notices, while the created-by field shows the real author.",
+  "steps": [
+   "As user A, POST /api/inventory/adjustments with requesterId of user B.",
+   "GET /api/inventory/adjustments/{id} and read requesterName and createdBy."
+  ],
+  "expected": "requester is always the logged-in user A.",
+  "actual": "requester is B.",
+  "where": "backend inventory/adjustment/service/InventoryAdjustmentDomainService.resolveAndSetRequester; InventoryAdjustmentDTO.requesterId",
+  "tests": [],
+  "verify": "POST as A with B's id: the stored requester_id must be A.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:17": {
+  "status": "still-bug",
+  "note": "still visible in code: BinTransferMapper.toEntity l.64-69 copies id, sequenceNumber, status and workflowInstanceId from the DTO.",
+  "summary": "A caller creating a bin transfer can choose the document number, attach another document's workflow, or pass an existing id so that saving overwrites that transfer and approves it directly. These fields should only be set by the server.",
+  "steps": [
+   "POST /api/inventory/bin-transfers with body id=<existing APPROVED transfer id>, sequenceNumber='X-1', status APPROVED."
+  ],
+  "expected": "A new transfer with a generated number and server-decided status; the old one is untouched.",
+  "actual": "The mapper builds an entity with that id/number/status, so save merges onto the existing row.",
+  "where": "backend inventory/transfer/mapper/BinTransferMapper.toEntity; BinTransferDTO; DomainService.create",
+  "tests": [],
+  "verify": "POST with an existing id: a new row appears, the old row is unchanged, workflowInstanceId is null or the service's own.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:18": {
+  "status": "still-bug",
+  "note": "still visible in code: BrandMapper.java:29, ManufacturerMapper.java:28, ItemCategoryMapper.java:28 call setCode(dto.getCode()) unchanged; BrandDomainService.java:52 only checks duplicates when the code is not blank.",
+  "summary": "A blank code is stored as an empty string on brands, manufacturers and item categories. The first blank one is saved, the second hits the unique index and fails (500 in the review; now a generic 409 from the data-integrity handler) instead of a clear message.",
+  "steps": [
+   "POST /api/inventory/brands with name 'A', code ''.",
+   "POST /api/inventory/brands with name 'B', code ''."
+  ],
+  "expected": "Both saved with code null.",
+  "actual": "Second call: unique index violation, generic error.",
+  "where": "backend inventory/brand/mapper/BrandMapper, manufacturer/mapper/ManufacturerMapper, item/mapper/ItemCategoryMapper; same in the three DomainServices",
+  "tests": [],
+  "verify": "Create two brands with code '' and one with null: all succeed and no row has code ''.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:19": {
+  "status": "still-bug",
+  "note": "still visible in code: ItemDomainService.validateChannelPrices (l.321-335) checks only null channel id, base price and channel existence; no duplicate salesChannelId check; no unique index on channel_price_list.",
+  "summary": "An item can carry the same sales channel twice in its channel prices. Price lookup then uses the first row and inventory valuation the last, so two screens show different prices for the same item and channel.",
+  "steps": [
+   "PUT /api/inventory/items/{id} with channelPrices containing salesChannelId 1 twice (basePrice 100 and 120)."
+  ],
+  "expected": "400 'duplicate channel price for sales channel 1'.",
+  "actual": "Saved; POST /items/price returns 100 while overview valuation uses 120.",
+  "where": "backend inventory/item/service/ItemDomainService.validateChannelPrices; ItemPriceQueryService (first wins) vs ItemInventoryQueryService (last wins)",
+  "tests": [],
+  "verify": "Send the request above: expect HTTP 400.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:20": {
+  "status": "still-bug",
+  "note": "still visible in code: ItemRequestDTO has no @Min/@DecimalMin constraints (only a Schema text for minimumSaleQuantity); ItemDomainService.validateCreate/validateUpdate (l.122-184) check required fields and units but no numeric ranges.",
+  "summary": "An item can be saved with a minimum sale quantity above the maximum, a negative reorder point or handling cost, or zero pieces per carton. These numbers later corrupt reorder alerts, order limits and landed cost.",
+  "steps": [
+   "POST /api/inventory/items with minimumSaleQuantity 500, maximumSaleQuantity 10, reorderPoint -50, totalQtyPerCarton 0."
+  ],
+  "expected": "400 naming each bad field.",
+  "actual": "Saved.",
+  "where": "backend inventory/item/dto/ItemRequestDTO, ItemDomainService.validateCreate/validateUpdate",
+  "tests": [],
+  "verify": "Same request: HTTP 400; a request with all those fields null is still accepted.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:22": {
+  "status": "still-bug",
+  "note": "still visible in code: BudgetAllocatorFacadeImpl.create (~l.37-45) and update save startDate/endDate with no start<=end or overlap check; only DB constraint uq_budget_allocator_period (V1 l.1211) on identical start+end; GlobalExceptionHandler has no mapping for that constraint name (generic 409 text).",
+  "summary": "Budget periods can be saved with start after end or overlapping another period. Month lookups, the scheduler and the export then fail with 500 when two periods match, and updating the amount has no lock so a concurrent reservation can be lost.",
+  "steps": [
+   "POST /api/petty-cash/budget-allocators with startDate 2026-11-30 and endDate 2026-11-01.",
+   "POST a second allocator overlapping an existing month."
+  ],
+  "expected": "400 for start after end and for overlap.",
+  "actual": "Both accepted.",
+  "where": "backend inventory/pettycash/facade/BudgetAllocatorFacadeImpl, repository/BudgetAllocatorRepository, scheduler/MonthlyBudgetScheduler",
+  "tests": [
+   "INV-15 budget setup (happy path)"
+  ],
+  "verify": "The two POSTs above must answer 400; GET budget by month must not 500.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:27": {
+  "status": "still-bug",
+  "note": "partly changed: GlobalExceptionHandler now has a DataIntegrityViolationException handler (~l.425, 409 'referenced by other data'), so a brand in use gives a generic 409, not 500. Still visible: BrandDomainService.validateDelete (l.73-75) and SalesChannelDomainService.validateDelete (l.70-72) are empty with a false 'no references' comment, and sales_geography_manager_channel and pricing_scheme_policy_customer_type are ON DELETE CASCADE (V1 l.1270, 1317), so a channel delete silently drops those links.",
+  "summary": "Deleting a brand or sales channel runs no reference check. The database error is now turned into a generic 409 without saying what blocks it. Worse, deleting a channel that only has pricing-scheme or geography links removes those links silently.",
+  "steps": [
+   "Attach a brand to an item, then DELETE /api/inventory/brands/{id}.",
+   "Create a channel linked in a pricing scheme policy, DELETE /api/inventory/sales-channels/{id}."
+  ],
+  "expected": "400/409 naming what blocks the delete, including the cascade tables.",
+  "actual": "Brand: generic 409. Channel with only cascade links: 204 and the links are gone.",
+  "where": "backend inventory/brand/service/BrandDomainService.validateDelete; inventory/channel/service/SalesChannelDomainService.validateDelete; shared/exception/GlobalExceptionHandler",
+  "tests": [],
+  "verify": "DELETE a channel that has a pricing_scheme_policy_customer_type row: expect 400/409 and the row still present.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:28": {
+  "status": "still-bug",
+  "note": "still visible in code: InventoryLocationDomainService.validateDelete (l.162-165) is empty ('allowed by design'); MAX_HIERARCHY_DEPTH=6 (l.40) is used for walks only, not enforced in validateCreate/Update; no IN_TRANSIT protection on delete.",
+  "summary": "Deleting a location relies on database errors: a warehouse delete silently removes every unreferenced child bin and then fails with a generic 409 if one is in use. The system IN_TRANSIT location can be deleted, and trees deeper than six levels are accepted although the code only walks six.",
+  "steps": [
+   "DELETE /api/inventory/locations/{warehouseId} for a warehouse with one used bin and some unused bins.",
+   "DELETE /api/inventory/locations/{inTransitId}."
+  ],
+  "expected": "409 'location is in use' and nothing deleted; IN_TRANSIT always refused.",
+  "actual": "Unused children are removed before the failure; IN_TRANSIT delete is not blocked in code.",
+  "where": "backend inventory/location/service/InventoryLocationDomainService.validateDelete/validateCreate",
+  "tests": [],
+  "verify": "DELETE the warehouse: 409 and every bin still exists; create a 7-level tree: 400.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:3": {
+  "status": "still-bug",
+  "note": "still visible in code: no @Version on Item; InventoryStockDomainService.resolveItemByIdOrSku (l.396-405) uses itemRepository.findById, then processEntry l.342-360 and updateAverageCost (l.526-537) read-modify-write Item.averageCost with no lock.",
+  "summary": "Two receipts or vendor bills for the same item processed at the same time both start from the same old quantity and average, and one contribution is lost. The item cost then feeds stock value and cost of goods sold wrongly.",
+  "steps": [
+   "Item with stock 0.",
+   "Send two simultaneous POST /api/inventory/items/receive calls: 10 at cost 10 and 10 at cost 20 (costDeferred=false)."
+  ],
+  "expected": "averageCost 15.0000 every time.",
+  "actual": "Can end at 10 or 20 depending on timing.",
+  "where": "backend inventory/stock/service/InventoryStockDomainService.processEntry, applyBilledCost, updateAverageCost; Item entity",
+  "tests": [],
+  "verify": "Run the two parallel receives 20 times: averageCost must be 15.0000 each time.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:31": {
+  "status": "still-bug",
+  "note": "still visible in code: ItemController.getAll (l.132-158) paginates only when both page and size are given and otherwise returns the whole list (the Swagger text says so). The frontend asks overview with size=totalElements, so a cap needs agreement with the frontend. e2e findings: GET /api/inventory/items?size=500 returned 500 of totalElements 1115.",
+  "summary": "Several list endpoints (items, overview, location inventory, reorder alerts, lot breakdown) return every row when page or size is missing, or when a huge size is sent. On a large catalogue that is slow and memory heavy.",
+  "steps": [
+   "GET /api/inventory/items/overview (no parameters).",
+   "GET /api/inventory/items?size=100000&page=0."
+  ],
+  "expected": "Default page 0, size 50, size capped (for example 200).",
+  "actual": "All rows are returned.",
+  "where": "backend inventory/item/controller/ItemController, service/ItemInventoryQueryService.query, ItemLocationInventoryQueryService, ReorderAlertQueryService, LotBreakdownQueryService",
+  "tests": [],
+  "verify": "GET /api/inventory/items/overview without parameters returns at most the default page size; size=100000 is 400 or clamped.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Both, inventory (frontend overview call uses size=totalElements)"
+ },
+ "rv-be:inventory:32": {
+  "status": "still-bug",
+  "note": "still visible in code: LotBreakdownQueryService.query (l.87-106) loads all lot balances and all locations (findAll) then filters, sorts and pages in Java (paginate l.193); ItemLocationInventoryQueryService l.92-99 pages items but still loads all locations (l.68).",
+  "summary": "The lot breakdown and location-inventory screens read every row and slice the page in application memory. The more lot-tracked stock exists, the slower each page is, regardless of page size.",
+  "steps": [
+   "GET /api/inventory/items/lot-breakdown?page=0&size=10&warehouseId=<id>."
+  ],
+  "expected": "The database applies the filter and limit; cost does not grow with total lot rows.",
+  "actual": "All lot balances are loaded for each request.",
+  "where": "backend inventory/item/service/LotBreakdownQueryService, ItemLocationInventoryQueryService",
+  "tests": [],
+  "verify": "With statistics on, statement count and rows loaded for page 1 stay constant when lot rows double.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:33": {
+  "status": "still-bug",
+  "note": "still visible in code: ItemPriceQueryService.queryBatch (l.59-64) maps each entry through query(), which does itemRepository.findById (l.76) and salesChannelRepository.findById per entry; no cap on the list size.",
+  "summary": "Looking up prices for a document with many lines costs several queries per line (item, channel, company currency, channel prices). A 50-line document needs about 200 queries on the path users wait on when filling an order.",
+  "steps": [
+   "POST /api/inventory/items/price with 50 request entries (itemId, priceType SELL, salesChannelId)."
+  ],
+  "expected": "A handful of queries and a refusal above a size cap (for example 200).",
+  "actual": "Per-entry lookups; no cap.",
+  "where": "backend inventory/item/service/ItemPriceQueryService.queryBatch/query",
+  "tests": [],
+  "verify": "Statistics: 50 lines need no more than about 6 statements; 201 entries are refused with 400.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:34": {
+  "status": "still-bug",
+  "note": "still visible in code: InventoryLocationDomainService.collectSelfAndDescendantIds (l.280-300) walks level by level calling findByParentLocationId per node; ItemTransferQueryService (GET /api/inventory/items/for-transfer) uses the same per-node walk through inventoryLocationFacade.getChildren (per review, not re-read).",
+  "summary": "Finding all bins under a warehouse costs one query per location. A warehouse with 300 bins takes 400+ queries for one transfer dropdown, repeated on every item or lot change.",
+  "steps": [
+   "With a warehouse of about 200 bins call GET /api/inventory/items/for-transfer?itemId=..&warehouseId=.. with SQL logging on."
+  ],
+  "expected": "One recursive query for all descendant ids.",
+  "actual": "One query per node.",
+  "where": "backend inventory/item/service/ItemTransferQueryService, location/service/InventoryLocationDomainService.collectSelfAndDescendantIds, cascadeRestrictionsToDescendants",
+  "tests": [],
+  "verify": "Statistics: one statement for the descendant lookup regardless of tree size; same id set as before.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:36": {
+  "status": "still-bug",
+  "note": "still visible in code: ReorderAlertRepository.find (l.71) and count (l.95) each prepend the full STOCK_PER_WAREHOUSE CTE (recursive location tree + SUM over every balance) before the reorder_point filter; stock sums on_hand minus reserved for every status including DAMAGED.",
+  "summary": "The reorder alert screen aggregates the whole balance table twice per page (once for rows, once for the count) and counts damaged or quarantined stock as available, unlike other services.",
+  "steps": [
+   "GET /api/inventory/items/reorder-alerts?page=0&size=20 on a stack with many balances (EXPLAIN ANALYZE the SQL)."
+  ],
+  "expected": "Aggregate only items with a reorder point; damaged stock excluded.",
+  "actual": "Full aggregate twice; damaged stock counted.",
+  "where": "backend inventory/item/repository/ReorderAlertRepository (STOCK_PER_WAREHOUSE, find, count)",
+  "tests": [],
+  "verify": "An item whose only stock is DAMAGED shows as below reorder point; EXPLAIN shows the item filter before the aggregate.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:37": {
+  "status": "still-bug",
+  "note": "still visible in code: PackingHouseBookMapper l.149-156 looks up the customer per row inside catch (Exception); itemFacade.getById per line at PackingHouseBookMapper:194 and BinTransferMapper:205.",
+  "summary": "Lists of packing house bookings and bin transfers look up the customer, item and pending task row by row (about 80 lookups for 20 bookings of 3 lines). One lookup also swallows every exception, so a real failure silently leaves the customer name empty.",
+  "steps": [
+   "GET /api/inventory/packing-house-books?page=0&size=20 with SQL logging; look at customerName of a booking whose customer lookup fails."
+  ],
+  "expected": "Constant number of queries per page; only 'not found' is ignored, other errors are logged.",
+  "actual": "Per-row lookups; all exceptions swallowed.",
+  "where": "backend inventory/packing_house/mapper/PackingHouseBookMapper.toDTO; transfer/mapper/BinTransferMapper.toDTO",
+  "tests": [],
+  "verify": "Statistics for 20 rows: about 6 statements; JSON identical to before.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:38": {
+  "status": "still-bug",
+  "note": "still visible in code: StockTransferRepository l.60-71, four paged methods still declare @EntityGraph with the 'items' collection; no default_batch_fetch_size. Hibernate cannot apply LIMIT with a collection join fetch.",
+  "summary": "Every page request of the stock transfer list loads all transfers with all their lines and slices the page in Java. The list gets slower with every transfer ever made.",
+  "steps": [
+   "GET /api/inventory/stock-transfers?page=0&size=5 and read the server log for the Hibernate warning 'firstResult/maxResults specified with collection fetch; applying in memory'."
+  ],
+  "expected": "LIMIT applied in SQL.",
+  "actual": "In-memory paging (by code shape; warning not captured).",
+  "where": "backend inventory/transfer/repository/StockTransferRepository; StockTransferServiceImpl.getAll; StockTransferExportDataSource.fetchRows",
+  "tests": [],
+  "verify": "After removing 'items' from the graph the warning disappears and the SQL has a LIMIT.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:39": {
+  "status": "still-bug",
+  "note": "still visible in code: InventoryAdjustmentExportDataSource l.85-86 calls readEntities(specFilters) unpaged when page/size are absent; InventoryAdjustmentRepository has no EntityGraph, so location, requester and items load per row.",
+  "summary": "Exporting inventory adjustments without a page loads all of them and then lazy-loads location, requester and lines per row (about three queries per row). Ten thousand adjustments mean 30,000 queries in one transaction.",
+  "steps": [
+   "Inventory Adjustment list > Export (Excel) with no page limit on a stack with many adjustments."
+  ],
+  "expected": "Few queries and a row cap.",
+  "actual": "N+1 per row; no cap.",
+  "where": "backend inventory/adjustment/export/InventoryAdjustmentExportDataSource.fetchRows; adjustment/repository",
+  "tests": [],
+  "verify": "Export 200 adjustments with statistics on: under 10 selects.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:4": {
+  "status": "still-bug",
+  "note": "still visible in code: PackingHouseLinkFulfillService.requireBook (l.158-172) loads the booking with plain findById and checks salesOrderId == null on that unlocked read; PackingHouseBookRepository has no lock query.",
+  "summary": "Two simultaneous 'link to sales order' calls on the same booking can both pass the 'not yet linked' check and each create a delivery order for the same stock.",
+  "steps": [
+   "Send two parallel POST /api/inventory/packing-house-books/{id}/link-with-sales-order calls for the same booking and two different orders."
+  ],
+  "expected": "One succeeds, the other gets 400 'already linked'.",
+  "actual": "Both can pass the check (unlocked read).",
+  "where": "backend inventory/packing_house/service/PackingHouseLinkFulfillService.linkAndFulfill/requireBook",
+  "tests": [
+   "INV-14-10, INV-14-11 (single call only)"
+  ],
+  "verify": "Run the two parallel calls: exactly one delivery order is created.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:41": {
+  "status": "still-bug",
+  "note": "still visible in code: transfer ItemLine has no serial column; BinTransferMapper uses the serial only to resolve the dimension (l.183) and does not return it; lines are grouped by item only.",
+  "summary": "For serial-tracked items a bin transfer or packing house booking accepts a serial number but never stores or returns it. Reading it back or re-sending the details can resolve to another unit, and two rows of one item with different units come back merged with summed quantities.",
+  "steps": [
+   "POST /api/inventory/bin-transfers for a SERIAL item with serialNumber S1.",
+   "GET /api/inventory/bin-transfers/{id}."
+  ],
+  "expected": "inventoryDetails[0].serialNumber == 'S1'; separate rows per unit conversion.",
+  "actual": "Serial missing; same-item rows merged.",
+  "where": "backend inventory/transfer/mapper/BinTransferMapper.toInventoryDetails/toItemAdjustments; packing_house/mapper/PackingHouseBookMapper; transfer/model/ItemLine",
+  "tests": [],
+  "verify": "The GET above returns the serial; two rows with different unit conversions come back as two rows.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Both, inventory"
+ },
+ "rv-be:inventory:8": {
+  "status": "still-bug",
+  "note": "still visible in code: StockTransferFacadeImpl.create (l.82-106): the no-workflow branch (last line) calls approvalInventoryService.applyOnHandQtyOnApproval without a reserve step; StockTransferReservationService.validateOnHandAvailability has no caller.",
+  "summary": "A stock transfer made while no workflow is active moves channel stock that other documents already reserved. A transfer of 60 from an allocation of 100 with 80 reserved by a delivery succeeds and leaves allocated 40 below reserved 80, so the delivery later fails or oversells.",
+  "steps": [
+   "Allocation 100 for a channel at a location with 80 reserved by a sales delivery; no active STOCK_TRANSFER workflow.",
+   "POST /api/inventory/stock-transfers moving 60 of that item/channel."
+  ],
+  "expected": "400 'Not available stock to transfer'.",
+  "actual": "Transfer completes; allocated 40, reserved 80.",
+  "where": "backend inventory/transfer/facade/StockTransferFacadeImpl.create; StockTransferApprovalInventoryServiceImpl; StockTransferReservationServiceImpl",
+  "tests": [],
+  "verify": "Same transfer of 60: 400 and allocation unchanged; a transfer of 20 succeeds.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:9": {
+  "status": "still-bug",
+  "note": "still visible in code: ItemFacadeImpl.getInventoryDimension (l.314-317) returns the serial's dimension without checking item, location or status; BinTransferWorkflowHandler has no serial handling, so SerialMaster.dimension is never re-pointed after a move.",
+  "summary": "A bin transfer line can name a serial of another item or another bin and be accepted. After approval the quantity moves but the serial still points to the old, now empty, location, so later picks and adjustments see the wrong bin.",
+  "steps": [
+   "POST /api/inventory/bin-transfers with a serialNumber of an item in bin C but source location bin A.",
+   "Or move serial S1 from bin A to B, approve, then check which bin S1 belongs to (serial_master.dimension_id)."
+  ],
+  "expected": "400 'Serial is not at the source location for this item'; the serial follows the unit after approval.",
+  "actual": "Accepted; serial stays at bin A.",
+  "where": "backend inventory/item/facade/ItemFacadeImpl.getInventoryDimension; transfer/service/BinTransferDomainService.validateInventoryDetails (l.178-185); transfer/handler/BinTransferWorkflowHandler.moveStockToDestination",
+  "tests": [],
+  "verify": "After approval serial_master.dimension_id belongs to bin B; a wrong-bin serial request answers 400.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:10": {
+  "status": "still-bug",
+  "note": "still visible in code: InventoryAdjustmentDomainService l.162-163 resolves the dimension with the same serial-only getInventoryDimension and does no item, location or status check on the result.",
+  "summary": "An adjustment line for item A can name a serial of item B or a damaged serial and pass validation; approval then writes off the other item's stock.",
+  "steps": [
+   "POST /api/inventory/adjustments with item A and a serialNumber belonging to item B."
+  ],
+  "expected": "400 'Serial does not belong to this item / location / status'.",
+  "actual": "Passes validation.",
+  "where": "backend inventory/adjustment/service/InventoryAdjustmentDomainService (validation ~l.150-170); item/facade/ItemFacadeImpl.getInventoryDimension",
+  "tests": [],
+  "verify": "Adjustment with another item's serial returns 400; a valid serial still passes.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:11": {
+  "note": "kept open: InventoryAdjustmentWorkflowHandler l.285 reduces allocated_qty, but BinTransferWorkflowHandler.moveStockToDestination (l.207-248) and PackingHouseBookDomainService.moveStockToDestination do not move it; only reader found is InventoryStockDomainService.consumeInTransitLine (l.194-197) and PackingHouseBookDomainService l.478. Needs the business answer whether the column is live. Same family as pt1110:B8 and saleschain:SC-13.",
+  "summary": "Moving stock between bins (bin transfer, packing house) changes on hand but not the allocated quantity of the balance: the source keeps its old figure and the destination starts at 0. It is not confirmed that any screen depends on this number.",
+  "steps": [
+   "Receive item A (on hand 100, allocated 100) into bin A.",
+   "POST /api/inventory/bin-transfers moving 100 to bin B and approve.",
+   "GET /api/inventory/items/{itemId}/inventory-balance for both bins."
+  ],
+  "expected": "Allocated moves with on hand, or the column is declared not live and removed.",
+  "actual": "Bin A on hand 0 allocated 100; bin B on hand 100 allocated 0.",
+  "where": "backend inventory/transfer/handler/BinTransferWorkflowHandler.moveStockToDestination; packing_house/service/PackingHouseBookDomainService.moveStockToDestination; InventoryBalance.allocatedQty",
+  "tests": [],
+  "verify": "After the decision: sum(allocated_qty) per item is unchanged by a bin transfer (or the column is gone).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:21": {
+  "status": "still-bug",
+  "note": "still visible in code: SalesChannelDomainService.validateCreate (l.48-56) checks only a blank name and sub-channel names; sales_channel.name has no unique constraint in V1__initial_schema.sql (l.446-).",
+  "summary": "Two sales channels with the same name can be created. A stock receipt by channel name then finds two rows and fails with HTTP 500.",
+  "steps": [
+   "POST /api/inventory/sales-channels twice with name 'Retail Food'.",
+   "POST /api/inventory/items/receive with salesChannelName 'Retail Food'."
+  ],
+  "expected": "Second create refused with 400 'sales channel name already exists' (case-insensitive).",
+  "actual": "Both created; the receive fails with a duplicate-result error.",
+  "where": "backend inventory/channel/service/SalesChannelDomainService.validateCreate/validateUpdate; SalesChannelRepository.findByName used at InventoryStockDomainService l.328",
+  "tests": [],
+  "verify": "The second POST answers 400; pg_indexes lists a unique index on lower(name).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:23": {
+  "status": "still-bug",
+  "note": "still visible in code: MonthlyBudgetScheduler runs @Scheduled(cron 0 0 0 1 * *) with LocalDate.now() (server zone), no catch-up or single-instance guard (no ShedLock in pom.xml); PettyCashDashboardServiceImpl l.47 clamps remainingBalance with .max(ZERO), hiding an overspend.",
+  "summary": "The monthly petty cash budget job and the dashboard have several weak spots: the job runs only at midnight on the 1st (nothing happens if the app is down), uses the server time zone, may run on every instance, ignores reserved amounts when carrying forward, and the dashboard never shows a negative remaining balance.",
+  "steps": [
+   "Stop the backend over midnight on the 1st and start it on the 2nd.",
+   "Check GET /api/petty-cash/budget-allocators for the new month.",
+   "Overspend a budget and open the Petty Cash dashboard."
+  ],
+  "expected": "The new month exists after startup; the dashboard shows the real (negative) remainder.",
+  "actual": "No allocator for the month; remaining shown as 0.",
+  "where": "backend inventory/pettycash/scheduler/MonthlyBudgetScheduler; service/PettyCashDashboardServiceImpl",
+  "tests": [],
+  "verify": "Overspent budget: dashboard remainingBalance < 0; start the app with the clock on the 2nd: the month's allocator is created.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:24": {
+  "status": "still-bug",
+  "note": "still visible in code: ChannelAllocation.java l.32,35 declare allocated_qty and reserved_qty nullable=false, but V1__initial_schema.sql l.897-898 and l.926-927 create those columns nullable with DEFAULT 0 (channel_allocation); same kind of mismatch listed for channel_price_list.base_price, item_uom_conversion and lot_master.status (not re-read).",
+  "summary": "Some entities say a column is NOT NULL while the database table allows NULL. Hibernate does not check this, so a row with a NULL quantity or price loads and then fails with a server error (for example in price lookup) for that item only.",
+  "steps": [
+   "On the database run: select count(*) from channel_allocation where allocated_qty is null or reserved_qty is null; (and the same for the other columns).",
+   "Compare information_schema.columns is_nullable with the entity annotations."
+  ],
+  "expected": "Entity and schema agree; migration sets NOT NULL after checking for NULLs.",
+  "actual": "Annotations and schema differ for the columns above.",
+  "where": "backend inventory/channel/model/ChannelAllocation; ChannelPriceList; ItemUOMConversion; LotMaster; Item; V1__initial_schema.sql",
+  "tests": [],
+  "verify": "Run the null-count queries on every environment (expect 0), apply the migration, re-compare is_nullable.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:25": {
+  "status": "still-bug",
+  "note": "still visible in code: ItemDomainService.createUOM (l.359-362) does findFirstByNameOrderByIdAsc (case-sensitive) then saves a new UOM from free text; uom has no unique name; validateDelete (l.187-189) is empty; validateCreate/validateUpdate repeat about 25 identical lines.",
+  "summary": "Creating an item with a mistyped unit name ('Bagg') permanently creates a junk unit; two concurrent creates can make duplicates. Item delete runs no checks and ends in a database error when stock exists. Create and update validation is duplicated, so rules can drift apart.",
+  "steps": [
+   "POST /api/inventory/items with primaryPurchaseUnit 'Bagg'.",
+   "Look at the uom table: a new row 'Bagg' exists.",
+   "DELETE /api/inventory/items/{id} for an item that has stock."
+  ],
+  "expected": "Unit names matched case-insensitively against a unit master; item delete refused with a readable 409.",
+  "actual": "New UOM row per new spelling; generic database error on delete.",
+  "where": "backend inventory/item/service/ItemDomainService (createUOM, validateDelete, validateCreate, validateUpdate)",
+  "tests": [],
+  "verify": "Delete an item with stock: 409 with a message; creating 'pcs' after 'Pcs' reuses the same uom row.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:26": {
+  "status": "still-bug",
+  "note": "still visible in code: InventoryLedgerService.recordMovement (l.76-110) writes one row of +/-1 per serial whatever signedQuantity is (perSerial, l.97-103); no serials.size() == |signedQuantity| check; serialCost does one query per serial; LocalDateTime.now() at l.128.",
+  "summary": "When serial numbers are passed to the stock ledger, five serials with a quantity of -3 write five ledger rows of -1: stock changes by 3 but the ledger shows 5. The cost lookup also runs one query per serial.",
+  "steps": [
+   "Internal call: InventoryLedgerService.recordMovement with 5 serial numbers and signedQuantity -3 (reachable via an adjustment or delivery that sends more serials than quantity)."
+  ],
+  "expected": "400 when the number of serials differs from the quantity.",
+  "actual": "Five -1 rows are written.",
+  "where": "backend inventory/ledger/service/InventoryLedgerService.recordMovement/serialCost",
+  "tests": [],
+  "verify": "Unit test: 5 serials and quantity -3 throws BadRequestException; matching call writes the same rows as before.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:29": {
+  "status": "still-bug",
+  "note": "still visible in code: ItemFacadeImpl.create (l.146-151) and update (l.164-175) are @Transactional and call attachmentHandler.storeAttachment / deleteAttachment inside the transaction; no TransactionSynchronization/afterCommit in the file.",
+  "summary": "Item images are written to and deleted from object storage inside the database transaction. If the save fails afterwards, new files stay orphaned; on update, removed images are already deleted from storage while their database rows survive a rollback.",
+  "steps": [
+   "PUT /api/inventory/items/{id} (multipart) removing an existing image and adding a new one, with a validation error forced after the image step."
+  ],
+  "expected": "Files are deleted only after commit; new files removed when the save fails.",
+  "actual": "Removed files are already deleted, new files remain after rollback.",
+  "where": "backend inventory/item/facade/ItemFacadeImpl.create/update",
+  "tests": [],
+  "verify": "Force a failure after storeAttachment: the new file must not remain; roll back an update: existing files stay.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:29#review-be": {
+  "status": "still-bug",
+  "note": "still visible in code: src/main/java/com/nsl/erp/shared/workflow/init holds about 28 near-identical *WorkflowSeeder classes; @Order values 36, 37 (3 times), 40, 64, 65 are repeated. Dev/test only.",
+  "summary": "The workflow seeders for the dev/test database are copies of one another, and several share the same @Order number. A new document type needs a 90-line copy and the styles already drift. Production is not affected.",
+  "steps": [
+   "List shared/workflow/init/*WorkflowSeeder.java and grep '@Order('; duplicates appear."
+  ],
+  "expected": "One data-driven seeder.",
+  "actual": "28 classes, repeated order numbers.",
+  "where": "backend shared/workflow/init/*WorkflowSeeder.java",
+  "tests": [],
+  "verify": "Start the dev profile on an empty DB before and after: select name, context_entity_type from workflow_definition is identical.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, platform"
+ },
+ "rv-be:inventory:35": {
+  "status": "still-bug",
+  "note": "still visible in code: LotBreakdownQueryService l.94 does inventoryLocationRepository.findAll(); ItemLocationInventoryQueryService l.68 locationLookupPort.findAllAsMap(); InventoryBalanceFacadeImpl (~l.148) loads all locations per stock query.",
+  "summary": "Every lot-breakdown, location-inventory or lot-valuation request reads the whole location table to look up a few locations. Cost grows with the number of bins.",
+  "steps": [
+   "GET /api/inventory/items/lot-breakdown with SQL logging: a 'select ... from inventory_location' without a where clause appears."
+  ],
+  "expected": "Only the locations used by the loaded balances are fetched.",
+  "actual": "Full table read each call.",
+  "where": "backend inventory/item/service/LotBreakdownQueryService, ItemLocationInventoryQueryService; stock/facade/InventoryBalanceFacadeImpl",
+  "tests": [],
+  "verify": "Statement count independent of the number of unrelated locations.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:40": {
+  "status": "still-bug",
+  "note": "partly changed: GlobalExceptionHandler.handleIllegalArgumentException (l.536) now answers 400 for a bad status or non-numeric id (EApprovalStatus.valueOf, Long.valueOf), with the raw Java message. Still visible: BinTransferExportDataSource.parseDate l.149 and StockTransferExportDataSource l.155 use LocalDate.parse, whose DateTimeParseException is not an IllegalArgumentException, so a bad date still ends in the generic 500 handler.",
+  "summary": "A transfer export with a bad filter value should answer 400 with a clear message. Bad enum or number values now give 400 with an unfriendly technical message, but a wrongly formatted date still gives a server error.",
+  "steps": [
+   "Call the bin transfer Excel export endpoint with fromDate=31-12-2026 (and status=foo, locationId=abc)."
+  ],
+  "expected": "400 'Invalid fromDate filter: 31-12-2026' for each.",
+  "actual": "Date: 500. status/locationId: 400 with a Java exception text.",
+  "where": "backend inventory/transfer/export/BinTransferExportDataSource, StockTransferExportDataSource",
+  "tests": [],
+  "verify": "Export with fromDate=xx: expect 400 with a readable message, not 500.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:42": {
+  "status": "still-bug",
+  "note": "still visible in code: ItemLineRequestDTO.unitId (l.28-29) is @NotNull but not used by the stock transfer builder; ItemLineResponseDTO.resolveUnitId (l.61-69) returns the conversion id when present, else the primary sales unit's UOM id.",
+  "summary": "Stock transfer lines require a unitId that is then ignored, so a carton id without a conversion silently books the quantity in the base unit. On read, unitId is a conversion id for some lines and a unit id for others, which the screen cannot interpret reliably.",
+  "steps": [
+   "POST /api/inventory/stock-transfers with a line unitId = carton UOM id, no itemUOMConversion.",
+   "GET /api/inventory/stock-transfers/{id} and read the line unitId."
+  ],
+  "expected": "400 when unitId does not match the conversion; response returns one id space plus uomConversionId.",
+  "actual": "Accepted; quantity booked in base unit; unitId meaning varies.",
+  "where": "backend inventory/transfer/dto/ItemLineRequestDTO, ItemLineResponseDTO.resolveUnitId; facade/StockTransferFacadeImpl.buildItemLines",
+  "tests": [],
+  "verify": "Carton unitId without conversion -> 400; matching conversion -> 201 and the GET returns the same unitId.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Both, inventory (frontend must agree to any change of unitId meaning)"
+ },
+ "rv-be:inventory:43": {
+  "status": "still-bug",
+  "note": "still visible in code: ItemPackingHouseBookDTO l.20 field adjustingQtyUnit is the JPA entity ItemUOMConversion; l.25 field packingHosueBookId is misspelled.",
+  "summary": "The packing house booking API exposes a database entity in its JSON and uses a misspelled key 'packingHosueBookId'. The entity's fields leak into the contract and the typo is permanent unless renamed with an alias.",
+  "steps": [
+   "GET /api/inventory/packing-house-books/{id} and look at lines[].adjustingQtyUnit and the key packingHosueBookId."
+  ],
+  "expected": "A DTO type for the unit and the key packingHouseBookLineId (old key accepted as alias for one release).",
+  "actual": "Entity fields in the response; typo key.",
+  "where": "backend inventory/packing_house/dto/ItemPackingHouseBookDTO; mapper/PackingHouseBookMapper; service/PackingHouseBookDomainService l.164",
+  "tests": [],
+  "verify": "GET and POST of a booking still round-trip after the rename; Swagger no longer lists entity fields.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Both, inventory (frontend uses the JSON key)"
+ },
+ "rv-be:inventory:44": {
+  "status": "still-bug",
+  "note": "still visible in code: DashboardPreferenceService.save l.41 iterates request.getHiddenWidgets() with no null check (null -> NPE 500); ItemResponseDTO.manufacturingId (l.69) vs request manufacturerId (ItemMapper l.38); ItemDomainService.updateImages (l.551) treats a null keepImageIds as 'keep none'; PeriodCloseTaskDTO l.74 builds English 'Waiting on ...' text server side. The enum-as-String items were not re-checked.",
+  "summary": "A group of small contract problems: a dashboard preference save with a null list crashes, an item update that omits keepImageIds deletes every image, the item response calls the manufacturer id 'manufacturingId' while the request uses 'manufacturerId', and the server builds English status text for a bilingual UI.",
+  "steps": [
+   "PUT the dashboard preferences endpoint (DashboardController PUT /preferences) with {\"hiddenWidgets\": null}.",
+   "PUT /api/inventory/items/{id} (multipart) without keepImageIds for an item with images."
+  ],
+  "expected": "Null list treated as empty; omitted keepImageIds keeps images (business decision pending).",
+  "actual": "First: 500; second: images removed.",
+  "where": "backend dashboard/service/DashboardPreferenceService; inventory/item/service/ItemDomainService.updateImages; ItemResponseDTO; accounting/periodclosing/dto/PeriodCloseTaskDTO",
+  "tests": [],
+  "verify": "The null-list PUT returns 200; item update without keepImageIds keeps the images once the decision is made.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Both, inventory/platform"
+ },
+ "rv-be:inventory:45": {
+  "status": "still-bug",
+  "note": "still visible in code: PettyCashResponseDTO l.60 and StockTransferResponseDTO l.130 concatenate firstName + \" \" + lastName with no null handling; the workflow handlers use .trim() but still print 'null' for a missing last name.",
+  "summary": "A user without a last name is shown as 'Ali null' as requester on petty cash and stock transfer lists.",
+  "steps": [
+   "Create a user with only a first name.",
+   "Create a petty cash request or stock transfer as that user; open the list (GET /api/petty-cash/requests or /api/inventory/stock-transfers)."
+  ],
+  "expected": "requesterName 'Ali'.",
+  "actual": "requesterName 'Ali null'.",
+  "where": "backend inventory/pettycash/dto/PettyCashResponseDTO.from; transfer/dto/StockTransferResponseDTO.resolveRequesterName; handlers in adjustment, packing_house, pettycash",
+  "tests": [],
+  "verify": "User with null last name -> 'Ali' in both lists.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:46": {
+  "note": "partly confirmed: VendorBillFacadeImpl.enrichVendor l.312-314 still swallows every RuntimeException silently; the other three points (positive-stock id list loaded to count it, uncapped physical-inventory query, stray @SuppressWarnings) were not re-read. Kept open.",
+  "summary": "A few small inefficiencies: a list of all items with positive stock is loaded just to count it, one query has no row cap, and a vendor lookup hides every error so the vendor name silently goes missing.",
+  "steps": [
+   "GET the Period Closing carry-forward screen data (uses InventoryOpenItemsProviderImpl) and watch the SQL: a full id list is loaded.",
+   "Make the vendor lookup fail in a vendor bill read: no log line appears."
+  ],
+  "expected": "COUNT query; exception logged at warn.",
+  "actual": "Full list loaded; exception swallowed (vendor part confirmed).",
+  "where": "backend inventory/stock/service/InventoryOpenItemsProviderImpl; purchase/bill/facade/VendorBillFacadeImpl.enrichVendor l.312",
+  "tests": [],
+  "verify": "Carry-forward screen returns the same count; a failed vendor lookup writes a warn log.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:47": {
+  "status": "still-bug",
+  "note": "still visible in code: private deductSourceOnHand copies in BinTransferWorkflowHandler (l.220), PackingHouseBookDomainService (l.284, 465) and InventoryAdjustmentWorkflowHandler (l.239, 276); findOrCreateDestinationDimension copies in the first two. The sales ProductDistributionService copy was not re-read.",
+  "summary": "The 'move stock between bins' logic is copied in several places and they already differ. Every stock rule fix, such as the locking fix, must be made in each copy or stock handling stays inconsistent.",
+  "steps": [
+   "grep 'deductSourceOnHand' and 'findOrCreateDestinationDimension' in the backend inventory module."
+  ],
+  "expected": "One InventoryStockMovementService.",
+  "actual": "Three or four private copies.",
+  "where": "backend inventory/transfer/handler/BinTransferWorkflowHandler; packing_house/service/PackingHouseBookDomainService; adjustment/handler/InventoryAdjustmentWorkflowHandler; sales/distribution/service/ProductDistributionService",
+  "tests": [],
+  "verify": "After the refactor the existing inventory e2e specs and unit tests pass unchanged.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "rv-be:inventory:48": {
+  "status": "still-bug",
+  "note": "still visible in code: transfer/model/TransferOrder.java still exists (no other user); EReservationStatus has ACTIVE, RESERVE, EXPIRED, RELEASED, CONSUMED and BinTransferDomainService l.468 and InventoryAdjustmentDomainService l.652 still write RESERVE. Other dead classes not re-checked.",
+  "summary": "Unused model classes remain (for example TransferOrder, ReservationTransaction) and reservations use two statuses, ACTIVE and RESERVE, for one meaning. Nothing breaks today, but a future 'all active reservations' query would miss half of them.",
+  "steps": [
+   "select status, count(*) from reservation group by 1 on a database with transfers and adjustments: both RESERVE and ACTIVE appear."
+  ],
+  "expected": "One active status; dead classes removed.",
+  "actual": "Both statuses; dead classes present.",
+  "where": "backend inventory/reservation/model/enums/EReservationStatus; transfer/service/BinTransferDomainService; adjustment/service/InventoryAdjustmentDomainService; transfer/model/TransferOrder",
+  "tests": [],
+  "verify": "After cleanup the status query shows only ACTIVE/RELEASED/CONSUMED and the build passes.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "saleschain:P3-B8": {
+  "status": "still-bug",
+  "note": "still visible in code: ItemDomainService.createUOM l.359-362 uses findFirstByNameOrderByIdAsc (case-sensitive) and saves a new UOM; the inventory/uom package has a repository and model but empty controller, facade and service folders, so no UoM master API exists.",
+  "summary": "Unit names are free text matched case-sensitively, so 'pcs' and 'Pcs' become two units. There is no unit-of-measure master screen or API to manage them.",
+  "steps": [
+   "POST /api/inventory/items with primaryPurchaseUnit 'pcs' and another item with 'Pcs'.",
+   "Check the uom table: two rows."
+  ],
+  "expected": "One unit; a UoM master to pick from.",
+  "actual": "Two rows; no UoM endpoint (404).",
+  "where": "backend inventory/item/service/ItemDomainService.createUOM; inventory/uom",
+  "tests": [],
+  "verify": "Creating 'Pcs' after 'pcs' reuses the existing uom row; GET of a UoM list endpoint exists.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "saleschain:SC-12": {
+  "note": "decision, not a defect in code: ItemReceiveDomainService.receive writes SALE_RETURN through InventoryLedgerService.recordMovement, which takes the current item average (averageCostOf) for untracked stock. Needs the client answer D-13 (return at original cost or current average).",
+  "summary": "A returned unit is booked back at the current average cost, not at the cost it left at (sold at 5.00, returned at 5.4237). There is no money effect today because the item average is unchanged by a return, but the ledger unit cost differs from what left.",
+  "steps": [
+   "Deliver 1 unit at average 5.00, change the average to 5.4237 with another receipt, return and receive the unit.",
+   "Read the SALE_RETURN inventory ledger row unit_cost."
+  ],
+  "expected": "Decision: original cost (recommended) or current average.",
+  "actual": "unit_cost = current average 5.4237.",
+  "where": "backend inventory/ledger/service/InventoryLedgerService.recordMovement (averageCostOf); sales/document/itemreceive/service/ItemReceiveDomainService",
+  "tests": [],
+  "verify": "After the decision, the SALE_RETURN row carries the chosen cost.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory/sales"
+ },
+ "saleschain:SC-13": {
+  "note": "kept open: allocated_qty on inventory_balance is added at receipt (InventoryStockDomainService.processEntry l.513) and only reduced by consumeInTransitLine and adjustment handler l.285; sales delivery does not reduce it. Same family as pt1110:B8 and rv-be:inventory:11.",
+  "summary": "inventory_balance.allocated_qty is the quantity ever received, not a live pool (the live pool is channel_allocation.allocated_qty). It is misleading if any report reads it.",
+  "steps": [
+   "Deliver stock for an item, then compare inventory_balance.allocated_qty with channel_allocation.allocated_qty for it."
+  ],
+  "expected": "Column reflects a live figure or is removed.",
+  "actual": "Balance allocated_qty never reduced by sales.",
+  "where": "backend inventory/stock/model/InventoryBalance.allocatedQty; InventoryStockDomainService.processEntry",
+  "tests": [],
+  "verify": "Business answer first; then the figures agree after a delivery.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory"
+ },
+ "purchase:C-P1": {
+  "note": "decision D-12 (document only). Code agrees with the documented behaviour: processEntry (InventoryStockDomainService l.344-348) keeps the item average when costDeferred (purchase receipts), and applyBilledCost folds the cost in when the vendor bill is approved.",
+  "summary": "For purchase receipts the item's moving average cost changes when the vendor bill is approved, not when goods are received. A sale between goods receipt and bill therefore uses the old average. The meeting decided to document this, not to change code.",
+  "steps": [
+   "Receive goods for a PO (item receipt approval) and read the item averageCost: unchanged.",
+   "Approve the vendor bill and read averageCost again: it moves."
+  ],
+  "expected": "Documented rule (average moves at bill approval).",
+  "actual": "As documented.",
+  "where": "backend inventory/stock/service/InventoryStockDomainService.processEntry, applyBilledCost",
+  "tests": [],
+  "verify": "GET /api/inventory/items/{id}: averageCost before and after the bill approval as in the steps.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory/purchase"
+ },
+ "purchase:C-P12": {
+  "note": "decision D-13 awaiting client answer. Code: VendorReturnFulfillmentService (l.223) writes the VENDOR_RETURN ledger row through InventoryLedgerService.recordMovement, which costs untracked stock at the current item average, while the credit note uses the PO price, as in the note; not re-read in the purchase module.",
+  "summary": "Units returned to a vendor are valued at the current average cost in the stock ledger, but the credit note uses the purchase order price (average 5.6522 vs PO 8.00). Under Periodic valuation this leaves a gap of (8 - average) x quantity.",
+  "steps": [
+   "Create a vendor return for goods bought at 8.00 while the average is 5.6522, fulfil it, and compare the ledger VENDOR_RETURN unit_cost with the credit note line price."
+  ],
+  "expected": "Decision: return at the cost the goods came in, or credit price taken from the return line.",
+  "actual": "Ledger at average, credit note at PO price.",
+  "where": "backend purchase/vendorreturn/service/VendorReturnFulfillmentService; inventory/ledger/service/InventoryLedgerService",
+  "tests": [],
+  "verify": "After the decision the two values agree.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory/purchase"
+ },
+ "purchase:C-P19": {
+  "note": "decision, no answer recorded; not checked in code beyond the title (no snapshot of the conversion factor on purchase order lines was looked for).",
+  "summary": "The unit conversion factor of an item can be changed while approved purchase orders exist, and open PO lines then show the new factor. Open documents change meaning after the fact.",
+  "steps": [
+   "Approve a PO for item X in cartons (factor 120), then PUT /api/inventory/items/{id} changing the carton factor to 200.",
+   "Open the PO again."
+  ],
+  "expected": "Warn, or keep the factor stored on the document.",
+  "actual": "Per the source note: change allowed, PO lines show the new factor.",
+  "where": "backend inventory/item/service/ItemDomainService (conversion update); purchase PO lines",
+  "tests": [],
+  "verify": "After the decision the PO line keeps its own factor.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory/purchase"
+ },
+ "saleschain:C1": {
+  "note": "decision D-15, awaiting client answer (recommended: yes, convert). Not code-verified beyond the stock receive path: processEntry (InventoryStockDomainService l.319-360) takes itemCount as sales-unit quantity and stores no unit with the balance.",
+  "summary": "Stock is kept as a plain number with no unit stored. A purchase of 10 cartons at 120 each becomes 10 units at cost 120, instead of 120 pieces at 10 each. The business must decide that stock is held in the primary sales unit and that purchase quantities are converted.",
+  "steps": [
+   "Buy an item in cartons (factor 12) on a PO, receive 10 cartons.",
+   "Read GET /api/inventory/items/{id}/inventory-balance."
+  ],
+  "expected": "120 sales units at the converted cost.",
+  "actual": "Per the source note: 10 units at cost 120.",
+  "where": "backend inventory/stock/service/InventoryStockDomainService.processEntry; purchase receipt posting",
+  "tests": [],
+  "verify": "After the decision the balance shows converted quantity and unit cost.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory/purchase"
+ },
+ "saleschain:C2": {
+  "note": "decision, no answer recorded. Code facts: inventory/uom has only a model and repository (no controller, facade or service), no item group or item attribute API exists.",
+  "summary": "The sidebar lists unit-of-measure master, item groups and item attributes, but none of these screens or APIs exist. Without a UoM master, typos create units. The owner must say which are needed.",
+  "steps": [
+   "GET /api/inventory/uoms (or any UoM path): 404."
+  ],
+  "expected": "Decision: UoM master yes; item group and attributes only if variants are sold.",
+  "actual": "Not built.",
+  "where": "backend inventory/uom (empty controller/facade/service folders)",
+  "tests": [],
+  "verify": "After the decision the chosen endpoints exist.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Both, inventory"
+ },
+ "saleschain:C4": {
+  "note": "decision D-31, reported to backend. Not code-verified: ItemInventoryQueryService has several availability figures; which one the item list and ASE call 'available' was not traced. Database comparison in the source: all bins 1003, sellable only 862.",
+  "summary": "The item list and the field-force ordering screen show an 'available' stock figure whose definition is unclear: all bins including special ones (1003 in the test data) or sellable bins only (862). Using the wrong one lets users sell stock that is damaged or quarantined.",
+  "steps": [
+   "GET /api/inventory/items/overview for an item with stock in damaged or quarantine bins and compare available with /api/inventory/items/{itemId}/inventory-balance sums."
+  ],
+  "expected": "Decision: available = sellable stock only (recommended).",
+  "actual": "Per the source note: not verified on screen.",
+  "where": "backend inventory/item/service/ItemInventoryQueryService; ItemFacadeImpl.channelAvailableCount",
+  "tests": [],
+  "verify": "Item with 100 in a sellable bin and 20 damaged shows available 100.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "owner": "Backend, inventory/sales"
+ }
+}

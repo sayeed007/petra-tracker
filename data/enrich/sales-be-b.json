@@ -1,0 +1,762 @@
+{
+ "rv-be:sales:9.4": {
+  "note": "still visible in code: salesRepUserId exists only on CreditMemoResponseDTO/CreditMemoMapper (l.141,177,215); InvoiceMapper, ItemReturnMapper, ItemReceiveMapper still emit the manager-row id as salesRepId; ItemReceiveDomainService.applyLocationAndSalesRep (~l.232-235) builds a bare SalesGeographyManager reference with no existence check.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The field salesRepId holds a user id on sales orders and demands but a sales-geography-manager row id on invoices, item returns, item receives and credit memos. A screen that copies salesRepId from an order into an item receive links the wrong manager or fails a foreign-key check, which the API reports as a misleading 409 'referenced by other data'. Commission views can then credit the wrong person.",
+  "steps": [
+   "Create a sales order for a customer whose rep is user U (POST /api/sales/orders); read GET /api/sales/orders/{id}: salesRepId is U's user id.",
+   "Create and approve an invoice for it; read GET /api/sales/invoices/{id}: salesRepId is the manager-row id, there is no salesRepUserId.",
+   "POST /api/sales/item-receives with salesRepId = the order's salesRepId (user id) or a non-existent id."
+  ],
+  "expected": "One meaning for salesRepId (or an explicit salesRepUserId on every document); a non-existent rep id refused with 400 'Sales representative not found'.",
+  "actual": "Different ids under the same name; a wrong id gives a 409 'referenced by other data' or links the wrong manager.",
+  "where": "backend modules/sales/document/{invoice,itemreturn,itemreceive,creditmemo}/mapper; ItemReceiveDomainService.applyLocationAndSalesRep; ItemReceiveRequestDTO.salesRepId",
+  "verify": "After fix: GET an invoice, item return and item receive and check salesRepUserId equals the order's rep user; POST /api/sales/item-receives with an unknown salesRepId must answer 400.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:9.5": {
+  "note": "still visible in code: CustomerRefundMapper.toApplicationResponses (~l.123) still uses ret.getCurrency() (item return) instead of the credit memo currency; local 'ret' variable declared at l.114 only for that.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The refund screen shows each credit memo that a refund applies to. The currency of that row is read from the linked item return, so for a standalone memo, or a return saved with a blank currency, the row has no currency although the memo has one. Amounts are not affected.",
+  "steps": [
+   "Create a standalone credit memo (no item return) in BDT and approve it.",
+   "POST /api/sales/customer-refunds applying that memo.",
+   "GET /api/sales/customer-refunds/{id} and read applications[0].currency."
+  ],
+  "expected": "applications[0].currency equals the credit memo currency (BDT).",
+  "actual": "applications[0].currency is null for a standalone memo.",
+  "where": "backend modules/sales/document/customerrefund/mapper/CustomerRefundMapper.toApplicationResponses (l.107-129)",
+  "verify": "Repeat the steps: applications[0].currency must be the memo currency; for a return-linked memo it must be unchanged.",
+  "owner": "Backend, sales"
+ },
+ "sales:B11": {
+  "note": "code still shows the gap: JournalLines.build (accounting/posting/translator/JournalLines.java l.165, l.212) throws 'the document has no amounts to post' at posting time only; sales invoice, order and demand create do not refuse a zero price, a sub-cent line or a date with no fiscal period up front. No e2e covers it.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Some sales documents are saved successfully but can never be posted to the ledger: an invoice with price 0, a line worth 0.008 (rounds to nothing), totals with 3 decimals (24.999 versus 25.00 in the ledger), or a document dated where no fiscal period exists. The posting then fails in the background and nothing on screen tells the clerk; the month-end check later blocks the month.",
+  "steps": [
+   "POST /api/sales/invoices for a delivered order line with quantity 5 and unitPrice 0.00.",
+   "Or POST /api/sales/invoices with 0.001 x 8.00.",
+   "Or POST /api/sales/demands, orders, delivery-orders and invoices dated 2030-06-01 (no fiscal period).",
+   "GET /api/sales/postings?documentType=SALES_INVOICE&documentId={id}."
+  ],
+  "expected": "Each request refused with 400 and a readable message (or amounts rounded to the paisa and posted).",
+  "actual": "Document saved (201), posting status FAILED 'the document has no amounts to post' / 'a journal line must carry an amount' / 'no financial period covers 2030-06-01'.",
+  "where": "backend sales document create paths (InvoiceDomainService.create, SalesOrderDomainService, SalesDemandDomainService); accounting JournalLines.build",
+  "verify": "Repeat steps 1-3: expect 400 at creation, and no invoice row with a FAILED posting afterwards.",
+  "owner": "Backend, sales",
+  "severity": "medium"
+ },
+ "saleschain:P3-B5": {
+  "note": "still visible in code: no reference to storagePurpose, blockFromNormalPicking or excludeFromSellableOnHand under modules/sales/document/delivery; only ItemReceiveDomainService.resolveInventoryStatus (~l.277) reads blockFromNormalPicking, for returns. No e2e covers it.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Warehouse bins can be marked quarantine, wastage, blocked from normal picking or excluded from sellable stock, but a sales delivery order can still pick from such a bin and the stock leaves. The settings are stored and shown yet never enforced by sales, so damaged or held stock can be sold.",
+  "steps": [
+   "Create a bin with storagePurpose QUARANTINE (or blockFromNormalPicking=true) holding stock (Inventory > Locations / POST /api/inventory/locations).",
+   "POST /api/sales/delivery-orders with lines[].inventoryDetails[].locationId = that bin.",
+   "Read the stock balance of that bin."
+  ],
+  "expected": "Delivery refused (400) from quarantine, wastage, blocked and excluded bins.",
+  "actual": "Delivery accepted and stock leaves the bin.",
+  "where": "backend DeliveryOrderFulfillmentService (create/pick); InventoryLocation flags; InventoryStockDomainService",
+  "verify": "POST step 2: expect 400 naming the bin; a normal bin still works.",
+  "owner": "Backend, sales",
+  "severity": "medium"
+ },
+ "saleschain:P3-B7": {
+  "note": "still visible: no cancel/void/reverse endpoint on InvoiceController, ReceiptController or SalesOrderController; FinancialLedgerService.recordInvoiceCancelled (sales/ledger/service l.49) has no caller. Also a product decision (see saleschain:C14).",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A wrong sales invoice, order or receipt cannot be cancelled or voided: the only correction is return plus credit memo, and a wrong receipt cannot be corrected at all. The code already knows the event INVOICE_CANCELLED, but nothing triggers it, and commission lifting cannot exclude cancelled invoices.",
+  "steps": [
+   "POST /api/sales/invoices/{id}/cancel (also /void, /reverse, DELETE /api/sales/invoices/{id}).",
+   "Same for /api/sales/receipts/{id} and /api/sales/orders/{id}."
+  ],
+  "expected": "Either a cancel route with a reversal journal and ledger event, or a documented decision that credit memo is the only route.",
+  "actual": "404/405 for every cancel/void/reverse/delete call.",
+  "where": "backend InvoiceController, ReceiptController, SalesOrderController; FinancialLedgerService.recordInvoiceCancelled",
+  "verify": "After a decision: a cancel call on an unpaid invoice returns 200, writes a reversal journal and INVOICE_CANCELLED ledger row, and the order's invoiced quantity is released. Same as saleschain:C14 (decision).",
+  "owner": "Backend, sales",
+  "severity": "medium"
+ },
+ "saleschain:SC-4": {
+  "note": "still visible in code: ECustomerLedgerEventType has only INVOICE_CREATED, INVOICE_CANCELLED, PAYMENT_RECEIVED, DEPOSIT_CREATED, DEPOSIT_APPLIED (sales/ledger/model/enums); no credit memo or refund event.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The customer sub-ledger table (customer_ledger_entry) never records credit memos or refunds, so it shows the full invoice while the general ledger receivable (1130) is lower. Receivable figures read from that table, such as the month-closing receivable check, overstate what customers owe by every credit memo and refund.",
+  "steps": [
+   "Invoice a customer, return goods, approve a credit memo (POST /api/sales/credit-memos then approve).",
+   "Compare the customer's ledger table balance (customer ledger / aging) with the GL account 1130 receivable."
+  ],
+  "expected": "Credit memos and refunds appear in the customer ledger so it equals GL 1130.",
+  "actual": "Table keeps the full invoice amount; e.g. 781.20 in the table against 677.04 in the GL.",
+  "where": "backend modules/sales/ledger (FinancialLedgerService, ECustomerLedgerEventType); SalesCloseDataProviderImpl.receivableBalanceAsOf",
+  "verify": "After the fix: the same scenario gives equal totals; the period-close 'Sales and Receivables' check shows difference 0.",
+  "owner": "Backend, sales",
+  "severity": "medium"
+ },
+ "saleschain:SC-5": {
+  "note": "still visible in code: JournalLines.build throws 'the document has no amounts to post' (l.165/l.212) for a document whose lines carry no money, and nothing in the sales invoice path skips a free-units-only invoice. No e2e covers it.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A PROMO order with free units (buy 25, get 2 free) needs one more invoice that bills only the 2 free units to reach 'fully invoiced'. That invoice has no money in it, so its posting fails and stays FAILED, which later blocks the month-end 'invoiced but not posted' check.",
+  "steps": [
+   "Create a PROMO demand/order of 25 plus 2 free units, deliver 27, invoice 25.",
+   "POST /api/sales/invoices with lines[].quantity 0 and offerQuantity 2.",
+   "GET /api/sales/postings for that invoice."
+  ],
+  "expected": "A free-units-only invoice is not created, or posts nothing without failing.",
+  "actual": "Invoice created (201), posting FAILED 'the document has no amounts to post'.",
+  "where": "backend InvoiceDomainService.create; accounting JournalLines.build",
+  "verify": "Repeat steps: no FAILED posting row remains after the free-units invoice.",
+  "owner": "Backend, sales",
+  "severity": "medium"
+ },
+ "rv-be:sales:1.8": {
+  "note": "still visible in code: SalesPostingController.getPosting (l.53-58) only checks the SALES_ prefix; the class-level anyOf permission list lets any of the five view permissions read any sales document type.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A user who only holds the receipt view permission can read the journal entry (ledger effect) of an invoice or a customer refund by calling the postings endpoint with another document type. It is a small information leak between sales money screens.",
+  "steps": [
+   "Log in as a user with only sales.receipt.view.",
+   "GET /api/sales/postings?documentType=SALES_INVOICE&documentId={id}."
+  ],
+  "expected": "403 for document types the user has no view permission for.",
+  "actual": "200 with the full journal entry.",
+  "where": "backend modules/sales/document/posting/SalesPostingController.getPosting",
+  "verify": "As that user, GET with documentType=SALES_INVOICE must return 403; SALES_RECEIPT still 200.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:1.9": {
+  "note": "still visible in code: CollectionFacadeImpl takes myTerritory from the client (resolveScopeUserId(myTerritory) l.72, l.90); CollectionDomainService.getSummary l.613 and GatePassService l.74 / GatePassReturnService l.183 still use to.atTime(23,59,59). The territory rule is also an open business question.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Two small problems: (1) whether a field user sees only their own territory's collections is decided by a flag the client sends, so a user can create or read a collection for a customer outside the territory; (2) the collection summary and gate pass lists end the day at 23:59:59, so a record saved in the last second is missed.",
+  "steps": [
+   "GET /api/sales/collections?myTerritory=false as a field user and read customers outside the territory (or POST a collection for such a customer).",
+   "Save a collection at 23:59:59.500 and GET the summary for that day."
+  ],
+  "expected": "Territory taken from the logged-in user on the server; the day window ends before the next midnight.",
+  "actual": "Client flag decides; the last second of the day is excluded.",
+  "where": "backend modules/sales/document/collection/facade/CollectionFacadeImpl; CollectionDomainService.getSummary:613; GatePassService:74; GatePassReturnService:183",
+  "verify": "A collection at 23:59:59.500 appears in the day's summary; out-of-territory GET /collections/{id} gives 403/404 once the rule is confirmed.",
+  "owner": "Backend, sales (needs business answer on territory rule)"
+ },
+ "rv-be:sales:10.1": {
+  "note": "partly visible: workflowRestartOnEditService is now used (CreditMemoService l.216, so 2.2 was done), but CreditMemoWorkflowHandler.isAlreadyApproved (l.159, only its definition), CreditMemoHeaderRepository.findByPartnerIdAndStatusNot, DeliveryOrderHeaderDetailRepository.countBySalesOrder_Id and the two InventoryAllocationDetailRepository finders still have no caller (the StageIn finder is used by SalesDemandDomainService l.291).",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Dead code: a few unused methods remain in the sales credit memo and delivery repositories. They cause no wrong behaviour but add noise for developers.",
+  "steps": [
+   "grep each name under modules/sales: isAlreadyApproved, findByPartnerIdAndStatusNot, countBySalesOrder_Id (delivery repo), findBySalesOrder_IdAndFulfillmentStageOrderByIdDesc, findByDocumentLine_IdAndInventoryDimension_Id, findByDocumentLine_DocumentHeader_Id."
+  ],
+  "expected": "Unused members removed.",
+  "actual": "Still present with no callers.",
+  "where": "backend modules/sales/document/creditmemo/handler/CreditMemoWorkflowHandler; document/creditmemo/repository/CreditMemoHeaderRepository; document/delivery/repository/*",
+  "verify": "./mvnw -q -DskipTests compile and existing tests pass after deleting.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:10.3": {
+  "note": "not checked line by line: only confirmed the mapper classes still exist; no sign the refactor was done. Keep still-bug.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The same display name is built in three different ways (one prints 'null null' for a missing name, one a leading blank), and the partner/address/contact mapping is copied across delivery, gate pass and vendor mappers. A fix applied to one copy was not applied to the others. Cosmetic and maintenance only.",
+  "steps": [
+   "GET /api/sales/delivery-orders/{id} for an order whose user has no first name and read the name field."
+  ],
+  "expected": "One shared name formatter; no 'null null'.",
+  "actual": "Different renderings per screen.",
+  "where": "backend modules/sales/document/delivery/mapper/DeliveryOrderDetailMapper:135-137; distribution/mapper/ProductDistributionMapper:156-163; GatePassDetailMapper:89-96; CreditMemoMapper toResponse overloads",
+  "verify": "A user without first name renders as the last name only on all three screens.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:10.4": {
+  "note": "not checked field by field: assumed unchanged because no cleanup was seen; keep still-bug until grepped against the frontend payload.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The sales order request DTO still lists fields the server overwrites (status, fulfillment status, invoiced/deposited/received totals), and a few response fields (taxCode, inventoryDetail) are always null. An integrator may send them and believe they count.",
+  "steps": [
+   "Open Swagger /v3/api-docs, schema SalesOrderRequestDTO: fields fulfillmentStatus, invoiceStatus, totalInvoicedAmount, totalDeposited, totalPaymentReceived are listed as writable."
+  ],
+  "expected": "Dead fields removed or marked read-only.",
+  "actual": "Listed as writable.",
+  "where": "backend modules/sales/document/order/dto/SalesOrderRequestDTO; SalesOrderLineResponseDTO; itemreturn/dto/ItemReturnPutawayDetailDTO; EDocType.PURCHASE_ORDER; EDocumentLineType.PURCHASE_ORDER_LINE",
+  "verify": "Swagger no longer lists the fields; order create/update/get tests pass.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:2.16": {
+  "note": "still visible in code: SalesTax.toFraction treats rate > 1 as a percent and rate <= 1 as a fraction (comment says so), so a rate of 1 means 100% and 0.8 means 80%; vatPart divides by (vatRate + aitRate) with no zero guard (~l.105).",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A tax rate is guessed from its size: anything above 1 is divided by 100, anything at or below 1 is used as is. A 1 percent or 0.8 percent AIT rate sent as 1 or 0.8 is read as 100% or 80%. vatPart also divides by zero if both configured rates are 0.",
+  "steps": [
+   "POST /api/sales/invoices with a line taxRate 1 (meaning 1%): tax is computed at 100%.",
+   "Set both configured VAT and AIT rates to 0 and create an invoice with tax: vatPart throws ArithmeticException."
+  ],
+  "expected": "One unit at the API boundary (fraction), refusal of an ambiguous value, and a guarded vatPart.",
+  "actual": "Rate scale is guessed; zero combined rate breaks.",
+  "where": "backend modules/sales/sales support SalesTax.toFraction/vatPart",
+  "verify": "Unit tests: toFraction(0.158)=0.158; vatPart with both rates 0 returns the whole tax amount without exception.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:2.17": {
+  "note": "still visible in code: PricingSchemeDomainService.updateStatus (~l.102-115) only calls PricingSchemeStatusPolicy.isTransitionAllowed; PAUSED->ACTIVE and DRAFT->ACTIVE are allowed with no check of effectiveFrom/effectiveUntil.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A pricing (offer) scheme whose end date has passed can be set back to ACTIVE by hand and keeps applying until the midnight scheduler expires it; a scheme with a future start date also goes straight to ACTIVE instead of SCHEDULED.",
+  "steps": [
+   "Create a scheme with effectiveUntil yesterday and pause it (or let it be PAUSED).",
+   "PATCH its status to ACTIVE (pricing scheme status endpoint under /api/sales/pricing-schemes/{id})."
+  ],
+  "expected": "400 'effective period has already ended' for an expired scheme; SCHEDULED for a future start.",
+  "actual": "Accepted as ACTIVE.",
+  "where": "backend modules/sales/discount/.../PricingSchemeDomainService.updateStatus; PricingSchemeStatusPolicy",
+  "verify": "PAUSED scheme with past effectiveUntil -> ACTIVE returns 400.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:2.18": {
+  "note": "partly fixed: pack cartonCount must be positive (DeliveryOrderFulfillmentService l.714, l.874), but there is no upper bound; ship still writes estimatedShippingDate (l.1063); all six *_DRAFT_* calls still go through publishFulfillmentEvent in DeliveryOrderFacadeImpl (l.193-233). Other bullets not re-read.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Delivery order handling has several small gaps: a carton count can be any positive number (even 1000 for 10 units), the planned ship date is overwritten when the order ships, and every draft autosave writes an audit event.",
+  "steps": [
+   "POST pack request with cartonCount 1000 for a line of 10 units (delivery order pack endpoint under /api/sales/delivery-orders/{id}).",
+   "Ship an order and compare estimatedShippingDate before and after.",
+   "Save a pick draft several times and look at the audit log."
+  ],
+  "expected": "cartonCount above the picked units refused; planned date kept; no audit noise.",
+  "actual": "Accepted/overwritten/audited every time.",
+  "where": "backend modules/sales/document/delivery/service/DeliveryOrderFulfillmentService; DeliveryOrderFacadeImpl",
+  "verify": "cartonCount 1000 on 10 units returns 400; ship keeps estimatedShippingDate.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:4.5": {
+  "note": "still visible in code: CustomerDomainService.updateFields (~l.540) copies creditLimit and status from the request with no check; only updateCreditLimit (l.274-279) rejects negative values.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Editing a customer through PUT can set a negative credit limit or any status, while the dedicated PATCH credit-limit call refuses a negative value. A negative limit makes every demand of that customer 'exceed credit'.",
+  "steps": [
+   "PUT /api/sales/customers/{id} with creditLimit -100.",
+   "Create a demand for that customer."
+  ],
+  "expected": "400 'creditLimit must not be negative' on PUT as well.",
+  "actual": "200, limit saved as -100.",
+  "where": "backend modules/sales/business_partner/customer/service/CustomerDomainService.updateFields (~540) and validateCreate",
+  "verify": "PUT with creditLimit -1 returns 400; PATCH behaviour unchanged.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:4.6": {
+  "note": "still visible in code: ImsReportFacadeImpl.create (l.38-54) calls YearMonth.from(request.getReportMonth()) before any null check, and stores the attachment before the save finishes.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Uploading an IMS (secondary sales) CSV without reportMonth or customerId gives a 500 instead of a readable 400. If the database commit then fails, the uploaded file stays in storage with no record.",
+  "steps": [
+   "POST the IMS report create endpoint (/api/sales/ims-reports) as multipart with a CSV file and no reportMonth."
+  ],
+  "expected": "400 'customerId and reportMonth are required'.",
+  "actual": "500 NullPointerException.",
+  "where": "backend modules/sales/ims/facade/ImsReportFacadeImpl.create",
+  "verify": "The same request returns 400, not 500.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:4.7": {
+  "note": "still visible in code: ItemReturnRequestDTO.reason is a plain String (l.29); EReturnReason is not used on the DTO. Other @Size gaps not re-read.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The reason on a sales item return is free text: any spelling is accepted so reports split the same reason into many groups, and a reason longer than 32 characters fails in the database with a generic 409. The note field reason_note is not mapped.",
+  "steps": [
+   "POST /api/sales/item-returns with reason of 40 characters.",
+   "POST with reason 'defective' and 'Defective Product' and compare reports."
+  ],
+  "expected": "Enum values only; 400 with a field message for other text.",
+  "actual": "Free string; long text gives a generic 409.",
+  "where": "backend modules/sales/document/itemreturn/dto/ItemReturnRequestDTO:29; ItemReturnHeader; EReturnReason",
+  "verify": "Reason of 40 characters returns 400; DEFECTIVE_PRODUCT still saves.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:4.8": {
+  "note": "still visible in code: SalesOrderMapper.resolveCarrier (l.271-276) does findFirstByNameIgnoreCase then saveAndFlush with no uniqueness guard; no @Size on the DTO; no unique index found in migrations.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Typing any carrier name on a sales order creates a new carrier master row, and two parallel requests with the same new name create two rows. A mapper should not write master data.",
+  "steps": [
+   "POST /api/sales/orders twice in parallel with shipping.carrier = 'NewCarrierX'.",
+   "GET the carrier list."
+  ],
+  "expected": "One carrier row; a clean refusal for the second.",
+  "actual": "Two rows possible.",
+  "where": "backend modules/sales/document/order/mapper/SalesOrderMapper.resolveCarrier; table shipping_carrier",
+  "verify": "Parallel requests produce exactly one carrier row.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:4.9": {
+  "note": "still visible in code: grep over sales *Controller.java finds 67 @RequestBody parameters and only 4 with @Valid (work plan counted 44 of 50 without).",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Most sales request bodies are checked by hand in services, not by validation annotations. Some gaps follow: for example a negative shipping or handling cost on an invoice lowers the total without a refusal.",
+  "steps": [
+   "POST /api/sales/invoices with shippingCost -5."
+  ],
+  "expected": "400 with the standard validation body.",
+  "actual": "Accepted; total reduced.",
+  "where": "backend modules/sales/document/*/controller and */dto (InvoiceRequestDTO, ReceiptRequestDTO, CustomerDepositRequestDTO ...)",
+  "verify": "The same request returns 400 and the error body names shippingCost.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:6.2": {
+  "note": "still visible: V1__initial_schema.sql l.6237 creates only a plain index idx_scheme_reward_scheme_id (not unique); SchemeReward.schemeId has no unique=true; sales_channel_category_setting.discount_mode is nullable (V1 l.3188) and no later migration changes it.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Two database constraints are missing in pricing tables: one scheme can end up with two reward rows after a double submit (then opening the scheme fails with a server error), and discount_mode is nullable in the database although the entity says it is required.",
+  "steps": [
+   "Send two parallel POST /api/sales/pricing-schemes creates with the same scheme data (or insert a second scheme_reward row for a scheme_id).",
+   "Open the scheme: GET /api/sales/pricing-schemes/{id}."
+  ],
+  "expected": "Second reward refused by a unique index; discount_mode NOT NULL.",
+  "actual": "Duplicate possible; findBySchemeId throws IncorrectResultSizeDataAccessException.",
+  "where": "backend db/migration V1__initial_schema.sql; modules/sales/discount/model/SchemeReward; SalesChannelCategorySetting",
+  "verify": "\\d scheme_reward shows a unique index on scheme_id; discount_mode NOT NULL.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.16": {
+  "note": "still visible in code: InvoiceDomainService calls salesOrderLineRepository.findById per line (l.364, 514, 527, 865, 1022, 1119) and InvoiceMapper.chargesFlatVat (l.318-320) / CreditMemoMapper l.105 query the customer per line.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Creating or reading an invoice, credit memo or delivery with many lines issues one or two extra database selects per line instead of loading everything once. Slow for big documents; results are correct.",
+  "steps": [
+   "Create an invoice with 30 lines (POST /api/sales/invoices) with SQL logging on and count selects."
+  ],
+  "expected": "A constant number of selects.",
+  "actual": "30-60 extra selects.",
+  "where": "backend modules/sales/document/invoice/service/InvoiceDomainService; InvoiceMapper; CreditMemoMapper; DeliveryOrderFulfillmentService",
+  "verify": "A 20-line invoice issues one select for order lines and one chargesFlatVat query; JSON unchanged.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.17": {
+  "note": "still visible in code: InvoiceDomainService.getOpenInvoicesByCustomer (l.1388-1418) loads findByPartnerIdAndStatusNot for the customer's whole history and filters dates and status in Java (the paid sums are already grouped in one query).",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The receipt-creation screen asks for a customer's open invoices; the server loads every invoice the customer ever had and filters in memory. Fine today, slow for customers with years of history.",
+  "steps": [
+   "GET the open-invoices-by-customer endpoint under /api/sales/invoices for a customer with thousands of invoices and time it."
+  ],
+  "expected": "Only open invoices read from the database.",
+  "actual": "Whole history loaded.",
+  "where": "backend modules/sales/document/invoice/service/InvoiceDomainService.getOpenInvoicesByCustomer",
+  "verify": "Same JSON before and after for a seeded customer; fewer rows read.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.18": {
+  "note": "still visible in code: CustomerDirectoryQueryService.search (l.82-83) still calls customerRepository.findAll(specification) for the whole list and then the page.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The customer directory screen loads every matching customer twice per page request and touches related lists row by row. Slow with many customers.",
+  "steps": [
+   "GET the customer directory of a manager (customer directory endpoint under /api/sales) with thousands of customers."
+  ],
+  "expected": "Id-only query for counts; page loaded with associations.",
+  "actual": "Full list materialised each time.",
+  "where": "backend modules/sales/performance/service/CustomerDirectoryQueryService.search",
+  "verify": "A 20-row page issues about 10 statements regardless of page size.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.19": {
+  "note": "still visible in code: SalesGeographyRbacSyncService calls salesGeographyRepository.findAll() twice (l.213, l.259) and findByScopeTypeAndScopeRef per id (l.270, 286, 308).",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Creating one territory under a large manager reloads the whole geography tree and does one scope lookup per node inside the create transaction (hundreds of queries). Slow, not wrong.",
+  "steps": [
+   "POST /api/sales/geographies under a wing manager with about 300 nodes and count queries."
+  ],
+  "expected": "Tree loaded once; one IN query for scopes.",
+  "actual": "Hundreds of queries.",
+  "where": "backend modules/sales/geography/service/SalesGeographyRbacSyncService.syncForUser",
+  "verify": "Syncing a closure of 100 nodes runs about 5 queries.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:8.3": {
+  "note": "still visible in code: VendorExportDataSource l.104, ProductDistributionExportDataSource l.117/121 use Enum.valueOf with no try/catch; CommissionReportExportDataSource.fetchRows (l.90) uses Pageable.unpaged() while the by-SPO sibling honours paging.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A list export with a bad status filter (status=foo) fails with a 500 or a failed job with an internal message, and the commission report export ignores 'current page only' and returns every row.",
+  "steps": [
+   "POST /api/export for the vendor list with filter status=foo.",
+   "Export the commission report with page=1,size=10."
+  ],
+  "expected": "400 'Invalid status filter'; only the requested page exported.",
+  "actual": "500 / failed export job; all rows exported.",
+  "where": "backend modules/sales/business_partner/vendor/export/VendorExportDataSource; distribution/export/ProductDistributionExportDataSource; payment collection export; commission/export/CommissionReportExportDataSource.fetchRows",
+  "verify": "POST /api/export with status=foo returns 400.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:9.10": {
+  "note": "still visible in code: CollectionMapper l.53 and SalesChannelCategoryMapper l.71 copy entity.getCreatedBy() (raw 'userId_@_username'); DeliveryOrderDetailMapper l.271 still sends baseImagePath (storage key).",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Several sales responses return the audit user as the raw stored string such as '1_@_1' (internal id plus login name) and delivery lines expose the storage key of the item image. This leaks internal ids to the browser and shows odd values wherever the screen prints it.",
+  "steps": [
+   "GET /api/sales/collections/{id} and /api/sales/demands/{id}; read createdBy."
+  ],
+  "expected": "Display name only; no storage key.",
+  "actual": "createdBy like '1_@_1'; baseImagePath present.",
+  "where": "backend modules/sales/document/collection/mapper/CollectionMapper; discount/mapper/SalesChannelCategoryMapper; CreditMemo/CustomerDeposit/CustomerRefund/SalesDemand response DTOs; DeliveryOrderLineDetailDTO",
+  "verify": "No '_@_' in any of those JSON responses.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:9.11": {
+  "note": "still visible in code: CustomerDepositRequestDTO.paymentOption (l.53) and CustomerRefundRequestDTO.paymentMethod (l.33) are plain Strings; the deposit service only checks presence.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Payment option/method on deposits and refunds is free text, so 'cash', 'Cash ' and 'CASH' are all accepted and reports group them separately. Several status strings are enum names sent as text, so renaming a constant would change the API silently.",
+  "steps": [
+   "POST /api/sales/customer-deposits with paymentOption 'cash' and another with 'CASH ', then group a report by it."
+  ],
+  "expected": "A fixed set of values, others refused.",
+  "actual": "Any text accepted.",
+  "where": "backend modules/sales/document/customerdeposit/dto/CustomerDepositRequestDTO; document/customerrefund/dto/CustomerRefundRequestDTO; CustomerRefundListItemDTO",
+  "verify": "Unknown value returns 400; existing rows still load.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:9.13": {
+  "note": "still visible in code: PickRequestDTO, PackRequestDTO and ShipRequestDTO (sales/document/delivery/dto) have no @JsonIgnoreProperties; they are stored as jsonb draft columns.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Delivery order drafts (pick, pack, ship) are saved as JSON of the request classes. If a later release removes or renames a field in those classes while a draft exists, loading that order throws and pick/pack/ship return 500 until the column is cleared by SQL. No draft rows existed on the test data.",
+  "steps": [
+   "Save a pick draft, then deploy a build where PickRequestDTO lost a field, then open the order."
+  ],
+  "expected": "Unknown properties ignored.",
+  "actual": "Deserialisation error.",
+  "where": "backend modules/sales/document/delivery/dto/PickRequestDTO, PackRequestDTO, ShipRequestDTO; model/DeliveryOrderHeaderDetail:92,100,108",
+  "verify": "Deserialising {\"lines\":[],\"someRemovedField\":1} into PickRequestDTO succeeds.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:9.14": {
+  "note": "still visible in code (four of the seven points): SalesDemandCoordinationService.verifyQuantity (l.193-198) sets quantityValidated TRUE on confirm even when allValid is false; SalesDemandDomainService l.1316 and SalesOrderDomainService l.790 turn any error into 'Item not found'; GatePassService l.74 and GatePassReturnService l.183 end the day at 23:59:59; dev seeders still carry class-level @Transactional (e.g. SalesDemandDevSeeder l.80). Not re-read: getMySummary count, expectedGateCount.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A group of small demand and gate-pass issues: quantity confirmation can be accepted with invalid lines, item lookup errors are all reported as 'Item not found', gate pass date filters drop the last second of the day, and dev seeders can lose rows after the first failure.",
+  "steps": [
+   "POST /api/sales/demands/{id}/coordination/quantity/verify with confirm=true on a demand with an invalid line; read the demand's quantityValidated."
+  ],
+  "expected": "400 and the gate stays unset.",
+  "actual": "Gate set to validated.",
+  "where": "backend modules/sales/document/demand/service/SalesDemandCoordinationService.verifyQuantity; SalesDemandDomainService.validateLines; GatePassService:74; GatePassReturnService:183; *DevSeeder",
+  "verify": "Step 1 returns 400 and quantityValidated stays false; summary tile count equals tab count.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:9.15": {
+  "note": "still visible in code (partly): SalesOrderDomainService l.790 'Item not found' catch-all; ReceiptFacadeImpl l.53 still calls invoiceDomainService.readDTOById per application; markDemandSoCreated only called on create (l.541). Other bullets not re-read.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Small points on sales order, receipt and item return: item lookups per line with a catch-all error text, re-linking a demand on order edit does not move the demand status, and creating a receipt with many applications loads each invoice separately.",
+  "steps": [
+   "PUT /api/sales/orders/{id} changing demandId; read both demands' status.",
+   "POST /api/sales/receipts with 10 applications with SQL logging."
+  ],
+  "expected": "Both demand statuses follow; one invoice select.",
+  "actual": "Old demand stays SO_CREATED; 10 selects.",
+  "where": "backend modules/sales/document/order/service/SalesOrderDomainService; document/receipt/facade/ReceiptFacadeImpl; document/itemreturn/service/SalesOrderReturnQuantityService; SalesOrderCustomerOverviewService",
+  "verify": "Re-linking updates both demands; receipt create with 10 applications issues one invoice select.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:9.6": {
+  "note": "still visible in code: SalesOrderCustomerOverviewService.computeOnTimePaymentPercentage (l.128-140) uses Collectors.toMap with ra.getReceipt().getTransactionDate() as value; toMap throws NullPointerException on a null value before the merge function runs.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The sales order detail page loads a customer overview that includes an on-time payment percentage. If a receipt applied to one of the customer's invoices in the last year has no transaction date, the whole order page fails with a 500.",
+  "steps": [
+   "Have a receipt with transactionDate null applied to a customer invoice (older data).",
+   "GET the sales order customer overview (sales order detail page, /api/sales/orders/{id})."
+  ],
+  "expected": "Percentage computed ignoring the receipt without a date.",
+  "actual": "500 NullPointerException.",
+  "where": "backend modules/sales/document/order/service/SalesOrderCustomerOverviewService.computeOnTimePaymentPercentage",
+  "verify": "Unit test with one application whose receipt date is null returns a value.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:9.7": {
+  "note": "still visible in code: CustomerSummaryService.get (l.52-92) filters ongoingDeliveries by fulfillmentStage IN_TRANSIT only and both lists use an unsorted PageRequest.of(0,5).",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The customer profile (mobile summary) shows 'ongoing deliveries' only for orders already in transit, so a picked, packed or shipped order shows nothing; 'recent deliveries' are not sorted by delivery date.",
+  "steps": [
+   "Create a delivery order for a customer and move it to PACKED.",
+   "GET the customer summary (customer summary endpoint under /api/sales/customers/{id})."
+  ],
+  "expected": "The packed order appears under ongoingDeliveries.",
+  "actual": "ongoingDeliveries is empty.",
+  "where": "backend modules/sales/business_partner/customer/service/CustomerSummaryService.get",
+  "verify": "A customer with one PACKED delivery returns it in ongoingDeliveries; delivered ones are newest first.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:9.8": {
+  "note": "still visible in code: SalesDemandMapper l.181 writes originalTaxAmount from withOriginals.get(\"vatAmount\"), while SalesDemandCoordinationService stores VAT under ATTR_VAT = \"vat\" (l.64) and the UI sends \"VatAmount\".",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Each demand line is meant to keep the original VAT before pack sizing, but it reads a key nobody writes, so originalTaxAmount is always empty. Nothing reads it yet, so the before/after VAT comparison cannot be built.",
+  "steps": [
+   "POST /api/sales/demands with a line whose attributes carry vat 12.28.",
+   "GET the demand; read lines[].attributes.originalTaxAmount."
+  ],
+  "expected": "originalTaxAmount equals 12.28.",
+  "actual": "null.",
+  "where": "backend modules/sales/document/demand/mapper/SalesDemandMapper.applyPackSizing (l.181)",
+  "verify": "Step 2 returns 12.28; existing demands stay null.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:9.9": {
+  "note": "still visible in code: GatePassDetailMapper l.129 uses line.getTotalQuantity().longValue() for as-is lines and GatePassVerifyLineRequestDTO.countedCartons is a Long.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "At the gate, a line packed as-is of 12.5 kg expects a count of 12, so a half-kilo miscount cannot be entered or caught. Only matters for items with fractional units; the owner must decide how fractions are counted.",
+  "steps": [
+   "Pack a 12.5 Kg line as-is, create the gate pass, GET /api/sales/gate-passes/{id}; read the line count."
+  ],
+  "expected": "Chosen rule (round up or decimal count).",
+  "actual": "12.",
+  "where": "backend modules/sales/document/gatepass/mapper/GatePassDetailMapper:129; GatePassVerifyLineRequestDTO; GatePassService.expectedGateCount",
+  "verify": "A 12.5 line shows the agreed count and a verify with a different count is rejected.",
+  "owner": "Backend, sales"
+ },
+ "saleschain:P3-B9": {
+  "note": "open, six independent small points from the chain test; not all re-read. NET_DAYS payment terms with 0 days: no validation found in code. DAMAGED return: ItemReceiveDomainService.resolveInventoryStatus (~l.277) decides status by the bin (blockFromNormalPicking), by design. Others not checked.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Six small defects: a demand quantity of 0.00004 is accepted and then fails at delivery; completing an already completed workflow task returns 200; a NET_DAYS payment term with 0 days is accepted; an order line's uomId is stored but not converted; a DAMAGED return into a normal bin raises sellable stock; moving a territory's SPO leaves no target.",
+  "steps": [
+   "POST /api/sales/demands with quantity 0.00004, then try to deliver.",
+   "POST /api/workflow/tasks/{id}/complete twice.",
+   "POST a payment term NET_DAYS with 0 days."
+  ],
+  "expected": "Each refused or handled with a clear message.",
+  "actual": "Accepted silently / fails later.",
+  "where": "backend sales demand quantity scale, workflow task complete, payment term master, SalesOrderLine.uomId, ItemReceiveDomainService, SalesGeographyManager",
+  "verify": "Check each of the six calls separately; the first should return 400 at create.",
+  "owner": "Backend, sales"
+ },
+ "e2e27:5": {
+  "note": "still visible in code: CustomerRefundService.update (l.98-114) copies account, currency, rate, dates, method and notes only; refundAmount and applications are ignored and 200 is returned. e2e SAL-12-11 is still a test.fail() that fails as expected (findings-sales.md).",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Editing a customer refund and changing the amount looks like it saves, but the refund and the credit memo keep the old amount, with no error. The user believes the amount changed.",
+  "steps": [
+   "Create and approve a credit memo of 1000, POST /api/sales/customer-refunds for 500.",
+   "PUT /api/sales/customer-refunds/{id} with refundAmount 600.",
+   "GET the refund and the credit memo remainder."
+  ],
+  "expected": "Amount changes to 600 (and the memo remainder follows), or the PUT is refused with a message.",
+  "actual": "200; refundAmount stays 500.",
+  "where": "backend modules/sales/document/customerrefund/service/CustomerRefundService.update (l.98-114); frontend Edit Customer Refund screen",
+  "tests": [
+   "SAL-12-11",
+   "SAL-09-09 (same for deposit)"
+  ],
+  "verify": "Repeat steps: either the amount is 600 or the PUT answers 4xx; SAL-12-11 turns green.",
+  "owner": "Backend, sales",
+  "severity": "medium"
+ },
+ "merge:D4": {
+  "status": "fixed",
+  "note": "Both halves answered. SAL-05-03: business rule confirmed 2026-10-27 that an order may be larger or smaller than the approved demand; e2e asserts it (05-order.spec.ts l.125). SAL-05-07: backend now refuses a delivery order on a REJECTED order; the test.fail() was removed and passes (findings-sales.md, run-sales-9: 144 passed).",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "After the backend merge, two old known-bug cases passed: an order exceeding its demand, and a fulfilment on a rejected order. The question was whether that is intended.",
+  "steps": [
+   "POST /api/sales/orders with line quantity = demand quantity + 5 (accepted by design).",
+   "Reject an order via POST /api/workflow/tasks/{taskId}/complete {decision:REJECTED}, then POST /api/sales/delivery-orders for it."
+  ],
+  "expected": "Order may differ from demand; delivery on a rejected order refused.",
+  "actual": "Both as expected now.",
+  "where": "backend SalesOrderDomainService; DeliveryOrderFulfillmentService (fulfilment on order status)",
+  "tests": [
+   "SAL-05-03",
+   "SAL-05-07"
+  ],
+  "verify": "e2e SAL-05-03 and SAL-05-07 pass.",
+  "owner": "Backend, sales"
+ },
+ "sales:N1": {
+  "note": "decision still open; behaviour not changed in code that I could see: a receipt larger than the applications still posts Cr 1130 for the whole amount. No e2e asserts the advance ledger 2151.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "When a customer pays more than the invoices it is applied to, the unapplied part stays as a credit on the receivable account 1130 instead of moving to the customer-advance account 2151 that deposits use. Financial reports then show advances in two places.",
+  "steps": [
+   "Create an invoice of 40, POST /api/sales/receipts with paymentAmount 100 applied 40.",
+   "GET /api/sales/postings?documentType=SALES_RECEIPT&documentId={id}."
+  ],
+  "expected": "Owner decides: unapplied 60 goes to 2151 (advance) or stays on 1130.",
+  "actual": "Cr 1130 100.",
+  "where": "backend sales receipt posting (SalesPostings.receipt / accounting translator)",
+  "verify": "After the decision, the posting of the receipt shows the agreed split.",
+  "owner": "Both: finance decision, backend sales"
+ },
+ "sales:N2": {
+  "note": "decision open: InvoiceController.apply-deposit (l.104) takes lines of depositId/invoiceId/amount, no date, so the application is dated the day of the call.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Applying a customer deposit to an invoice has no date field, so the journal is dated the day of the call: an old invoice settled today posts in the current period, and in a closed period it is refused. Commission lifting also counts it in the call month.",
+  "steps": [
+   "POST /api/sales/invoices/apply-deposit {lines:[{depositId,invoiceId,amount}]} for a December invoice in October of the next year.",
+   "Read the posting date."
+  ],
+  "expected": "A date (or the later of deposit/invoice date) selectable and validated against open periods.",
+  "actual": "Dated today.",
+  "where": "backend InvoiceController.applyDeposit; InvoiceDomainService",
+  "verify": "After a decision: the application journal carries the chosen date.",
+  "owner": "Backend, sales"
+ },
+ "sales:N3": {
+  "note": "decision open: InvoiceDomainService caps invoiced quantity by the ordered quantity (l.393-396), not by the delivered quantity, so an invoice before delivery is still accepted. No e2e asserts a refusal.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "An invoice can bill goods that have not been delivered: receivable and VAT are posted before the goods leave. It matches the invoice form (Delivery qty + Due qty) but the owner must confirm it is intended. It also lets an unshipped order count as commission lifting once paid.",
+  "steps": [
+   "Approve a sales order with no delivery order.",
+   "POST /api/sales/invoices for the whole order."
+  ],
+  "expected": "Owner decides: limit to delivered quantity or allow advance billing.",
+  "actual": "201 accepted.",
+  "where": "backend InvoiceDomainService.validateLines (l.360-414)",
+  "verify": "After a decision to limit: step 2 returns 400.",
+  "owner": "Backend, sales"
+ },
+ "sales:N4": {
+  "note": "decision open; invoice and ledger tax figures not changed in the code reviewed.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The invoice shows tax as 15.8/115.8 of the gross (VAT plus AIT share) while the ledger posts Output VAT at 15/115.8, so the printed 'Tax' differs from the VAT ledger by the AIT share (8.5959 against 8.16 on a 63.00 invoice).",
+  "steps": [
+   "Create an invoice of 63.00 gross for a corporate customer (15.8% in price).",
+   "Compare invoice taxAmount with the Output VAT line in GET /api/sales/postings."
+  ],
+  "expected": "Owner decides which figure the invoice should show, or the AIT share is shown separately.",
+  "actual": "Two different numbers.",
+  "where": "backend InvoiceMapper (tax), SalesTax.vatPart/aitPart, accounting posting",
+  "verify": "After a decision: invoice tax equals ledger VAT, AIT shown on its own line.",
+  "owner": "Backend, sales"
+ },
+ "sales:N5": {
+  "note": "decision open: rounding per invoice follows from per-document VAT; no change seen.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "If one order is invoiced in two parts, VAT is rounded on each invoice separately, so the two VATs can differ from the VAT of the whole order by one paisa (4.66 + 6.99 = 11.65 against 11.66).",
+  "steps": [
+   "Invoice an order in two partial invoices.",
+   "Compare the sum of VAT with a single invoice of the whole order."
+  ],
+  "expected": "Owner accepts the one-paisa drift or asks for allocation of the whole-order VAT.",
+  "actual": "1 paisa difference.",
+  "where": "backend InvoiceMapper / SalesTax rounding",
+  "verify": "After a decision: partial VATs add up to the whole order's VAT.",
+  "owner": "Backend, sales"
+ },
+ "sales:N7": {
+  "note": "decision open: ship checks the period (DeliveryOrderFulfillmentService l.1037-1038 postingPeriodGuard.requireOpen) but order, delivery draft and credit memo draft creation do not.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Orders, delivery drafts and credit memo drafts dated in a closed month are accepted and refused only at ship or approval, so the clerk learns late. The refusal text itself is clear.",
+  "steps": [
+   "Close a month.",
+   "POST /api/sales/orders dated in that month; then ship it."
+  ],
+  "expected": "Owner decides: refuse at creation or keep the late check.",
+  "actual": "Accepted at create, refused at ship.",
+  "where": "backend DeliveryOrderFulfillmentService.ship; SalesOrderDomainService.create; PostingPeriodGuard",
+  "verify": "After a decision to refuse early: step 2 create returns 409 naming the closed period.",
+  "owner": "Backend, sales"
+ },
+ "saleschain:C14": {
+  "note": "decision open: no cancel route exists (see saleschain:P3-B7, same question); recordInvoiceCancelled has no caller.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Is a credit memo the only way to correct a wrong invoice? Today there is no cancel or void for invoices, orders or receipts. The recommended answer in the note is to allow cancel of an unpaid invoice with a reversal and a receipt reversal.",
+  "steps": [
+   "Try POST /api/sales/invoices/{id}/cancel: 404/405."
+  ],
+  "expected": "Owner answers yes/no; if yes a cancel with reversal is built.",
+  "actual": "No cancel exists.",
+  "where": "backend InvoiceController; FinancialLedgerService.recordInvoiceCancelled",
+  "verify": "After a decision: cancel of an unpaid invoice returns 200 and posts a reversal. Same as saleschain:P3-B7.",
+  "owner": "Backend, sales"
+ },
+ "saleschain:C15": {
+  "note": "decision open: item return takes quantity in sales units; no unit field.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A return can only be typed in the item's sales unit; there is no pack-size conversion, so a customer returning 2 cartons must be typed as the unit count. The note recommends offering the pack list on the return screen.",
+  "steps": [
+   "Open the sales Item Returns create screen for an item sold in cartons.",
+   "Look for a unit or pack selector."
+  ],
+  "expected": "Owner decides whether returns need a unit selector.",
+  "actual": "Sales unit quantity only.",
+  "where": "backend ItemReturnRequestDTO; frontend item return form",
+  "verify": "After a decision: returning 2 cartons stores the converted unit quantity.",
+  "owner": "Both, sales"
+ },
+ "saleschain:C3": {
+  "note": "decision open: delivery order create does not compare the warehouse of the picked bin with the order's warehouse (no such check found in DeliveryOrderFulfillmentService).",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A delivery order may pick stock from a bin in another warehouse than the order's warehouse, silently. Stock can leave the wrong place without anyone noticing.",
+  "steps": [
+   "POST /api/sales/delivery-orders for an order of warehouse A with inventoryDetails.locationId in a bin of warehouse B."
+  ],
+  "expected": "Owner decides: refuse, or show as a warehouse change.",
+  "actual": "Accepted.",
+  "where": "backend DeliveryOrderFulfillmentService (reserveLine / inventory details)",
+  "verify": "After a decision to refuse: the request returns 400.",
+  "owner": "Backend, sales"
+ },
+ "saleschain:C7": {
+  "note": "decision open: no creator-not-approver rule found in the workflow code (grep for self-approval returned nothing).",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "May the person who created a document also approve it, if their role is the named approver? Today yes. The note recommends no by default, as a setting, for segregation of duties.",
+  "steps": [
+   "Give one user the maker and approver role, create a demand, then POST /api/workflow/tasks/{taskId}/complete as the same user."
+  ],
+  "expected": "Owner decides; if no, approval by the creator returns 403/409.",
+  "actual": "Approved.",
+  "where": "backend workflow task completion (platform workflow module)",
+  "verify": "After a decision: step 1 as the creator is refused.",
+  "owner": "Backend, sales"
+ },
+ "saleschain:C8": {
+  "note": "decision open: no price-override permission found in sales demand/order create.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Who may sell below list price or give a manual discount? Today anyone with demand create can enter a price of 1.00 or 0.00 against a list price of 8.00, and there is no override permission or approval rule on unit price.",
+  "steps": [
+   "POST /api/sales/demands with unitPrice 0.01 for an item listed at 8.00."
+  ],
+  "expected": "Owner decides: new permission or approval rule on unit price.",
+  "actual": "Accepted.",
+  "where": "backend SalesDemandDomainService.validateLines; SalesOrderDomainService.validateLines",
+  "verify": "After a decision: below-list price needs the permission or an approval.",
+  "owner": "Backend, sales"
+ },
+ "saleschain:C9": {
+  "status": "fixed",
+  "note": "code and e2e show this is now built: PaymentTermLookup requires a term on the invoice ('Payment term is required', shared/service/PaymentTermLookup l.31) and InvoiceMapper.dueDateOf (l.231) derives the due date from the term; e2e SAL-08-08 passes (due date follows the term; findings-sales.md run-sales-9: 144 passed). A customer default term was not checked.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The question was whether payment terms set invoice due dates. They now do: an invoice needs a payment term and its due date follows the term, so aging and overdue chase work from the invoice term.",
+  "steps": [
+   "POST /api/sales/invoices with billingInfo.paymentTermId of a NET_DAYS 30 term.",
+   "Read dueDate on the invoice."
+  ],
+  "expected": "dueDate = invoice date + term days.",
+  "actual": "As expected.",
+  "where": "backend shared/service/PaymentTermLookup, InvoiceMapper.dueDateOf; frontend invoice-order-form-view.tsx:395-440",
+  "tests": [
+   "SAL-08-08"
+  ],
+  "verify": "e2e SAL-08-08.",
+  "owner": "Backend, sales"
+ }
+}

@@ -1,0 +1,507 @@
+{
+ "rv-fe:accounting:24": {
+  "note": "LoadingOrTable now keeps the table mounted after the first load (report-common.tsx:241-263: loadedOnce state, old rows dimmed, banner above).",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "Changing a filter on an accounting report used to replace the table with a loading banner, so folded rows and scroll position were lost. That annoyed users working through a long Balance Sheet.",
+  "steps": [
+   "Open Reports > Accounting > Balance Sheet",
+   "Fold one heading",
+   "Toggle 'Include zero rows' and wait for the reload",
+   "The fold state must still be there"
+  ],
+  "expected": "Table stays mounted while refetching; fold state and scroll kept.",
+  "actual": "fixed: after the first load the table stays mounted, rows are dimmed (opacity-60) and a banner sits above.",
+  "where": "src/features/reports/accounting-reports/components/report-common.tsx:241-263 (LoadingOrTable)",
+  "verify": "Fold a heading, change a filter, confirm the fold stays.",
+  "owner": "Frontend, reports/accounting",
+  "status": "fixed"
+ },
+ "rv-fe:accounting:25": {
+  "note": "Book switch part is fixed: applyBook calls setOptionKey('') (trial-balance-view.tsx:225-237). The double request on open remains: the report effect (lines 151-194) runs once on the preset period and again when the options effect (94-125) sets optionKey, so two requests go out.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "On the Trial Balance, after choosing 'Last Quarter' and then another book the report used old option dates. That is fixed. On first open two report requests are sent (one for the preset, one when the period options arrive); this is a small waste, not a wrong result.",
+  "steps": [
+   "Open Reports > Accounting > Trial Balance with the browser network tab open",
+   "Count the trial-balance report requests on open: two are sent",
+   "Pick 'Last Quarter', then switch Book: the option is cleared and the period follows the new book"
+  ],
+  "expected": "One report request on open; Period box matches the report after a book switch.",
+  "actual": "Book switch fixed; two requests on open still happen.",
+  "where": "src/features/reports/trial-balance/components/trial-balance-view.tsx:94-125,151-194,225-237",
+  "verify": "Network tab shows exactly one trial-balance request on open. Fix idea: do not run the report effect until the options load has finished (optionsReady flag).",
+  "owner": "Frontend, reports/trial-balance",
+  "status": "in-progress"
+ },
+ "rv-fe:accounting:33": {
+  "note": "The screen is read-only now: accounting-book-section.tsx has only a Retry button and a table; AccountingBookFormModal no longer exists (grep finds no reference).",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "The hidden Accounting Book settings screen used to offer 'New book' whose save always failed with a 409. It is now a read-only list.",
+  "steps": [
+   "Open /settings/accounting?section=accounting-book",
+   "Look for a New book or edit action: none is offered"
+  ],
+  "expected": "No write actions the backend refuses.",
+  "actual": "fixed: read-only table.",
+  "where": "src/features/settings/accounting/components/accounting-book-section.tsx; accounting-settings-root.tsx:124-126",
+  "verify": "Open the URL above and confirm only the table shows.",
+  "owner": "Frontend, settings/accounting",
+  "status": "fixed"
+ },
+ "rv-fe:accounting:38": {
+  "note": "asset-type-form-modal.tsx:140-170 blocks the type itself and all its descendants (loop at 146-153) and appends the current parent even if inactive (156-170).",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "Editing an asset type could pick a child as its own parent (a loop) and a deactivated parent showed as a raw id. Both are handled in the picker now.",
+  "steps": [
+   "Open Asset > Asset Types, edit type A that has child B",
+   "Open the Parent type select: A and B are not offered",
+   "Edit a type whose parent is inactive: the parent's name shows"
+  ],
+  "expected": "No loops offered; inactive parent shown by name.",
+  "actual": "fixed.",
+  "where": "src/features/accounting/asset-types/components/asset-type-form-modal.tsx:140-170",
+  "verify": "Repeat the steps above.",
+  "owner": "Frontend, fixed-assets / asset types",
+  "status": "fixed"
+ },
+ "rv-fe:accounting:41": {
+  "note": "Both pages still read the whole register: asset/fixed-asset/new/page.tsx:22 calls getFixedAssets() with no filter, and getDisposableFixedAssetOptions (erp-api/accounting/fixed-assets/index.ts:101-119) calls getFixedAssets() then filters DISPOSED on the client; getFixedAssets walks every page via readAllPages (line 91).",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "'New asset' downloads every asset just to build a duplicate-name shortcut, and 'Asset disposal' downloads every asset and filters out disposed ones in the browser. With thousands of bulk-purchased assets both pages become slow and heavy.",
+  "steps": [
+   "Open Asset > Fixed Asset > New (/asset/fixed-asset/new) with the network tab open",
+   "See the paged GET /api/accounting/fixed-assets calls until the whole register is read",
+   "Open Asset > Asset Disposal (/asset/asset-disposal): same full read"
+  ],
+  "expected": "Disposal list asks the backend for non-disposed assets (or searches on the server, page of 20); New asset does not read the register.",
+  "actual": "Whole register is fetched on both pages.",
+  "where": "src/erp-api/accounting/fixed-assets/index.ts:85-119; src/app/(erp)/asset/fixed-asset/new/page.tsx:20-30; src/app/(erp)/asset/asset-disposal/page.tsx",
+  "verify": "With a large register the payload of both pages stays small (one page).",
+  "owner": "Frontend, fixed-assets",
+  "status": "still-bug"
+ },
+ "rv-fe:accounting:49": {
+  "note": "journals/[journalId]/edit/page.tsx loads only getJournalEntryById and loadJournalLookups; no party lookup (lines 31-34); getJournalPartyNames no longer exists.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "Editing a draft journal used to make an extra request to resolve a party that the form never displays. That request is gone.",
+  "steps": [
+   "Open Accounting > Journals, open a draft, click Edit",
+   "Network tab: no party lookup request"
+  ],
+  "expected": "No unused party lookup.",
+  "actual": "fixed.",
+  "where": "src/app/(erp)/accounting-finance/journals/[journalId]/edit/page.tsx:31-34",
+  "verify": "Open a draft edit page and check the network tab.",
+  "owner": "Frontend, journals",
+  "status": "fixed"
+ },
+ "rv-fe:accounting:5": {
+  "note": "Journals (journals/schema.ts:25-32, balance check at 237-240 at 4 decimals), contra vouchers (contra-vouchers/schema.ts:26-28 roundMoney check) and account code/name .max(50/255) (chart-of-accounts/schema.ts:25-26) are fixed. Still open: fixed-asset dispose proceeds (fixed-assets/schema.ts:199-201 only checks >= 0; input step 0.01 in asset-dispose-drawer.tsx:359-366) accepts more decimals; journal totals row shows the difference with toFixed(2) (journal-form-entries-table.tsx:286).",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "Money fields should refuse more decimals than the backend stores. Most forms now do; the asset disposal proceeds field does not check decimals, so 1000.005 is sent as typed and the backend decides.",
+  "steps": [
+   "Accounting > Journals > New: enter debit 100.004 on a line: the field shows a message (fixed)",
+   "Asset > Asset Disposal: enter proceeds 1000.005 and submit: no client message, value sent as typed"
+  ],
+  "expected": "Every money input blocks values with too many decimals with a localized message.",
+  "actual": "Journal, contra, chart fixed; disposal proceeds not.",
+  "where": "src/features/accounting/fixed-assets/schema.ts:199-201; src/features/accounting/fixed-assets/components/asset-dispose-drawer.tsx:359",
+  "verify": "Add a roundMoney refine to disposalProceeds and re-run the disposal step above.",
+  "owner": "Frontend, accounting / fixed-assets",
+  "status": "in-progress"
+ },
+ "rv-fe:accounting:6": {
+  "note": "budgets/tree.ts:134-145 emits a parent account's own rows above its children; test 'a budgeted account that has budgeted children keeps its own row and counts in its total' in budgets/tree.test.ts:73.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "A budgeted account that also had budgeted children hid its own rows in the grid although they were in the totals. Own rows are now shown.",
+  "steps": [
+   "Accounting > Budgets, open a budget where a parent account has own rows and budgeted children",
+   "The footer total equals the sum of the visible cells"
+  ],
+  "expected": "Visible cells add up to the total.",
+  "actual": "fixed.",
+  "where": "src/features/accounting/budgets/tree.ts:134-145; tree.test.ts:73",
+  "verify": "pnpm test runs tree.test.ts; open the budget as above.",
+  "owner": "Frontend, budgets",
+  "status": "fixed",
+  "tests": [
+   "src/features/accounting/budgets/tree.test.ts"
+  ]
+ },
+ "vqa:journal-export-label": {
+  "note": "journal-list-view.tsx:260 renders group captions from actions.exportGroupAll / exportGroupPage ('All results' / 'This page', accounting-finance/en.json:361-362).",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "The Journals export buttons for the whole result and the current page used to differ only by a tooltip. They are now under separate captions.",
+  "steps": [
+   "Accounting > Journals",
+   "Look at the export strip: captions 'All results' and 'This page'"
+  ],
+  "expected": "Two visibly labelled groups.",
+  "actual": "fixed.",
+  "where": "src/features/accounting/journals/components/journal-list-view.tsx:260",
+  "verify": "Open the Journals list.",
+  "owner": "Frontend, journals",
+  "status": "fixed"
+ },
+ "vqa:journal-reject-banner": {
+  "note": "journal-detail-view.tsx:281-282,546-551 shows a rejection banner on a Draft that was rejected; the status chip renders 'Status: <value>' as label then value (journal-filter-bar.tsx:243-250,309).",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "A rejected journal looked like a plain draft with no reason, and the filter chip wording was reversed. The banner exists and the chip renders label then value.",
+  "steps": [
+   "Reject a journal approval",
+   "Open the entry (now Draft): the rejection banner shows",
+   "Journals list, filter status 'Pending approval': chip reads 'Status: Pending approval'"
+  ],
+  "expected": "Banner on the draft; readable chip.",
+  "actual": "fixed.",
+  "where": "src/features/accounting/journals/components/journal-detail-view.tsx:281,546; journal-filter-bar.tsx:243-250,309",
+  "verify": "Repeat steps.",
+  "owner": "Frontend, journals",
+  "status": "fixed"
+ },
+ "journals:F1": {
+  "note": "journal-filter-bar.tsx has a search state (63-68) and a document-type filter with chip (254-263).",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "The Journals list was reported to lack a search box and a type filter; both exist.",
+  "steps": [
+   "Accounting > Journals",
+   "Use the search box and the Type filter"
+  ],
+  "expected": "Search and type filter present.",
+  "actual": "fixed.",
+  "where": "src/features/accounting/journals/components/journal-filter-bar.tsx",
+  "verify": "Open the Journals list.",
+  "owner": "Frontend, journals",
+  "status": "fixed"
+ },
+ "vqa:bankcash-history": {
+  "note": "The reconciliation list reads statuses [DRAFT, FINALIZED, PENDING_APPROVAL] (erp-api/accounting/bank-cash/index.ts:128) and shows a DRAFT tone (reconciliation-list-tab.tsx:34).",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "The Bank & Cash History tab said no reconciliation had started even though a Draft existed.",
+  "steps": [
+   "Accounting > Bank & Cash: start a reconciliation and leave it as Draft",
+   "Open the History tab: the Draft row is listed"
+  ],
+  "expected": "Draft shown in history.",
+  "actual": "fixed.",
+  "where": "src/erp-api/accounting/bank-cash/index.ts:128; src/features/accounting/bank-cash/components/reconciliation-list-tab.tsx:34",
+  "verify": "Repeat steps.",
+  "owner": "Frontend, banking",
+  "status": "fixed"
+ },
+ "vqa:budget-total-col": {
+  "note": "TOTAL column is sticky right-0 in budget-grid-view.tsx:329,345,382 and budget-detail-view.tsx:112.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "The TOTAL column of the monthly budget grid needed horizontal scrolling to be seen. It now stays pinned on the right.",
+  "steps": [
+   "Accounting > Budgets, open a budget grid on a narrow window",
+   "TOTAL stays visible while scrolling"
+  ],
+  "expected": "TOTAL always visible.",
+  "actual": "fixed.",
+  "where": "src/features/accounting/budgets/components/budget-grid-view.tsx:329-382",
+  "verify": "Resize the window and scroll.",
+  "owner": "Frontend, budgets",
+  "status": "fixed"
+ },
+ "vqa:fa-depr-labels": {
+  "note": "depreciation-view.tsx:414 uses journalHeadingPosted ('Journal entry raised by this run') when posted; the lastRun line shows only when !posted (line 360).",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "After a depreciation run was posted the heading still said the entry 'will be raised' and showed the previous month as Last run. Wording and visibility are fixed.",
+  "steps": [
+   "Asset > Depreciation, pick a posted month",
+   "Heading reads 'Journal entry raised by this run'; no 'Last run' line"
+  ],
+  "expected": "Past-tense heading for a posted month.",
+  "actual": "fixed.",
+  "where": "src/features/accounting/fixed-assets/components/depreciation-view.tsx:360,414",
+  "verify": "Repeat steps.",
+  "owner": "Frontend, fixed-assets",
+  "status": "fixed"
+ },
+ "vqa:fa-dispose-zero": {
+  "note": "asset-dispose-drawer.tsx:196-198 uses `-accumulatedDepreciation || 0` so negative zero never prints as '-0.00'.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "The dispose dialog showed '-0.00' for an asset with nothing depreciated.",
+  "steps": [
+   "Asset > Asset Disposal, pick an asset with no depreciation",
+   "'Less depreciation' reads 0.00"
+  ],
+  "expected": "0.00, no minus.",
+  "actual": "fixed.",
+  "where": "src/features/accounting/fixed-assets/components/asset-dispose-drawer.tsx:196-198",
+  "verify": "Repeat steps.",
+  "owner": "Frontend, fixed-assets",
+  "status": "fixed"
+ },
+ "vqa:fa-transfer-hint": {
+  "note": "The transfer hint has mb-4 (transfer modal line 89) and fixed-assets.css:35-38 adds padding-bottom to .ant-form-item-extra.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "The hint text in the asset Transfer modal touched the next field's label. Spacing is added in feature CSS.",
+  "steps": [
+   "Asset > open an asset > Transfer",
+   "Hint and next label have a gap"
+  ],
+  "expected": "Visible gap.",
+  "actual": "fixed (spacing); judged from code, no screenshot.",
+  "where": "src/features/accounting/fixed-assets/fixed-assets.css:35-38",
+  "verify": "Look at the modal.",
+  "owner": "Frontend, fixed-assets",
+  "status": "fixed"
+ },
+ "assets:UI-08": {
+  "note": "asset-type-form-modal.tsx:183 maps the duplicate-code response to validation.codeExists on the typeCode field.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "Creating an asset type with an existing code used to show the raw backend sentence; it now shows a translated field message.",
+  "steps": [
+   "Asset > Asset Types > New, enter an existing type code, Save",
+   "Field error uses the translated 'code exists' text"
+  ],
+  "expected": "Localized field error.",
+  "actual": "fixed.",
+  "where": "src/features/accounting/asset-types/components/asset-type-form-modal.tsx:183",
+  "verify": "Repeat in Bangla too.",
+  "owner": "Frontend, fixed-assets",
+  "status": "fixed"
+ },
+ "assets:UI-10": {
+  "note": "DEPRECIATION_METHODS includes NONE (fixed-assets/config.ts:49) and the type form uses it (asset-types/config.ts:15), with isNotDepreciated hiding life/salvage fields (asset-type-form-modal.tsx:137-138).",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "A land-like asset type that is never depreciated could not be created. The Method choice now offers 'None'.",
+  "steps": [
+   "Asset > Asset Types > New, choose depreciation method None",
+   "Life, salvage and depreciation accounts are hidden; Save succeeds"
+  ],
+  "expected": "Non-depreciable type can be created.",
+  "actual": "fixed.",
+  "where": "src/features/accounting/fixed-assets/config.ts:49; src/features/accounting/asset-types/components/asset-type-form-modal.tsx:137",
+  "verify": "Repeat steps.",
+  "owner": "Frontend, fixed-assets",
+  "status": "fixed"
+ },
+ "rv-fe:reports:15": {
+  "note": "accounting-reports/lookups.ts:40,76,104 sets accountsFailed and report-common.tsx:190 renders a warning.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "A failed account lookup used to look like an empty list. The report now shows a warning.",
+  "steps": [
+   "Open a report that has an account filter while the account request fails",
+   "A warning shows instead of an empty select"
+  ],
+  "expected": "Visible warning.",
+  "actual": "fixed.",
+  "where": "src/features/reports/accounting-reports/lookups.ts:76; report-common.tsx:190",
+  "verify": "Block the accounts request and open the report.",
+  "owner": "Frontend, reports",
+  "status": "fixed"
+ },
+ "rv-fe:reports:9": {
+  "note": "sales-engine-views.tsx:432-433,482,561 and purchase-engine-views.tsx:255,310,473,740 pass status through translated statusText/historyStatusText on screen and in exports.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "Order statuses stayed English in Bangla and the exports differed from the screen. Both use the same translated label now.",
+  "steps": [
+   "Switch to Bangla, Reports > Open Sales Orders: status translated",
+   "Export it: same text"
+  ],
+  "expected": "Same translated status on screen and export.",
+  "actual": "fixed.",
+  "where": "src/features/reports/sales-orders/components/sales-engine-views.tsx:432; purchase-orders/components/purchase-engine-views.tsx:709-740",
+  "verify": "Compare screen and export in Bangla.",
+  "owner": "Frontend, reports",
+  "status": "fixed"
+ },
+ "vqa:bankreg-zero": {
+  "note": "bank-register-view.tsx:239,253 print a dash when deposit or payment is null or 0.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "The Bank Register printed 0.00 on the unused side. It shows a dash now (row height was not part of the fix).",
+  "steps": [
+   "Reports > Banking > Bank Register",
+   "Unused side shows a dash"
+  ],
+  "expected": "Dash for zero side.",
+  "actual": "fixed (zero). Row height not checked.",
+  "where": "src/features/reports/banking-budgeting/components/bank-register-view.tsx:239,253",
+  "verify": "Open the report.",
+  "owner": "Frontend, reports",
+  "status": "fixed"
+ },
+ "vqa:bva-range": {
+  "note": "reports/banking-budgeting/[reportKey]/page.tsx:82-114 passes the financial year containing today as initialFromDate/initialToDate; calendar year only as fallback (budget-vs-actual-view.tsx:38-60).",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "Budget vs Actual opened on the calendar year although budgets are per financial year. It now opens on the book's financial year.",
+  "steps": [
+   "Reports > Banking & Budgeting > Budget vs Actual",
+   "Date range equals the current financial year"
+  ],
+  "expected": "Fiscal year default.",
+  "actual": "fixed.",
+  "where": "src/app/(erp)/reports/banking-budgeting/[reportKey]/page.tsx:82-114",
+  "verify": "Open the report with a fiscal year that differs from the calendar year.",
+  "owner": "Frontend, reports",
+  "status": "fixed"
+ },
+ "vqa:cash-bn-voucher": {
+  "note": "cash-statement-view.tsx:125,164-166 uses useVoucherTypeLabel(); humanizeEnum only when voucherType is missing.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "Cash Statement voucher type stayed English in Bangla. It is translated now.",
+  "steps": [
+   "Switch to Bangla, Reports > Cash Statement",
+   "Voucher type column is Bangla"
+  ],
+  "expected": "Translated voucher types.",
+  "actual": "fixed.",
+  "where": "src/features/reports/banking-budgeting/components/cash-statement-view.tsx:164",
+  "verify": "Open in Bangla.",
+  "owner": "Frontend, reports",
+  "status": "fixed"
+ },
+ "vqa:hub-count": {
+  "note": "report-catalog-view.tsx:266-310 counts only reports the user may open for category, chip and header counts. Not run with a limited account.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "The report hub header said 4 reports while a limited user saw 2. All counts go through the permission filter now.",
+  "steps": [
+   "Log in as a user with two report permissions, open Reports",
+   "Header, chip and category counts all say 2"
+  ],
+  "expected": "Counts equal visible cards.",
+  "actual": "fixed (code).",
+  "where": "src/features/reports/accounts/components/report-catalog-view.tsx:266-310",
+  "verify": "Repeat steps with a limited account.",
+  "owner": "Frontend, reports",
+  "status": "fixed"
+ },
+ "vqa:recon-bank-select": {
+  "note": "reconciliation-detail-view.tsx:179 sets className min-w-[28rem] on the bank select.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "The Reconciliation Detail bank select clipped its label; it is widened.",
+  "steps": [
+   "Reports > Banking > Reconciliation Detail",
+   "Bank select shows the full label"
+  ],
+  "expected": "Label not clipped.",
+  "actual": "fixed.",
+  "where": "src/features/reports/banking-budgeting/components/reconciliation-detail-view.tsx:179",
+  "verify": "Open the report.",
+  "owner": "Frontend, reports",
+  "status": "fixed"
+ },
+ "merge:B5": {
+  "note": "Source (backend-merge-issues-prompt.md B5) says only the guide row is missing. Code: BankReconciliationHistoryExportDataSource.fetchRows reads bankAccountId (line 87) and status (line 94). The guide lives outside the repo, so the documentation part cannot be verified here.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "The bank-reconciliations export accepts bankAccountId and status filters but the Exports frontend guide table does not list them. Only documentation is missing.",
+  "steps": [
+   "POST /api/export with body {\"reportType\":\"bank-reconciliations\",\"format\":\"EXCEL\",\"filters\":{\"bankAccountId\":\"<id>\",\"status\":\"FINALIZED\"}}",
+   "Result contains only that account's finalized reconciliations",
+   "Open Exports_and_Approvals_Frontend_Implementation_Guide, the bank-reconciliations row: bankAccountId and status are not listed"
+  ],
+  "expected": "Guide row lists bankAccountId and status.",
+  "actual": "Code supports both; guide row missing.",
+  "where": "backend modules/accounting/bankreconciliation/export/BankReconciliationHistoryExportDataSource.java:83-98; guide (not in repo)",
+  "verify": "Same POST with filters bankAccountId=abc must answer 400; guide table shows both filters.",
+  "owner": "Backend, banking (documentation)"
+ },
+ "rv-fe:reports:32": {
+  "note": "Verified today: normalizeGeoParam is defined in 4 files, getItemImageUrl in 2, echarts.init appears 9 times under src/features. Still open.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "Same helper code is copied into several field-force and dashboard files, so each fix must be repeated. Maintainability only.",
+  "steps": [
+   "In src/features run: grep -rn 'function normalizeGeoParam' (4 hits: commission-list-view, ims-overview-tab, spo-directory-view, territory-sales-view)",
+   "grep -rn 'function getItemImageUrl' (2 hits: ims-overview-table, ims-review-modal)",
+   "grep -rn 'echarts.init' (9 hits)"
+  ],
+  "expected": "One shared definition per helper and a shared chart hook.",
+  "actual": "Duplicated copies as listed.",
+  "where": "src/features/field-force/** (files above), src/features/dashboard",
+  "verify": "Greps return one normalizeGeoParam and one getItemImageUrl.",
+  "owner": "Frontend, field-force"
+ },
+ "rv-fe:reports:34": {
+  "note": "Tests exist for analysis/utils, shared/parse-page, dashboard-logic, settings/sales commission-config-conflicts and commission-number. No test for field-force/ase-create-demand/use-trade-discount.ts or erp-api/field-force. Still open.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "Money logic in field-force had no tests. Some now exist, but the trade-discount maths and the field-force API layer are untested.",
+  "steps": [
+   "Run pnpm test and note the files listed for field-force/dashboard/settings sales",
+   "Confirm there is no use-trade-discount test: find src -name 'use-trade-discount*' returns only the .ts"
+  ],
+  "expected": "Unit tests for use-trade-discount.ts and the field-force API mappers.",
+  "actual": "Partly covered.",
+  "where": "src/features/field-force/ase-create-demand/use-trade-discount.ts; src/erp-api/field-force",
+  "verify": "pnpm test includes a use-trade-discount test.",
+  "owner": "Frontend, field-force"
+ },
+ "saleschain:C12": {
+  "note": "Source (backend-saleschain-bugs-2026-10-31.md C12, table row) is one line: full target for a joiner on the 20th, options prorate by days or enter by hand. No code path prorates: SalesTargetController PUT /api/sales/targets/bulk writes the amount as given. Joiner start date is not read in sales/target.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "A salesperson who joins mid-month gets the full monthly target. The client must decide whether the target is prorated by days worked.",
+  "steps": [
+   "PUT /api/sales/targets/bulk with the header period and a line for the new rep (managerId, targetAmount 100000)",
+   "GET /api/sales/performance/managers/{managerId}/target-summary: the full 100000 is the target regardless of join date"
+  ],
+  "expected": "Client decision (recommendation prorate by days).",
+  "actual": "Full target for a mid-month joiner.",
+  "where": "backend sales/target/controller/SalesTargetController (bulk), performance/service/CommissionCalculator",
+  "verify": "After a decision, set the join date and read target-summary.",
+  "owner": "Business decision + Backend, field-force"
+ },
+ "saleschain:P2-3": {
+  "note": "Source: backend-saleschain-bugs-2026-10-31.md P2-3 (rules observed 2026-10-31). Code today: CommissionCalculator keeps 'milestones do not stack' (class comment lines 23-24, highestReachedMilestone ~86-97), percent computed with PERCENT_SCALE HALF_UP (~67), and a target of zero gives a null percentage (~55). Whether D-04/05/07 changes landed was not verified by running a calculation.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "The commission calculation differs from rules the business user described. Some points were confirmed as intended (D-01/02/03/08), others sent to backend (D-04, D-05, D-07).",
+  "steps": [
+   "Create a sales order, deliver, invoice, receive a partial payment dated in the month",
+   "GET /api/sales/commission-report/earnings with from and to set to that month",
+   "Repeat after a return and for a rep with target 0, compare with DECISIONS-FOR-MEETING-2026-11-01.md D-01..D-08"
+  ],
+  "expected": "Calculation follows D-01..D-08.",
+  "actual": "Not re-run; see the source note.",
+  "where": "backend sales/performance/service/CommissionCalculator; sales/commission/service/CommissionSnapshotEarningsQueryService",
+  "verify": "Run the steps for a return, target 0 and 49.995% achievement.",
+  "owner": "Backend + business decision, field-force"
+ },
+ "merge:D2": {
+  "note": "Source (backend-merge-issues-prompt.md D2): guide says the Method master is deliberately not built; frontend removed the tab; asks the backend to confirm final. Code today: EDepreciationMethod enum only; no Method tab (e2e FAS-03-02). Nothing else to reproduce.",
+  "ref": "frontend release_beta_1.0.0@e6cac382, backend deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "summary": "The Fixed Asset guide says the Depreciation Method master was deliberately not built (method is a fixed list). The frontend removed its Method tab. The backend team must confirm this is final.",
+  "steps": [
+   "Open Asset > Asset Types > New: Method is a fixed select (Straight line, Reducing balance, None)",
+   "Ask the backend team to confirm in writing that no Method master will be added"
+  ],
+  "expected": "Confirmation recorded.",
+  "actual": "Enum only; no master.",
+  "where": "backend fixedasset EDepreciationMethod; src/features/accounting/fixed-assets/config.ts:49",
+  "verify": "Backend replies; close the item.",
+  "owner": "Backend + business decision, fixed-assets",
+  "tests": [
+   "FAS-03-02"
+  ]
+ }
+}

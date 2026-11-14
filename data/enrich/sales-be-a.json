@@ -1,0 +1,761 @@
+{
+ "rv-be:sales:1.1": {
+  "note": "still visible in code: SalesDemandMapper.toEntity l.39-44 copies status and the four gate flags from the request; SalesDemandDomainService.updateFields l.1025-1032 still copies quantityValidated, vatValidated, paymentValidated and paymentVerifiedAmount; applyCreateDefaults (l.1046-1051) only forces the status. Credit gate is fixed: autoCheckCreditLimit (l.1364) always starts from FALSE and updateFields forces creditLimitChecked FALSE.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A sales rep can send the coordination gate flags (payment, quantity, VAT validated, verified amount) in the create or edit request body. The demand then arrives with gates already passed, so the coordinator checks that protect credit and stock are skipped. Only the credit gate is now computed by the server.",
+  "steps": [
+   "POST /api/sales/demands (multipart form) for a customer, with paymentValidated=true, quantityValidated=true, vatValidated=true and paymentVerifiedAmount set.",
+   "GET /api/sales/demands/{id}/coordination.",
+   "PUT /api/sales/demands/{id} on a demand that is still PENDING_COORDINATION with the flags set to true."
+  ],
+  "expected": "The gates are false after create and edit; only the verify endpoints (/coordination/payment/verify, /quantity/verify, /credit/verify, /coordination/vat/verify) can set them.",
+  "actual": "Payment, quantity and VAT gates take the values from the request on both create and edit.",
+  "where": "backend modules/sales/document/demand: SalesDemandMapper.toEntity, SalesDemandDomainService.updateFields / applyCreateDefaults, SalesDemandRequestDTO",
+  "verify": "POST /api/sales/demands with the three gate flags true; GET /api/sales/demands/{id}/coordination must show all gates false and status PENDING_COORDINATION. Then PUT with the flags true and expect the stored values unchanged.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:1.2": {
+  "note": "still visible in code: SalesOrderMapper.toEntity l.66 copies orderCompletionDecision from the request; SalesOrderDomainService.handleCreateDependencies l.543-546 calls completeWithoutWorkflow for PENDING_FULFILLMENT with no permission check; updateFields l.523 also copies it.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The order create request carries a field orderCompletionDecision. If the caller sets it to PENDING_FULFILLMENT the order is approved straight away, even when an approval workflow is configured. Anyone with only the create permission can approve their own order and bypass the credit and price review.",
+  "steps": [
+   "As a user with sales.order.create only (no approve permission), make sure an active sales order submit workflow exists.",
+   "POST /api/sales/orders with a normal body plus \"orderCompletionDecision\":\"PENDING_FULFILLMENT\".",
+   "GET /api/sales/orders/{id}."
+  ],
+  "expected": "Order stays PENDING and a workflow task is created; the field is ignored unless the user holds the approve permission.",
+  "actual": "Order is APPROVED at once, no workflow instance.",
+  "where": "backend modules/sales/document/order: SalesOrderMapper.toEntity, SalesOrderDomainService.handleCreateDependencies / updateFields",
+  "verify": "Repeat steps 1-3: expect status PENDING and one workflow instance for the order.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:1.3": {
+  "note": "still visible in code: SalesDemandCoordinationService.verifyCredit l.250-260 only checks overrideUserId is present and the user exists, then stores it as creditOverrideUserId. The endpoint needs sales.demand.credit.approve, but the named person is never checked.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "When a coordinator overrides a credit-limit block, the request names the person who authorised it. Any existing user id is accepted, so the audit trail can name someone who never approved.",
+  "steps": [
+   "Customer over limit, demand PENDING_COORDINATION.",
+   "As user A (holds sales.demand.credit.approve): POST /api/sales/demands/{id}/coordination/credit/verify with {\"override\":true,\"overrideUserId\":<id of user B>,\"remarks\":\"x\"}.",
+   "GET /api/sales/demands/{id}/coordination and read creditOverrideUserId."
+  ],
+  "expected": "Authoriser is the authenticated user (A); a different overrideUserId is ignored or answered with 400.",
+  "actual": "creditOverrideUserId is B, who did nothing.",
+  "where": "backend SalesDemandCoordinationService.verifyCredit, DemandCreditVerifyRequestDTO",
+  "verify": "Run steps 2-3: creditOverrideUserId must equal user A.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:1.4": {
+  "note": "still visible in code: VendorMapper.toEntity l.26-29 copies id, partnerCode and status from the request; VendorDomainService.validateCreate l.84-94 checks only name and partner code uniqueness.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Creating a vendor with an existing vendor id in the body turns the save into an update and overwrites that vendor and its addresses. A posted partnerCode also bypasses the generated series and a posted status skips the default ACTIVE.",
+  "steps": [
+   "POST /api/sales/vendors with a valid body and \"id\": <id of an existing vendor>.",
+   "Open that vendor in the vendor list."
+  ],
+  "expected": "A new vendor row with a generated code; the old vendor is untouched.",
+  "actual": "The existing vendor is overwritten.",
+  "where": "backend modules/sales/business_partner/vendor: VendorMapper.toEntity, VendorDomainService.validateCreate, shared DomainService.create",
+  "verify": "POST with an existing id: expect a new id in the response and the old vendor unchanged.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:1.5": {
+  "note": "still visible in code: CustomerDomainService.updateFields l.528, 540, 541 overwrite status, creditLimit and salesRepresentative from the PUT body (a missing creditLimit becomes null); CustomerFacadeImpl.update l.83-85 publishes no audit event, unlike updateCreditLimit.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A normal customer edit can silently change or erase the credit limit, flip the status and move the sales rep, without the audit event that the dedicated credit-limit endpoint writes. Credit control relies on that limit.",
+  "steps": [
+   "GET /api/sales/customers/{id} and note creditLimit.",
+   "PUT /api/sales/customers/{id} with the same body but without creditLimit.",
+   "GET the customer again."
+  ],
+  "expected": "Limit unchanged (or the change audited with the same CUSTOMER.CREDIT_LIMIT_UPDATED event); status and rep not wiped by an absent field.",
+  "actual": "creditLimit becomes null; no audit event.",
+  "where": "backend CustomerDomainService.updateFields, CustomerFacadeImpl.update, CustomerMapper",
+  "verify": "PUT without creditLimit then GET: limit must be unchanged; PUT with a new limit: either unchanged or exactly one audit event.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:1.7": {
+  "note": "still visible in code: ImsReportDomainService uses customerScope() only in getSummary l.343 and getCustomers l.366; create, getById, draft and template have no scope check.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The IMS (retailer stock report) screens list only the rep's own customers, but the create, read and template endpoints accept any customer id. A rep can submit or read reports of another rep's outlets.",
+  "steps": [
+   "As a rep with sales.ims.create, pick a customer that GET /api/sales/ims-reports/customers does not list for that rep.",
+   "POST /api/sales/ims-reports (multipart) with that customerId and a month.",
+   "GET /api/sales/ims-reports/{id}."
+  ],
+  "expected": "403 for a customer outside the user's scope (managers and admins excepted).",
+  "actual": "Accepted and readable.",
+  "where": "backend modules/sales/ims/service/ImsReportDomainService (create, getDraft, getTemplateCsv, getById)",
+  "verify": "Step 2 with an out-of-scope customer must return 403; with an own customer 200/201.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:2.4": {
+  "note": "partly fixed, still a bug: quantity checks now work (ItemReturnDomainService.validateLines is called at l.357 and l.372, caps against shipped minus already returned, rejects duplicates and qty <= 0; e2e SAL-02-11 passes and findings-sales.md records 'backend refuses return above shipped qty'). Price and tax are still taken from the request: ItemReturnMapper.toLineEntity l.93-96.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A sales return now cannot exceed what was shipped, but the return line still accepts its own unit price and tax rate in the request. That price drives the credit memo and the refund, so a clerk can return goods at a higher price than the customer paid.",
+  "steps": [
+   "Deliver and ship 10 units of an item at 8.00.",
+   "POST /api/sales/item-returns with a line returnQty 1 and unitPrice 90.",
+   "GET /api/sales/item-returns/{id} and read the line amount."
+  ],
+  "expected": "Line price and tax always come from the sales order line (8.00).",
+  "actual": "Line is saved with unitPrice 90.",
+  "where": "backend modules/sales/document/itemreturn/mapper/ItemReturnMapper.toLineEntity l.93-96",
+  "tests": [
+   "SAL-02-11 (quantity part, passing)"
+  ],
+  "verify": "POST an item return with unitPrice 1 on an order line priced 8.00: stored unitPrice must be 8.00.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:2.7": {
+  "note": "still visible in code: autoCheckCreditLimit (SalesDemandDomainService l.1364-1391) is the only check and exposure = outstanding + this demand; outstanding now comes from SalesOrderCustomerOverviewService.batchOutstanding (card figure, credit memos netted) and the coordinator screen now subtracts the discount (SalesDemandCoordinationService.evaluateCredit l.571-582), so the 'three ways' part is mostly gone. Still no check in SalesOrderDomainService.create or InvoiceDomainService.create, approved-but-uninvoiced demands and orders count for nothing, no customer-row lock.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The credit limit is only a flag on the demand. Orders and invoices never check it, and approved demands or orders that are not yet invoiced do not count as exposure, so ten approved 90k demands pass a 100k limit.",
+  "steps": [
+   "Customer with creditLimit 100000.",
+   "Create and fully verify two demands of 90000 each (no invoices).",
+   "POST /api/sales/orders for 150000 for the same customer."
+  ],
+  "expected": "Exposure includes approved uninvoiced demands/orders; order and invoice create are refused (or need an override) when the limit would be exceeded.",
+  "actual": "Second demand still passes; order for 150000 is created APPROVED.",
+  "where": "backend SalesDemandDomainService.autoCheckCreditLimit / computeCurrentOutstanding, SalesOrderDomainService.create, InvoiceDomainService.create",
+  "verify": "Steps 1-3: step 2's second demand must report exceeded, step 3 must be refused.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:3.2": {
+  "note": "still visible in code: GatePassService.verifyAndRelease l.84-85 reads the gate pass with a plain findById (no lock), then checks the status and consumes reservations; no @Version on the gate pass.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "If two gate officers (or a double click) verify the same gate pass at the same moment, both see AWAITING_GATE_OUT and both consume the stock reservation. On-hand quantity drops twice and two SALE ledger rows are written for one dispatch.",
+  "steps": [
+   "Create a delivery order and ship it so the gate pass is AWAITING_GATE_OUT.",
+   "Send two POST /api/sales/gate-passes/{id}/verify calls at the same time.",
+   "Check inventory on-hand and the stock ledger for the item."
+  ],
+  "expected": "Exactly one call succeeds, the other answers 400 'not awaiting gate-out'; stock reduced once.",
+  "actual": "Both can pass the status check (race window); no lock prevents it.",
+  "where": "backend modules/sales/document/gatepass/service/GatePassService.verifyAndRelease, GatePassRepository, DeliveryOrderFulfillmentService.consumeReservations",
+  "verify": "Fire the two verify calls in parallel on one pass: expect one 200 and one 400, one SALE ledger row per reservation.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:5.1": {
+  "note": "still visible in code: CustomerDomainService.validateDelete l.331-335 and VendorDomainService.validateDelete l.133-136 are empty TODO methods; the base DomainService.delete hard-deletes.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A customer or vendor that already has orders, invoices, receipts or bills can be deleted. The documents then point at a partner that no longer exists and reports, ledgers and statements break.",
+  "steps": [
+   "Create a customer and a demand for it.",
+   "DELETE /api/sales/customers/{id}.",
+   "Open the demand."
+  ],
+  "expected": "409 Conflict telling the user to deactivate the partner instead (PATCH /api/sales/customers/{id}/toggle-status).",
+  "actual": "204 and the customer is gone.",
+  "where": "backend CustomerDomainService.validateDelete, VendorDomainService.validateDelete, shared DomainService.delete",
+  "verify": "DELETE a customer that has a document: expect 409; a customer with no documents: 204.",
+  "owner": "Backend, sales"
+ },
+ "sales:B4": {
+  "note": "still visible in code: CreditMemoMapper.toRefundLineEntity l.96-101 uses dto.getUnitPrice() and dto.getTaxRate() before the return line values. The quantity is capped now (CreditMemoService.buildRefundLines l.385-410, e2e SAL-12-03 and SAL-12-05), so only price and tax are still trusted.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A credit memo line takes the unit price and tax rate from the request instead of the sales return line. A clerk can credit 90.00 for a unit sold at 9.00; after approval the ledger and a cash refund follow the inflated amount.",
+  "steps": [
+   "Receive a sales return of 1 unit sold at 9.00.",
+   "POST /api/sales/credit-memos with refundLines[0] = {salesReturnLineId, refundQty:1, unitPrice:90, taxRate:0.136}.",
+   "Read the memo total."
+  ],
+  "expected": "Price and tax are taken from the return line; a request that differs is ignored or refused.",
+  "actual": "201, memo total 90.00.",
+  "where": "backend modules/sales/document/creditmemo/mapper/CreditMemoMapper.toRefundLineEntity",
+  "tests": [
+   "SAL-12-03",
+   "SAL-12-05 (quantity part, passing)"
+  ],
+  "verify": "Step 2 must give a memo of 9.00 (or 400).",
+  "owner": "Backend, sales"
+ },
+ "sales:B9": {
+  "note": "not proven by code reading: demand create takes the series row FOR UPDATE (TransactionSeriesConfigServiceImpl.generateNextId) until commit, which serialises creates but could exhaust the connection pool; the 500 cause is not visible and was not re-run (no stack allowed). No e2e test sends parallel demand creates.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Thirty simultaneous demand creates produced 19 HTTP 500 answers in the October hard test. Real users rarely do this, but a double click or a mobile retry burst could. The cause (series lock wait, pool size, or an exception) is not confirmed.",
+  "steps": [
+   "Send 30 parallel POST /api/sales/demands with valid bodies.",
+   "Count the status codes."
+  ],
+  "expected": "All 30 created with distinct numbers, or a retry-safe 409; never a 500.",
+  "actual": "October report: 11 created, 19 'Something went wrong on our end'. Not re-tested.",
+  "where": "backend TransactionSeriesConfigServiceImpl.generateNextId, SalesDemandDomainService.create, connection pool config",
+  "verify": "Repeat the 30 parallel POSTs on deployment/dev and read the server log for the exception behind each 500.",
+  "owner": "Backend, sales"
+ },
+ "saleschain:P3-B1": {
+  "note": "still visible in code: ECustomerLedgerEventType has only INVOICE_CREATED, INVOICE_CANCELLED, PAYMENT_RECEIVED, DEPOSIT_CREATED, DEPOSIT_APPLIED (no credit memo or refund event); InvoiceDomainService.resolveAmountDue l.754-757 subtracts receipt and deposit applications only.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "An approved credit memo is not applied to its invoice. Aging, open-invoices and the AR register keep showing the invoice as open (even after the customer paid the net amount), and the month-closing receivables check shows a difference but still lets the month close.",
+  "steps": [
+   "Invoice 10 x 10 (net 93.00), receive a return of 4, approve a credit memo of 37.20.",
+   "Customer pays 55.80 (POST /api/sales/receipts applied to the invoice).",
+   "Open Aging / Open Invoices for the customer and the month-closing Sales and Receivables check."
+  ],
+  "expected": "The memo reduces the open balance; sub-ledger equals GL account 1130; closing blocks on a difference.",
+  "actual": "Invoice stays open for 37.20 for ever; sub-ledger 173.00 vs ledger 135.80.",
+  "where": "backend modules/sales/ledger (ECustomerLedgerEventType, FinancialLedgerService), InvoiceDomainService.resolveAmountDue, SalesCloseDataProviderImpl",
+  "verify": "After step 2 the invoice amountDue and the aging report must show 0 and the month-close check difference 0. Same root cause as saleschain:SC-4.",
+  "owner": "Backend, sales"
+ },
+ "saleschain:P3-B2": {
+  "note": "still visible in code: ReceiptMapper l.26-27 and SalesOrderMapper copy currency and exchangeRate from the request; ReceiptDomainService.applyCurrencyDefault l.633 only fills a missing currency; CurrencyExchangeConfigServiceImpl.upsertBulk saves any rate. No BDT-only check exists.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The product decision is BDT only, but receipts, orders and the currency config accept USD and any exchange rate. A receipt of 10 USD at rate 100 posts 1,000 to the ledger while reducing the invoice by 10, so ledger and invoice disagree.",
+  "steps": [
+   "POST /api/sales/receipts with currency \"USD\", exchangeRate 100, paymentAmount 10 applied to an invoice of 10.",
+   "Read the receipt journal via GET /api/sales/postings."
+  ],
+  "expected": "400 for any currency other than BDT and any rate other than 1.",
+  "actual": "201; journal 1130 Cr 1,000 while the invoice is reduced by 10.",
+  "where": "backend ReceiptMapper, ReceiptDomainService.validateCreate, SalesOrderMapper, CurrencyExchangeConfigServiceImpl.upsertBulk",
+  "verify": "Step 1 must return 400 with a readable message.",
+  "owner": "Backend, sales"
+ },
+ "saleschain:SC-1": {
+  "note": "still visible in code: only PROMO rewards are applied (SalesDemandDomainService.injectPromoFreeLines l.1430+); nothing applies DISCOUNT or CASHBACK schemes, and totalRedemption / totalBudgetUsed are only read (PricingSchemeDomainService l.214, l.326 comment) and never written.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Pricing schemes of type DISCOUNT and CASHBACK have no effect on an order: the offer picker shows them and the clerk believes they apply, but the price stays the same. Budget and redemption limits are never counted, so a scheme capped at 2 uses stays active after 3.",
+  "steps": [
+   "Create an ACTIVE DISCOUNT 10% scheme for item B (POST /api/sales/pricing-schemes).",
+   "POST /api/sales/demands with lines[0].appliedPricingSchemaId = that scheme, 25 x 8.00, for a customer with no trade discount.",
+   "Read the demand and order totals and the scheme's total redemption."
+  ],
+  "expected": "Discount applied to the amount owed, usage counted, caps stop the scheme.",
+  "actual": "Discount 0, total 200.00, redemption stays 0.",
+  "where": "backend modules/sales/discount (PricingScheme, PricingSchemeDomainService), SalesDemandDomainService",
+  "verify": "Step 2: total must be 180.00 and the scheme's redemption counter must rise to 1. Feature gap: a decision on how DISCOUNT/CASHBACK post is needed first.",
+  "owner": "Backend, sales"
+ },
+ "saleschain:SC-2": {
+  "note": "still visible in code: injectPromoFreeLines (SalesDemandDomainService l.1430-1500) loads the PromoReward by scheme id only; it never checks scheme status, effective dates, minimum quantity, customer type or item; validateLines ignores appliedPricingSchemaId.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Any scheme id sent on a demand line is trusted. A paused or expired PROMO scheme still gives free units, and a scheme meant for another customer type or item does too. Clerks or a modified client can claim goods they are not entitled to.",
+  "steps": [
+   "Create a PROMO scheme, then pause it (status PAUSED).",
+   "POST /api/sales/demands with a line quantity 25 and appliedPricingSchemaId = the paused scheme.",
+   "Read the line's offerQty."
+  ],
+  "expected": "Refused or ignored when the scheme is not ACTIVE, outside its window, below its minimum or for another customer type/item.",
+  "actual": "Free units are stamped (2 for 25 bought).",
+  "where": "backend SalesDemandDomainService.injectPromoFreeLines, validateLines",
+  "verify": "Step 2 with a PAUSED scheme: expect 400 or offerQty 0.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:2.10": {
+  "note": "still visible in code: InvoiceDomainService.updateFields l.779-799 sets shippingCost/handlingCost and calls recomputeDiscountAndTotal with no comparison to the applied amount and no paymentStatus update; paymentStatus is only set in the receipt/deposit apply path (l.1484-1495). Line edits are guarded (validateLineEdits l.458+), header costs are not.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Editing an invoice's shipping or handling cost after payment changes the total but not the stored payment status. A FULLY_PAID invoice can have a positive amount due while still marked paid (overdue counts miss it), or the total can fall below what was already paid.",
+  "steps": [
+   "Create an invoice and pay it in full (POST /api/sales/receipts applied to it).",
+   "PUT /api/sales/invoices/{id} with shippingCost raised by 100.",
+   "GET /api/sales/invoices/{id}."
+  ],
+  "expected": "paymentStatus becomes PARTIALLY_PAID; lowering costs so the total is below the paid amount returns 400.",
+  "actual": "paymentStatus stays FULLY_PAID with amount due 100.",
+  "where": "backend InvoiceDomainService.updateFields / recomputeDiscountAndTotal / resolveCoverage",
+  "verify": "Step 2 then 3: paymentStatus must be PARTIALLY_PAID. Pay partially then PUT lower shipping so total < paid: expect 400.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:2.11": {
+  "note": "still visible in code: ReceiptDomainService.validateCreate l.186-189 loops validateApplication; validateApplication l.222-232 compares each application to the stored balance only, no per-invoice sum (the update path does).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "One receipt request can list the same invoice twice. Each line passes on its own, so an invoice with 100 outstanding gets 200 applied and its balance goes negative.",
+  "steps": [
+   "Invoice with 100 outstanding.",
+   "POST /api/sales/receipts with two applications to that invoice, appliedAmount 100 each, paymentAmount 200.",
+   "GET the invoice."
+  ],
+  "expected": "400 'Invoice appears more than once' or the sum per invoice is checked; nothing created.",
+  "actual": "201; invoice has 200 applied against a 100 total.",
+  "where": "backend modules/sales/document/receipt/service/ReceiptDomainService.validateCreate / validateApplication",
+  "verify": "Step 2 must return 400 and create no receipt.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:2.12": {
+  "note": "still visible in code: SalesOrderDomainService.snapshotCustomerCategoryDiscount l.626-634 copies the demand's percentage AND full discount amount (and the other document discounts) to every order linked to the demand, not scaled to the order's own lines.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "An order made from a demand takes the whole demand discount even if it covers only part of the demand, so partial or second orders are over-discounted and the order total can fall below its lines.",
+  "steps": [
+   "Approved demand with 2 lines and a customer discount.",
+   "POST /api/sales/orders with demandId and only 1 of the lines.",
+   "Compare customerDiscountAmount of the order with the demand's."
+  ],
+  "expected": "Discount amount is the demand's percentage applied to the order's own lines.",
+  "actual": "Order carries the demand's full discount amount.",
+  "where": "backend SalesOrderDomainService.snapshotCustomerCategoryDiscount",
+  "verify": "Step 2 order discount must be about half the demand discount.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:2.13": {
+  "note": "still visible in code: SalesOrderDomainService.validateHeader l.770-775 accepts a demand in APPROVED or SO_CREATED; the only index on sales_order_header.demand_id is a plain one (V1__initial_schema.sql l.6212); no quantity cap per demand.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The same demand can be turned into several sales orders (a retry or a second user). Nothing stops duplicates or caps quantities. Whether several orders per demand are intended is an open product question.",
+  "steps": [
+   "Approved demand.",
+   "POST /api/sales/orders twice with the same demandId and all lines.",
+   "GET /api/sales/orders?demandId=<id> (or the demand's order list)."
+  ],
+  "expected": "Second create refused (one order per demand) or total quantity capped to the demand.",
+  "actual": "Both return 201.",
+  "where": "backend SalesOrderDomainService.validateHeader, sales_order_header.demand_id",
+  "verify": "After the decision, step 2's second call must be 400/409.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:2.14": {
+  "note": "still visible in code: SalesChannelCategoryService.applySettingFields l.377 stores FALSE when taxInclusive is omitted (the comment above it says true); SalesChannelCategorySetting l.73-75 and the DB column default false; CustomerCategoryDiscountResolver.isTaxInclusive l.110-111 treats null as true, which can never happen.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A category discount setting created without taxInclusive is stored as 'tax not included', so the discount is computed on a smaller amount than the documentation promises. Orders and invoices keep the rate locked at order time, so the difference lands in real documents.",
+  "steps": [
+   "POST /api/sales/channel-categories with a discount setting and no taxInclusive field.",
+   "GET the category and read taxInclusive.",
+   "Create an order of 10000 incl. 1000 tax for a customer of that category and read the discount."
+  ],
+  "expected": "Default agreed with the product owner and the same in code, entity, DB and docs.",
+  "actual": "Stored false; docs and resolver say true.",
+  "where": "backend modules/sales/discount: SalesChannelCategoryService.applySettingFields, SalesChannelCategorySetting, CustomerCategoryDiscountResolver",
+  "verify": "After the decision, step 2 must show the agreed default. Decision needed first (owner), not purely a code fix.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:2.15": {
+  "note": "still visible in code: ImsReportLineRepository.sumSoldQtyGroupedByItemIdForVerifiedReports l.18-24 has no month filter; ImsOpeningStockService.computeOpeningStockByItemId l.94-95 subtracts it from deliveries before the report month.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Opening stock for an IMS report subtracts quantities sold in every verified report, including later months. If March and April are verified, a February report shows too little stock and valid sales are rejected.",
+  "steps": [
+   "Customer with 100 delivered in January; verify a March report that sold 30.",
+   "Open or submit a February IMS report for the customer (GET /api/sales/ims-reports/draft ...)."
+  ],
+  "expected": "Opening stock for February is 100 (only earlier months count).",
+  "actual": "Opening stock 70.",
+  "where": "backend modules/sales/ims: ImsReportLineRepository.sumSoldQtyGroupedByItemIdForVerifiedReports, ImsOpeningStockService",
+  "verify": "Add the month filter, then repeat the steps: February opening 100, April opening 70.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:2.8": {
+  "note": "still visible in code: CollectionDomainService.resolveOutstanding l.139-145 = invoiced - received - unused deposits - undeposited collections, no credit memos; SalesOrderCustomerOverviewService.batchOutstanding l.351 nets memos but not deposits. Two formulas still disagree.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The amount a customer owes is calculated differently on the collection screen, the customer overview and the credit check. A customer with an approved but unrefunded credit memo is asked to pay too much, and the wrong figure is stored on each collection.",
+  "steps": [
+   "Invoice 10,000, receipt 2,000, approved credit memo 1,000, no refund.",
+   "Read outstanding from POST /api/sales/collections/filter and from GET /api/sales/customers/{id}."
+  ],
+  "expected": "Both show 7,000 (finance to confirm the credit memo rule).",
+  "actual": "Collection screen 8,000; customer overview 7,000 (deposits ignored).",
+  "where": "backend CollectionDomainService.resolveOutstanding, SalesOrderCustomerOverviewService.batchOutstanding / batchBalance",
+  "verify": "Run the steps: all endpoints return the same figure.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:2.9": {
+  "note": "still visible in code: InvoiceMapper l.272 takes dto.getTaxRate() over the order line's rate; InvoiceDomainService.applyLineEdits l.864 does the same; invoice totals are computed in InvoiceMapper and InvoiceDomainService.recomputeDiscountAndTotal.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The invoice line accepts its own tax rate. VAT can be lowered or removed at invoicing even though the order fixed it. The invoice total is also built in two places, which can drift.",
+  "steps": [
+   "Order line with 15% tax, delivered.",
+   "POST /api/sales/invoices with that line and taxRate 0.",
+   "Read the invoice taxAmount."
+  ],
+  "expected": "Tax rate always comes from the order line.",
+  "actual": "Invoice carries no VAT.",
+  "where": "backend InvoiceMapper.toLineEntity, InvoiceDomainService.applyLineEdits, recomputeDiscountAndTotal",
+  "verify": "Step 2: taxAmount must equal the order line's VAT.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:3.4": {
+  "note": "still visible in code: SalesDemandCoordinationService.loadDetailed l.327 uses findDetailedById with no lock and DemandHeader has no version; each verify saves the whole demand.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Two coordinators verifying different gates of one demand at the same moment can overwrite each other: the later save writes the other gate back to false and the demand never becomes ready.",
+  "steps": [
+   "Send POST /api/sales/demands/{id}/coordination/payment/verify and /coordination/quantity/verify at the same time.",
+   "GET /api/sales/demands/{id}/coordination."
+  ],
+  "expected": "Both gates end true.",
+  "actual": "One of them can be lost.",
+  "where": "backend SalesDemandCoordinationService.loadCoordinatable / loadDetailed, DemandHeaderRepository",
+  "verify": "Run the two calls in parallel 20 times; both flags must be true each time.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:4.1": {
+  "note": "still visible in code: SalesOrderDomainService.validateLines l.~790-815 and SalesDemandDomainService.validateLines l.1305-1325 only check item and quantity are present; line DTOs have no bean validation.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Order and demand lines accept quantity 0 or negative, negative prices and tax, and a totalValue that does not match quantity times price. Receivables, tax and the credit check follow the client-sent total.",
+  "steps": [
+   "POST /api/sales/orders with a line quantity -5 (or unitPrice -1, or totalValue 1 for 1000 x 100).",
+   "Read the response."
+  ],
+  "expected": "400 for each; totals recomputed by the server.",
+  "actual": "Saved.",
+  "where": "backend SalesOrderDomainService.validateLines, SalesDemandDomainService.validateLines, SalesOrderLineRequestDTO, SalesDemandLineRequestDTO",
+  "verify": "Each bad body returns 400; a normal order still saves.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:4.2": {
+  "note": "still visible in code: PricingSchemeDomainService.validateDiscountReward l.448-462 and the cashback/promo validators only null-check.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A pricing scheme can be saved and activated with a 250% or negative discount, zero minimum quantity or negative budget. Once discounts are applied these would give wrong prices.",
+  "steps": [
+   "POST /api/sales/pricing-schemes with a DISCOUNT reward, mode PERCENTAGE, value 150.",
+   "Repeat with -5, a rule minQty -1, PROMO buyQty 0."
+  ],
+  "expected": "400 with a readable message for each.",
+  "actual": "201.",
+  "where": "backend modules/sales/discount/service/PricingSchemeDomainService (validate*Reward), PricingSchemeController",
+  "verify": "Each bad body returns 400. Same family as saleschain:SC-6.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:5.2": {
+  "note": "still visible in code: ProductDistributionService has no call that cancels the workflow on delete or update; ProductDistribution.items (l.84-85) has cascade ALL and a join column but no orphanRemoval.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A product distribution that is waiting for approval can be deleted or edited without touching its approval task. The approver still sees the task and approving fails, leaving a stuck instance; each edit also leaves orphan line rows.",
+  "steps": [
+   "Create a distribution that starts an approval (POST /api/sales/product-distributions).",
+   "DELETE it before the approver acts.",
+   "Approver opens the task."
+  ],
+  "expected": "Workflow instance cancelled on delete; editing a pending record blocked or restarted; no orphan lines.",
+  "actual": "Task stays and approval throws not-found; edits leave lines with distribution_id null.",
+  "where": "backend modules/sales/distribution: ProductDistributionService.delete/update, ProductDistribution.items",
+  "verify": "After delete the workflow instance is CANCELLED; after 3 edits select count(*) from product_distribution_line where distribution_id is null returns 0.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:5.3": {
+  "note": "still visible in code: FinancialLedgerService.recordInvoiceCancelled (l.49) has no caller in the whole backend (grep on b2597ef11); there is also no invoice cancel endpoint (see saleschain:P3-B7).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The method that would reverse an invoice in the customer ledger is never used. Either invoices can never be cancelled (then the method is dead code) or a future cancel path will forget to call it.",
+  "steps": [
+   "Search the code for callers of recordInvoiceCancelled: none.",
+   "POST /api/sales/invoices/{id}/cancel: no such endpoint."
+  ],
+  "expected": "Cancel path calls it once in the same transaction, or the dead method and ledger branch are removed.",
+  "actual": "No caller.",
+  "where": "backend modules/sales/ledger/service/FinancialLedgerService.recordInvoiceCancelled, CustomerLedgerEntryRepository.receivableBalanceAsOf",
+  "verify": "Decide on invoice cancel; then create-and-cancel an invoice and check receivableBalanceAsOf returns to its earlier value.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:6.1": {
+  "note": "partly fixed in the schema: V1__initial_schema.sql now has doc_number UNIQUE on document_header (l.575), payment_collection, customer_deposit, receipt and customer_refund; invoice/receipt DTOs carry no docNumber. Still open: SalesOrderDomainService.validateCreate l.419 lets a client supply its own docNumber (only an exists check), the same for demand and return; no clean mapping of the unique violation (a series counter reset, see saleschain:P3-B3, would give a 500). Code looks fixed for the DB part; needs API/test proof.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Document numbers should be unique and always come from the numbering series. The database now enforces uniqueness for most tables, but a client can still choose its own order number, and a duplicate would surface as a raw database error.",
+  "steps": [
+   "POST /api/sales/orders with \"docNumber\":\"SO-CUSTOM-1\" twice.",
+   "Check the first response docNumber and the second answer."
+  ],
+  "expected": "Number always generated; a duplicate gives a clean 409/400.",
+  "actual": "Client number accepted on the first call.",
+  "where": "backend SalesOrderDomainService.validateCreate / validateUpdate, SalesDemandDomainService.applyCreateDefaults, V1__initial_schema.sql",
+  "verify": "Step 1: response docNumber must be a series number, not SO-CUSTOM-1. In a DB check: select doc_number from document_header group by 1 having count(*)>1 returns no rows.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.10": {
+  "note": "still visible in code: SalesCloseDataProviderImpl.unbilledOrders l.135-162 runs salesOrderLineRepository.findByDocumentHeader_Id per order (l.144) plus lastShipDate per unbilled order (l.172); factsFor (l.71) and unbilledDeliveries (l.97) each call it. Performance only: results are correct, response time grows with data. Hibernate default_batch_fetch_size is not set anywhere in src/main/resources.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Opening the month-end close sales facts loads every order of the month one by one, and does it twice. A month with thousands of orders makes the period-closing page slow.",
+  "steps": [
+   "Month with many sales orders (seed 500+).",
+   "Open the sales checks of Period Closing for that month (the close-facts endpoints under /api/accounting/fiscal-periods/...).",
+   "Watch the SQL log."
+  ],
+  "expected": "A constant number of aggregate queries, computed once.",
+  "actual": "About one query per order, twice.",
+  "where": "backend modules/sales/document/order/service/SalesCloseDataProviderImpl.unbilledOrders / factsFor / unbilledDeliveries",
+  "verify": "Turn on SQL statistics (spring.jpa.properties.hibernate.generate_statistics=true) on a dev copy, call the endpoint with size 20, and compare the statement count before and after: it must be constant, independent of the number of rows.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.11": {
+  "note": "still visible in code: SalesGeographyDomainService.toEnrichedResponse l.227-245 without a context runs countByParentId and findIdsByLocation_Id (and a manager lookup) per node; only the expand=true path is batched. Performance only: results are correct, response time grows with data. Hibernate default_batch_fetch_size is not set anywhere in src/main/resources.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Listing geography nodes by tier without expand sends several queries per node, so a list of 300 territories sends about 1,200 queries.",
+  "steps": [
+   "GET /api/sales/geographies/by-tier?tierLevel=TERRITORY (no expand).",
+   "Watch the SQL log."
+  ],
+  "expected": "About 5 queries for the whole list.",
+  "actual": "4 or more queries per node.",
+  "where": "backend modules/sales/geography/service/SalesGeographyDomainService.findByTierLevel / findChildren / toEnrichedResponse",
+  "verify": "Turn on SQL statistics (spring.jpa.properties.hibernate.generate_statistics=true) on a dev copy, call the endpoint with size 20, and compare the statement count before and after: it must be constant, independent of the number of rows.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.12": {
+  "note": "still visible in code: ImsReportDomainService.getSummary l.343 loads every Customer entity in scope with customerRepository.findAll(customerScope()) then a report list, only to count. Performance only: results are correct, response time grows with data. Hibernate default_batch_fetch_size is not set anywhere in src/main/resources.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The mobile home summary for IMS reports loads all of the rep's customers just to count them.",
+  "steps": [
+   "As a rep with many outlets: GET /api/sales/ims-reports/summary?month=2026-10."
+  ],
+  "expected": "Two COUNT queries.",
+  "actual": "Loads all customer entities.",
+  "where": "backend ImsReportDomainService.getSummary",
+  "verify": "Numbers unchanged and only two SELECT COUNT statements run.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.13": {
+  "note": "still visible in code: CustomerMapper.buildLocationHierarchy l.167-177 walks up the geography tree with resolveParent per level per row. Performance only: results are correct, response time grows with data. Hibernate default_batch_fetch_size is not set anywhere in src/main/resources.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Each customer in a list page costs several extra geography lookups (one per tree level), so a page of 20 customers sends dozens of small queries.",
+  "steps": [
+   "POST /api/sales/customers/filter with size 20.",
+   "Watch the SQL log for sales_geography selects."
+  ],
+  "expected": "At most 2 geography queries for the page.",
+  "actual": "One per level per customer.",
+  "where": "backend modules/sales/business_partner/customer/mapper/CustomerMapper.buildLocationHierarchy, CustomerDomainService list conversion",
+  "verify": "Turn on SQL statistics (spring.jpa.properties.hibernate.generate_statistics=true) on a dev copy, call the endpoint with size 20, and compare the statement count before and after: it must be constant, independent of the number of rows.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.14": {
+  "note": "still visible in code: SalesGeographyManager.allowedChannels (l.52-60) is a lazy @ManyToMany List with no batch size or entity graph. Performance only: results are correct, response time grows with data. Hibernate default_batch_fetch_size is not set anywhere in src/main/resources.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Listing sales geography managers sends one extra query per manager to read their allowed channels, and the list is deleted and re-inserted on every edit.",
+  "steps": [
+   "GET /api/sales/geography-managers with 50+ managers.",
+   "Watch the SQL log."
+  ],
+  "expected": "About 3 statements for the list.",
+  "actual": "1 + number of managers.",
+  "where": "backend modules/sales/geography/model/SalesGeographyManager, SalesGeographyManagerRepository",
+  "verify": "Turn on SQL statistics (spring.jpa.properties.hibernate.generate_statistics=true) on a dev copy, call the endpoint with size 20, and compare the statement count before and after: it must be constant, independent of the number of rows.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.15": {
+  "note": "still visible in code (class moved to modules/inventory/packing_house/export/PackingHouseBookExportDataSource l.91-106): resolveCustomer per book, getLines() lazy, soNo hard-coded null with a TODO, status filter parsing can throw. Performance only: results are correct, response time grows with data. Hibernate default_batch_fetch_size is not set anywhere in src/main/resources.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Exporting packing house books issues several queries per row and leaves the SO number column empty.",
+  "steps": [
+   "Open the Packing House book list and export it (POST /api/export for the packing house report) with no page/size."
+  ],
+  "expected": "Constant query count; SO number filled.",
+  "actual": "Per-row lookups; soNo blank.",
+  "where": "backend modules/inventory/packing_house/export/PackingHouseBookExportDataSource",
+  "verify": "Export 200 books: constant statements, soNo shown; status=foo returns 400.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.2": {
+  "note": "still visible in code: SalesByCustomerSummaryReportGenerator l.96 and CustomerWorkflowConditionOptionsProvider l.30 call customerRepository.findAll(); SalesGeographyScopeService l.49 and SalesGeographyDomainService l.270 reload the whole geography tree. Performance only: results are correct, response time grows with data. Hibernate default_batch_fetch_size is not set anywhere in src/main/resources.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Some reports and settings pages load every customer (or the whole geography tree) just to read names. Fine now, slow as the outlet count grows.",
+  "steps": [
+   "Run the Sales by Customer Summary report without a customer filter.",
+   "Open the workflow condition options for customers.",
+   "Watch the SQL log."
+  ],
+  "expected": "Projection queries of only needed columns; geography tree cached.",
+  "actual": "Full entity loads.",
+  "where": "backend SalesByCustomerSummaryReportGenerator, CustomerWorkflowConditionOptionsProvider, SalesGeographyScopeService, SalesGeographyDomainService",
+  "verify": "With 5,000 customers the options provider issues one projection query and loads no Customer entities.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.3": {
+  "note": "still visible in code: PricingSchemeDomainService.convertEntityToResponse l.307-316 runs findBySchemeId for policy and reward per scheme; searchByItems l.168-179 is unbounded and an empty itemIds returns all. Performance only: results are correct, response time grows with data. Hibernate default_batch_fetch_size is not set anywhere in src/main/resources.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The pricing scheme list does two extra queries per scheme, and the by-items search used by the offer picker is unbounded.",
+  "steps": [
+   "GET /api/sales/pricing-schemes?size=20.",
+   "GET /api/sales/pricing-schemes/by-items?itemIds=1 with and without ids."
+  ],
+  "expected": "4 queries for the list; by-items capped.",
+  "actual": "About 42 queries for 20 rows.",
+  "where": "backend modules/sales/discount/service/PricingSchemeDomainService.search / searchByItems",
+  "verify": "Turn on SQL statistics (spring.jpa.properties.hibernate.generate_statistics=true) on a dev copy, call the endpoint with size 20, and compare the statement count before and after: it must be constant, independent of the number of rows.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.4": {
+  "note": "still visible in code: ProductDistributionMapper.toResponseDTO resolves requester, warehouse and channel through facades per row (l.31-33, l.125-129 with RuntimeException swallowed); ProductDistributionExportDataSource l.91-98 loops it over every row with no cap. Performance only: results are correct, response time grows with data. Hibernate default_batch_fetch_size is not set anywhere in src/main/resources.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The product distribution list and export do several lookups per row. The export has no row limit.",
+  "steps": [
+   "GET /api/sales/product-distributions?distributionType=SAMPLE&size=20.",
+   "Export the list through POST /api/export."
+  ],
+  "expected": "Constant (about 8) queries; export capped.",
+  "actual": "About 140 queries for 20 rows.",
+  "where": "backend modules/sales/distribution: ProductDistributionMapper, ProductDistributionService.search, ProductDistributionExportDataSource",
+  "verify": "Turn on SQL statistics (spring.jpa.properties.hibernate.generate_statistics=true) on a dev copy, call the endpoint with size 20, and compare the statement count before and after: it must be constant, independent of the number of rows.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.5": {
+  "note": "still visible in code: CollectionDomainService.resolveTerritoryFilter l.360-371 reads every customer in scope as a full DTO (page size Integer.MAX_VALUE) just to take ids. Performance only: results are correct, response time grows with data. Hibernate default_batch_fetch_size is not set anywhere in src/main/resources.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The 'my territory' collections list loads all of a rep's customers as full objects, and the IN list could pass the database limit for a rep with thousands of outlets.",
+  "steps": [
+   "As an SPO with many outlets: POST /api/sales/collections/filter?myTerritory=true."
+  ],
+  "expected": "Id-only query and a constant statement count.",
+  "actual": "Whole customer DTO list built.",
+  "where": "backend CollectionDomainService.resolveTerritoryFilter, CustomerDomainService.readDTOsInUserScope",
+  "verify": "Turn on SQL statistics (spring.jpa.properties.hibernate.generate_statistics=true) on a dev copy, call the endpoint with size 20, and compare the statement count before and after: it must be constant, independent of the number of rows.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.6": {
+  "note": "still visible in code: CustomerRefundFacadeImpl.publishRefundEvents l.104-120 calls creditMemoService.getById and itemReturnDomainService.readDTOById for every application only to read two ids; CreditMemoFacadeImpl.publishCreditMemoEvent does the same. Performance only: results are correct, response time grows with data. Hibernate default_batch_fetch_size is not set anywhere in src/main/resources.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Creating or cancelling a refund rebuilds the full credit memo and return documents for each application, inside the transaction, just to write audit lineage ids.",
+  "steps": [
+   "POST /api/sales/customer-refunds with applications on 5 credit memos.",
+   "Watch the SQL log."
+  ],
+  "expected": "One id query for all applications; audit JSON unchanged.",
+  "actual": "Over 100 statements for 5 applications.",
+  "where": "backend CustomerRefundFacadeImpl.publishRefundEvents, CreditMemoFacadeImpl.publishCreditMemoEvent",
+  "verify": "Statement count drops to a handful and the stored audit metadata is identical.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.7": {
+  "status": "still-bug",
+  "note": "partly fixed: the invoice list now batches customers, rep names and items (InvoiceDomainService l.643, 678, 694, 730), so that part looks fixed. Still per row: demand list resolves the rep name with userRepository.findById per demand (SalesDemandDomainService.resolveSalesRepName l.992-1000, called from l.955) and GatePassReturnService.partnerName l.250 does a findById per return. No default_batch_fetch_size. Status moved from open to still-bug because the per-row lookups are visible. Performance only: results are correct, response time grows with data. Hibernate default_batch_fetch_size is not set anywhere in src/main/resources.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "List endpoints still load related rows one by one in the demand list and the gate pass return list. Each page costs 20 extra queries or more.",
+  "steps": [
+   "POST /api/sales/demands/filter with size 20 and read the SQL log.",
+   "GET /api/sales/gate-pass-returns?size=20."
+  ],
+  "expected": "Rep and partner names loaded once per page.",
+  "actual": "One user select per demand row and one customer select per return row.",
+  "where": "backend SalesDemandDomainService.resolveSalesRepName, GatePassReturnService.toListItem / partnerName, application properties (batch fetch size)",
+  "verify": "Turn on SQL statistics (spring.jpa.properties.hibernate.generate_statistics=true) on a dev copy, call the endpoint with size 20, and compare the statement count before and after: it must be constant, independent of the number of rows.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.8": {
+  "note": "still visible in code: GatePassReturnRepository.findAllDetailed l.24-26 uses an @EntityGraph that includes the collection 'lines' with a Pageable, so Hibernate loads everything and pages in memory (GatePassReturnService.list l.175-178).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The gate pass return list loads every return with all its lines and cuts the page in Java. It works for small data and slows down as returns accumulate.",
+  "steps": [
+   "Seed 100+ gate pass returns.",
+   "GET /api/sales/gate-pass-returns?size=20 and look for the HHH90003004 warning in the log."
+  ],
+  "expected": "Page cut in SQL (limit in the main select); totals via a grouped query.",
+  "actual": "Whole table joined to lines loaded, then sliced.",
+  "where": "backend modules/sales/document/gatepassreturn: GatePassReturnRepository.findAllDetailed, GatePassReturnService.list",
+  "verify": "No HHH90003004 in the log and the main select contains limit.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:7.9": {
+  "note": "still visible in code: ItemSalesOrderQueryService.openQuantityByItem l.97-110 loops items and runs findOpenOrdersContainingItem(Pageable.unpaged()) plus a sum query for each. Performance only: results are correct, response time grows with data. Hibernate default_batch_fetch_size is not set anywhere in src/main/resources.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The inventory overview's 'Open SO' column runs two queries per item and loads every open order entity of each item.",
+  "steps": [
+   "GET the inventory overview that includes open sales order quantity for 20 items (inventory items list)."
+  ],
+  "expected": "One grouped query.",
+  "actual": "Two queries per item.",
+  "where": "backend modules/sales/document/order/service/ItemSalesOrderQueryService.openQuantityByItem; caller ItemInventoryQueryService",
+  "verify": "Returned map equals the old one in a test and one query runs instead of 2 x N.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:8.1": {
+  "note": "still visible in code: Credit memo, deposit, refund, delivery and collection export data sources use Pageable.unpaged() when page/size are absent (CreditMemoExportDataSource l.84, CustomerDepositExportDataSource l.75, CustomerRefundExportDataSource l.77, DeliveryOrderExportDataSource l.80-81, PaymentCollectionExportDataSource l.78-79); DeliveryOrderDomainService l.304 and l.310 build an IN list of all header ids.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Exporting these five lists without paging reads the whole table into memory, and the delivery export builds a huge IN list that fails above about 32,000 rows with an HTTP 500.",
+  "steps": [
+   "Open Deliveries, choose export of all rows (POST /api/export for the delivery report without page/size) on a large table."
+  ],
+  "expected": "Rows read in chunks of 500 with a cap (for example 50,000) and a clear 400 above it.",
+  "actual": "Everything loaded at once; IN list of every id.",
+  "where": "backend modules/sales/document/*/export/*ExportDataSource, DeliveryOrderDomainService.resolveLines",
+  "verify": "Export 20,000 deliveries: completes with no statement over 500 IN parameters; row count equals the grid total.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:8.2": {
+  "note": "still visible in code: SalesDemandExportDataSource.parseStatus l.204-211 uses EDocStatus.valueOf and returns null on failure; DemandListStatus.toDocStatus (which understands the screen labels) is not used.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The demand list screen filters by labels like 'Pending Approval' or 'SO Created', but the export does not understand them and drops the filter. The downloaded file then contains all demands while the screen shows a subset.",
+  "steps": [
+   "On the demand list filter status 'Pending Approval'.",
+   "Export the list (POST /api/export with filters.status 'Pending Approval')."
+  ],
+  "expected": "File contains only the filtered demands.",
+  "actual": "File contains all demands.",
+  "where": "backend modules/sales/document/demand/export/SalesDemandExportDataSource.parseStatus, DemandListStatus.toDocStatus",
+  "verify": "Export with status 'Pending Approval' (and 'SO Created') with one PENDING and one APPROVED demand: only the matching row is returned.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:9.1": {
+  "note": "still visible in code: SalesGeographyRepository.findByTierLevelAndNameContaining l.15-19: the JPQL has only the tierLevel predicate, the :name parameter is never used.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Searching geography by name returns every node of that tier, so the name filter on the geography screens does nothing.",
+  "steps": [
+   "GET /api/sales/geographies/by-tier?tierLevel=WING&name=east."
+  ],
+  "expected": "Only wings whose name contains 'east'.",
+  "actual": "All wings.",
+  "where": "backend SalesGeographyRepository.findByTierLevelAndNameContaining, SalesGeographyDomainService.findByTierLevel l.77",
+  "verify": "With wings East and West, name=ea returns only East; no name returns both.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:9.2": {
+  "note": "still visible in code: CreditMemoService.buildListSpec l.545 uses root.get(\"itemReturn\").get(\"docNumber\") (implicit inner join). Memos that came from a return are found (findings-sales.md: search by memo no still works), standalone memos are not.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Searching the credit memo list drops memos that are not linked to an item return, even when their own number matches.",
+  "steps": [
+   "Create a standalone credit memo (POST /api/sales/credit-memos with partnerId, no itemReturnId).",
+   "POST /api/sales/credit-memos/filter or GET with search=<its docNumber>."
+  ],
+  "expected": "The memo is found.",
+  "actual": "0 rows.",
+  "where": "backend modules/sales/document/creditmemo/service/CreditMemoService.buildListSpec",
+  "verify": "Same search returns 1 row after switching to a LEFT join; a search by return number still works.",
+  "owner": "Backend, sales"
+ },
+ "rv-be:sales:9.3": {
+  "note": "still visible in code: AddressMasterDTO l.34 is a Lombok boolean isDefault with no JsonProperty/JsonAlias, so JSON name is 'default' and an 'isDefault' key is ignored. The customer frontend already sends and reads 'default' (src/features/sales/customer/mappers.ts l.112, 236, 269), so users are not hit today.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The address default flag is named 'default' in JSON. Any client (mobile, API user) sending 'isDefault' has it silently dropped and every address is saved as non-default. Frontend works because it uses 'default'.",
+  "steps": [
+   "POST /api/sales/customers with addresses[0].isDefault true.",
+   "GET the customer and read addresses[0].default."
+  ],
+  "expected": "default is true (accept both names).",
+  "actual": "default is false.",
+  "where": "backend modules/sales/business_partner/customer/dto/AddressMasterDTO",
+  "verify": "Add @JsonAlias(\"isDefault\") and repeat: default true.",
+  "owner": "Backend, sales (frontend already compatible)"
+ }
+}

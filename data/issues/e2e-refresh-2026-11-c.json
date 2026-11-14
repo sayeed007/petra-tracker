@@ -1,0 +1,63 @@
+[
+  {
+    "id": "e2e:accounting:party-statement-wrong-account",
+    "module": "accounting",
+    "side": "frontend",
+    "severity": "medium",
+    "title": "Customer Ledger statement showed the customer's Unearned Revenue account instead of Sundry Debtors when the customer had a deposit",
+    "summary": "The Customer and Vendor Ledger statement picks one account row for the party from the A/R-A/P summary. Once a customer has paid a deposit, the backend returns two rows for them (2150 Unearned Revenue-Retail and 1130 Sundry Debtors). The statement took the first row, so it listed the deposit documents, opened and closed at 0.00 and left out every receivable journal, while the list above it showed the real balance.",
+    "steps": [
+      "Create a customer deposit for a customer, then post a manual journal Dr 1130 Sundry Debtors / Cr another account with that customer as party.",
+      "Reports > Ledgers > Customer Ledger: pick the customer in the list tab (balance includes the journal).",
+      "Open the 'Customer Ledger' tab and pick the same customer."
+    ],
+    "expected": "The statement lists the receivable journal with its debit and a running balance that ends at the list balance.",
+    "actual": "Before the fix: only the deposit documents (account 2150) were listed and opening and closing balance were 0.00. Fixed: the statement uses the account with the most movement for the party.",
+    "where": "Frontend: src/erp-api/accounting/party-statement.ts (controlAccountId). Backend: GET /api/accounting/reports/ap-ar-summary returns one row per party and account, with no flag naming the control account.",
+    "tests": ["ACC-03-03"],
+    "verify": "Run e2e ACC-03-03 (passes after e6cac382). Backend could add a control-account flag to the summary row so the frontend need not guess by movement.",
+    "owner": "Frontend (Accounting)",
+    "status": "fixed",
+    "status_evidence": "Fixed in e6cac382 (party-statement.ts); ACC-03-03 failed before and passes after, 2026-11-14. The choice is a heuristic (most movement).",
+    "evidence_level": "verified",
+    "found": "2026-11-14",
+    "checked": {
+      "ref": "release_beta_1.0.0@e6cac382 + deployment/dev@b2597ef11",
+      "date": "2026-11-14"
+    },
+    "refs": [
+      "src/erp-api/accounting/party-statement.ts",
+      "e2e/tests/accounting/03-ledgers.spec.ts"
+    ]
+  },
+  {
+    "id": "e2e:gate-pass:fresh-stack-channel-allocation",
+    "module": "sales",
+    "side": "both",
+    "severity": "low",
+    "title": "Gate Pass return cases fail on a freshly reset stack with 'Not enough channel allocation' for Retail Food, then pass when run again",
+    "summary": "On a fresh stack, 13 of the 14 return cases (GAT-04-01..11, 13, 14) failed because creating a delivery order was refused for lack of channel allocation of E2E-CHIPS on the Retail Food channel, although the spec stocks up 3000 per channel first. The same spec passed 13/13 straight after and the whole Gate Pass module passed 43/43. The same family of failure was seen on 2026-10-27 (GAT-04-11, GAT-04-13). The cause is not found: either stock received by the stock-up is not yet allocated to the channel when the first order is made, or earlier cases leave reservations.",
+    "steps": [
+      "pnpm e2e:reset (full stack), then run the Gate Pass module: node e2e/run.mjs e2e/tests/gate-pass.",
+      "Watch 04-gate-pass-return.spec.ts: POST /api/sales/delivery-orders answers 400 'Not enough channel allocation available to reserve for item E2E Potato Chips 100 gm at warehouse Central DC on channel Retail Food'."
+    ],
+    "expected": "After the stock-up (purchase receipt with a demand split per channel, inbox approved) the Retail Food channel has allocation for the orders.",
+    "actual": "13 cases failed once on the fresh stack; none fail on a second run.",
+    "where": "e2e/support/sales.ts stockUp, e2e/support/gate-pass.ts shippedLoad; backend channel allocation at warehouse (not read).",
+    "tests": ["GAT-04-01", "GAT-04-02", "GAT-04-11", "GAT-04-13"],
+    "verify": "Reset the stack and run the Gate Pass module twice; both runs must be green. If it fails again, log the channel allocation (location-inventory) before and after stockUp.",
+    "owner": "Test stack / Backend (Inventory allocation) - undecided",
+    "status": "open",
+    "status_evidence": "Seen 2026-11-14 in the recorded run on a fresh stack (recorded/gate-pass.log), not reproduced on re-run.",
+    "evidence_level": "observed",
+    "found": "2026-11-14",
+    "checked": {
+      "ref": "release_beta_1.0.0@76208f76 + deployment/dev@b2597ef11",
+      "date": "2026-11-14"
+    },
+    "refs": [
+      "e2e/tests/gate-pass/04-gate-pass-return.spec.ts",
+      "e2e/support/sales.ts"
+    ]
+  }
+]

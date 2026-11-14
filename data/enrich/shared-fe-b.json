@@ -1,0 +1,552 @@
+{
+ "rv-fe:shared:29": {
+  "note": "Still present: src/shared/components/ui/app-select.tsx passes value straight to the AntD select (normalizedValue ~l.131-139) with no fallback label when the value is missing from options.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "When a select is given a value that is not in its option list (an inactive record, or a list that is still loading) the box shows the raw id (often a UUID) instead of a name. Users see an unreadable code on any of the 128 screens that use AppSelect.",
+  "steps": [
+   "Open an edit form whose select value is an inactive record (for example Sales > Customer edit where the saved category is no longer in the active list).",
+   "Look at the select box before and after the options list finishes loading."
+  ],
+  "expected": "A neutral placeholder or the saved label until the option exists.",
+  "actual": "The raw id/UUID is shown.",
+  "where": "src/shared/components/ui/app-select.tsx (~l.131-139, BaseSelect value)",
+  "tests": [],
+  "verify": "Render AppSelect with value=\"abc-uuid\" and options=[]; no UUID is visible.",
+  "owner": "Frontend shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:30": {
+  "note": "Partly fixed: src/features/reports/trial-balance/presets.ts ~l.186-188 'last-period-one-year-ago' now uses lastYear.periods.length. 'last-period-one-quarter-ago' and 'same-period-last-quarter' still use a fixed at(-3) (l.178-181,189), which assumes monthly periods.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Trial Balance date presets meaning 'one quarter ago' step back exactly 3 periods. On a calendar with 13 four-week periods or quarterly periods that is the wrong period, and two presets with different names return the same period.",
+  "steps": [
+   "Set up a fiscal year with 13 periods (Accounting > Fiscal years).",
+   "Open Reports > Trial Balance and choose 'Last period one quarter ago' and 'Same period last quarter'."
+  ],
+  "expected": "Quarter offset derived from the calendar, or the preset disabled when the calendar is not monthly.",
+  "actual": "One-year-ago is fixed; the two quarter presets still hard-code 3 periods.",
+  "where": "src/features/reports/trial-balance/presets.ts l.178-189; presets.test.ts",
+  "tests": [],
+  "verify": "Unit test in presets.test.ts with a 13-period calendar for the quarter presets.",
+  "owner": "Frontend accounting reports",
+  "status": "in-progress"
+ },
+ "rv-fe:shared:32": {
+  "note": "Main defect fixed: src/shared/export/fetch-all.ts now loops on total (l.27-31) and throws FetchAllPagesTruncatedError at maxPages (l.35). No PDF row cap found in shared/export/pdf.ts or document-format/pdf.ts, so that half of the title is still open.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The 'export whole filter' helper used to stop at the first short page and silently cut the list at 400 pages, giving an incomplete file that looked complete. That is fixed. Very large PDFs (tens of thousands of rows) can still freeze the tab because no row limit exists.",
+  "steps": [
+   "Open Reports > Inventory Snapshot with a filter that has more than 5,000 rows.",
+   "Export as PDF."
+  ],
+  "expected": "PDF refused above a stated limit with advice to use Excel.",
+  "actual": "Pages are collected correctly; the PDF is still built for any row count.",
+  "where": "src/shared/export/fetch-all.ts; src/shared/export/pdf.ts; document-format/pdf.ts",
+  "tests": [],
+  "verify": "Unit test: mock page size 50 returns all rows; a 5,001-row PDF is refused with a message.",
+  "owner": "Frontend shared",
+  "status": "in-progress"
+ },
+ "rv-fe:shared:34": {
+  "note": "Fixed: src/shared/components/ui/app-export-actions.tsx ~l.403 shows messageApi.warning(t('stillRunning')) when the poll times out (poll loop ~l.314-325), instead of the generic failure.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "When an export job took longer than the 120 s poll window the user used to see 'failed' while the job still ran, retried, and queued a second job. A separate 'still running' message now appears.",
+  "steps": [
+   "Trigger a slow export job (Reports > any report > Export while the backend job worker is slow).",
+   "Wait past 120 s."
+  ],
+  "expected": "A 'still being prepared' message and no duplicate job.",
+  "actual": "fixed: timeout shows the stillRunning message.",
+  "where": "src/shared/components/ui/app-export-actions.tsx l.314-325, 403",
+  "tests": [],
+  "verify": "Delay the export job beyond the poll timeout; the warning appears and no second job starts.",
+  "owner": "Frontend shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:35": {
+  "note": "Fixed: src/shared/export/client-format/pdf.ts ~l.31-36 builds the Bengali-font sample from JSON.stringify of the whole model plus company name, and loads the Bengali font whenever env.locale === 'bn'.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The client-format statement PDF (Inventory Snapshot, Daily Shipment) chose the Bengali font from a short text sample that left out totals, depot and page labels, so those strings could print with missing-glyph boxes. The sample is now the whole model and a Bangla UI always loads the font.",
+  "steps": [
+   "Switch the UI to Bangla.",
+   "Open Reports > Inventory Snapshot and export the client-format PDF."
+  ],
+  "expected": "Every label drawn with correct glyphs.",
+  "actual": "fixed: whole model scanned, bn locale forces the font.",
+  "where": "src/shared/export/client-format/pdf.ts l.31-36",
+  "tests": [],
+  "verify": "Print the statement in Bangla and check the total label and page word.",
+  "owner": "Frontend shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:36": {
+  "note": "Partly fixed: Excel signatures now go four to a row (document-format/xlsx.ts ~l.293-296, no overlapping merges) and terms/signatures move to a new page when they do not fit (document-format/pdf.ts ~l.485-488). Still open: a tail taller than one page is not split, and sigLines still cuts the designation at 3 lines (pdf.ts l.255).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The document PDF (PO, PR, etc.) draws terms and signatures as one block. The Excel crash with 6 or 7 signatures is fixed. A very long terms list can still run past the page, and long designations are cut to three lines.",
+  "steps": [
+   "Open a Purchase Order with 30 terms and 7 signatories.",
+   "Export PDF and Excel."
+  ],
+  "expected": "All terms and signatures visible, on as many pages as needed.",
+  "actual": "Excel works; PDF handles a tail up to one page only; designation truncated.",
+  "where": "src/shared/export/document-format/pdf.ts l.237-263, 483-492; xlsx.ts l.293-311",
+  "tests": [],
+  "verify": "Export a PO with 30 terms and 7 signatures in PDF and Excel and compare.",
+  "owner": "Frontend shared",
+  "status": "in-progress"
+ },
+ "rv-fe:shared:37": {
+  "note": "Still present: src/shared/components/ui/app-text-preview.tsx sourceText (l.19-31) calls response.text() on the whole file and applies MAX_PREVIEW_CHARS afterwards; app-spreadsheet-preview.tsx fetches the whole blob (l.80-107) with only row/column caps after parsing. No size check before reading.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Previewing a very large CSV or XLSX attachment downloads and parses the whole file in the browser before cutting it to 100 rows. An 80 MB file freezes the tab.",
+  "steps": [
+   "Attach an 80 MB CSV to any record that has attachments.",
+   "Click the file to open the preview modal."
+  ],
+  "expected": "Above about 5 MB (csv/text) or 10 MB (xlsx) show the download card instead.",
+  "actual": "The whole file is read first.",
+  "where": "src/shared/components/ui/app-text-preview.tsx l.19-31; app-spreadsheet-preview.tsx l.62-110; app-media-preview-modal.tsx",
+  "tests": [],
+  "verify": "Preview an oversized CSV; the modal offers a download without freezing.",
+  "owner": "Frontend shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:38": {
+  "note": "Fixed: features/sales/daily-shipment/components/columns.tsx l.88-92 now defines and renders the estDeliveryDate column, so the export spec (daily-shipment-list-view.tsx l.154-155) matches the table.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The Daily Shipment export declared an 'Est. Delivery Date' column the on-screen table did not have, so it never appeared. The table now has the column.",
+  "steps": [
+   "Open Sales > Daily Shipment.",
+   "Compare the table columns with the exported PDF/Excel columns."
+  ],
+  "expected": "Same columns in table and export.",
+  "actual": "fixed: column exists in table and export.",
+  "where": "src/features/sales/daily-shipment/components/columns.tsx l.88-92; daily-shipment-list-view.tsx l.154",
+  "tests": [],
+  "verify": "Export and confirm the column appears.",
+  "owner": "Frontend sales",
+  "status": "fixed"
+ },
+ "rv-fe:shared:39": {
+  "note": "Still present: buildDocx in src/shared/export/layouts.ts l.26-32 still throws synchronously (not async); getLayout l.14-16 still silently falls back to 'standard'; document-format/words.ts l.62-85 still outputs English 'TAKA ONLY.' and has a non-BDT branch; docx.ts only sets font (l.51,502,526), no complex-script font.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A group of small defects in the shared document exports: amount in words is always English, a synchronous throw bypasses .catch, an unknown layout id silently uses the standard layout, and Bengali text in Word depends on the machine's fonts.",
+  "steps": [
+   "Switch the UI to Bangla.",
+   "Open a Purchase Order, export Word/PDF and read the 'amount in words' line."
+  ],
+  "expected": "Localised words (or label only), async buildDocx, error on unknown layout, a complex-script font set.",
+  "actual": "English 'TAKA ONLY.' and the other behaviours remain.",
+  "where": "src/shared/export/layouts.ts l.14-32; document-format/words.ts l.62-85; docx.ts",
+  "tests": [],
+  "verify": "Unit tests: buildDocx for a layout without docx rejects (does not throw); an unknown layout id throws.",
+  "owner": "Frontend shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:4": {
+  "note": "Fixed: src/erp-api/ui-table-views/index.ts requireSessionUserId (~l.118) reads the user id from the session ('a client-sent id is never trusted'); the low-level get/create/update functions (l.84-113) are no longer exported.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The table-view server actions used to forward any userId given by the browser, so one user could read or change another user's saved column layouts. The user id now comes from the session.",
+  "steps": [
+   "Open any customizable list, change columns and save.",
+   "Replay the server action with another userId."
+  ],
+  "expected": "The other userId is ignored.",
+  "actual": "fixed: session user id used.",
+  "where": "src/erp-api/ui-table-views/index.ts ~l.84-190",
+  "tests": [],
+  "verify": "Call the table-view server action with a foreign userId; it is ignored.",
+  "owner": "Frontend shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:40": {
+  "note": "Still present: client-format/maths.ts l.35-42 still defines clientPeriod/clientDateRange with hardcoded English ('Date From', 'to'); only client-format.test.ts imports clientPeriod.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The client-format printout module still contains an unused 'register' path and two helpers with English text that no screen calls. It is dead weight and would be untranslated if reused.",
+  "steps": [
+   "Run grep -rn clientPeriod src (only the test imports it)."
+  ],
+  "expected": "Dead code removed or translated.",
+  "actual": "Dead code remains.",
+  "where": "src/shared/export/client-format/maths.ts l.35-42; model.ts; pdf.ts; xlsx.ts",
+  "tests": [],
+  "verify": "pnpm build passes and the two statement exports still work after deletion.",
+  "owner": "Frontend shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:42": {
+  "note": "Fixed: grep of toISOString().slice(0, 10) now finds only features/accounting/party-ledger/query.ts:27 (a date validity check) and a test file; the 14 'today' defaults were replaced.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Defaulting 'today' with toISOString() gives yesterday between 00:00 and 06:00 in Bangladesh (UTC+6), so new documents could be dated the previous day. No default uses it any more.",
+  "steps": [
+   "At 02:00 Dhaka time open Purchase > Bill Credit > New.",
+   "Check the default date."
+  ],
+  "expected": "Today's Dhaka date.",
+  "actual": "fixed: no 'today' default uses toISOString.",
+  "where": "src/features/accounting/party-ledger/query.ts:27 (validation only)",
+  "tests": [],
+  "verify": "Fake the clock to 02:00 Dhaka; the default date is today.",
+  "owner": "Frontend shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:43": {
+  "note": "Still present: features/inventory/product-distribution/mappers.ts l.120 and l.255 default a missing status to 'PENDING'; postingPeriodToRange l.35-47 always rewrites the period to one calendar month, and sum() l.32 adds quantities of different units.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The product distribution mappers invent a 'PENDING' status when the backend sends none, shorten a multi-month period to one month on save, and add quantities of different units together (2 kg + 3 pcs shows 5).",
+  "steps": [
+   "Open an existing multi-month product distribution (Inventory > Product Distribution > Edit).",
+   "Save unchanged and re-open."
+  ],
+  "expected": "Status, period and unit quantities unchanged.",
+  "actual": "Status defaulted, period rewritten to a single month.",
+  "where": "src/features/inventory/product-distribution/mappers.ts l.32,35-47,120,255,473-490",
+  "tests": [],
+  "verify": "Edit and save a multi-month record unchanged; the period is unchanged.",
+  "owner": "Frontend inventory",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:46": {
+  "note": "Still present: shared/components/form/form-textarea.tsx l.7,29,57 DEFAULT_TEXT_AREA_MAX_LENGTH = 255 applies when maxLength is not passed.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Every FormTextArea without its own maxLength silently stops accepting text at 255 characters, even when the backend or schema allows 500 or 1000. Users lose text with no message.",
+  "steps": [
+   "Open a form using FormTextArea without maxLength (for example a remarks field).",
+   "Paste 400 characters."
+  ],
+  "expected": "The real backend limit applies, or the field warns.",
+  "actual": "Text is cut at 255.",
+  "where": "src/shared/components/form/form-textarea.tsx l.7,29,57",
+  "tests": [],
+  "verify": "Paste 400 characters into a remarks field; behaviour matches the backend limit.",
+  "owner": "Frontend shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:47": {
+  "note": "Still present: Math.floor on quantities in app-inventory-detail-lookup-panel.tsx l.634, app-inventory-detail-multiple-dialog.tsx l.146, app-inventory-detail-dialog-utils.ts l.14. Needs a product decision (can lot-tracked quantities be fractional?).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The bin/lot detail panels round entered quantities down to whole numbers (2.5 becomes 2) without a message, while the manual panel accepts decimals, so the panels disagree.",
+  "steps": [
+   "Open Inventory > Adjustment, add a line and open the bin/lot panel.",
+   "Enter quantity 2.5."
+  ],
+  "expected": "The same, explicit behaviour in every panel.",
+  "actual": "2.5 becomes 2.",
+  "where": "src/shared/components/ui/app-inventory-detail-lookup-panel.tsx l.634; app-inventory-detail-multiple-dialog.tsx l.146; app-inventory-detail-dialog-utils.ts l.14",
+  "tests": [],
+  "verify": "Enter 2.5 in each panel; all behave the same.",
+  "owner": "Frontend shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:48": {
+  "note": "Fixed: app-inventory-detail-manual-panel.tsx uses col.requiredMessage ?? t('single.errors.fieldRequired') (l.228) and isRowEmpty ignores column defaultValue (l.174-180).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The manual bin/lot panel used to say 'From bin is required' for any missing column and treated an untouched default row as started, blocking Save. Both are corrected.",
+  "steps": [
+   "Open a form with the manual inventory panel.",
+   "Click Add row, leave it empty and click Save."
+  ],
+  "expected": "Save works; a missing lot shows a lot message.",
+  "actual": "fixed.",
+  "where": "src/shared/components/ui/app-inventory-detail-manual-panel.tsx l.174-180, 219-228",
+  "tests": [],
+  "verify": "Add and leave an empty row; Save works.",
+  "owner": "Frontend shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:49": {
+  "note": "Still present by code: features/purchase/proforma-invoice/components/columns.tsx l.329-334 (unitPrice) and l.262-264 (piQty) store Number(...||0) and render value 0 as '' so the controlled input drops the typed '0'. Not run in a browser.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "In the proforma/requisition line tables typing 0.05 ends as 5: the first '0' parses to 0, the controlled value becomes empty, and the user loses the leading zero.",
+  "steps": [
+   "Purchase > Proforma Invoice > New, add an item.",
+   "Type 0.05 character by character in Unit Price."
+  ],
+  "expected": "The field shows 0.05.",
+  "actual": "The field shows 5 (by code).",
+  "where": "src/features/purchase/proforma-invoice/components/columns.tsx l.255-270,322-337,368-376",
+  "tests": [],
+  "verify": "Type 0.05 into unit price and quantity; the value stays 0.05.",
+  "owner": "Frontend purchase",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:5": {
+  "note": "Fixed: src/app/api/files/route.ts normalizeBackendFilePath l.7-47 decodes each segment up to 3 times and rejects '..', '.', and anything resolving to 'api/'.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The /api/files proxy checked the path before decoding, so '%2e%2e' passed and the URL parser later collapsed it to an /api/ route, sent with the user's token. The guard now decodes first.",
+  "steps": [
+   "While signed in, GET /api/files?path=files/%2e%2e/api/admin/users."
+  ],
+  "expected": "400/404.",
+  "actual": "fixed: path rejected.",
+  "where": "src/app/api/files/route.ts l.7-47",
+  "tests": [],
+  "verify": "Request the encoded path; expect 400/404.",
+  "owner": "Frontend shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:50": {
+  "note": "Part fixed: features/settings/system/components/currencies-section.tsx l.198-201 now rejects rate <= 0. Still open: payload l.205-214 stamps effectiveDate: getTodayDateString() and isActive: true on every row, so saving one currency re-dates all rates.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Saving the currency list rewrites the effective date of every existing rate to today and forces them active, so the history of when a rate started is lost. Rate 0 is now blocked.",
+  "steps": [
+   "Settings > System > Currencies: note the effective date of an existing rate.",
+   "Add a new currency and save.",
+   "Reopen the list."
+  ],
+  "expected": "Only new or changed rows get a new date.",
+  "actual": "All rows get today's date.",
+  "where": "src/features/settings/system/components/currencies-section.tsx l.190-215",
+  "tests": [],
+  "verify": "Add a currency; existing rows keep their dates.",
+  "owner": "Frontend settings",
+  "status": "in-progress"
+ },
+ "rv-fe:shared:51": {
+  "note": "Fixed: features/inventory/items/query.ts ~l.88 now uses Math.min(positiveInteger(rawPageSize, ...), 100).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "?pageSize=100000 on the item list used to go to the backend unchanged. It is now capped at 100.",
+  "steps": [
+   "Open /inventory-warehouse/items?pageSize=100000."
+  ],
+  "expected": "At most 100 rows requested.",
+  "actual": "fixed: capped.",
+  "where": "src/features/inventory/items/query.ts l.85-90",
+  "tests": [],
+  "verify": "Open the URL; at most 100 rows are requested.",
+  "owner": "Frontend inventory",
+  "status": "fixed"
+ },
+ "rv-fe:shared:52": {
+  "note": "Still present: local firstParam/firstValue/first copies remain in app/(erp)/inventory-warehouse/adjustment/page.tsx:12, bin-transfer/page.tsx:12, lot-breakdown/page.tsx:32, purchase/item-receipt/new/page.tsx:26, purchase/vendor/new/page.tsx:16, sales-demand/customer-refunds/new/page.tsx:22, settings/warehouse/page.tsx:13 and others; only field-force has a shared parsePageParams.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Each route page re-implements reading a query parameter and some do not guard bad values, so ?page=abc may send page=NaN and a repeated parameter becomes an array.",
+  "steps": [
+   "Open /sales-demand/customer-refunds/new?salesOrderId=1&salesOrderId=2.",
+   "Open /settings/users-and-roles?page=abc."
+  ],
+  "expected": "Fall back to defaults.",
+  "actual": "Behaviour differs per route.",
+  "where": "src/app/(erp)/**/page.tsx; src/features/field-force/shared/parse-page.ts",
+  "tests": [],
+  "verify": "?page=abc falls back to page 1 on every list route.",
+  "owner": "Frontend shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:53": {
+  "note": "Still present: src/app/globals.css l.514-539 still holds the .app-secondary-nav-link block and l.830 .app-tabs-card min-width: 50rem.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The global stylesheet still carries an unused navigation block and a fixed 50rem tab minimum that forces horizontal scrolling on phones, plus feature-specific rules with !important.",
+  "steps": [
+   "Open a screen with app-tabs-card tabs at 375 px width."
+  ],
+  "expected": "No horizontal scroll.",
+  "actual": "Tabs force 50rem width.",
+  "where": "src/app/globals.css l.222-239,500-614,816-830",
+  "tests": [],
+  "verify": "Resize to 375 px; no horizontal scroll. Repo rule: fix in feature CSS, do not edit shared rules without approval.",
+  "owner": "Frontend shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:55": {
+  "note": "Still present: 23 'text-blue-500' uses remain (e.g. features/inventory/adjustments/components/columns.tsx:33,169; bin-transfers/columns.tsx:37,159) instead of the shared CustomizeColumnsHeader.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "List screens inline the Customize Columns icon in a literal blue that ignores the accent colour and dark mode; a shared CustomizeColumnsHeader component exists.",
+  "steps": [
+   "Open the Inventory > Adjustment list in dark mode and look at the column-customize icon."
+  ],
+  "expected": "Uses the shared themed header.",
+  "actual": "Literal blue.",
+  "where": "src/features/**/columns.tsx (23 hits); src/shared/components/customize-columns-header.tsx",
+  "tests": [],
+  "verify": "grep text-blue-500 returns none of these.",
+  "owner": "Frontend shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:56": {
+  "note": "Mostly open: erp-api/accounting/reports/types.ts l.274 still exports deprecated ApArRegisterDto; account/types.ts:1 UserAccessResponseDto still duplicated; notifications/types.ts l.20-21 still has isRead and read.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Several types are defined in more than one place or kept as deprecated aliases, so a new field or status can be missed in one copy.",
+  "steps": [
+   "Run grep -rn ApproverDetail src/erp-api (many copies); grep ApArRegisterDto."
+  ],
+  "expected": "One definition each.",
+  "actual": "Duplicates remain.",
+  "where": "src/erp-api/**/types.ts",
+  "tests": [],
+  "verify": "pnpm build passes after the imports are unified.",
+  "owner": "Frontend shared",
+  "status": "in-progress"
+ },
+ "rv-fe:shared:57": {
+  "note": "Still present: app/(auth)/login/page.tsx l.24-35 has an inline hex gradient and English 'Welcome to Petra ERP.'; purchase/purchase-requisition/new/page.tsx:119 prNo 'To be Generated'.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Route files still hold hardcoded English text and fixed colours (login screen, requisition default number), so the Bangla UI shows English and dark mode ignores the login gradient.",
+  "steps": [
+   "Switch to Bangla, open /login and Purchase > Purchase Requisition > New."
+  ],
+  "expected": "Texts come from src/messages.",
+  "actual": "English strings remain.",
+  "where": "src/app/(auth)/login/page.tsx; src/app/(erp)/purchase/purchase-requisition/new/page.tsx",
+  "tests": [],
+  "verify": "Bangla UI shows no English in those spots.",
+  "owner": "Frontend shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:58": {
+  "note": "Still present: a parity check on src/messages/**/{en,bn}.json finds 5 gaps: bn-only inventory.items.columns.safetyStockLevel, inventory.items.details.fields.safetyStockLevel, purchase.vendorBill.columns.poType; missing in bn purchase.materialRequisition.actions.currentStockAnalysis and purchase.proformaInvoice.itemInfo.columns.amount.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The English and Bangla message files do not match: two keys are missing in Bangla (users see the key or a fallback) and three exist only in Bangla.",
+  "steps": [
+   "Compare the flattened keys of src/messages/purchase/en.json and bn.json."
+  ],
+  "expected": "Zero gaps.",
+  "actual": "5 gaps.",
+  "where": "src/messages/purchase/{en,bn}.json; src/messages/inventory-warehouse/{en,bn}.json",
+  "tests": [],
+  "verify": "Parity script reports zero gaps (edit bn files by line: invisible characters).",
+  "owner": "Frontend shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:59": {
+  "note": "Part fixed: TIME_RANGE_OPTIONS is gone. Still open: shared/utils/url.ts helpers have no importers outside the file; shared/export/use-export-texts.ts:8 still defines its own CURRENCY_SYMBOLS next to shared/constants/currencies.ts:65.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Some helpers and constants are unused or duplicated, which invites drift.",
+  "steps": [
+   "Run grep -rn getQueryParams src and grep -rn CURRENCY_SYMBOLS src."
+  ],
+  "expected": "Single source, no dead helpers.",
+  "actual": "Dead URL helpers and a duplicate currency map remain.",
+  "where": "src/shared/utils/url.ts; src/shared/export/use-export-texts.ts",
+  "tests": [],
+  "verify": "pnpm lint and pnpm build pass after deletion.",
+  "owner": "Frontend shared",
+  "status": "in-progress"
+ },
+ "rv-fe:shared:6": {
+  "note": "Fixed: src/shared/access/fetch-access.ts l.19-25 reads the status with an anchored regex on 'API fetch failed with status NNN' and only 401 yields 'unauthorized'; a '401' inside a body no longer matches.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The access loader used to decide 'session expired' by searching the error text for '401', so a 500 whose body contained '4011' showed the session-expired modal. It now reads the real status.",
+  "steps": [
+   "Make /api/auth/me/access return a 500 whose body contains 4011."
+  ],
+  "expected": "Server error state, no expired-session modal.",
+  "actual": "fixed.",
+  "where": "src/shared/access/fetch-access.ts l.15-34",
+  "tests": [],
+  "verify": "Unit test: a 500 message containing 401 does not return unauthorized.",
+  "owner": "Frontend shared",
+  "status": "fixed"
+ },
+ "rv-fe:shared:60": {
+  "note": "Fixed: no literal [\"10\",\"20\",\"50\",\"100\"] arrays remain in src/features/purchase; 20 uses of DEFAULT_PAGE_SIZE_OPTIONS there.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Purchase lists used to re-type the page-size options; they now import the shared constant.",
+  "steps": [
+   "Run grep -rn '\"10\", \"20\"' src/features/purchase."
+  ],
+  "expected": "Shared constant.",
+  "actual": "fixed (purchase lists).",
+  "where": "src/features/purchase/**/components/*-list-*.tsx; shared pagination constant",
+  "tests": [],
+  "verify": "grep finds no literal arrays in purchase lists.",
+  "owner": "Frontend purchase",
+  "status": "fixed"
+ },
+ "rv-fe:shared:61": {
+  "note": "Partly fixed: app-form-page-header.tsx l.16,26,52 has fallbackHref and a history check. Still open: language-switcher.tsx:30 label 'বাংলা (Bengali)', and --button-primary-bg has the same value in light and dark (globals.css l.68,119).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Small shared UI problems: some fixed (the form close button works from a bookmark) but the language switcher label is English and the primary button colour is not themed for dark mode.",
+  "steps": [
+   "Open a form from a pasted URL and click X (works).",
+   "Open the language menu and read the Bangla entry."
+  ],
+  "expected": "Localised labels, accessible names, a dark-mode token.",
+  "actual": "Mixed.",
+  "where": "src/shared/components/ui/app-form-page-header.tsx; src/shared/components/language-switcher.tsx; src/app/globals.css l.68,119",
+  "tests": [],
+  "verify": "Check each sub-item; a screen reader names both header buttons.",
+  "owner": "Frontend shared",
+  "status": "in-progress"
+ },
+ "rv-fe:shared:62": {
+  "note": "Partly fixed: app-menu.config.tsx l.660 selectedKey now starts at ''. Still open: app-email-communication.tsx l.61,109 span role=button; app-progress-bar.tsx l.19-31 still has two identical warning branches, raw percent text and text-gray-400.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Grouped small shared-UI items; the sidebar no longer highlights Dashboard for unknown paths, but keyboard and progress-bar details remain.",
+  "steps": [
+   "Open /my-profile and check the sidebar (fixed).",
+   "Open a screen with AppProgressBar at 5% and 95%."
+  ],
+  "expected": "Distinct colours and accessible controls.",
+  "actual": "Mixed.",
+  "where": "src/shared/components/app-layout/app-menu.config.tsx; app-progress-bar.tsx; app-email-communication.tsx",
+  "tests": [],
+  "verify": "Verify each sub-item.",
+  "owner": "Frontend shared",
+  "status": "in-progress"
+ },
+ "rv-fe:shared:64": {
+  "note": "Still present: no src/app/api/_stream.ts exists; the forward-upstream logic is still copied in api/export/_utils.ts, api/sales/_pdf-proxy.ts, media/[id]/preview/route.ts and others.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The code that streams a backend file response to the browser is copied in about five route files, so a header fix has to be made five times and the copies already differ.",
+  "steps": [
+   "Read the five route files and compare the forwarded headers."
+  ],
+  "expected": "One shared helper.",
+  "actual": "Copies remain.",
+  "where": "src/app/api/export/_utils.ts:249-277; src/app/api/sales/_pdf-proxy.ts; src/app/api/media/**",
+  "tests": [],
+  "verify": "Media preview, sales PDF, export and sample template downloads still work with matching headers.",
+  "owner": "Frontend shared",
+  "status": "still-bug"
+ },
+ "rv-fe:shared:7": {
+  "note": "Part fixed: next.config.ts l.17-28 now sends X-Frame-Options, X-Content-Type-Options and Referrer-Policy. Still open: bodySizeLimit '60mb' (l.14, now with a comment) and package-lock.json is still tracked next to pnpm-lock.yaml.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Security headers were added; the server action body limit is far above the backend caps and two lockfiles exist.",
+  "steps": [
+   "curl -I the app root and read the headers.",
+   "Run git ls-files '*lock*'."
+  ],
+  "expected": "Headers present; one lockfile; justified limit.",
+  "actual": "Headers done; limit and second lockfile remain.",
+  "where": "next.config.ts; package-lock.json",
+  "tests": [],
+  "verify": "Response headers show the three values; only pnpm-lock.yaml is tracked.",
+  "owner": "Frontend shared",
+  "status": "in-progress"
+ }
+}

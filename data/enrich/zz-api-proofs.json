@@ -1,0 +1,151 @@
+{
+ "st1111:S10": {
+  "status": "fixed",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: retail order 20 chips, ship, gate pass verified (CLEARED). item 501 inventory_balance on_hand 3000->2980 and reserved 20->0 at gate-out (reserved 20 after ship, 0 after); channel_allocation same; transaction_ledger gets exactly one new SALE -20.0000",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "sales:B14": {
+  "status": "fixed",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: item return 17 (approved) POST .../receive with receiveDate 2025-07-15, postingPeriod 2025-07-01 -> 409 'the period July 2025 is LOCKED and no longer accepts documents dated 2025-07-15'; transaction_ledger count (21) and on-hand (2960) unchanged",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-be:accounting:55": {
+  "status": "fixed",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: POST /api/accounting/chart-of-accounts without isSummary/isActive -> 201, isSummary=false, isActive=true (account 198, code 805779 'PROOF acc55'; a 2nd identical throwaway 'PROOF acc55' also exists from a rerun)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-be:accounting:17": {
+  "status": "fixed",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: POST sales-account-mappings/revenue salesChannelId 999999 -> 400 'sales channel not found: 999999'; itemCategoryId 999999 (channel null) -> 400 'item category not found: 999999'",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-be:accounting:16": {
+  "status": "fixed",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: period 7 (Jan 2027, OPEN) started; PUT tasks/SALES_RECEIVABLES/owner?ownerUserId=999999 -> 400 'no user with id 999999 -- a close step can only be owned by somebody who exists' (before start: 404 no task). Period 7 left started/not closed.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-be:accounting:15": {
+  "status": "fixed",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: bulk statement-lines with 600-char description -> 400 {\"timestamp\":\"2026-11-14T04:06:15\",\"status\":400,\"errorType\":\"Validation Failed\",\"message\":\"lines[0].description: size must be between 0 and 500\",\"path\":\"/api/accounting/bank-reconciliation/statement-lines/bulk\"}",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "bank:A-96b": {
+  "status": "fixed",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: propose-adjustment with postingDate 2025-07-15 on a Nov-2026 reconciliation line -> 400 'adjusting entry dated 2025-07-15 is outside November 2026 ... has to post into it'; journal_entry count unchanged (54), line stays unmatched. Also: creating a reconciliation for locked July 2025 (period 37) -> 409 'period July 2025 is LOCKED', so a closed-month adjustment cannot be reached at all. (Caveat: refusal reason is month",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "closing:4b": {
+  "status": "fixed",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: created+approved sales invoice INV-000001 (order delivered), started period 5 (Nov 2026, OPEN), POST period-close/5/tasks/SALES_RECEIVABLES/close right after -> 409 'period November 2026 cannot be closed yet: 1 posting(s) are still on their way to the books. Wait ... and try again.' (guard works; task stays PENDING; nothing closed). Period 5 is now 'started' (no tasks closed).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-be:purchase:24": {
+  "status": "fixed",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: selection status at order time: PENDING_APPROVAL; order with it -> 400 {\"timestamp\":\"2026-11-14T04:08:08\",\"status\":400,\"errorType\":\"Bad Request\",\"message\":\"Only an APPROVED vendor selection can be converted to a purchase order (vendor selection VS-000020 status: PENDING_APPROVAL)\",\"path\":\"/api/purchase/orders\"}; after approval (APPROVED) -> 201 {\"id\":27,\"sequenceValue\":\"PO-000027\",\"requisitionId\":27,\"requisitionSeque",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-be:reports:1": {
+  "status": "fixed",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: PUT commission-incentive-config milestones 100 + 100.00 -> 400 {\"timestamp\":\"2026-11-14T04:09:18\",\"status\":400,\"errorType\":\"Bad Request\",\"message\":\"Duplicate milestone at 100.00% of target.\",\"path\":\"/api/sales/commission-in; 100+100 -> 400 {\"timestamp\":\"2026-11-14T04:09:18\",\"status\":400,\"errorType\":\"Bad Request\",\"message\":\"Duplicate miles; config unchanged/restored=true",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "merge:B3": {
+  "status": "fixed",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: GET reconciliation-detail?bankAccountId=1&statementDate=2026-11-14 (DRAFT reconciliation, 1 statement line): 20 rows, rows with labelCode 7, with labelDate 2; labelCodes [\"RECONCILED\",\"NO_PREVIOUS_RECONCILED_BALANCE\",\"CURRENT_RECONCILED_BALANCE\",\"STATEMENT_BALANCE_AS_OF\",\"DIFFERENCE\",\"UNRECONCILED\",null,\"TOTAL_AS_OF\"]; row keys rowType,label,labelCode,labelDate,transactionType,direction,date,docNo,amount,balance,stat",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "merge:A1": {
+  "status": "fixed",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: image built from this source and runs (no build performed; backend answers on :18092 and login works)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "st1111:S29": {
+  "status": "still-bug",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: POST /api/sales/demands (Retail Food Shop, E2E-CHIPS) qty 5000 with channel Retail Food available 478 -> 2xx (demand id 7, SD-000003); qty 479 and 478 also 2xx; coordination/quantity/verify on the 5000 demand also 200 (quantityValidated true). No refusal naming item/available quantity at demand stage.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "journals:JNL-A-82": {
+  "status": "still-bug",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: POST /api/workflow/tasks/{id}/complete {decision:APPROVED} twice on the same task (demand approval task 1cbab1d6-...): 1st 200, 2nd 200 {'message':'Task completed'} again. Also APPROVED then REJECTED on a completed task -> 200. Expected 409.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "journals:JNL-A-138": {
+  "status": "still-bug",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: 30 parallel POST journal-entries/manual: statuses {\"201\":10,\"401\":16,\"500\":4}; distinct journalNo 10/10; sample JV/26-27/000010,JV/26-27/000011; entries are PENDING_APPROVAL and left pending (debit 1/credit 1 each)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-be:accounting:3": {
+  "status": "still-bug",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: VAT return id 13 (Aug 2027, period 14), filed 2026-11-14 with net payable 100; an extra journal Dr 50 on the VAT account dated in the month was posted after filing. POST vat-returns/13/settle {settledDate:2026-11-01} (BEFORE the filing date) -> 200, return SETTLED, settledDate 2026-11-01, netPayable still 100 (expected 400). That consumed the return, so the 409 'VAT moved after filing' half could not be tested (secon",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "rv-be:sales:6.1": {
+  "status": "still-bug",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: POST /api/sales/orders with docNumber SO-CUSTOM-1: first call 201 and the order's docNumber IS 'SO-CUSTOM-1' (client value honoured, not taken from the series). Second call -> 400 'Document number already exists: SO-CUSTOM-1' (clean). No duplicate doc_number in document_header. So duplicate part OK, 'client value ignored' part not.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "saleschain:P3-B6": {
+  "status": "still-bug",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: POST /api/workflow/definitions/configure with assigneeId NO_SUCH_ROLE_XYZ + slaHours 0 -> 200 (created); unknown role with slaHours 5 -> 200; valid role with slaHours 0 -> 200. Neither an unknown role nor slaHours 0 is rejected. Additionally entityType 'ProofThrowaway' (unknown module) was accepted at configure but then makes GET /api/workflow/definitions/setup return 404 'No condition catalog configured for module: ",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "purchase:B-P9": {
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: Literal criterion not met: GET /api/purchase/vendor-bills/12 (approved, item category without purchases ledger) has NO posting-status field (only approvalStatus APPROVED, paymentStatus NOT_PAID). The failure itself is correctly recorded elsewhere: GET /api/purchase/postings?documentType=PURCHASE_VENDOR_BILL&documentId=12 -> status FAILED 'item category 12 has no purchases ledger...', and GET /api/accounting/posting-e",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "purchase:C-P9": {
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: vendor bill 11: billing.paymentTermId=3 (Net 30), date 2026-11-10, sent dueDate 2026-11-11 -> stored dueDate 2026-12-10",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "purchase:C-P26": {
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: GET /api/rbac/permissions 200: purchase.vendor_bill.approve=true, purchase.bill_credit.approve=true, purchase.vendor_return_request.approve=true. 403 on approve by user lacking key not tested (BLOCKED part).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "st1111:S26": {
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: new native user (role SPO only): login -> 403 {\"timestamp\":\"2026-11-14T04:11:29\",\"status\":403,\"errorType\":\"Forbidden\",\"message\":\"No ERP access: account has no active role permissions.\",\"; after extra throwaway role PROOF_ROLE_MWFW28S0 (rbac.permission.view) assigned -> login 200, token returned=true. User proofspomwfw28fv and role PROOF_ROLE_MWFW28S0 left on stack.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "vqa:recon-detail-bn": {
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: same endpoint as merge:B3: rows carry labelCode (RECONCILED, NO_PREVIOUS_RECONCILED_BALANCE, CURRENT_RECONCILED_BALANCE, STATEMENT_BALANCE_AS_OF, DIFFERENCE, UNRECONCILED, TOTAL_AS_OF) and labelDate on dated rows (2 rows)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "merge:C1": {
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: decision 'APPROVE' -> 400 'decision: decision must be 'approved' or 'rejected''; 'approved' -> 200; also 'bogus' -> 400. Accepted words: approved / rejected (case-insensitive: 'APPROVED' and 'REJECTED' also 200).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "purchase:B-P7": {
+  "status": "in-progress",
+  "note": "API proof 2026-11-14 on deployment/dev@b2597ef11: configure with steps [] -> 400 'At least one approval step is required' Unknown role and slaHours 0 are still accepted (see saleschain:P3-B6).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ },
+ "budgets:B8": {
+  "note": "Same workflow engine as journals:JNL-A-82, which API proof 2026-11-14 shows returning 200 twice for a completed task; not run on a budget task.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14"
+ }
+}

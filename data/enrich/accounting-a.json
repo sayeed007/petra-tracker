@@ -1,0 +1,780 @@
+{
+ "journals:JNL-A-138": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "note": "not proven either way: no visible defect in code; the journal number comes from transactionSeriesConfigService.generateNextId (JournalEntryDomainService ~l.383) and no e2e test fires parallel creates. Keep open; needs a load call.",
+  "summary": "When many people (or a script) create manual journals at the same moment, some calls fail with HTTP 500 and others with 401 instead of all succeeding with distinct journal numbers. It was found with 30 parallel creates; 20 parallel drafts were fine. A month-end batch import or two busy accountants could lose entries.",
+  "steps": [
+   "Log in and keep one valid token.",
+   "Fire 30 parallel POST /api/accounting/journal-entries/manual calls with a small balanced body (Dr 6105 10 / Cr 1111 10, documentType MANUAL_JOURNAL).",
+   "Count the status codes."
+  ],
+  "expected": "All 30 calls answer 201 with 30 different journal numbers.",
+  "actual": "Reported on release_0.0.9: 5 answered 500 and 20 answered 401. Not retested on the current backend.",
+  "where": "backend modules/accounting/journal: JournalEntryDomainService (number generation ~l.383, cash-in-hand lock ~l.572), TransactionSeriesConfigService.generateNextId; the 401 points at token/session handling under load, not at accounting.",
+  "tests": [],
+  "verify": "Repeat the 30 parallel POST /api/accounting/journal-entries/manual; expect 30 x 201, journalNo all distinct, and no 401 from the same token.",
+  "owner": "Backend accounting (journals)"
+ },
+ "journals:JNL-A-82": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "status": "still-bug",
+  "note": "TaskService.completeTask (shared/workflow/application, ~l.362-372) returns silently with 200 when the task is already COMPLETED ('if (task.getStatus()==COMPLETED) return;'), so the controller still answers 'Task completed'. Deliberate idempotence, but the api says success for a rejected task too.",
+  "summary": "Completing an approval task a second time (for example Approve after it was already Rejected) answers 200 'Task completed' although nothing changed. The caller cannot tell that the second decision was ignored, so a stale screen or script believes it approved something it did not.",
+  "steps": [
+   "Create a journal that needs approval and reject its task: POST /api/workflow/tasks/{taskId}/complete with the reject decision payload.",
+   "Send POST /api/workflow/tasks/{taskId}/complete again with the approve decision."
+  ],
+  "expected": "The second call is refused with 409 (task already completed).",
+  "actual": "200 {\"message\":\"Task completed\"}; the entry stays rejected.",
+  "where": "backend shared/workflow: TaskService.completeTask (~l.372 early return), WorkflowTaskController.completeTask (l.61-69)",
+  "tests": [],
+  "verify": "POST /api/workflow/tasks/{id}/complete twice on one task; the second must return 409.",
+  "owner": "Backend platform (workflow), affects accounting approvals"
+ },
+ "rv-be:accounting:20": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "status": "still-bug",
+  "note": "pom.xml:237 still has <activeByDefault>true</activeByDefault> on the dev profile; application-prod.properties:78 and application-test.properties:76 still default BOOTSTRAP_ENABLED to true; application-dev.properties (tracked in git) still holds jwtSecretKey and the cns private key.",
+  "summary": "A jar built without choosing a profile runs the dev profile, which carries default admin credentials, signing keys that are committed to git and Swagger. One forgotten build flag therefore opens a server. The bootstrap seeder also stays on in prod/test unless BOOTSTRAP_ENABLED=false is set.",
+  "steps": [
+   "Run mvn -q package without -P.",
+   "Check the active profile in the built jar (spring.profiles.active=dev).",
+   "Open application-prod.properties line 78."
+  ],
+  "expected": "The build fails without an explicit -Pdev or -Pprod; BOOTSTRAP_ENABLED defaults to false in prod; no secrets in git.",
+  "actual": "Build succeeds as dev; bootstrap defaults to true; dev secrets are tracked in git.",
+  "where": "backend pom.xml:235-240; src/main/resources/application.properties:19, application-dev.properties, application-prod.properties:78, application-test.properties:76",
+  "tests": [],
+  "verify": "mvn -q package with no profile must fail with a clear message; a prod start without BOOTSTRAP_ENABLED must create no admin.",
+  "owner": "Backend platform (build/config)"
+ },
+ "rv-be:accounting:21": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "status": "still-bug",
+  "note": "CloseTaskRequestDTO.journalEntryId (l.29) is still copied onto the task: PeriodCloseActionService l.119 and l.122 return request.getJournalEntryId() for BANK_CASH and SALES_RECEIVABLES/PURCHASES_PAYABLES/GENERAL_LEDGER, and PeriodCloseTaskService.closeTask l.182 saves it without checking the entry exists. The DTO description now says 'only for a check whose entry the caller posted', but nothing validates that.",
+  "summary": "When a month-end check is signed off, the caller can send any journal entry id and it is stored as the evidence for that check. The checklist then claims that entry was posted by the check, so the audit trail can be forged.",
+  "steps": [
+   "Start closing a month: POST /api/accounting/period-close/{fiscalPeriodId}/start.",
+   "Close a check: POST /api/accounting/period-close/{fiscalPeriodId}/tasks/SALES_RECEIVABLES/close with {\"journalEntryId\":999999}.",
+   "Read the checklist and look at the task journalEntryId."
+  ],
+  "expected": "The id is ignored (null) or refused with 400 because the entry does not exist, is not POSTED, or lies outside the period/book.",
+  "actual": "The invented id is saved on the sign-off row.",
+  "where": "backend modules/accounting/periodclosing: dto/CloseTaskRequestDTO.java:29, service/PeriodCloseActionService.java:119,122, service/PeriodCloseTaskService.java:182",
+  "tests": [],
+  "verify": "POST .../tasks/SALES_RECEIVABLES/close with journalEntryId 999999 must return 400 or store null; GET the checklist and confirm journalEntryId is null.",
+  "owner": "Backend accounting (period closing)"
+ },
+ "rv-be:accounting:23": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "status": "still-bug",
+  "note": "PayrollPostings.approved (~l.58-65) still catches RuntimeException from factsOf, logs and returns; no posting-log failure row. replaced() (~l.96-104) still publishes REVERSE for both documents before the new payroll is known to be buildable.",
+  "summary": "If a payroll cannot be turned into accounting facts (unknown purpose, net pay not matching the lines, no lines), the payslips are saved but nothing is posted and nothing visible records the failure except one log line. When a payroll is regenerated, the old posting is reversed first, so a failed replacement leaves salary expense missing from the ledger with no trace.",
+  "steps": [
+   "Send an approved payroll event from HRM whose net payable does not equal its lines (internal API POST /api/internal/payslips, or HRM payroll approve).",
+   "Open Accounting > Posting log and the ledger."
+  ],
+  "expected": "Payslips stored AND a FAILED posting-log row that can be retried; an invalid replacement must not reverse the old posting.",
+  "actual": "Payslips stored, no posting, no posting-log row; replacement reverses the old entry first.",
+  "where": "backend modules/accounting/payroll/posting/PayrollPostings.java:58-65,96-104; payroll/service/EmployeePayslipRecorder.java:56-93",
+  "tests": [],
+  "verify": "Send a payroll with mismatching net payable to the internal payslip endpoint; GET /api/accounting/posting-log must show a failed row for PAYROLL_SUMMARY.",
+  "owner": "Backend accounting (payroll posting)"
+ },
+ "rv-be:accounting:24": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "status": "still-bug",
+  "note": "InventoryCloseStatementService.isPosted (l.96-98) is still existsByFiscalPeriodId only; no code deletes the period_close_inventory_close row when the PERIOD_CLOSING entry is reversed.",
+  "summary": "Once the month's cost-of-goods-sold entry has been posted at period close and is then reversed, the system still thinks it is posted. Re-posting fails, the stock count cannot be discarded or recounted, and the Inventory check can be closed against a reversed entry, so the month cannot be redone.",
+  "steps": [
+   "Close the Inventory check of a month with a count: POST /api/accounting/period-close/{fiscalPeriodId}/inventory/post-cogs.",
+   "Reverse the PERIOD_CLOSING journal entry: POST /api/accounting/journal-entries/{id}/reverse.",
+   "Call post-cogs again."
+  ],
+  "expected": "Second post succeeds (stale record replaced) or reversing is blocked while the check is closed.",
+  "actual": "By code: isPosted() stays true, re-post and recount are refused.",
+  "where": "backend modules/accounting/periodclosing/inventory/service/InventoryCloseStatementService.java:94-98; PeriodCloseActionService.java:169; stockcount/service/PeriodCloseStockCountService.java:373",
+  "tests": [],
+  "verify": "post-cogs, reverse the entry, post-cogs again; expect 200 and a new POSTED entry.",
+  "owner": "Backend accounting (period closing)"
+ },
+ "rv-be:accounting:26": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "status": "still-bug",
+  "note": "PeriodCloseTaskFacadeImpl.summary/detail are still @Transactional(readOnly=true) (l.49-79) and PeriodCloseSummaryService still catches RuntimeException inside it and puts e.getMessage() into unavailableReason (l.170, 219, 408).",
+  "summary": "The month-end summary tries to show one section as 'unavailable' when its data cannot be read. But all sections run in one transaction, so one failing read marks the whole transaction rollback-only and the screen returns a 500 instead of degrading. The exception text is also sent to the browser.",
+  "steps": [
+   "Make one source fail (for example stop the Sales provider or break its data).",
+   "GET /api/accounting/period-close/{fiscalPeriodId}/summary."
+  ],
+  "expected": "200 with salesReceivables.available=false and a fixed message.",
+  "actual": "By code: UnexpectedRollbackException (500); when it does degrade, unavailableReason carries raw exception text.",
+  "where": "backend modules/accounting/periodclosing: facade/PeriodCloseTaskFacadeImpl.java:49-79; service/PeriodCloseSummaryService.java:170,219,408",
+  "tests": [],
+  "verify": "With a Sales read failing, GET /api/accounting/period-close/{id}/summary must return 200 with that section unavailable and no exception text.",
+  "owner": "Backend accounting (period closing)"
+ },
+ "rv-be:accounting:3": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "note": "partly changed: settle() (VatReturnService ~l.172-240) no longer takes a free settlement account (it posts to VAT_PAYABLE / carry-forward settings), so that half is moot; but it still re-reads the import-VAT part from the live ledger (movements(...) ~l.200) and does not check settledDate against filedDate. Backend item: not marked fixed.",
+  "summary": "A VAT return freezes its totals when filed, but settling it recomputes the import-VAT split from the live ledger. A VAT line posted between filing and settling changes what is cleared, so the entry still balances but leaves a residue in the VAT accounts. A settle date before the filing date is also accepted.",
+  "steps": [
+   "File a month's VAT return: POST /api/accounting/vat-returns/{id}/file.",
+   "Post an extra input-VAT journal into that month.",
+   "POST /api/accounting/vat-returns/{id}/settle with a settledDate."
+  ],
+  "expected": "409 'ledger VAT changed since filing; re-file'; settledDate before filedDate refused with 400.",
+  "actual": "By code: settles on the live import amount and accepts any date.",
+  "where": "backend modules/accounting/vatreturn/service/VatReturnService.java: settle ~l.172-240, file ~l.146",
+  "tests": [
+   "ACC-11-04 (settle of an owed return, normal case only)"
+  ],
+  "verify": "File, add a VAT journal, settle: expect 409; settle with settledDate earlier than filedDate: expect 400.",
+  "owner": "Backend accounting (VAT return)",
+  "severity": "medium"
+ },
+ "rv-be:accounting:36": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "status": "still-bug",
+  "note": "BankCashCloseRecordService.position (~l.100-125) still calls bankReconciliationDomainService.getSummary per active bank account only to take two list sizes, and findByBankAccountId per account; PeriodCloseSummaryService.bankLine (l.350) does the same.",
+  "summary": "The Bank and Cash check at period close runs several queries per bank account and loads whole unmatched lists just to count them. The summary endpoint is polled by the screen, so cost grows with the number of banks and slows the close.",
+  "steps": [
+   "Create 5+ active bank accounts with statement lines.",
+   "GET /api/accounting/period-close/{fiscalPeriodId}/summary and count SQL statements (or time it)."
+  ],
+  "expected": "A constant number of queries (count queries plus one batch lookup).",
+  "actual": "About 3 queries per bank account plus full list loads.",
+  "where": "backend modules/accounting/periodclosing/bankcash/service/BankCashCloseRecordService.java:~80-125; service/PeriodCloseSummaryService.java:~331-372",
+  "tests": [],
+  "verify": "Compare SQL statement count of GET /api/accounting/period-close/{id}/summary with 1 and 10 bank accounts; it must not grow with N.",
+  "owner": "Backend accounting (period closing)",
+  "severity": "low"
+ },
+ "rv-be:accounting:37": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "status": "still-bug",
+  "note": "StockOnHandReader.positionsAsOf (l.132) still starts with itemFacade.getAll(null,null,null), loading every item as a full DTO.",
+  "summary": "Every stock-count call at period close reads the entire item catalogue and the full count sheet (up to three times per detail request). With thousands of items, saving a single counted item re-reads everything.",
+  "steps": [
+   "Have ~3000 items with stock.",
+   "GET /api/accounting/period-close/tasks/{id}/details?stockCountRequired=true&closeStatementRequired=true and measure time and SQL statements."
+  ],
+  "expected": "Id-limited, aggregated queries; time does not grow with the whole catalogue.",
+  "actual": "Full catalogue load per call.",
+  "where": "backend modules/accounting/periodclosing/stockcount/service/StockOnHandReader.java:131-143; PeriodCloseStockCountService; InventoryCloseStatementService.preview/statementAt",
+  "tests": [],
+  "verify": "Time and count SQL statements of the details call with 3000 items, before and after.",
+  "owner": "Backend accounting (period closing)",
+  "severity": "low"
+ },
+ "rv-be:accounting:48": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "note": "partly fixed: the squashed V1__initial_schema.sql now indexes the accounting-side FKs (e.g. idx_accounting_posting_log_journal_entry l.5763, vat_return_settlement_journal_entry l.4486, depreciation_entry, budget_line, period_close_task, attachment_id columns). Still no index found on role_permissions, user_role_assignments, scopes, identity_external_links, approval_step, workflow_instance, petty_cash_category_mapping. Backend: status kept.",
+  "summary": "Foreign-key columns without an index make deletes and parent-key reads scan the whole child table. The accounting tables are now covered; the RBAC, approval and workflow tables named in the review are not yet.",
+  "steps": [
+   "Open src/main/resources/db/migration/V1__initial_schema.sql.",
+   "Search 'CREATE INDEX' for role_permissions(permission_id), approval_step(approval_request_id), workflow_instance(definition_id), user_role_assignments(role_id).",
+   "Or in psql: select indexdef from pg_indexes where tablename='approval_step'."
+  ],
+  "expected": "An index on each foreign-key column.",
+  "actual": "Accounting FKs indexed; the RBAC/approval/workflow ones listed above have none.",
+  "where": "backend src/main/resources/db/migration/V1__initial_schema.sql (migrations were squashed into V1)",
+  "tests": [],
+  "verify": "psql: select tablename,indexdef from pg_indexes where tablename in ('role_permissions','approval_step','workflow_instance','user_role_assignments','scopes','petty_cash_category_mapping'); each FK column must appear.",
+  "owner": "Backend platform (database)",
+  "severity": "low"
+ },
+ "rv-be:accounting:15": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "note": "mostly fixed by code: @Size now on BankStatementLineRequestDTO/BulkItemDTO (500/100), ChartOfAccountRequestDTO, BankAccountRequestDTO, AssetTypeRequestDTO, CostCenterRequestDTO, FixedAssetBatchItemDTO, AssetTransferRequestDTO, and StatementRowMapper (l.122-129) reports a too-long description/reference per row. Gaps: CreateNativeErpUserRequestDTO has no @Size; period-close/year-end/posting/payroll/mapping DTOs not re-checked. Status kept (in-progress).",
+  "summary": "A text longer than its database column used to roll back the whole request with a generic 409 and no hint of which field was too long. Most request DTOs now reject it with a 400 naming the field, and the statement import reports the offending row number.",
+  "steps": [
+   "POST /api/accounting/bank-reconciliation/statement-lines/bulk (or import a file) with a 600-character description.",
+   "POST /api/accounting/chart-of-accounts with accountCode of 60 characters."
+  ],
+  "expected": "400 naming the field (and the row for imports), nothing rolled back.",
+  "actual": "By code: fixed for the DTOs listed; not proven on a running backend; user-creation DTO still unchecked.",
+  "where": "backend modules/accounting/bankreconciliation/importing/StatementRowMapper.java:122-129; dto/*RequestDTO.java (@Size); platform CreateNativeErpUserRequestDTO",
+  "tests": [],
+  "verify": "POST a statement line with a 600-char description to the bulk endpoint; expect 400 naming description.",
+  "owner": "Backend accounting",
+  "severity": "low"
+ },
+ "rv-be:accounting:16": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "note": "half fixed: PeriodCloseTaskService.assignOwner l.229 now refuses an unknown user (userFacade.findById, 400 'no user with id'); the petty-cash mapping controller still has no @Valid on its bodies. Status kept (in-progress), needs API proof.",
+  "summary": "Assigning an owner to a month-end check used to accept any user id and show a blank name. That is now refused. The petty-cash category mapping endpoints still accept bodies without bean validation (the domain service validates, so behaviour is mostly right).",
+  "steps": [
+   "PUT /api/accounting/period-close/{fiscalPeriodId}/tasks/SALES_RECEIVABLES/owner?ownerUserId=999999.",
+   "POST /api/accounting/petty-cash-mappings with an empty body."
+  ],
+  "expected": "400 for the unknown user; a clean 400 for a bad mapping body.",
+  "actual": "By code: user check present; no @Valid on PettyCashCategoryMappingController.",
+  "where": "backend modules/accounting/periodclosing/service/PeriodCloseTaskService.java:220-232; pettycashmapping/controller/PettyCashCategoryMappingController.java:94-117",
+  "tests": [],
+  "verify": "PUT .../owner?ownerUserId=999999 must return 400 'no user with id 999999'.",
+  "owner": "Backend accounting",
+  "severity": "low"
+ },
+ "rv-be:accounting:17": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "note": "code looks fixed: YearEndCloseHistoryService.displayName (l.157-161) is null-safe and falls back to the login id; SalesRevenueMappingDomainService l.310-316 calls accountValidator.requireItemCategory/requireSalesChannel (SalesMappingAccountValidator l.35-49, 400 'sales channel not found'); deposit mapping uses the same validator. Needs API proof.",
+  "summary": "Sales revenue/deposit mappings used to accept channel or category ids that do not exist (there is no foreign key), so a typo only showed when a sale could not post. The year-end history also printed 'null null' for a closer without a name. Both now look handled in code.",
+  "steps": [
+   "POST /api/accounting/sales-account-mappings with salesChannelId 999999 and a valid book/category/accounts.",
+   "Open the year-end close history for a year locked by a user with no first/last name."
+  ],
+  "expected": "400 'sales channel not found: 999999'; the history shows the login id, not 'null null'.",
+  "actual": "Fixed by code reading; not proven by a test.",
+  "where": "backend modules/accounting/salesmapping/service/SalesMappingAccountValidator.java, SalesRevenueMappingDomainService.java:310-316, SalesDepositMappingDomainService.java; yearendclosing/service/YearEndCloseHistoryService.java:150-161",
+  "tests": [],
+  "verify": "POST /api/accounting/sales-account-mappings with salesChannelId 999999: expect 400 'sales channel not found'. Same with itemCategoryId 999999.",
+  "owner": "Backend accounting (mappings)",
+  "severity": "low"
+ },
+ "rv-be:accounting:30": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "note": "not fixed by code: AccountingPostingLogService.record (l.113-135) still does findEntity then save with no catch for the unique-constraint violation; suspect only (data stays correct).",
+  "summary": "If two messages for the same document arrive together, both see no posting-log row and both try to insert; the second hits the unique constraint and the exception escapes to the message broker, which retries or dead-letters. The data stays correct but noise and retries result.",
+  "steps": [
+   "Deliver the same AccountingPostingRequestedEvent twice at the same moment (two broker consumers).",
+   "Watch the log and the broker retry queue."
+  ],
+  "expected": "One row, no exception: the loser re-reads and updates.",
+  "actual": "By code: DataIntegrityViolationException from the second insert.",
+  "where": "backend modules/accounting/postinglog/service/AccountingPostingLogService.java:113-135; posting/service/AccountingPostingService.java:123-136",
+  "tests": [],
+  "verify": "Call AccountingPostingLogService.record twice concurrently with the same key; expect one row and no exception.",
+  "owner": "Backend accounting (posting log)"
+ },
+ "be-req:accounting:voucher-register-account": {
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "note": "feature not implemented: VoucherRegisterLineDTO (modules/accounting/report/dto) still has no accountId/accountName; fields are journalEntryId, journalNo, voucherType, documentType, documentId, documentNo, postingDate, particulars, partyId/partyType/partyName, memo, debitAmount, creditAmount.",
+  "summary": "The Voucher Register lists vouchers, but each row only has 'particulars' (the other side or the party). The Account column therefore cannot name or link each row's own account and shows only the filtered account.",
+  "steps": [
+   "Open Reports > Voucher Register (or GET /api/accounting/reports/voucher-register).",
+   "Look at one returned row."
+  ],
+  "expected": "Each row carries accountId and accountName so the frontend can link to the ledger.",
+  "actual": "No account fields on the row.",
+  "where": "backend modules/accounting/report/dto/VoucherRegisterLineDTO.java; AccountingReportController.java:235 (GET /voucher-register)",
+  "tests": [],
+  "verify": "GET /api/accounting/reports/voucher-register?... and check that each row has accountId and accountName.",
+  "owner": "Backend accounting (reports); frontend then links the column"
+ },
+ "st1111:S14": {
+  "ref": "frontend release_beta_1.0.0@05aecf15; backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "status": "still-bug",
+  "note": "Frontend: credit-memo-create-items-table.tsx l.213-226 still renders the VAT rate as an editable input. Backend: CreditMemoMapper.toRefundLineEntity l.101 uses dto.getTaxRate() when sent and CreditMemoService does not compare it with the return line's rate. Both halves are visible in code.",
+  "summary": "When a credit memo is created, the user can type any VAT rate and the backend stores and posts it. A memo for goods sold at 15.8% was saved at 25%, so Output VAT was reversed by too much (about 3.49 on a 40.00 return) and the sales-return and receivable lines no longer match the original invoice.",
+  "steps": [
+   "Create and approve a sales invoice with VAT, then a sales return for it.",
+   "Sales > Credit Memos > New, pick the return, change the VAT rate field of the line from 15.8 to 25 and save.",
+   "Open the posted journal of the memo in Accounting > Journals."
+  ],
+  "expected": "VAT rate is read-only on screen (taken from the invoice line) and the backend ignores or refuses a rate that differs from the returned line.",
+  "actual": "Saved at 25%: Dr Sales Return 30.51, Dr Output VAT 9.49, Cr Sundry Debtors 40.00; the invoice had VAT 6.00 per 40.",
+  "where": "frontend src/features/sales/credit-memos/components/credit-memo-create-items-table.tsx:213-226, credit-memo-create-view.tsx:168, credit-memo-edit-view.tsx:186; backend modules/sales/document/creditmemo/mapper/CreditMemoMapper.java:101, dto/CreditMemoRefundLineRequestDTO.java:17, service/CreditMemoService.java",
+  "tests": [],
+  "verify": "POST the credit memo API with a line taxRate different from the return line's; expect 400 or a stored rate equal to the invoice rate. UI: the field is read-only.",
+  "owner": "Both sales (credit memo), VAT posted in accounting",
+  "severity": "high"
+ },
+ "st1111:S2": {
+  "ref": "frontend release_beta_1.0.0@05aecf15; backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "note": "open, partly by design: the invoice line keeps tax_amount 25.28 = vat_amount 24.00 + ait_amount 1.28 (SalesTax.vatPart/aitPart, e.g. CreditMemoMapper l.111-112); the posted journal takes only the VAT part. AccountingBaseSeeder (l.265) leaves SALES_AIT_ACCOUNT_ID unset so AIT folds into revenue; AccountingDevSeeder (l.438-469) now maps it for dev. The screens still label the whole 15.8% as 'VAT'.",
+  "summary": "Sales document screens show one combined 'VAT 15.8% = 25.28' for a Modern Trade line, but the books get Output VAT 24.00 (15%) and the remaining 1.28 is AIT (advance income tax, 0.8%), which stays inside Sales revenue because no AIT account is mapped. So the VAT a user sees is not the VAT posted.",
+  "steps": [
+   "Create a Modern Trade sales demand with a 160.00 line and carry it to an invoice.",
+   "Compare the VAT line on the invoice screen (25.28) with Accounting > Journals for the invoice (Output VAT 24.00)."
+  ],
+  "expected": "The screen splits VAT and AIT, or labels the combined figure honestly, and AIT posts to its own account once mapped.",
+  "actual": "Screen: VAT 15.8%, 25.28. Ledger: Output VAT 24.00, AIT 1.28 inside Sales (136.00).",
+  "where": "backend modules/sales (SalesTax.vatPart/aitPart), modules/accounting/init/AccountingBaseSeeder.java:265 and AccountingDevSeeder.java:438-469 (SALES_AIT_ACCOUNT_ID); frontend features/sales/*/columns.tsx and invoice-order-print-document.tsx (single tax label)",
+  "tests": [],
+  "verify": "Invoice a 160.00 Modern Trade line; the screen must show VAT 24.00 and AIT 1.28 separately; with SALES_AIT_ACCOUNT_ID mapped, the journal credits the AIT account 1.28.",
+  "owner": "Both sales and accounting (needs a business decision on AIT)",
+  "severity": "high"
+ },
+ "st1111:S17": {
+  "ref": "frontend release_beta_1.0.0@05aecf15; backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "note": "open, depends on S10 (inventory): no COGS in Periodic valuation is expected; the open part is that dispatch does not reduce stock (see sales/inventory findings). Sales Return uses the global SALES_RETURN_ACCOUNT_ID setting (AccountingBaseSeeder l.162), so it posts to 4900 by design, not to the channel account 4114. Not re-tested here.",
+  "summary": "After a sale is invoiced and shipped, neither the books (no cost of goods sold, expected under Periodic valuation) nor the stock card show the sale, because stock quantities do not move on dispatch (S10). Sales returns also post to the single Sales Return account rather than the sales channel's revenue account.",
+  "steps": [
+   "Dispatch an invoiced sale (IF-000001, 20 pcs).",
+   "Check on-hand in Inventory > Stock and the sale's journal in Accounting > Journals."
+  ],
+  "expected": "Stock on hand falls by the shipped quantity; the return posts to the account the business chose.",
+  "actual": "Stock unchanged; return posts to 4900.",
+  "where": "backend modules/accounting/init/AccountingBaseSeeder.java:162 (SALES_RETURN_ACCOUNT_ID); sales fulfilment / inventory balance update (see S10 owner)",
+  "tests": [],
+  "verify": "Ship 20 pcs and GET the item's balance; it must fall by 20. Decide with the client whether returns should post per channel.",
+  "owner": "Both (inventory S10 first)",
+  "severity": "medium"
+ },
+ "st1111:S39": {
+  "ref": "frontend release_beta_1.0.0@05aecf15; backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "status": "decision",
+  "note": "the VAT Returns screens still exist (src/app/(erp)/accounting-finance/vat-returns, period-end/components/vat-return-*-view.tsx) but app-menu.config.tsx l.490-491 says 'VAT Returns is off the sidebar - the business no longer keeps it'. Whether to extend it is a business decision.",
+  "summary": "The VAT return screen is thin: Output VAT only (no AIT), no breakdown by invoice or customer, and it is no longer in the sidebar or the Reports hub, so people look for it in the wrong place. The business has since said it does not keep a VAT return in the system.",
+  "steps": [
+   "Open /accounting-finance/vat-returns by URL.",
+   "Open the November return and look for AIT or an invoice list.",
+   "Search the Reports hub for 'vat'."
+  ],
+  "expected": "Decide: drop the screen, or add AIT, invoice drill-down and a Reports entry.",
+  "actual": "Reachable by URL only; Output VAT 58.96 ties to ledger 2135, nothing else.",
+  "where": "frontend src/shared/components/app-layout/app-menu.config.tsx:490-491; src/features/accounting/period-end/components/vat-return-list-view.tsx, vat-return-detail-view.tsx; backend modules/accounting/vatreturn",
+  "tests": [
+   "ACC-11-01..05 cover the existing return flow"
+  ],
+  "verify": "After the decision, either no VAT-return code remains or the return lists AIT and drills into invoices.",
+  "owner": "Both accounting (decision first)",
+  "severity": "low"
+ },
+ "pt1110:B2": {
+  "ref": "frontend release_beta_1.0.0@05aecf15; backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "status": "still-bug",
+  "note": "Frontend vendor-bill-generation-view.tsx l.668 still sends postingPeriodStartDate: period.start; backend PurchasePostingFactsBuilder l.101 posts the PURCHASE_VENDOR_BILL on orToday(bill.getPostingPeriodStartDate()). Either side can fix it.",
+  "summary": "A purchase vendor bill dated 10 Nov is posted into the ledger on 1 Nov, the first day of its period, because the frontend sends the period start as the posting date and the backend uses it as the voucher date. Date-range reports (day book, ledgers) therefore show the purchase nine days early.",
+  "steps": [
+   "Purchase > Vendor Bills > Generate, bill date 10 Nov, period November.",
+   "Approve and wait for posting.",
+   "Accounting > Journals: look at the posting date of the PURV voucher (VB-000001)."
+  ],
+  "expected": "Voucher date equals the bill date (10 Nov) inside the open period.",
+  "actual": "Voucher dated 1 Nov.",
+  "where": "frontend src/features/purchase/vendor-bill/components/vendor-bill-generation-view.tsx:668-669; backend modules/purchase/posting/PurchasePostingFactsBuilder.java:101",
+  "tests": [],
+  "verify": "Generate a bill dated 10 Nov; GET /api/accounting/journal-entries/by-document?documentType=PURCHASE_VENDOR_BILL&documentId={id} must show postingDate 2026-11-10.",
+  "owner": "Both purchase and accounting",
+  "severity": "medium"
+ },
+ "pt1110:B7": {
+  "ref": "frontend release_beta_1.0.0@05aecf15; backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "note": "open: SalesDocumentPosting (features/sales/shared/sales-document-posting.tsx l.44-51), used by vendor-bill-detail-tabs.tsx l.471-474, now distinguishes FAILED / WAITING / not posted but never refetches or polls; posting is asynchronous so the tab can say 'Not posted' for 5-15 s.",
+  "summary": "Purchase documents post to accounting asynchronously (outbox, message broker), which takes 5-15 seconds. The GL Impact tab shows 'not posted yet' during that time and never refreshes, so a transaction looks missing until the page is reloaded.",
+  "steps": [
+   "Approve a vendor bill.",
+   "Open its GL Impact tab immediately.",
+   "Wait 15 seconds without reloading."
+  ],
+  "expected": "The tab refreshes (or offers Refresh) while status is WAITING/not posted, then shows the entry.",
+  "actual": "Stays on the empty message until a manual reload.",
+  "where": "frontend src/features/sales/shared/sales-document-posting.tsx; src/features/purchase/vendor-bill/components/vendor-bill-detail-tabs.tsx:471; same in bill-credit and bill-payment detail tabs",
+  "tests": [],
+  "verify": "Approve a bill, stay on GL Impact; the entry must appear within about 20 s without reload.",
+  "owner": "Frontend purchase/sales shared; backend async by design",
+  "severity": "medium"
+ },
+ "rv-fe:accounting:1": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: asset-dispose-drawer.tsx l.235-246 computes recordedBookValue = cost - accumulatedDepreciation and gain/loss from it, no longer the backend's netBookValue of 0.",
+  "summary": "The record of an already disposed fixed asset showed 'Book value 0.00' and a gain equal to the sale proceeds, because the backend zeroes the net book value on disposal. A loss looked like a gain.",
+  "steps": [
+   "Accounting > Fixed Assets: dispose an asset (cost 1,000,000, accumulated 400,000) for 500,000.",
+   "Reopen the disposal from the asset."
+  ],
+  "expected": "Book value 600,000 and a loss of 100,000, matching the posted journal.",
+  "actual": "fixed: fixed: asset-dispose-drawer.tsx l.235-246 computes recordedBookValue = cost - accumulatedDepreciation and gain/loss from it, no longer the backend's netBookValue of 0.",
+  "where": "src/features/accounting/fixed-assets/components/asset-dispose-drawer.tsx:229-247",
+  "tests": [],
+  "verify": "Dispose with proceeds below book value and reopen; the drawer shows the loss that the journal shows.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:10": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: account and period lookups now reject instead of returning []; the remaining catches are on optional data (journals/lookups.ts cost centre/segment/territory/currency l.63,83,113,194; budgets and fixed-assets cost-centre lookups).",
+  "summary": "A backend outage used to be turned into 'no accounts', 'no periods' or 'no asset types', which for example let the journal form say no financial periods exist and allow Post. Required lookups now fail loudly; only optional ones fall back to an empty list.",
+  "steps": [
+   "Block the accounts request in devtools.",
+   "Open Accounting > Journals > New."
+  ],
+  "expected": "An error state, not an empty account picker.",
+  "actual": "fixed: fixed: account and period lookups now reject instead of returning []",
+  "where": "src/features/accounting/{journals,bank-cash,chart-of-accounts,budgets,fixed-assets}/lookups.ts",
+  "tests": [],
+  "verify": "Repeat the steps; the expected result must hold.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:11": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: ledger-views.tsx l.388-393 keeps a queryKeyRef and readLines (l.432-433) drops a stale result with isStale(); an 'error' line state shows accountingReports.feedback.linesError (l.701-704). e2e ACC-03-01/02 cover the tree and range.",
+  "summary": "In the General Ledger tree, lines read for an old date range could stay under the new totals, and a failed read showed only a heading and total with no message. Stale reads are now discarded and a failed read shows a retry-able error text.",
+  "steps": [
+   "Reports > General Ledger, open an account.",
+   "Change the date range while it loads, reopen the account."
+  ],
+  "expected": "Lines match the new range; a failed read shows an error line.",
+  "actual": "fixed: fixed: ledger-views.tsx l.388-393 keeps a queryKeyRef and readLines (l.432-433) drops a stale result with isStale()",
+  "where": "src/features/reports/accounting-reports/components/ledger-views.tsx:372-505,701",
+  "tests": [
+   "ACC-03-01",
+   "ACC-03-02"
+  ],
+  "verify": "Repeat the steps; the expected result must hold.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:12": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: match-step.tsx run() (l.195-212) calls reload() on the failure branch too, with a comment about batches failing half way.",
+  "summary": "Flagging many ledger lines in bank reconciliation stopped at the first failure but left the screen showing the already-flagged lines as open, so a second press flagged them again and errored.",
+  "steps": [
+   "Accounting > Bank & Cash > Reconciliation, tick 12 ledger lines, make line 7 fail, press Flag."
+  ],
+  "expected": "After the error the list reloads and shows lines 1-6 as flagged.",
+  "actual": "fixed: fixed: match-step.tsx run() (l.195-212) calls reload() on the failure branch too, with a comment about batches failing half way.",
+  "where": "src/features/accounting/bank-cash/components/reconciliation/match-step.tsx:195-212",
+  "tests": [
+   "ACC-13-01 (start only)"
+  ],
+  "verify": "Repeat the steps; the expected result must hold.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:13": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: review-step.tsx l.52,268-281 has removingId (button loading/disabled) and shows result.message or wizard.review.removeError on failure.",
+  "summary": "Removing an adjusting entry in the reconciliation review ignored a refused delete (closed period, already posted) and allowed a double click to send two deletes.",
+  "steps": [
+   "Reconciliation review step, press Remove on an adjustment in a closed period, then double-click another."
+  ],
+  "expected": "An error message on refusal; one request per click.",
+  "actual": "fixed: fixed: review-step.tsx l.52,268-281 has removingId (button loading/disabled) and shows result.message or wizard.review.removeError on failure.",
+  "where": "src/features/accounting/bank-cash/components/reconciliation/review-step.tsx:52,253-285",
+  "tests": [],
+  "verify": "Repeat the steps; the expected result must hold.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:14": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "in-progress",
+  "note": "partly fixed: the close panels (documents-panel l.74-75, bank-cash-panel l.22-23, general-ledger-panel l.48) now show the fixed t('close.unavailable') instead of unavailableReason. Still raw backend text: fixed-assets-panel.tsx l.466-468 and inventory-panel.tsx l.548,579 (cannotPostReason/lockedReason) and map-step.tsx l.268 (problem.reason).",
+  "summary": "Month-end close panels used to print backend text such as 'The Sales module could not be read: <exception>' in a warning banner. The unavailable banners are now a fixed translated sentence, but a few reason fields and the reconciliation wizard's problem reasons are still shown as sent by the backend (English only, unsanitised).",
+  "steps": [
+   "Open Accounting > Period Closing > a month > Fixed Assets with a blocked depreciation post.",
+   "Read the red text under the Post button."
+  ],
+  "expected": "A translated, sanitised sentence (cleanBackendBusinessMessage or a t() key).",
+  "actual": "cannotPostReason / lockedReason / wizard problem.reason print backend text.",
+  "where": "frontend src/features/accounting/period-end/components/close/fixed-assets-panel.tsx:466-468, inventory-panel.tsx:548,579; bank-cash/components/reconciliation/map-step.tsx:268",
+  "tests": [],
+  "verify": "Trigger a cannotPostReason in Bangla; the text must be translated and free of exception wording.",
+  "owner": "Frontend accounting",
+  "severity": "low"
+ },
+ "rv-fe:accounting:15": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: documents-panel.tsx l.43-45 showReconcile = section?.available !== false && difference != null, with a comment that a sub-ledger of 0 is the case to show.",
+  "summary": "In the month-end Documents check, the reconcile line was hidden when the sub-ledger was 0, which hid exactly the case where the control account holds a balance from an opening balance or manual journal.",
+  "steps": [
+   "Post a manual journal on the receivable account in a month with no invoices.",
+   "Period Closing > Sales & Receivables."
+  ],
+  "expected": "The mismatch between ledger and sub-ledger is shown.",
+  "actual": "fixed: fixed: documents-panel.tsx l.43-45 showReconcile = section?.available !== false && difference != null, with a comment that a sub-ledger of 0 is the case to show.",
+  "where": "src/features/accounting/period-end/components/close/documents-panel.tsx:38-49",
+  "tests": [],
+  "verify": "Repeat the steps; the expected result must hold.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:17": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: payroll/page.tsx checks PERMISSIONS.ACCOUNTING_PAYSLIP_VIEW with checkPermission and shows the permission empty state; the menu uses requiredPermission ACCOUNTING_PAYSLIP_VIEW (app-menu.config.tsx l.476); constant exists in permission-codes.ts:309.",
+  "summary": "The Payroll (salary data) screen was shown to anyone with journal view and hidden from users who had the payslip permission, and the route itself was not guarded. It is now gated by accounting.payslip.view in both menu and route.",
+  "steps": [
+   "Log in as a user with only journal view and open /accounting-finance/payroll."
+  ],
+  "expected": "Permission empty state; menu entry hidden.",
+  "actual": "fixed: fixed: payroll/page.tsx checks PERMISSIONS.ACCOUNTING_PAYSLIP_VIEW with checkPermission and shows the permission empty state",
+  "where": "src/app/(erp)/accounting-finance/payroll/page.tsx; src/shared/components/app-layout/app-menu.config.tsx:476; src/shared/access/permission-codes.ts:309",
+  "tests": [],
+  "verify": "Repeat the steps; the expected result must hold.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:19": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: settings/accounting/year-end-closing/[yearId]/page.tsx l.38 passes key={year.value} to the workspace, so switching year remounts it.",
+  "summary": "Switching financial year in the year-end workspace kept year A's steps on screen while the buttons acted on year B's id. The workspace is now remounted per year.",
+  "steps": [
+   "Settings > Accounting > Year-end closing, open a year, switch the year selector."
+  ],
+  "expected": "Old steps vanish at once; buttons wait for the new checklist.",
+  "actual": "fixed: fixed: settings/accounting/year-end-closing/[yearId]/page.tsx l.38 passes key={year.value} to the workspace, so switching year remounts it.",
+  "where": "src/app/(erp)/settings/accounting/year-end-closing/[yearId]/page.tsx:38; src/features/accounting/period-end/components/year-end-closing-workspace.tsx",
+  "tests": [],
+  "verify": "Repeat the steps; the expected result must hold.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:2": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: party-ledger-view.tsx l.375-394 keeps a signed value per party (netByParty in totals.ts) and l.474-479 sums it; the export uses Math.abs(signedTotal) with the side. totals.test.ts covers it.",
+  "summary": "The Parties ledger total added credit balances as if they were receivables (debit 10,000 + credit 1,000 gave 11,000 instead of 9,000), in the screen and in the PDF/Excel export. Balances now net against each other.",
+  "steps": [
+   "Accounting > Customer Ledger with one debit and one credit customer.",
+   "Compare the Outstanding total with the control account."
+  ],
+  "expected": "The total equals the control account balance (9,000).",
+  "actual": "fixed: fixed: party-ledger-view.tsx l.375-394 keeps a signed value per party (netByParty in totals.ts) and l.474-479 sums it",
+  "where": "src/features/accounting/party-ledger/components/party-ledger-view.tsx:375-394,474-536; party-ledger/totals.ts, totals.test.ts",
+  "tests": [
+   "ACC-03-03"
+  ],
+  "verify": "Repeat the steps; the expected result must hold.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:29": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: opening-balances-wizard.tsx l.96,424-434 opens a confirmation (openingBalances.confirmPost.*) before posting; e2e ACC-10-01 covers the posted state.",
+  "summary": "Posting an opening balance is irreversible (accounts lock, only a reversal helps) but used to happen on one click. A confirmation dialog with the impact now precedes it.",
+  "steps": [
+   "Settings > Accounting > Opening balances, fill the wizard, press Post."
+  ],
+  "expected": "A dialog states date, period and the consequence; Cancel posts nothing.",
+  "actual": "fixed: fixed: opening-balances-wizard.tsx l.96,424-434 opens a confirmation (openingBalances.confirmPost.*) before posting",
+  "where": "src/features/settings/accounting/components/opening-balances-wizard.tsx:96,424-434",
+  "tests": [
+   "ACC-10-01",
+   "ACC-10-02"
+  ],
+  "verify": "Repeat the steps; the expected result must hold.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:3": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: fixed-asset-form-view.tsx l.152-212 keeps the type's salvagePercent in a ref and recomputes salvageValue when the cost changes until the user edits salvage.",
+  "summary": "Picking an asset type before typing the cost set salvage to 0.00 and kept it at 0, so a 10% type registered no residual value.",
+  "steps": [
+   "New fixed asset: pick a 10% type, then type cost 100,000."
+  ],
+  "expected": "Salvage reads 10,000.",
+  "actual": "fixed: fixed: fixed-asset-form-view.tsx l.152-212 keeps the type's salvagePercent in a ref and recomputes salvageValue when the cost changes until the user edits salvage.",
+  "where": "src/features/accounting/fixed-assets/components/fixed-asset-form-view.tsx:149-212",
+  "tests": [],
+  "verify": "Repeat the steps; the expected result must hold.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:30": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: cost-center-section.tsx has busyId (l.89, switch disabled while busy l.263), a dependency confirmation when row.hasChildren (l.266) and reload() after the call (l.191).",
+  "summary": "Switching a department off took effect at once with no warning about active children, and two quick toggles could race and roll back to the wrong state. The switch is now locked while the request runs and warns first.",
+  "steps": [
+   "Settings > Accounting > Cost centers, deactivate a parent with active children; click the switch twice quickly."
+  ],
+  "expected": "A warning for the parent; only one request for a double click.",
+  "actual": "fixed: fixed: cost-center-section.tsx has busyId (l.89, switch disabled while busy l.263), a dependency confirmation when row.hasChildren (l.266) and reload() after the call (l.191).",
+  "where": "src/features/settings/accounting/components/cost-center-section.tsx:89,158-194,252-270",
+  "tests": [],
+  "verify": "Repeat the steps; the expected result must hold.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:34": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: journals/config.ts l.204-222 now lists PAYROLL_PAYMENT, PURCHASE_LC_CHARGES, SALES_CUSTOMER_REFUND, PRODUCT_DISTRIBUTION, FIXED_ASSET_ACQUISITION, PETTY_CASH_EXPENSE and INVENTORY_WRITE_OFF; source-types.test.ts exists.",
+  "summary": "Seven backend document types printed as raw enum text, had no link and could not be filtered in the journal list. They are now in the source-type table with translated labels.",
+  "steps": [
+   "Accounting > Journals, filter Source type = Petty Cash Expense."
+  ],
+  "expected": "Rows show a translated label and can be filtered.",
+  "actual": "fixed: fixed: journals/config.ts l.204-222 now lists PAYROLL_PAYMENT, PURCHASE_LC_CHARGES, SALES_CUSTOMER_REFUND, PRODUCT_DISTRIBUTION, FIXED_ASSET_ACQUISITION, PETTY_CASH_EXPENSE and INVENTORY_WRITE_OFF",
+  "where": "src/features/accounting/journals/config.ts:204-222; journals/source-types.test.ts",
+  "tests": [],
+  "verify": "Repeat the steps; the expected result must hold.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:35": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: journal-list-view.tsx l.248-254 hides the status/search/type filters in the pending view (hideStatus, hideListFilters).",
+  "summary": "On the Pending approval tab the search box and Document type still appeared and changed the URL but were never sent, and each change re-downloaded the queue. The inert filters are now hidden on that tab.",
+  "steps": [
+   "Accounting > Journals > Pending for approval tab, look for the search box."
+  ],
+  "expected": "No inert filters on the pending tab.",
+  "actual": "fixed: fixed: journal-list-view.tsx l.248-254 hides the status/search/type filters in the pending view (hideStatus, hideListFilters).",
+  "where": "src/features/accounting/journals/components/journal-list-view.tsx:243-254",
+  "tests": [
+   "ACC-01-08",
+   "ACC-01-11"
+  ],
+  "verify": "Repeat the steps; the expected result must hold.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:7": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: erp-api/accounting/party-statement.ts l.57-77 lets a failed getApArSummary propagate ('A failed read propagates'); the catch that returned undefined is gone. Residual: it still falls back to parties[0] and loads the whole summary to find one account id.",
+  "summary": "A customer statement used to open and close at 0 when the receivable-account lookup failed, even for a customer who owes money. The error now propagates so the screen shows an error.",
+  "steps": [
+   "Block the AR/AP summary request in devtools.",
+   "Open a customer statement."
+  ],
+  "expected": "An error state, not zeros.",
+  "actual": "fixed: fixed: erp-api/accounting/party-statement.ts l.57-77 lets a failed getApArSummary propagate ('A failed read propagates')",
+  "where": "src/erp-api/accounting/party-statement.ts:57-77",
+  "tests": [
+   "ACC-03-03",
+   "ACC-03-04"
+  ],
+  "verify": "Repeat the steps; the expected result must hold.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:8": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "fixed",
+  "note": "fixed: customer-ledger/index.ts getCustomerAging throws on loadError (l.~63) and returns a truncated flag set at the page cap; vendor-ledger/index.ts has the same truncated flag; the view reads agingTruncated (party-ledger-view.tsx l.333).",
+  "summary": "Customer and vendor aging treated a failed read or a scan cut at 10 pages as 'nothing overdue'. A failed read now raises an error and a cut scan sets a truncated warning.",
+  "steps": [
+   "Force the invoice list call to fail, open Customer Ledger with aging."
+  ],
+  "expected": "An error, not a column of zeros; a warning above 2,000 invoices.",
+  "actual": "fixed: fixed: customer-ledger/index.ts getCustomerAging throws on loadError (l.~63) and returns a truncated flag set at the page cap",
+  "where": "src/erp-api/accounting/customer-ledger/index.ts:30-72; vendor-ledger/index.ts:26-72",
+  "tests": [],
+  "verify": "Repeat the steps; the expected result must hold.",
+  "owner": "Frontend accounting"
+ },
+ "rv-fe:accounting:9": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "in-progress",
+  "note": "main defect fixed: chart-of-accounts/index.ts l.55-65 and account-roles/index.ts l.47-50 no longer catch a failed primary-book read (only a 404 null means 'no book'). Missing part: getPrimaryAccountingBook is still uncached (accounting-books/index.ts l.85), so each chart read still makes two sequential requests.",
+  "summary": "A failed primary-book lookup used to be treated as 'no book set up', sending users to the first-run screen or giving empty account pickers during an outage. That is fixed. The review also asked for the book lookup to be cached so that every chart read does not repeat it; that is not done.",
+  "steps": [
+   "Block /api/accounting/books/primary in devtools and open the chart of accounts: an error state shows (fixed).",
+   "Open devtools Network and load the chart of accounts: two requests, book then accounts."
+  ],
+  "expected": "Outage shows an error; the book is resolved once per request (React cache()).",
+  "actual": "Error state fixed; the book request still repeats.",
+  "where": "frontend src/erp-api/accounting/chart-of-accounts/index.ts:55-65; account-roles/index.ts:47-50,107; accounting-books/index.ts:85",
+  "tests": [],
+  "verify": "Load the chart of accounts and confirm /books/primary is requested once.",
+  "owner": "Frontend accounting",
+  "severity": "low"
+ },
+ "rv-fe:accounting:40": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "in-progress",
+  "note": "partly done: party-ledger/credit-limit-cache.ts keeps the limits for 60 s (TTL_MS) and clears them when the view closes; but getCustomerCreditLimits (customer-ledger/index.ts l.94-114) still walks up to 10 customer pages after the report finishes (party-ledger-view.tsx l.341-342, sequential, errors become {}). The real fix needs a backend batch endpoint or creditLimit on the ledger report.",
+  "summary": "The Customer Ledger finds each customer's credit limit by paging through the customer list after the report loads, up to 10 pages of 200. This is a slow second step and a failure silently removes the credit-limit column. A short cache reduces repeats but the scan remains.",
+  "steps": [
+   "Accounting > Customer Ledger, open devtools Network.",
+   "Watch the customer list requests after the ledger report returns."
+  ],
+  "expected": "One batch request (or creditLimit on the report), run in parallel with the report.",
+  "actual": "Up to 10 sequential list requests, cached for 60 s.",
+  "where": "frontend src/erp-api/accounting/customer-ledger/index.ts:94-114; src/features/accounting/party-ledger/credit-limit-cache.ts; party-ledger-view.tsx:341-342; backend customer list / ledger report (needs creditLimit)",
+  "tests": [
+   "ACC-03-03"
+  ],
+  "verify": "Open Customer Ledger with 2,000 customers; only one credit-limit request, parallel with the report.",
+  "owner": "Both (Frontend accounting; Backend sales/customer batch endpoint)",
+  "severity": "low"
+ },
+ "rv-fe:accounting:41": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "still-bug",
+  "note": "not fixed: app/(erp)/asset/fixed-asset/new/page.tsx l.22 still calls getFixedAssets() (whole register) for the copy-name list, and getDisposableFixedAssetOptions (erp-api/accounting/fixed-assets/index.ts l.108-112) still loads every asset via readAllPages and filters out DISPOSED in the browser instead of passing status=ACTIVE. Earlier 'fixed-per-log' was wrong.",
+  "summary": "The New Fixed Asset page and the Asset Disposal picker download the entire asset register (every page) just to build a duplicate-name list or dropdown options. After a bulk purchase this is thousands of rows on each page open.",
+  "steps": [
+   "Register a large number of assets (bulk purchase).",
+   "Open Assets > New asset and Asset Disposal with devtools Network open."
+  ],
+  "expected": "Small payloads: status filter on the server and a searchable, paged picker.",
+  "actual": "The whole register is read on both pages.",
+  "where": "frontend src/app/(erp)/asset/fixed-asset/new/page.tsx:19-23; src/erp-api/accounting/fixed-assets/index.ts:85-119 (getFixedAssets, getDisposableFixedAssetOptions)",
+  "tests": [],
+  "verify": "With 2,000 assets, opening Asset Disposal must not download all of them.",
+  "owner": "Frontend accounting",
+  "severity": "low"
+ },
+ "rv-fe:accounting:50": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "decision",
+  "note": "unchanged decision (2026-11-11): FINANCIAL_YEAR_WRITE_ENABLED is still false at features/settings/accounting/config.ts:557, so create/edit/generate/close/lock/reopen of a financial year never render.",
+  "summary": "About 1,500 lines of financial-year write UI (create year, generate months, close, lock, reopen) are disabled by a hard-coded constant. Nobody can create a year or generate months from this screen. It was decided to leave it as is until Period Closing scope is settled.",
+  "steps": [
+   "Settings > Accounting > Financial year; look for New year / Generate periods buttons."
+  ],
+  "expected": "Either the write UI is removed, or the flag is driven by a permission or setting.",
+  "actual": "Flag false; write UI hidden.",
+  "where": "frontend src/features/settings/accounting/config.ts:557; financial-year-write-guard.tsx; financial-year-section.tsx; financial-year-detail-view.tsx",
+  "tests": [
+   "ACC-07-01..03 (read side only)"
+  ],
+  "verify": "After the decision: no dead modals remain, or the flag is configurable and tested.",
+  "owner": "Frontend accounting (decision by owner)",
+  "severity": "low"
+ },
+ "rv-fe:accounting:58": {
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "status": "in-progress",
+  "note": "partly done: journals/schema.test.ts and party-ledger/totals.test.ts exist (plus row-mapper, party, rejection, source-types tests). Still no unit test found for the bank-reconciliation difference or the period-close gating.",
+  "summary": "Logic that decides whether an unbalanced entry reaches the backend, and how ledger totals are computed, had no tests. The journal schema and party-ledger totals now have tests; the bank-reconciliation difference and period-close gating do not.",
+  "steps": [
+   "Run pnpm test (vitest) and list test files under src/features/accounting."
+  ],
+  "expected": "Tests for journal schema, party totals, reconciliation difference and close gating.",
+  "actual": "First two present; last two missing.",
+  "where": "frontend src/features/accounting/journals/schema.test.ts, party-ledger/totals.test.ts; missing for bank-cash reconciliation and period-end close gating",
+  "tests": [],
+  "verify": "Tests exist and pass for the reconciliation difference and for the period-close gating helper.",
+  "owner": "Frontend accounting",
+  "severity": "low"
+ }
+}

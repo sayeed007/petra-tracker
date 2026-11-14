@@ -1,0 +1,582 @@
+{
+ "rv-fe:inventory:1": {
+  "status": "fixed",
+  "note": "The Transfer Order feature was removed: src/erp-api/inventory/transfer-orders and src/features/inventory/transfer-orders no longer exist, the route calls notFound() (app/(erp)/inventory-warehouse/transfer-order/page.tsx), and src/erp-api/api-client.ts:136-148 resolveBackendUrl refuses any absolute URL whose origin is not the configured API.",
+  "summary": "The old Transfer Order screens sent the logged-in user's backend token to an unrelated demo host on the internet and stored orders there. Any user opening the screen leaked a valid ERP token to a third party.",
+  "steps": [
+   "Open /inventory-warehouse/transfer-order in the browser.",
+   "Open the browser network tab."
+  ],
+  "expected": "No request leaves for any host other than the ERP backend; the screen is closed.",
+  "actual": "fixed: the route returns 404, the external-host code is deleted, and apiClient throws 'Refusing to send the access token to a host other than the configured API' for foreign origins.",
+  "where": "src/erp-api/api-client.ts resolveBackendUrl; src/app/(erp)/inventory-warehouse/transfer-order/page.tsx",
+  "tests": [
+   "INV-11-11 (404 case, e2e/tests/inventory/11-transfer-order.spec.ts)"
+  ],
+  "verify": "Open /inventory-warehouse/transfer-order: 404 page. Grep src for 'vercel.app': no hits.",
+  "owner": "Frontend inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "st1111:S10": {
+  "ref": "backend deployment/dev@b2597ef11 ; frontend release_beta_1.0.0@05aecf15",
+  "note": "Code looks fixed or by design: DeliveryOrderFulfillmentService.consumeInventoryOnGateOut/consumeReservations (~l.1130-1200) reduces onHandQty and reservedQty and writes a SALE ledger movement, but only at gate-out verification; the controller text (DeliveryOrderController ~l.410) says 'Reserved inventory is not consumed until gate-out verification'. The test saw stock unchanged after dispatch (Ship) but before the gate pass was verified. Needs API/test proof; no e2e case checks on-hand after gate-out.",
+  "summary": "After a sales delivery was dispatched (shipped) the bin on-hand and reserved quantities did not change, so the demand form kept offering stock that had left. By code the stock is only reduced when the gate pass is verified at gate-out, which the tester may not have done; if so the behaviour is by design but confusing, because Ship says shipped while stock still counts the goods.",
+  "steps": [
+   "Create a sales order and an item fulfillment for 20 pcs of an item, pick, pack and Ship it (Ship Items screen).",
+   "Call GET /api/inventory/items/location-inventory?itemId=<id> and note on-hand and reserved for the bin.",
+   "Open Gate Pass, find the pass, run the gate-out verification (Gate Pass detail, Verification) and check the same bin again."
+  ],
+  "expected": "On-hand falls by 20 and reserved falls by 20 once the goods leave; a SALE row appears on the stock ledger.",
+  "actual": "After Ship (before gate-out) on-hand stays 90 and reserved still counts the 20 (observed 2026-11-11). Code says the drop happens at gate-out; not proven.",
+  "where": "backend DeliveryOrderFulfillmentService.consumeInventoryOnGateOut, consumeReservations; frontend sales demand form stock column",
+  "verify": "After gate-out verification of the delivery order, call GET /api/inventory/items/location-inventory?itemId=<id> and expect onHandQty 70 and reservedQty reduced by 20; read the inventory ledger for the item and expect one SALE movement of -20.",
+  "owner": "Both sales + inventory",
+  "date": "2026-11-13"
+ },
+ "st1111:S29": {
+  "note": "Still open, feature not implemented: SalesDemandDomainService only reports stock (sumOnHandQtyByItemIds over all channels, ~l.489), it never refuses a quantity above channel stock; the ASE create-demand screens (src/features/field-force/ase-create-demand) have no stock check. Only Item Fulfillment refuses.",
+  "summary": "A field-force demand can be taken, paid and approved for more units than the sales channel holds (34 against 20), and the coordination screen shows stock across all channels so it passes. The customer's deposit is already booked when the shortage is found at fulfilment, and the fulfilment quantity cannot be reduced to what exists.",
+  "steps": [
+   "Field Force > ASE Create Demand: pick a Retail Stationary customer, add an item that has 20 pcs in that channel, enter quantity 34.",
+   "Save, take the deposit and approve through coordination (stock qty shows the all-channel total, 50).",
+   "Create the Item Fulfillment for the sales order: it refuses the quantity, and the quantity box cannot be set lower."
+  ],
+  "expected": "The demand screen warns or refuses above the channel's available stock; coordination compares against the customer channel; fulfilment lets the user fulfil the available part.",
+  "actual": "Demand, payment and approval go through with 34; only fulfilment refuses.",
+  "where": "backend SalesDemandDomainService (stock only for display), SalesOrderDomainService; frontend src/features/field-force/ase-create-demand/*, src/features/sales/sales-demand/components/sales-demand-form-item-row.tsx",
+  "verify": "Create a demand with quantity above the channel's available stock: expect 4xx naming the item and the available quantity; at or below: 2xx.",
+  "owner": "Both sales + inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "e2e:inventory:distribution-item-name-500": {
+  "status": "still-bug",
+  "note": "src/features/inventory/product-distribution/lookups.ts:21 ITEM_LOOKUP_PAGE_SIZE = 500 and :45 getInventoryItems({page:0,size:500}); fallback '#<id>' in mappers.ts. e2e INV-03-S1/G1 are test.fail when the stack has more than 500 items (1115 here).",
+  "summary": "Sample and Gift Distribution screens turn an item id into a name using one fixed page of the first 500 items. When the catalogue is larger, any item outside that page is shown as '#1090' instead of its name.",
+  "steps": [
+   "Make sure the item catalogue holds more than 500 items (GET /api/inventory/items?size=500 returns totalElements > 500).",
+   "Create an item last, then create a Sample Distribution (Inventory > Sample Distribution > New) for it.",
+   "Open the new distribution's detail page."
+  ],
+  "expected": "ITEM column shows the item name.",
+  "actual": "ITEM column shows '#<itemId>'.",
+  "where": "src/features/inventory/product-distribution/lookups.ts (loadProductDistributionLookups), mappers.ts:~167",
+  "tests": [
+   "INV-03-S1",
+   "INV-03-G1"
+  ],
+  "verify": "With more than 500 items, the detail of a distribution for the newest item shows its name; INV-03-S1/G1 pass without test.fail.",
+  "owner": "Frontend inventory",
+  "severity": "medium",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "pt1110:A2": {
+  "status": "still-bug",
+  "note": "Frontend half visible in code: the item form components have no tracking-type field, and the save mapper (erp-api/inventory/items/mapper.ts:~1036-1042) turns an unknown tracking type into LOT. Backend half (return fulfilment accepting a lot) not checked.",
+  "summary": "Lot-wise stock never shows because items made without a tracking type are saved as LOT silently, while items made by API or seed are NONE-tracked and the receipt asks a lot number it then discards. Lot Breakdown then says 'No lots found. It may not be lot tracked'. Users cannot choose the tracking type on the item form.",
+  "steps": [
+   "Inventory > Items > New: fill the form and look for a tracking type field (none exists).",
+   "Receive stock for a NONE-tracked item with a lot number, then open Inventory > Lot Breakdown (/inventory-warehouse/lot-breakdown).",
+   "Open a sales return fulfilment: bins are offered, lots are not."
+  ],
+  "expected": "The item form lets the user choose none, lot or serial; the receipt asks for a lot only for lot-tracked items; return fulfilment can pick a lot.",
+  "actual": "No tracking field; tracking silently LOT for new items; lot number dropped for NONE items.",
+  "where": "src/features/inventory/items/components/inventory-item-form-*.tsx; src/erp-api/inventory/items/mapper.ts; purchase-order-inventory-detail-modal.tsx",
+  "verify": "Create an item with tracking LOT from the form, receive 10 with lot L1, then Lot Breakdown shows L1.",
+  "owner": "Both inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "pt1110:B9": {
+  "status": "in-progress",
+  "note": "Part fixed: inventory-item-form-page.tsx:465-482 onInvalidSubmit now jumps to the tab with the failing pack size or channel price. Still open: pack size is a required field on both tabs (inventory-item-form-schema.ts:124-140) and one channel price is required (:162-174).",
+  "summary": "Creating an item needs the pack size entered twice (Purchasing/Inventory tab and Sales/Pricing tab) and at least one channel price. Earlier, Save failed without saying which tab was wrong; the form now switches to the failing tab, but the double entry remains.",
+  "steps": [
+   "Inventory > Items > New.",
+   "Fill Basic and the Purchasing/Inventory tab including a pack size, leave the Sales/Pricing tab empty.",
+   "Click Save."
+  ],
+  "expected": "One pack size entry (or sales pack size copied from purchase) and a clear message for a missing price.",
+  "actual": "Form moves to the other tab with a required error; pack size must be typed twice.",
+  "where": "src/features/inventory/items/inventory-item-form-schema.ts; inventory-item-form-page.tsx onInvalidSubmit",
+  "verify": "Create an item entering the pack size once; Save succeeds.",
+  "owner": "Frontend inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:14": {
+  "status": "in-progress",
+  "note": "Fixed: search is debounced and the export footer no longer adds quantities (features/reports/inventory-items/components/inventory-snapshot-view.tsx:55,318-321); a load error shows a message (:372). Still open: channel columns come from the current page rows only (:96-105) and on error the old rows are not cleared (catch at :81 only sets error).",
+  "summary": "The Inventory Snapshot report builds its channel columns from the rows on the current page, so the grid changes columns when paging and differs from the export. After a failed page load the previous rows stay under the new page number.",
+  "steps": [
+   "Reports > Inventory Items (inventory snapshot), page 1 then page 2: compare channel columns.",
+   "Break the backend call and go to page 3."
+  ],
+  "expected": "Same columns on every page; a failed load empties the table.",
+  "actual": "Columns follow the page; stale rows remain with the error banner.",
+  "where": "src/features/reports/inventory-items/components/inventory-snapshot-view.tsx:81,96-105",
+  "verify": "Page through 3 pages: same columns. Force an error: table empties.",
+  "owner": "Frontend inventory reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:22": {
+  "status": "in-progress",
+  "note": "Part fixed: lot lookups now carry itemId (erp-api/inventory/lot-serial/index.ts:124-128, callers item-fulfillment-form-items-table.tsx:223-238, vendor-return-fulfill-view.tsx:131,462). Still open: no shared useInventoryLotLookup hook; the lookup block is still copied in bin-transfer-item-row.tsx:204, adjustment-item-adjustment-row.tsx:283, packing-house-form-items-table.tsx:194, product-distribution-form-items-table.tsx:239.",
+  "summary": "Four inventory form rows each carry their own copy of the lot/serial lookup code, and the copies drift. The most dangerous drift (lot number resolved without the item, so another item's bin is offered) is now fixed by passing itemId.",
+  "steps": [
+   "Create two items that both have a lot called L-1 in different bins.",
+   "Open a bin transfer or adjustment row for item A and type lot L-1 in the lookup."
+  ],
+  "expected": "Only bins of item A appear.",
+  "actual": "fixed for the item scope; duplicated code remains.",
+  "where": "src/features/inventory/{bin-transfers,adjustments,packing-house,product-distribution}/components/*; src/erp-api/inventory/lot-serial/index.ts",
+  "verify": "Two items sharing lot L-1 show only their own bins in each form.",
+  "owner": "Frontend inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:27": {
+  "status": "in-progress",
+  "note": "Part fixed: gate-pass-detail-modal.tsx:152-154 counts now start empty. Still open: canSubmit requires every count to equal cartons (:160-165), so a shortage cannot be recorded or sent to the backend.",
+  "summary": "At gate-out the checker used to see every carton count already matching and could release a load with one click. Counts now start empty, but a count that differs from the challan simply blocks the button, so a real shortage can never be recorded.",
+  "steps": [
+   "Gate Pass > open a pass awaiting gate-out > Verification section.",
+   "Type a count lower than the expected cartons."
+  ],
+  "expected": "The mismatch can be submitted with a reason or put on hold for the supervisor.",
+  "actual": "Acknowledge stays disabled and a 'counts mismatch' toast shows; the backend never sees the discrepancy.",
+  "where": "src/features/gate-pass/components/gate-pass-detail-modal.tsx:152-190",
+  "tests": [
+   "e2e/tests/gate-pass/03-gate-pass-detail-release.spec.ts"
+  ],
+  "verify": "Enter a lower count: the shortage is saved and the pass shows a discrepancy state.",
+  "owner": "Frontend inventory gate pass",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:28": {
+  "status": "in-progress",
+  "note": "Reject now opens a confirmation dialog that requires a reason (shared ApprovalDecisionActions, shared/components/approval-decision-actions.tsx:24-54; used at stock-transfer-details-page.tsx:198). Still open: Edit on the detail page sits inside the entity.canTakeAction block (:190-197) so a requester who is not an approver still does not see Edit.",
+  "summary": "Rejecting a stock transfer used to take one click with an empty comment. A confirm dialog with a required reason now exists. The Edit button on the detail page is still shown only to people who can approve, while the list shows Edit to the requester.",
+  "steps": [
+   "Inventory > Stock Transfer > open a PENDING transfer as the requester.",
+   "Look for Edit on the detail page; then as an approver click Reject."
+  ],
+  "expected": "Reject asks for a reason; Edit is visible to anyone with the edit permission while PENDING.",
+  "actual": "Reject: fixed. Edit: only visible with canTakeAction.",
+  "where": "src/features/inventory/stock-transfers/components/stock-transfer-details-page.tsx:190-205",
+  "tests": [
+   "INV-03-01",
+   "INV-10-07",
+   "INV-10-08"
+  ],
+  "verify": "As requester (no approve right) open a PENDING transfer: Edit link is visible.",
+  "owner": "Frontend inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:32": {
+  "status": "still-bug",
+  "note": "app/(erp)/pick-items/page.tsx has no permission check (no PERMISSIONS/denyWithoutPermission). Gate-pass, pack-items, ship-items, adjustment, bin-transfer, stock-transfer, petty-cash, packing-house and distribution routes now check permissions. Left without: pick-items, warehouse-map and good-receipt (placeholder pages).",
+  "summary": "Some inventory routes show their full screen and action buttons to a user who lacks the permission, and the backend only refuses with 403 after the form is filled. Most routes are now guarded; the pick-items screen (scan and complete pick buttons) is still not.",
+  "steps": [
+   "Log in as a user without the picking/delivery permission.",
+   "Open /pick-items?source=...&sourceId=<delivery order id> from a link."
+  ],
+  "expected": "A permission-denied state.",
+  "actual": "The pick list and Complete Pick button render.",
+  "where": "src/app/(erp)/pick-items/page.tsx",
+  "verify": "Log in without permission: /pick-items shows the permission state.",
+  "owner": "Frontend inventory",
+  "severity": "low",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:35": {
+  "status": "fixed",
+  "note": "Mutations now return results: stock-transfers/stock-transfer-apis.ts:65-95 returns InventoryMutationResult via toInventoryMutationFailure, petty-cash/index.ts:85-110 and :425-440 return results, receiveStockItems no longer exists. Remaining throwInventoryApiError calls are on reads.",
+  "summary": "Create and update server actions for stock transfers and petty cash used to throw, and production hides thrown messages, so the form said 'failed' with no reason. They now return a typed result with the cleaned reason.",
+  "steps": [
+   "Create a stock transfer for more than the available quantity."
+  ],
+  "expected": "The cleaned reason is shown.",
+  "actual": "fixed: reason returned in the result and shown.",
+  "where": "src/erp-api/inventory/stock-transfers/stock-transfer-apis.ts; petty-cash/index.ts; error-handling.ts",
+  "verify": "Trigger insufficient stock on a stock transfer: the form shows the translated reason.",
+  "owner": "Frontend inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:37": {
+  "status": "in-progress",
+  "note": "Part fixed: item form options report failures (items/index.ts:366-371 readList, loadError at :1366); petty-cash requesters use a dedicated options path (petty-cash/index.ts:164). Still open: distribution item names still come from the first 500 items (see e2e:inventory:distribution-item-name-500), locations fallbacks swallow errors (locations/index.ts:196,223), and getPettyCashFormOptions rejects all three lists if one fails (:176-190).",
+  "summary": "When a dropdown or lookup call fails, several inventory screens show an empty list as if there were no data. The item form now shows a load error when channels or categories fail; other screens still hide failures.",
+  "steps": [
+   "Block the sales-channel call and open Inventory > Items > New.",
+   "Open Petty Cash > New with one list endpoint failing."
+  ],
+  "expected": "An error state with retry.",
+  "actual": "Item form: fixed. Petty cash and location lists: one failure blanks the form or looks empty.",
+  "where": "src/erp-api/inventory/items/index.ts; petty-cash/index.ts; locations/index.ts; product-distribution/lookups.ts",
+  "verify": "Block each lookup in turn: the screen shows the standard load error, not an empty list.",
+  "owner": "Frontend inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:42": {
+  "status": "fixed",
+  "note": "gate-pass-workspace.tsx:~340 loads cleared passes with loadClearedGatePassesAction (any month, not only the visible page).",
+  "summary": "The New Return dialog offered only the gate passes on the table's current page, so an older cleared pass could not be returned. It now loads cleared passes separately.",
+  "steps": [
+   "Gate Pass > New return: look for a cleared pass from a previous month."
+  ],
+  "expected": "Older cleared passes are selectable.",
+  "actual": "fixed: separate cleared-pass query feeds the modal.",
+  "where": "src/features/gate-pass/components/gate-pass-workspace.tsx",
+  "tests": [
+   "e2e/tests/gate-pass/04-gate-pass-return.spec.ts"
+  ],
+  "verify": "A cleared pass from last month appears in the New return list.",
+  "owner": "Frontend inventory gate pass",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:46": {
+  "status": "in-progress",
+  "note": "Snapshot search is now debounced (inventory-snapshot-view.tsx:55 useDebouncedValue 300). Per-row lookups remain: adjustment-item-adjustment-row.tsx:219-262 fires one getItemChannelCount per row and refires on warehouse change, and its catch only blanks on-hand; bin-transfer, packing-house and distribution rows have the same pattern.",
+  "summary": "Typing in the snapshot search used to send one request per keystroke (fixed). Item rows on adjustment, bin transfer, packing house and distribution forms still each fire their own stock lookups and all refire when the warehouse changes.",
+  "steps": [
+   "Inventory > Adjustment > New, add 10 item rows, change the warehouse and watch the network tab."
+  ],
+  "expected": "One batched or cached lookup per item set.",
+  "actual": "One request per row per change.",
+  "where": "src/features/inventory/adjustments/components/adjustment-item-adjustment-row.tsx; bin-transfer-item-row.tsx; packing-house-form-items-table.tsx",
+  "verify": "Ten rows cause no more than one request per row on warehouse change; lookup errors show inline.",
+  "owner": "Frontend inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:47": {
+  "status": "still-bug",
+  "note": "src/erp-api/inventory/locations/index.ts:160-230 walks locations with Promise.all now, but the global fallbacks still fetch every SHELF or BIN in the system (/api/inventory/locations?type=SHELF at ~l.192, type=BIN at ~l.219) when a zone or shelf has no children.",
+  "summary": "Choosing a shelf or bin walks the location tree and, when a zone or shelf has no children, downloads every shelf or bin of every warehouse and filters in the browser. On a large warehouse this is slow and heavy.",
+  "steps": [
+   "Open a form that uses zone, shelf, bin (item receipt inventory details), pick a zone with no shelves, watch the network tab."
+  ],
+  "expected": "A single request for the needed type under that parent (e.g. /api/inventory/locations/{id}/leaves).",
+  "actual": "A system-wide list is downloaded.",
+  "where": "src/erp-api/inventory/locations/index.ts getShelvesByZone, getBinsByShelf",
+  "verify": "Network tab shows no unbounded /api/inventory/locations?type=... call.",
+  "owner": "Frontend inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:49": {
+  "status": "in-progress",
+  "note": "Picking fixtures are gone (pick-items/page.tsx notFound when no source; PICKING_TASKS removed). Still open: adjustments/constants.ts:19-24 hard-coded account list, adjustment-form-view.tsx:114 default '6000245612', adjustments/mappers.ts:88 and :193 default account on edit.",
+  "summary": "The adjustment form offers made-up account numbers ('6000245612 Expense') and defaults one, and on edit gives one to a record that had none. The old fake pick list is already removed.",
+  "steps": [
+   "Inventory > Adjustment > New: open the Adjustment Account dropdown.",
+   "Edit an old adjustment that had no account and look at the account field."
+  ],
+  "expected": "Accounts come from the chart of accounts and nothing is defaulted on edit.",
+  "actual": "Four fixed account numbers; account '6000245612' assigned by default.",
+  "where": "src/features/inventory/adjustments/constants.ts, mappers.ts, components/adjustment-form-view.tsx",
+  "verify": "Dropdown lists real accounts; an old adjustment keeps an empty account.",
+  "owner": "Frontend inventory",
+  "severity": "medium",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "st1111:S16": {
+  "note": "Still open: the Return Receive dialog still filters bins by storage purpose (sales-return-receive-view.tsx:162,273 binStoragePurpose, erp-api/sales/item-receives/index.ts:119-130). A bin with purpose NONE never appears. Whether seeded data should carry a purpose is a data question.",
+  "summary": "In Sales Return > Receive, the bin list is empty because the dialog only offers bins whose storage purpose matches (Returns, Standard ...), and seeded bins have purpose NONE. The tester had to set the purpose in the database. Users have no screen to set a purpose either.",
+  "steps": [
+   "Sales > Sales Return > an approved return > Receive.",
+   "Open the inventory details dialog and pick the storage type, then the bin."
+  ],
+  "expected": "At least the chosen type's bins, or a clear message to set a purpose on the bin.",
+  "actual": "The bin dropdown is empty.",
+  "where": "src/features/sales/sales-return/components/sales-return-receive-view.tsx; src/erp-api/sales/item-receives/index.ts; backend InventoryLocationController (storagePurpose filter)",
+  "verify": "Set a bin purpose RETURNS (location edit or seed) then Receive offers it; with NONE show an explanation.",
+  "owner": "Both inventory + sales",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "st1111:S8": {
+  "note": "Still open (no explanation text found in features/sales/sales-demand/components/sales-demand-form-item-row.tsx; the item select shows the default empty state). Stock is allocated per channel in the backend, so channels without allocation have no items.",
+  "summary": "On the sales demand form, the item dropdown says 'No data' for channels other than Modern Trade, because stock is held per sales channel and only purchase allocation puts stock there. Nothing tells the user why, so it looks broken.",
+  "steps": [
+   "Sales > Demand > New, choose an Other Corporate or Retail customer.",
+   "Open the item dropdown on the first line."
+  ],
+  "expected": "A message such as 'No stock allocated to this channel' or the items of the channel with zero stock.",
+  "actual": "'No data'.",
+  "where": "src/features/sales/sales-demand/components/sales-demand-form-item-row.tsx; backend ChannelAllocation",
+  "verify": "Pick a customer of a channel with no stock: the dropdown explains the reason.",
+  "owner": "Both inventory + sales",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "st1111:S9": {
+  "note": "Still open: adjustment types are write-offs only (adjustments/constants.ts:34-40 DAMAGED, STOLEN, EXPIRED, ASSET, OTHER). Stock Transfer between channels works as a workaround (noted in the source).",
+  "summary": "The only way to add stock from the UI is a purchase receipt, because Inventory Adjustment only offers write-off types. Testing channels other than Modern Trade needs a full purchase cycle or a channel-to-channel stock transfer.",
+  "steps": [
+   "Inventory > Adjustment > New: open the Adjustment Type dropdown.",
+   "Look for any type that increases stock."
+  ],
+  "expected": "An increase type (opening stock, found stock) or a documented way to add channel stock.",
+  "actual": "Only decreasing types exist.",
+  "where": "src/features/inventory/adjustments/constants.ts adjustmentTypeCreateOptions; backend inventory adjustment",
+  "verify": "An adjustment of an increasing type raises the channel's on-hand and creates a ledger row.",
+  "owner": "Both inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "e2e:inventory:closed-routes-decision": {
+  "note": "Closed on purpose, decision still needed: /transfer-order and /courier-status call notFound() (page.tsx comments) and their feature and erp-api folders are deleted; 16 e2e cases are skipped, two 404 cases added (INV-11-11, INV-12-06). Suggested decision: keep closed until a real backend API exists, then delete the skipped cases and the matching tracker items.",
+  "summary": "Transfer Order and Courier Status were fake screens (invented data) and were closed with a 404 on 2026-11-03. The old tracker items and 16 e2e cases that describe them are now obsolete, so the owner must decide: delete them or rebuild the feature against a real backend.",
+  "steps": [
+   "Open /inventory-warehouse/transfer-order and /inventory-warehouse/courier-status."
+  ],
+  "expected": "Decision recorded.",
+  "actual": "Both return 404.",
+  "where": "src/app/(erp)/inventory-warehouse/transfer-order/page.tsx; courier-status/page.tsx; e2e/tests/inventory/11-transfer-order.spec.ts, 12-receipt-courier.spec.ts",
+  "tests": [
+   "INV-11-11",
+   "INV-12-06"
+  ],
+  "verify": "After the decision: tracker items for these screens closed as wontfix, or a backend contract exists.",
+  "owner": "Frontend inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "pt1110:B10": {
+  "note": "Not reproduced from code: purchase-order-inventory-detail-modal.tsx:592-630 handleAutoGenerate fills rows from the Auto Generate Number modal (prefix, digits, start, qty) and keeps the first row's zone, shelf and bin; it only works after the modal is confirmed. Empty zone and shelf boxes follow from no zones being configured in the test data.",
+  "summary": "In the item receipt's Inventory details dialog the tester found 'Auto Generate Number' did not fill the lot field and the Zone and Shelf boxes were empty. By code the button opens a small dialog and generates rows after confirmation; the empty location boxes match a warehouse without zones.",
+  "steps": [
+   "Purchase > Item Receipt > receive a stock item > Inventory details.",
+   "Click Auto Generate Number, enter prefix, digits, start, qty, confirm."
+  ],
+  "expected": "Rows are created with the generated lot or serial numbers.",
+  "actual": "Not reproduced in code reading; needs a manual retry.",
+  "where": "src/features/purchase/purchase-order/components/purchase-order-inventory-detail-modal.tsx:592; purchase-order-auto-generate-number-modal.tsx",
+  "verify": "Confirm the generate dialog: qty rows appear with prefix+number lots.",
+  "owner": "Frontend inventory receipts",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:10": {
+  "status": "still-bug",
+  "note": "src/erp-api/inventory/items/mapper.ts:1019-1042 and :557-562,752-753 still default: empty categoryId becomes 0, unknown profile becomes STANDARD, unknown tracking type becomes LOT, units default 'Pcs'.",
+  "summary": "When an item is saved, the mapper quietly replaces missing or unknown values with defaults (category 0, profile STANDARD, tracking LOT, unit Pcs). That can change an item's stock tracking without the user noticing.",
+  "steps": [
+   "Open an item whose tracking type is unusual (or missing) in Inventory > Items > Edit and Save without changes."
+  ],
+  "expected": "The stored values are sent unchanged or validation fails.",
+  "actual": "Values are rewritten to the defaults.",
+  "where": "src/erp-api/inventory/items/mapper.ts:1019-1042",
+  "verify": "An item with unusual tracking type opens and saves without change.",
+  "owner": "Frontend inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:30": {
+  "status": "still-bug",
+  "note": "adjustment-record-header.tsx:63-86: setPendingDecision(null) runs only in the catch, never after success, so the buttons stay in loading state until the page state changes. Link-sales-order dialog part is fixed (packing-house-link-sales-order-dialog.tsx:69 no preselect).",
+  "summary": "After an adjustment is approved or rejected the Approve and Reject buttons keep spinning until the page refreshes, because the pending flag is cleared only on failure. The packing house link-sales-order dialog problem is already fixed.",
+  "steps": [
+   "Inventory > Adjustment > open a pending record as approver, click Approve."
+  ],
+  "expected": "Buttons recover after the call.",
+  "actual": "Loading state is cleared only on error.",
+  "where": "src/features/inventory/adjustments/components/adjustment-record-header.tsx:63-86",
+  "verify": "Approve once: buttons are not stuck.",
+  "owner": "Frontend inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:34": {
+  "status": "in-progress",
+  "note": "Most facades now encode ids (adjustments/index.ts:106, bin-transfers/index.ts:47, packing-house-books/index.ts:48..134, stock-transfers/stock-transfer-apis.ts:87-103 with a digits-only check, petty-cash/index.ts:104-436, workflow/index.ts:142). Still raw: erp-api/inventory/locations/index.ts:158-251 (server-only module, not a public action) and erp-api/payment-terms/index.ts:172,185.",
+  "summary": "Ids coming from the browser are put into backend URLs; a crafted id could reach another backend path with the user's token. Almost all inventory facades now encode or validate them; locations and payment terms do not yet.",
+  "steps": [
+   "Call the updatePaymentTerm server action with id '1/../x'."
+  ],
+  "expected": "The id is encoded or rejected.",
+  "actual": "Inventory facades: fixed. Payment terms: used raw.",
+  "where": "src/erp-api/payment-terms/index.ts:172,185; src/erp-api/inventory/locations/index.ts",
+  "verify": "Unit test: '1/../x' is rejected or encoded in each facade.",
+  "owner": "Frontend inventory + settings",
+  "severity": "low",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:38": {
+  "status": "in-progress",
+  "note": "Template download now catches errors and revokes the URL after 10s (inventory-item-form-purchasing-inventory-tab.tsx:243-246). Still open: shared/utils/print-carton-labels.ts:27 still falls back to window.print() when the pop-up is blocked.",
+  "summary": "Small failures in downloads and label printing were silent. The template download is fixed. A blocked pop-up still prints the current page instead of the labels.",
+  "steps": [
+   "Pack Items > Complete Pack with the browser blocking pop-ups."
+  ],
+  "expected": "A message tells the operator to allow pop-ups; nothing else prints.",
+  "actual": "The current page is printed.",
+  "where": "src/shared/utils/print-carton-labels.ts:20-29; src/features/packing/pack-items-page.tsx",
+  "verify": "Block pop-ups: a message appears and the page is not printed.",
+  "owner": "Frontend inventory packing",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:40": {
+  "status": "in-progress",
+  "note": "Fixed: stock-transfers/query.ts:26-45 (separate bounded size and page parsers), lot-breakdown/page.tsx:23,92-97 (max 100, page min 1), inventory-location/page.tsx:57. Still raw Number(): stock-out-alert/components/stock-list-view.tsx:30-31 and lot-breakdown-list.tsx:81-82,99-100,128.",
+  "summary": "Page and size values from the URL were parsed carelessly (page clamped like a size, NaN sent to the backend, no upper bound). Stock transfers, lot breakdown and location pages are fixed; the stock-out alert list and the lot breakdown table still use plain Number().",
+  "steps": [
+   "Open /inventory-warehouse/stock-out-alert?page=0&size=abc."
+  ],
+  "expected": "Falls back to page 1 and the default size.",
+  "actual": "NaN or 0 reaches the request.",
+  "where": "src/features/inventory/stock-out-alert/components/stock-list-view.tsx; lot-breakdown/components/lot-breakdown-list.tsx",
+  "verify": "?page=150&size=abc falls back safely on every list.",
+  "owner": "Frontend inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:43": {
+  "status": "still-bug",
+  "note": "petty-cash-list-view.tsx:93-108 still derives the Category Budget tab and New expense period from the range start month while cards and table use the full range.",
+  "summary": "On the petty cash list, if the user picks a date range over several months, cards and table cover the whole range but the Category Budget tab and the New expense link use only the first month, so the numbers disagree.",
+  "steps": [
+   "Inventory > Petty Cash: set the date range January to March.",
+   "Compare the cards with the Category Budget tab."
+  ],
+  "expected": "One period everywhere (restrict the picker or disable the tab for multi-month ranges).",
+  "actual": "Mixed periods.",
+  "where": "src/features/inventory/petty-cash/components/petty-cash-list-view.tsx:93-129",
+  "verify": "Pick Jan to Mar: tabs and cards cover the same period or the tab is disabled.",
+  "owner": "Frontend inventory petty cash",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:48": {
+  "status": "in-progress",
+  "note": "Part fixed: gate-pass page.tsx:34 loads in Promise.all, adjustment-detail-view.tsx:88 loads posting in parallel. Others not rechecked (location page categories, client-fetching lists).",
+  "summary": "A group of small request-saving changes on inventory pages (parallel loading, loading only the active tab, dropping an unused categories call). Some are done; the rest were not individually confirmed.",
+  "steps": [
+   "Open Gate Pass and the Inventory Location page with the network tab open."
+  ],
+  "expected": "Parallel requests, no unused calls.",
+  "actual": "Partly done.",
+  "where": "src/app/(erp)/gate-pass/page.tsx; src/features/inventory/adjustments/components/adjustment-detail-view.tsx; inventory-location",
+  "verify": "Gate pass open shows parallel requests; location page fetches no categories.",
+  "owner": "Frontend inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:50": {
+  "status": "in-progress",
+  "note": "Fixed: item group label uses details.fields.itemGroup (inventory-item-form-basic-section.tsx:112). Still found: hard-coded aria label 'Show image N' (inventory-item-product-image.tsx:66). Other listed files not individually re-checked.",
+  "summary": "A set of hard-coded English texts, literal colours and wrong labels on inventory screens (they show English in the Bangla UI). The item-group label is fixed; others remain or are unchecked.",
+  "steps": [
+   "Switch the app to Bangla and open Inventory > Items > an item with images and the adjustment list."
+  ],
+  "expected": "All labels translated.",
+  "actual": "'Show image N' and others stay English.",
+  "where": "src/features/inventory/items/components/inventory-item-product-image.tsx:66 and the files listed in the review note",
+  "verify": "Bangla UI shows no English labels on these pages.",
+  "owner": "Frontend inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:51": {
+  "status": "in-progress",
+  "note": "Part done: GBP/CAD/USD tabs no longer appear in items/components/inventory-item-shared.tsx. Still found: approver 'md-saju-ahmed' in petty-cash-form-view.tsx:256,351. Other dead code not individually re-checked.",
+  "summary": "Dead code and unused controls in inventory screens (a person's name hard-coded as default approver, unused fields and exports). A cleanup task with no user-visible failure.",
+  "steps": [
+   "Run pnpm lint and grep for the listed symbols."
+  ],
+  "expected": "Unused code removed.",
+  "actual": "Partly removed.",
+  "where": "src/features/inventory/petty-cash/components/petty-cash-form-view.tsx:256,351 and the files listed in the review note",
+  "verify": "Grep finds no references; lint and tsc clean.",
+  "owner": "Frontend inventory",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:inventory:52": {
+  "note": "Still open: eslint-disable at packing-house-form-view.tsx:300, product-distribution-form-view.tsx:225, stock-transfer-form-page.tsx:275; raw fetch at features/shipping/ship-items-page.tsx:151; no shared firstParam in shared/utils.",
+  "summary": "Small tidy-ups: duplicated route helpers, type casts hiding wrong facade return types, disabled hook lint rules and a PDF download that bypasses the erp-api layer. No user-visible failure.",
+  "steps": [
+   "Grep the listed lines."
+  ],
+  "expected": "One shared helper, no casts, facades own downloads.",
+  "actual": "Still present.",
+  "where": "src/features/shipping/ship-items-page.tsx:151; stock-transfer-form-page.tsx:275; packing-house-form-view.tsx:300",
+  "verify": "pnpm lint and pnpm build pass after cleanup.",
+  "owner": "Frontend inventory",
+  "severity": "low",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "e2e:purchase:lc-master-payment-term": {
+  "note": "Still bug: lc-master-form-view.tsx:212,941 has a Due Date only; no billing.paymentTermId is sent. Backend refuses via PaymentTermLookup.require ('Payment term is required', LcMasterMapper.toBillingEntity). PUR-11-05 is a test.fail case.",
+  "summary": "The LC Master (LC cost) form cannot be saved: it asks for a due date but never sends a payment term, and the backend now requires one on every bill. The user gets a 400 error and cannot create the record from the screen.",
+  "steps": [
+   "Purchase > LC Master > New, fill supplier and a charge line, set Due Date.",
+   "Click Save."
+  ],
+  "expected": "The form has a Payment term select and the save succeeds.",
+  "actual": "400 'Payment term is required'.",
+  "where": "src/features/purchase/lc-master/components/lc-master-form-view.tsx:212,941; src/erp-api/purchase/lc-master/types.ts:36; backend LcMasterMapper.toBillingEntity, PaymentTermLookup.require",
+  "tests": [
+   "PUR-11-05 (e2e/tests/purchase/11-new-behaviour.spec.ts)"
+  ],
+  "verify": "After the fix, save the LC master and expect 2xx; POST /api/purchase/lc-master with billing.paymentTermId set returns 2xx.",
+  "owner": "Frontend purchase (LC master)",
+  "status": "still-bug",
+  "severity": "high",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "e2e:purchase:vendor-bill-payment-term": {
+  "note": "Still bug: vendor-bill-generation-view.tsx:667 sends dueDate only, no paymentTermId; the LC bill view does send it (vendor-bill-lc-generation-view.tsx:271). Backend requires it (PaymentTermLookup.require, VendorBillMapper). PUR-01-01 and PUR-05-05 are test.fail.",
+  "summary": "Generating a vendor bill from a received purchase order fails on the screen: the form has a Due Date but no Payment term, and the backend now requires one on every bill. Users cannot bill normal purchase receipts from the UI.",
+  "steps": [
+   "Purchase > Item Receipt: open a received purchase order.",
+   "Click Generate Bill and fill the form (Due Date, account).",
+   "Save."
+  ],
+  "expected": "A Payment term field exists and the bill is created.",
+  "actual": "400 'Payment term is required'.",
+  "where": "src/features/purchase/vendor-bill/components/vendor-bill-generation-view.tsx:342,667; backend VendorBillMapper.toBillingEntity",
+  "tests": [
+   "PUR-01-01",
+   "PUR-05-05"
+  ],
+  "verify": "Generate Bill from a received PO returns success and the bill shows the chosen payment term; API: POST bill with billing.paymentTermId returns 2xx.",
+  "owner": "Frontend purchase (vendor bill)",
+  "status": "still-bug",
+  "severity": "high",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "pt1110:A1": {
+  "ref": "backend deployment/dev@b2597ef11 ; frontend release_beta_1.0.0@05aecf15",
+  "note": "Same as purchase:C-P13 (decision D-11, awaiting client). Code still has the rule: VendorReturnRequestController ~l.67 returnable = paidQty - returnedQty - inFlightQty on fully paid bills (VendorReturnRequestFacadeImpl ~l.179 paidQtyByLineIds). Frontend form shows RETURNABLE 0 without an explanation (vendor-return-form-view.tsx:93-106,301). Not changed.",
+  "summary": "A purchase return can only be made for quantity on fully paid bills, while the bill credit that refunds it must be applied in full to an outstanding bill of the same vendor. A fully paid bill is never outstanding, so the refund cannot be saved, and there is no cash refund path (money back from the vendor).",
+  "steps": [
+   "Purchase > a billed local PO > Authorize Return: while the bill is partly paid the quantity box is disabled and RETURNABLE shows 0.",
+   "Pay the bill in full, create the return, fulfil it, click Refund (creates a Bill Credit).",
+   "On the Bill Credit, apply it: 'Applied amount must equal the bill credit total' and no open bill exists."
+  ],
+  "expected": "A return can be refunded by cash or credit against the paid bill; zero returnable quantity is explained.",
+  "actual": "Refund impossible; no explanation for RETURNABLE 0.",
+  "where": "backend VendorReturnRequestController, VendorReturnRequestFacadeImpl, bill credit apply rule; frontend src/features/purchase/vendor-return/components/vendor-return-form-view.tsx",
+  "verify": "After the business decision: a return for a fully paid bill can be refunded and the credit saved; with returnable 0 the UI says why.",
+  "owner": "Both purchase",
+  "date": "2026-11-13"
+ }
+}

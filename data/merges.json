@@ -1,12 +1,51 @@
 {
- "rv-be:sales:2.1": ["sales:B5", "sales:B6", "e2e27:3"],
- "saleschain:P3-B4": ["sales:B7", "e2e27:1"],
- "rv-be:sales:2.5": ["e2e27:2"],
- "rv-be:sales:4.1": ["sales:B12"],
- "rv-be:sales:2.7": ["sales:B13"],
- "rv-be:sales:4.2": ["saleschain:SC-6"],
- "rv-be:sales:4.3": ["saleschain:SC-8"],
- "purchase:B-P11": ["rv-be:purchase:1"],
- "purchase:B-P3": ["rv-be:purchase:4"],
- "rv-be:purchase:6": ["purchase:B-P5", "rv-be:purchase:9"]
+ "rv-be:sales:2.1": [
+  "sales:B5",
+  "sales:B6",
+  "e2e27:3"
+ ],
+ "saleschain:P3-B4": [
+  "sales:B7",
+  "e2e27:1"
+ ],
+ "rv-be:sales:2.5": [
+  "e2e27:2"
+ ],
+ "rv-be:sales:4.1": [
+  "sales:B12"
+ ],
+ "rv-be:sales:2.7": [
+  "sales:B13"
+ ],
+ "rv-be:sales:4.2": [
+  "saleschain:SC-6"
+ ],
+ "rv-be:sales:4.3": [
+  "saleschain:SC-8"
+ ],
+ "purchase:B-P11": [
+  "rv-be:purchase:1"
+ ],
+ "purchase:B-P3": [
+  "rv-be:purchase:4"
+ ],
+ "rv-be:purchase:6": [
+  "purchase:B-P5",
+  "rv-be:purchase:9"
+ ],
+ "saleschain:SC-4": [
+  "saleschain:P3-B1"
+ ],
+ "rv-be:settings-platform:22": [
+  "saleschain:P3-B3"
+ ],
+ "pt1110:B13": [
+  "purchase:C-P25"
+ ],
+ "saleschain:SC-10": [
+  "e2e27:6"
+ ],
+ "rv-be:purchase:30": [
+  "purchase:B-P1"
+ ]
 }

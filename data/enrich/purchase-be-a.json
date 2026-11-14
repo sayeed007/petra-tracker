@@ -1,0 +1,516 @@
+{
+ "purchase:B-P11": {
+  "note": "still visible in code: VendorPaymentDomainService.validateCommon ~l.196-205 calls VendorBillPaymentStatusService.remainingDue (plain reads, l.125-133) with no row lock; no PESSIMISTIC lock exists on bills (only ApprovalRequestRepository l.31); VendorPaymentWorkflowHandler.post (~l.121) does not re-check. No e2e covers it (no parallel test).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Two vendor payments created at the same moment for one bill both pass the 'remaining due' check because neither sees the other yet. Both get approved and the bill ends paid 1200 of 1000, so the vendor is overpaid and payable goes negative.",
+  "steps": [
+   "Create and approve a vendor bill with grand total 1000.",
+   "Send two POST /api/purchase/vendor-payments in parallel, each with one line applying 600 to that bill.",
+   "Approve both payments (POST /api/workflow/tasks/{taskId}/complete or the Approve button).",
+   "GET /api/purchase/vendor-bills/{id}."
+  ],
+  "expected": "The second parallel create is refused (400 'exceeds the bill's remaining due'); paidAmount stays 600.",
+  "actual": "Both accepted and approved: paidAmount 1200, paymentStatus FULLY_PAID, open balance -200.",
+  "where": "backend payment/service/VendorPaymentDomainService.validateCommon, bill/service/VendorBillPaymentStatusService.remainingDue, payment/handler/VendorPaymentWorkflowHandler.post",
+  "verify": "Repeat steps 1-4 with two parallel calls: exactly one create succeeds (or the second approval fails) and paidAmount = 600; select id,grand_total,paid_amount from vendor_bill where paid_amount>grand_total returns 0 rows.",
+  "owner": "Backend, purchase"
+ },
+ "purchase:B-P12": {
+  "note": "still visible in code: VendorDomainService.validateDelete (sales/business_partner/vendor/service) is an empty body with a TODO about checking purchase orders; handleDeleteDependencies is empty.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A vendor with bills, purchase orders and payments can be hard-deleted through the API. Afterwards documents point to a vendor that no longer exists, so opening a bill returns HTTP 500 and aging reports show 'Vendor #1'. There is no delete button in the UI, so only API users can hit it.",
+  "steps": [
+   "Pick a vendor that has bills, POs and payments.",
+   "DELETE /api/sales/vendors/{id}.",
+   "GET /api/purchase/vendor-bills/{billId} of one of its bills."
+  ],
+  "expected": "DELETE refused (4xx) while any purchase document references the vendor, or the vendor is only deactivated.",
+  "actual": "204 and the vendor is gone; the bill read returns 500, reports show an orphan vendor.",
+  "where": "backend sales/business_partner/vendor/service/VendorDomainService.validateDelete (TODO, empty)",
+  "verify": "DELETE a vendor that has one bill: expect 4xx and the vendor still readable with GET /api/sales/vendors/{id}.",
+  "owner": "Backend, purchase / vendor master"
+ },
+ "purchase:B-P2": {
+  "note": "still visible in code: VendorChallanService.upsert (~l.62-101) reuses the existing challan for the receipt (findByItemReceiptId) and replaces its lists with challan.setLines(new list) / setExtraCosts(new list), while VendorChallan lines and extraCosts are orphanRemoval=true (VendorChallan.java l.58, 63). That is exactly the Hibernate error in the note. VendorBillRepository (l.28-56) lets a new bill in after REJECTED.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "After a vendor bill is rejected the goods receipt should go back to 'not billed' and be billable again. Creating the new bill fails with HTTP 500 because the existing challan's collections are replaced instead of updated, so the receipt can never be billed (bills have no delete endpoint).",
+  "steps": [
+   "Create an approved goods receipt for a PO.",
+   "POST /api/purchase/vendor-bills for that receipt (with challan lines).",
+   "Reject the bill's approval task.",
+   "POST /api/purchase/vendor-bills again for the same receipt."
+  ],
+  "expected": "A new bill is created for the receipt.",
+  "actual": "HTTP 500 JpaSystemException: A collection with orphan deletion was no longer referenced by the owning entity instance: VendorChallan.extraCosts.",
+  "where": "backend bill/service/VendorChallanService.upsert (setLines/setExtraCosts), bill/model/VendorChallan (orphanRemoval collections)",
+  "verify": "Repeat steps 1-4: step 4 returns 201 and the old bill stays REJECTED.",
+  "owner": "Backend, purchase"
+ },
+ "purchase:B-P6": {
+  "note": "still visible in code: BillCreditDomainService.validateSourceReturn (~l.143-160) only requires the return request to be APPROVED and not already credited; billcredit/service never reads fulfilment status or fulfilledQty.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A debit note (bill credit) can be created and approved for a vendor return that has not been physically fulfilled yet. Payable and purchases fall in the books while the goods are still in the warehouse.",
+  "steps": [
+   "Create and approve a vendor return request (POST /api/purchase/vendor-return-requests) but do not fulfil it.",
+   "POST /api/purchase/bill-credits with vendorReturnRequestId of that request and applied lines on a bill.",
+   "Approve the bill credit."
+  ],
+  "expected": "Create is refused until the return is fulfilled (credit qty <= fulfilledQty).",
+  "actual": "201, approval posts the credit; stock was never returned.",
+  "where": "backend billcredit/service/BillCreditDomainService.validateSourceReturn; vendorreturn fulfilment status",
+  "verify": "Repeat steps 1-2: expect 400 saying the return is not fulfilled; after fulfilling, the same call returns 201.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:14": {
+  "note": "still visible in code: VendorReturnFulfillmentService.fulfill l.90 uses vendorReturnRequestRepository.findById and l.155 vendorReturnRequestLineRepository.findById, no lock or @Version; fulfilledQty is rolled up at l.258 from that state. Same as be-A13-1.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Two Fulfil calls for the same return line that run at the same time both read fulfilledQty 0 and both deduct stock. Stock drops twice and fulfilledQty can exceed what was requested.",
+  "steps": [
+   "Have an approved vendor return request with one line of 10 and enough stock.",
+   "Send two POST /api/purchase/vendor-return-fulfillments in parallel, each for 10.",
+   "GET the request and the item stock balance."
+  ],
+  "expected": "One call succeeds, the other is refused with 'exceeds the remaining requested quantity'; stock down by 10 only.",
+  "actual": "Both can succeed (by code), stock down by 20, fulfilledQty 10 or 20.",
+  "where": "backend vendorreturn/service/VendorReturnFulfillmentService.fulfill/fulfillLine",
+  "verify": "Repeat the two parallel calls: second returns 400, stock decreases once, fulfilledQty = returnQty.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:2": {
+  "note": "still visible in code: BillCreditDomainService.outstandingOf (l.206-212) counts only APPROVED payments and credits, VendorBillPaymentStatusService.remainingDue (l.125-133) ignores PENDING credits, and BillCreditWorkflowHandler.approve (l.107-121) does not re-check outstanding.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A pending payment and a pending debit note on the same bill do not see each other, so together they can settle more than the bill. When both are approved the bill shows paid above its total.",
+  "steps": [
+   "Approved bill of 1000.",
+   "POST /api/purchase/vendor-payments applying 1000 to it (leave PENDING).",
+   "POST /api/purchase/bill-credits applying 1000 to the same bill.",
+   "Approve both."
+  ],
+  "expected": "Step 3 is refused (outstanding already claimed) or the second approval fails; paidAmount stays 1000.",
+  "actual": "Both pass; paidAmount 2000, FULLY_PAID.",
+  "where": "backend billcredit/service/BillCreditDomainService.outstandingOf/validateAppliedBills, bill/service/VendorBillPaymentStatusService.remainingDue, billcredit/handler/BillCreditWorkflowHandler.approve, payment/handler/VendorPaymentWorkflowHandler.post",
+  "verify": "Run steps 1-3: step 3 returns 400. Force both PENDING and approve: the second approval fails, paidAmount stays 1000.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:3": {
+  "note": "still visible in code: VendorPrepaymentDomainService.loadUsable (l.203-215) and drawDown (l.228) take only prepayment id and amount; VendorPaymentDomainService l.140 and VendorPaymentWorkflowHandler.post pass no vendor id. Same as be-A12-1.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A payment to vendor A can be funded by vendor B's advance payment. B's unused advance is reduced and A's payable is posted against B's advance account, so both vendor balances are wrong.",
+  "steps": [
+   "Approved prepayment for vendor B.",
+   "POST /api/purchase/vendor-payments for vendor A's bill with paymentMethod PREPAYMENT and vendorPrepaymentId = B's prepayment.",
+   "Approve the payment."
+  ],
+  "expected": "Create refused: 400 'prepayment belongs to a different vendor'.",
+  "actual": "Accepted and approved; B's unusedAmount drops.",
+  "where": "backend prepayment/service/VendorPrepaymentDomainService.loadUsable/drawDown, payment/service/VendorPaymentDomainService.validateCommon",
+  "verify": "Step 2 returns 400; a same-vendor prepayment still returns 201. select count(*) from vendor_prepayment p join vendor_payment pay on pay.vendor_prepayment_id=p.id where pay.vendor_id<>p.vendor_id must be 0.",
+  "owner": "Backend, purchase"
+ },
+ "purchase:B-P1": {
+  "note": "still visible in code: PurchaseOrderDomainService.validateCommon (~l.57-82) only checks itemId, orderedQty>0, exchangeRate>=0; computeAndSetTotals (l.293-319) trusts item.taxAmount and only sets grossAmount when null (l.306). No price, discount or taxRate range checks.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Purchase order lines accept a negative unit price, a discount larger than the line, a negative or huge tax rate, and a client supplied tax amount that is never recomputed. The PO grand total can be zero or negative and it drives approval routing.",
+  "steps": [
+   "POST /api/purchase/orders from an approved requisition with an item unitPrice -1, or discountAmount 100 on a line worth 50, or taxRate 15 with taxAmount 999."
+  ],
+  "expected": "400 for negative price/discount/tax; taxAmount recomputed server side from taxRate.",
+  "actual": "201 with negative or wrong grandTotal (-10, -50, 1049).",
+  "where": "backend order/service/PurchaseOrderDomainService.validateCommon and computeAndSetTotals",
+  "verify": "Repeat each bad line: expect 400; taxRate 15 with taxAmount 999 stores the computed tax; editing quantity updates grossAmount.",
+  "owner": "Backend, purchase"
+ },
+ "purchase:B-P10": {
+  "note": "not fully checked: no connection pool setting is in application*.properties (framework default pool size), so the cause is plausible, but it is a load/config symptom and no e2e runs 20 parallel creates.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "When 20 create requests arrive at the same time, half fail with HTTP 500 'Could not open JPA EntityManager' because the database connection pool is used up. Users see random server errors under load.",
+  "steps": [
+   "Fire 20 parallel POST /api/purchase/requisitions (or any create) with a valid body."
+  ],
+  "expected": "All 20 succeed or wait for a connection; none return 500.",
+  "actual": "About 10 of 20 return 500 CannotCreateTransactionException (hard test 2026-11-01).",
+  "where": "backend datasource pool settings in src/main/resources/application*.properties (none found); length of transactions",
+  "verify": "Repeat the 20 parallel creates against deployment/dev: expect 0 HTTP 500; watch pool active connections during the run.",
+  "owner": "Backend, purchase"
+ },
+ "purchase:B-P3": {
+  "note": "still visible in code: VendorBillGenerationService.buildItemsFromRequest (l.255-295) copies billedQty from the request; VendorBillDomainService.validateLines (l.138-155) checks ids only; nothing compares with the receipt line acceptedQty.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A vendor bill can be raised for more units than were received (billed 110 of a receipt of 100). Payable and stock cost then exceed the goods that arrived.",
+  "steps": [
+   "Approved receipt of 100 units.",
+   "POST /api/purchase/vendor-bills (multipart request) with billedQty 110 for that receipt line."
+  ],
+  "expected": "400 'Billed quantity 110 exceeds accepted quantity 100'.",
+  "actual": "201, grand total for 110 units.",
+  "where": "backend bill/service/VendorBillGenerationService.buildItemsFromRequest, bill/service/VendorBillDomainService.validateLines",
+  "verify": "billedQty = accepted+1 returns 400; = accepted returns 201.",
+  "owner": "Backend, purchase"
+ },
+ "purchase:B-P4": {
+  "note": "still visible in code: VendorBillDomainService.validateLines (l.138-155) has no range checks on billedQty, billUnitPrice, landingCost or taxRate; only challanUnitPrice is checked (VendorChallanService.requirePositive).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A vendor bill line can carry a negative unit price or tax rate, or a price of 1e12. The bill total goes negative or absurd and is posted to payables.",
+  "steps": [
+   "POST /api/purchase/vendor-bills with billUnitPrice -3, or taxRate -15, or billUnitPrice 1e12 on a valid receipt line."
+  ],
+  "expected": "400 naming the bad line.",
+  "actual": "201 with negative or huge grand total.",
+  "where": "backend bill/service/VendorBillDomainService.validateLines, dto VendorBillItemLineDTO (no constraints)",
+  "verify": "Each bad value returns 400; a normal bill keeps its grand total.",
+  "owner": "Backend, purchase"
+ },
+ "purchase:B-P8": {
+  "note": "still visible in code: no vendor or payment-term status check in order/service/PurchaseOrderConversionService, PurchaseOrderDomainService or selection/service/VendorSelectionDomainService; VendorQuotationDomainService.requireVendorExists only checks existence (EBusinessPartnerStatus is used only to list local vendors, l.680).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "An INACTIVE vendor or INACTIVE payment term can still be put on new quotations, vendor selections and purchase orders, although the payment term API says new documents may not select an inactive term.",
+  "steps": [
+   "Deactivate a vendor (toggle status) and a payment term.",
+   "POST /api/purchase/orders (or vendor-quotations / vendor-selections) with that vendorId and paymentTermId."
+  ],
+  "expected": "400 'vendor/payment term is inactive'.",
+  "actual": "201.",
+  "where": "backend order/service/PurchaseOrderConversionService, quotation/service/VendorQuotationDomainService.requireVendorExists, selection/service/VendorSelectionDomainService",
+  "verify": "Step 2 returns 400 for each; active ones still return 201.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:12": {
+  "note": "still visible in code: @Version exists only on WorkflowInstance and WorkflowTask in the backend; no purchase or sales entity has it.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Two users can edit the same pending document and the later save silently overwrites the first, because entities carry no version column. It is a hardening gap rather than a visible failure.",
+  "steps": [
+   "Open the same pending PO in two sessions.",
+   "PUT /api/purchase/orders/{id} from session A with one set of lines, then from session B with another."
+  ],
+  "expected": "The second save is refused with a conflict (409) because the data changed.",
+  "actual": "Last write wins, no warning.",
+  "where": "backend purchase and sales entities (VendorBill, VendorPayment, PurchaseOrder, ...) missing @Version",
+  "verify": "Send the two PUTs with the same loaded version: the second returns 409 once @Version and a version field in the DTO exist.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:13": {
+  "note": "still visible in code: VendorPrepaymentDomainService.drawDown (l.227-236) = loadUsable (findById) then save, no lock and no @Version. Sequential claims are caught at approval; only parallel approvals race.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Two payments funded by the same advance, approved at the same instant, can both read the full unused amount and both draw it down, so more is posted than the advance holds.",
+  "steps": [
+   "Approved prepayment 1000.",
+   "Two PREPAYMENT payments of 800 against it, both pending.",
+   "Approve both at the same time."
+  ],
+  "expected": "One succeeds, the other fails 'not enough unused amount'; unusedAmount 200.",
+  "actual": "Possible lost update: unusedAmount 200 while 1600 posted.",
+  "where": "backend prepayment/service/VendorPrepaymentDomainService.drawDown",
+  "verify": "Parallel approvals as above: final unused_amount = 200 and one approval error.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:16": {
+  "note": "still visible in code: PurchaseOrderReturnQuantityService.applyFulfillment l.178 and applyProformaInvoiceFulfillment l.148 use findById then add returnedQty with no lock; ItemReceiptPoSyncService and VendorBillPoSyncService have no lock either (no Lock annotation in them).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Quantity counters on PO and proforma lines (received, billed, returned) are read, changed and saved without a lock. Two documents approved at the same time can overwrite each other's update, so the PO line shows wrong quantities.",
+  "steps": [
+   "PO line of 10; two item receipts of 6 each, both pending.",
+   "Approve both at the same time."
+  ],
+  "expected": "The second approval fails ('only 4 remains') and receivedQty is 6.",
+  "actual": "Both can pass validation and an update is lost.",
+  "where": "backend vendorreturn/service/PurchaseOrderReturnQuantityService, itemreceipt/service/ItemReceiptPoSyncService, bill/service/VendorBillPoSyncService, ItemReceiptOverReceiptValidator",
+  "verify": "Parallel approvals: received_qty never exceeds ordered and equals the sum of approved receipts.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:17": {
+  "note": "still visible in code: PurchaseOrderConversionService.validateAndResolve (l.62-68) loads POs by requisition and checks in Java; purchase_order has no unique index on requisition_id (PurchaseOrder.java l.58 plain column) and the requisition row is not locked. Sequential duplicates are blocked.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Two users converting the same approved requisition at the same time can both pass the 'one live PO per requisition' check and create two POs, doubling the purchase commitment.",
+  "steps": [
+   "Approved requisition.",
+   "Send two POST /api/purchase/orders for it in parallel."
+  ],
+  "expected": "One 201, the other 400 'already has a purchase order'.",
+  "actual": "Both 201 (by code, race).",
+  "where": "backend order/service/PurchaseOrderConversionService.validateAndResolve; missing partial unique index on purchase_order(requisition_id)",
+  "verify": "Parallel creates: exactly one succeeds.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:18": {
+  "note": "still visible in code: RequesterApprovalService.recordRequesterDecision (~l.130) uses findFirstByDocumentTypeAndDocumentIdAndPhaseAndIsCurrentTrue, not the existing locking finder ApprovalRequestRepository.findCurrentForUpdate (l.31).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "When the last two requesters of a requisition approve at the same moment, each sees the other still pending, so the main approval never starts and the requisition stays in 'pending requester approval' forever.",
+  "steps": [
+   "Requisition with two requesters and the ALL_APPROVERS rule.",
+   "Both requesters approve at the same time (two parallel requester-decision calls)."
+  ],
+  "expected": "Requisition moves on to the main workflow; approvedCount 2.",
+  "actual": "Both steps approved but the request stays PENDING, requisition stuck.",
+  "where": "backend approval/service/RequesterApprovalService.recordRequesterDecision, approval/repository/ApprovalRequestRepository.findCurrentForUpdate",
+  "verify": "Parallel approvals: requisition status is no longer PENDING_REQUESTER_APPROVAL and approved_count = 2.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:19": {
+  "note": "still visible in code: LcDomainService.applyCustomsMovement (l.416-446) calls mergeAdvanceReceiptLines on every RELEASED_FROM_CUSTOMS save and only posts stock when !advanceReceivePosted; once posted, a changed channel split is merged but stock is not moved.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "After an LC's goods are released from customs and posted to in-transit stock, saving the release again with different channel quantities (same total) changes the lines but not the stock. Later receipts then find a channel short or negative.",
+  "steps": [
+   "Approved LC; PUT its tracking status to RELEASED_FROM_CUSTOMS with channel split A=10, B=20.",
+   "Repeat the PUT with A=20, B=10."
+  ],
+  "expected": "Second save refused (400 'already posted') or stock is moved by the difference.",
+  "actual": "200, lines change, in-transit stock per channel stays.",
+  "where": "backend lc/service/LcDomainService.applyCustomsMovement, mergeAdvanceReceiptLines",
+  "verify": "Repeat both saves: second returns 400 and IN_TRANSIT balances are unchanged.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:20": {
+  "note": "still visible in code: PurchasePostingController.getPosting (l.35-55) accepts any EFinanceDocumentType and passes it to accountingFacade.getDocumentPosting; the @RequiresPermission is anyOf and not matched to the type.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A user with only one purchase view permission can read the journal entry of any other document type, such as a sales invoice, through the purchase postings endpoint. It exposes accounting data across modules.",
+  "steps": [
+   "Log in as a user who has only purchase.vendor_bill.view.",
+   "GET /api/purchase/postings?documentType=SALES_INVOICE&documentId={id}."
+  ],
+  "expected": "400 'not a purchase document' (or 403).",
+  "actual": "200 with the invoice journal lines.",
+  "where": "backend purchase/posting/PurchasePostingController.getPosting",
+  "verify": "Step 2 returns 400/403; documentType=PURCHASE_VENDOR_BILL still returns the posting.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:22": {
+  "note": "still visible in code: ItemReceiptDomainService.validateUpdate (l.77-80) runs validateCommon + overReceiptValidator.validateOnSave on the request dto (type and source from the body); ItemReceiptOverReceiptValidator uses .ifPresent (l.69, 88) so a missing source line passes silently.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Editing a pending goods receipt lets the client name any PO line, source type or item. The over-receipt check then runs on the wrong line and approval bumps the received quantity of a different PO.",
+  "steps": [
+   "Pending item receipt for PO 7.",
+   "PUT /api/purchase/item-receipts/{id} with a line sourceDocumentItemId taken from PO 9 and another itemId."
+  ],
+  "expected": "400 'line does not belong to PO 7'.",
+  "actual": "200; at approval PO 9's receivedQty increases.",
+  "where": "backend itemreceipt/service/ItemReceiptDomainService.validateUpdate/mergeItems, ItemReceiptOverReceiptValidator",
+  "verify": "Step 2 returns 400; a normal quantity edit still returns 200.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:23": {
+  "note": "still visible in code: PurchaseOrderDomainService.validateUpdate (l.73-76) is validateCommon only; PurchaseOrderConversionService.validateAndResolve runs only on create; no workflow check on update.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A purchase order that is waiting for approval can be edited freely (vendor, vendor selection, prices) while an approver already has the task open. The approver may approve something different from what they opened, and no new approval cycle starts.",
+  "steps": [
+   "Create a LOCAL PO and leave it PENDING_APPROVAL.",
+   "PUT /api/purchase/orders/{id} with a different vendorId (not the selection's vendor)."
+  ],
+  "expected": "400 (conversion rules re-applied) or the approval restarts.",
+  "actual": "200, vendor changed under the running approval.",
+  "where": "backend order/service/PurchaseOrderDomainService.validateUpdate, order/facade/PurchaseOrderFacadeImpl.update, PurchaseOrderConversionService",
+  "verify": "Step 2 returns 400; a valid edit keeps or restarts the approval with a fresh task.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:24": {
+  "note": "code looks fixed (PurchaseOrderConversionService.resolveLocalVendor l.96-99 now throws 400 unless selection.getStatus()==APPROVED); needs API/test proof. The earlier note (status never read) is stale.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A LOCAL purchase order used to be creatable from a vendor selection that was still draft or pending, bypassing the selection approval. The conversion service now requires APPROVED.",
+  "steps": [
+   "Create a vendor selection and leave it PENDING_APPROVAL.",
+   "POST /api/purchase/orders LOCAL with its vendorSelectionId."
+  ],
+  "expected": "400 'Only an APPROVED vendor selection can be converted'.",
+  "actual": "Fixed by code (not yet proven on a running backend): 400 expected.",
+  "where": "backend order/service/PurchaseOrderConversionService.resolveLocalVendor ~l.96",
+  "verify": "POST /api/purchase/orders {procurementType:LOCAL, requisitionId, vendorSelectionId:<pending selection>, items:[...]}: expect 400; with an APPROVED selection expect 201.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:25": {
+  "note": "still visible in code: VendorSelectionDomainService.validateUpdate (l.80-82) = validateCommon on the body, which requires dto.requisitionId (l.88) but never compares it with the stored selection.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Updating a vendor selection with another requisition's id and quotation passes. When approved, the first requisition ends up with the other requisition's vendor.",
+  "steps": [
+   "Rejected vendor selection of requisition A.",
+   "PUT /api/purchase/vendor-selections/{id} with requisitionId = B and a quotation of B."
+  ],
+  "expected": "400 'requisitionId cannot be changed'.",
+  "actual": "200, selected vendor changes to B's quotation vendor.",
+  "where": "backend selection/service/VendorSelectionDomainService.validateUpdate/updateFields, selection/facade/VendorSelectionFacadeImpl.update",
+  "verify": "Step 2 returns 400; A's own other quotation still works.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:31": {
+  "note": "still visible in code: ProformaInvoiceDomainService.validateItem (called l.105 and l.127) has no unitPrice or vatRate sign check; the conversion quantity cap was removed on purpose while the Swagger text on ProformaInvoiceController.convert still promises it. Item-vs-PO match and 'convert one PO twice' stay business decisions.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Converting a purchase order to a proforma invoice accepts negative prices and rates, and the API documentation says more is checked than the code does. Someone relying on the docs would expect a quantity limit that does not exist.",
+  "steps": [
+   "POST /api/purchase/proforma-invoices/convert with a line unitPrice -5 and a quantity above the PO line."
+  ],
+  "expected": "400 for negative price/rate; Swagger text matches what is enforced.",
+  "actual": "201.",
+  "where": "backend proformainvoice/service/ProformaInvoiceDomainService.validateItem, ProformaInvoiceConversionService, ProformaInvoiceController.convert (Swagger)",
+  "verify": "unitPrice -1 returns 400; Swagger updated or the quantity rule enforced as the product owner decides.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:32": {
+  "note": "still visible in code: VendorQuotationDomainService.requireItemsBelongToRequisition (~l.510-525) only null-checks quotedQty and unitPrice; no sign check, no duplicate requisitionItemId check. The bad-cell 500 part is reported fixed in status_evidence (not re-read here).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A vendor quotation can list the same requisition item twice, or carry zero or negative quantities and prices, so a bad quotation can become the 'best' one. Spreadsheet upload had the same gaps.",
+  "steps": [
+   "POST /api/purchase/vendor-quotations with items [{requisitionItemId:X,quotedQty:-5,unitPrice:0},{requisitionItemId:X,...}]."
+  ],
+  "expected": "400 for duplicate item, quotedQty <= 0, negative price/discount.",
+  "actual": "201.",
+  "where": "backend quotation/service/VendorQuotationDomainService.requireItemsBelongToRequisition, VendorQuotationExcelService",
+  "verify": "Duplicate item, unitPrice -5 and quotedQty 0 each return 400; a text cell in an upload returns 400 with a row number.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:33": {
+  "note": "still visible in code: VendorQuotationStatusPolicy.EDITABLE = DRAFT, SUBMITTED, ACTIVE; no code in selection/ or quotation/ sets the quotation to SELECTED when a vendor selection uses it, so it stays editable and deletable.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "After a vendor selection has been made on a quotation, the quotation can still be changed or deleted. Prices can move after approval, and deleting it hits a database constraint and returns a raw 500.",
+  "steps": [
+   "Create a vendor selection on quotation Q.",
+   "PUT /api/purchase/vendor-quotations/{Q}, then DELETE it."
+  ],
+  "expected": "409 'used by vendor selection ... can no longer be changed/deleted'.",
+  "actual": "200 on PUT; DELETE gives 500 (foreign key) per the earlier test.",
+  "where": "backend quotation/policy/VendorQuotationStatusPolicy, quotation/service/VendorQuotationDomainService.validateUpdate/validateDelete, selection services",
+  "verify": "Both calls return 409, not 500.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:35": {
+  "note": "still visible in code: ItemReceiptFacadeImpl.delete (l.259-262), LcFacadeImpl.delete (l.223-226), VendorPrepaymentFacadeImpl.delete (l.177-180), ProformaInvoiceFacadeImpl.delete (l.353-356), BillCreditFacadeImpl.delete (l.192-196) call the domain delete with no workflowFacade.cancel; PurchaseOrderFacadeImpl is the good model. Orphan tasks are hidden in the inbox (TaskService l.148) but the rows stay.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Deleting a document that is waiting for approval leaves its workflow instance and approver task alive in the database. The approver may still be able to act on a task whose document no longer exists.",
+  "steps": [
+   "Create an item receipt (workflow starts).",
+   "DELETE /api/purchase/item-receipts/{id}.",
+   "Look at workflow_instance, workflow_task and approval_request for it."
+  ],
+  "expected": "Instance CANCELLED, task closed, approval_request.is_current false.",
+  "actual": "Instance stays RUNNING, task PENDING, is_current true.",
+  "where": "backend ItemReceiptFacadeImpl.delete, BillCreditFacadeImpl.delete, LcFacadeImpl.delete, VendorPrepaymentFacadeImpl.delete, ProformaInvoiceFacadeImpl.delete",
+  "verify": "After step 2: workflow_task for that instance has no PENDING row and the instance is CANCELLED.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:36": {
+  "note": "still visible in code: VendorReturnRequestFacadeImpl.update (l.146-152) only checks the EDIT permission and domain status; no approvedCount check and no workflow restart.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A vendor return request can be changed after the first approver already approved it. The second approver then approves a different document than the first one saw.",
+  "steps": [
+   "Vendor return with a 2-step approval; approver 1 approves a return of 5.",
+   "Creator PUT /api/purchase/vendor-return-requests/{id} with returnQty 50.",
+   "Approver 2 approves."
+  ],
+  "expected": "Step 2 refused (400) or the approval restarts.",
+  "actual": "200 and the edited return gets approved.",
+  "where": "backend vendorreturn/facade/VendorReturnRequestFacadeImpl.update, VendorReturnRequestDomainService.updateFields",
+  "verify": "Step 2 returns 400 after the first approval.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:38": {
+  "note": "still visible: no default_batch_fetch_size in src/main/resources and no @BatchSize in the backend; list facades map lazy children per row.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "List pages (bills, POs, proforma invoices, payments, exports) load the lines, billing and attachments of each row with separate queries. A page of 20 rows needs dozens of queries, so lists get slow as data grows.",
+  "steps": [
+   "Enable SQL logging.",
+   "POST /api/purchase/vendor-bills/filter with size 20 and count the statements."
+  ],
+  "expected": "A small constant number of queries per request.",
+  "actual": "Query count grows with the number of rows (performance only, results are correct).",
+  "where": "backend VendorBillFacadeImpl.getByFilter, PurchaseOrderFacadeImpl, ProformaInvoiceFacadeImpl, application.properties",
+  "verify": "With hibernate statistics, a size-20 bill list issues under 8 statements.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:39": {
+  "note": "still visible: VendorPaymentFacadeImpl.getEligibleBills (~l.250-260) loads all APPROVED bills of the vendor unpaged and calls remainingDue (findById + SUM) per bill.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Opening the payment form loads every approved bill of the vendor and runs 2 or more queries per bill. A vendor with hundreds of bills makes the form slow.",
+  "steps": [
+   "GET /api/purchase/vendor-payments/eligible-bills?vendorId={V} for a vendor with many approved bills, with SQL logging."
+  ],
+  "expected": "A small constant number of queries per request.",
+  "actual": "Query count grows with the number of rows (performance only, results are correct).",
+  "where": "backend payment/facade/VendorPaymentFacadeImpl.getEligibleBills, bill/service/VendorBillPaymentStatusService.remainingDue",
+  "verify": "Statement count is about 4 regardless of bill count; amountDue values unchanged.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:40": {
+  "note": "still visible: ItemPurchaseOrderQueryService.openPurchaseOrderQuantityByItem and openProformaInvoiceQuantityByItem loop over itemIds with 2 queries each.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The Open PO and Open PI columns of the inventory overview run several queries for every item on the page, so the overview gets slower with each row.",
+  "steps": [
+   "Open the inventory overview page of 20 items with SQL logging."
+  ],
+  "expected": "A small constant number of queries per request.",
+  "actual": "Query count grows with the number of rows (performance only, results are correct).",
+  "where": "backend purchase/order/service/ItemPurchaseOrderQueryService, inventory/item/service/ItemInventoryQueryService ~l.145",
+  "verify": "20 items issue at most 4 statements for these columns; quantities equal the old result.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:41": {
+  "note": "still visible: ItemReceiptItem has no @BatchSize on demandSplits, inventoryDetails or damagedInventoryDetails; ItemReceiptFacadeImpl.enrichBinLocations (~l.380) is only partly memoised.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Opening a goods receipt with many lines loads the split, detail and damaged-detail rows line by line, plus a location lookup per row. A 30-line receipt costs roughly a hundred queries.",
+  "steps": [
+   "GET /api/purchase/item-receipts/{id} for a 30-line receipt with SQL logging."
+  ],
+  "expected": "A small constant number of queries per request.",
+  "actual": "Query count grows with the number of rows (performance only, results are correct).",
+  "where": "backend itemreceipt/model/ItemReceiptItem, ItemReceiptFacadeImpl.getById/enrichBinLocations, ItemReceiptStockPostingService",
+  "verify": "Statement count below 15 and flat in line count.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:42": {
+  "note": "still visible: RequisitionFacadeImpl.getAll (l.211-213) calls enrichRequesters per row; RequisitionStockAnalysisService.analyze loops per item with 4 queries and the endpoint has no cap on itemIds.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The requisition list fetches requesters row by row, and the stock analysis runs four queries per item with no limit on the number of items, so a big request can overload the server.",
+  "steps": [
+   "Call the requisition stock-analysis endpoint with 40 itemIds, and list requisitions with size 20, with SQL logging."
+  ],
+  "expected": "A small constant number of queries per request.",
+  "actual": "Query count grows with the number of rows (performance only, results are correct).",
+  "where": "backend requisition/facade/RequisitionFacadeImpl.getAll/enrichRequesters, requisition/service/RequisitionStockAnalysisService.analyze, RequisitionController itemIds",
+  "verify": "List of 20 under 15 statements; stock analysis of 40 items at most 5; more than the cap returns 400.",
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:5": {
+  "note": "still visible in code: VendorBillGenerationService.buildItemsFromRequest (l.255-295) has no duplicate itemReceiptItemId check and no check that all accepted receipt lines are present; validateLines checks ids only. Partial billing may be intended (open business question in the work plan).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A bill can list the same receipt line twice or leave receipt lines out. A duplicated line doubles the billed quantity on the PO and the cost posted; a partial bill marks the whole receipt as billed so the missing lines can never be billed.",
+  "steps": [
+   "Approved receipt with lines A and B.",
+   "POST /api/purchase/vendor-bills with billedItems listing A twice (or only A)."
+  ],
+  "expected": "400 'Receipt line A appears more than once' (and a decision on partial bills).",
+  "actual": "201; PO billedQty counted twice on approval; receipt flips to BILLED.",
+  "where": "backend bill/service/VendorBillGenerationService.buildItemsFromRequest, bill/service/VendorBillPoSyncService",
+  "verify": "Duplicate line returns 400; full set returns 201.",
+  "owner": "Backend, purchase"
+ }
+}

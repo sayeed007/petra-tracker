@@ -1,0 +1,543 @@
+{
+ "rv-be:settings-platform:7": {
+  "note": "Dev test controller still @Profile({\"dev\",\"test\"}) (DevWorkflowTestController l.20); NotificationController.getRegistrationInfo l.59 still has no @RequiresPermission. Part fixed: TaskService.getTask (~l.331) now refuses callers who may not act (callerMayAct -> 404).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Some platform endpoints only need a login. A normal user can read tenant/queue/public-key data from the notification registration endpoint, and the dev workflow test controller (which can list and change all workflows) is also switched on for the deployed test profile.",
+  "steps": [
+   "Log in as any user without admin rights on a server running the test profile.",
+   "GET /dev/test/workflow/instances (also /tasks and /audit): full workflow tables are returned.",
+   "POST /dev/test/workflow/seed: workflows are changed.",
+   "GET /api/cns/registration-info with the same token: tenant id, queue name, lookup URL and CNS public key are returned."
+  ],
+  "expected": "Dev controller exists only on the dev profile; registration-info needs an admin permission.",
+  "actual": "Both are reachable by any logged-in user on test.",
+  "where": "backend shared/workflow/controller/DevWorkflowTestController (class annotation), shared/controller/NotificationController.getRegistrationInfo, shared/export/job/controller/ExportJobController.submit (no explicit permission; check it uses the source checker)",
+  "tests": [],
+  "verify": "On the test deployment: GET /dev/test/workflow/instances with a non-admin token must return 404/403. GET /api/cns/registration-info with a non-admin token must return 403.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:8": {
+  "note": "Part fixed: UserAdminService.updateUserStatus (~l.243) now refuses platform operators (400 'Cannot change the status of a platform operator'). Still missing: a self check; UserAdminController.updateUserStatus (l.156-161) passes no current user id and the service does not compare ids. Needs API proof.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "An administrator with the permission user.account.edit can switch a user account off. The platform-operator part is now guarded, but an admin can still deactivate their own account (locking themselves out).",
+  "steps": [
+   "Log in as a tenant admin (user.account.edit).",
+   "PATCH /api/admin/users/{ownId}/status with {\"active\":false}.",
+   "PATCH /api/admin/users/{platformAdminId}/status with {\"active\":false}."
+  ],
+  "expected": "Step 3 returns 400. Step 2 returns 400 'You cannot deactivate your own account'.",
+  "actual": "By code: step 3 is refused (400); step 2 is accepted and the admin is deactivated.",
+  "where": "backend auth/admin/UserAdminService.updateUserStatus, auth/admin/UserAdminController.updateUserStatus",
+  "tests": [],
+  "verify": "PATCH /api/admin/users/{ownId}/status {\"active\":false} as that user: expect 400. Same call on a platform operator id: expect 400.",
+  "owner": "Backend, settings-platform"
+ },
+ "rv-be:settings-platform:9": {
+  "note": "Code unchanged: RbacManagementServiceImpl.validateRoleAssignableToCustomer (l.318-324) blocks only platform-only roles and PLATFORM_SUPER_ADMIN; assignRoleToUser (~l.196-222) has no caller-vs-role or self-assignment check. The rule needs a business answer first (source 'Needs a business answer'), so status stays open.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A person with only user.account.edit can give themselves a powerful tenant role such as TENANT_SUPER_ADMIN, and rbac.role.edit can change system roles. There is no rule yet about who may hand out which role.",
+  "steps": [
+   "Log in as a user holding only user.account.edit.",
+   "Call the assign-role-to-user endpoint of RbacManagementController with the own user id and role code TENANT_SUPER_ADMIN.",
+   "Re-login and check the extra permissions."
+  ],
+  "expected": "403 unless the caller already holds that role (rule to be agreed with the product owner).",
+  "actual": "By code the assignment succeeds and takes effect at once.",
+  "where": "backend rbac/controller/RbacManagementController (~l.144-155), rbac/service/impl/RbacManagementServiceImpl.assignRoleToUser/replaceUserRole/validateRoleAssignableToCustomer",
+  "tests": [],
+  "verify": "After the rule is agreed: assign TENANT_SUPER_ADMIN as a user with only user.account.edit; expect 403; as a tenant super admin expect 2xx.",
+  "owner": "Backend, settings-platform"
+ },
+ "saleschain:P3-B6": {
+  "note": "Part looks fixed: GenericWorkflowCompiler.validate (~l.338-376) now returns 400 for empty steps, a step with no approvers, duplicate approvers and slaHours < 0. Still missing by code: unknown approver role/user id is not checked, slaHours 0 and priority <= 0 are accepted. DRAFT skips validation by design. Needs API proof.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The approval-rule screen sends POST /api/workflow/definitions/configure. Earlier the backend accepted nonsense (unknown role, no steps, SLA 0, bad conditions) and documents of that type then waited forever for an approval nobody could give. Empty-steps and no-approver cases are now refused, but the other cases still look accepted.",
+  "steps": [
+   "POST /api/workflow/definitions/configure with status ACTIVE, entityType SalesOrder, trigger ON_SUBMIT and steps:[{\"approvers\":[{\"assigneeType\":\"ROLE\",\"assigneeId\":\"NO_SUCH_ROLE\"}],\"slaHours\":0}].",
+   "Repeat with priority 0 and with a condition on a field the entity does not have."
+  ],
+  "expected": "400 with a readable message for unknown role, SLA 0, priority <= 0, wrong-type condition.",
+  "actual": "By code: unknown role and SLA 0 are accepted (200); steps:[] and negative SLA give 400.",
+  "where": "backend shared/workflow/utils/GenericWorkflowCompiler.validate, WorkflowDefinitionController.configure, WorkflowConditionCatalogService.validateRules",
+  "tests": [],
+  "verify": "Run step 1 on deployment/dev: expect 400 naming the role; steps:[] expect 400 'At least one approval step is required'; slaHours:-5 expect 400.",
+  "owner": "Backend, settings-platform"
+ },
+ "rv-be:settings-platform:14": {
+  "note": "JwtUtil.isTokenValid does not read claim 'purpose' (only set at JwtUtil l.105). Part fixed: User.sessionsRevokedAt (JwtUtil l.139-144) now ends sessions on revokeSessions and ERP deactivation, but resetUserPassword and AccountServiceImpl.changePassword do not set it.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A short single-use SSO token meant for HRMS is also accepted as a normal API login token for its lifetime, and resetting a user's password does not sign out sessions that already exist, so a stolen token keeps working.",
+  "steps": [
+   "Obtain an SSO handshake token (SSO exchange flow, JwtUtil.generateSsoToken).",
+   "GET /api/auth/me/access with Authorization: Bearer <sso token>.",
+   "Separately: log in as user A, then as admin reset A's password; call any API with A's old token."
+  ],
+  "expected": "SSO token is refused (401). Old tokens are refused after a password reset.",
+  "actual": "By code both are still accepted.",
+  "where": "backend config/security/JwtUtil.isTokenValid (~l.118-146), auth/admin/UserAdminService.resetUserPassword (~l.270), auth/service/impl/AccountServiceImpl.changePassword",
+  "tests": [],
+  "verify": "Step 2 expect 401. After reset, the old token expects 401 (set sessionsRevokedAt in reset/change).",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:15": {
+  "note": "AuthTokenFilter still logs 'Processing request' (l.56) and 'No JWT token found' (l.84) at INFO and the request payload at INFO (l.136); CorsConfig.corsConfigurationSource (l.19) uses setAllowedOriginPatterns(\"*\") with credentials, allowed methods omit PATCH.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Every request writes INFO log lines including up to 1 KB of body (customer names, phones), and the API answers cross-origin requests from any website with credentials allowed.",
+  "steps": [
+   "Send a POST with a body to any /api endpoint and read the server log: payload appears at INFO.",
+   "Send a preflight OPTIONS with Origin: https://example.invalid: the origin is echoed back in Access-Control-Allow-Origin with credentials true."
+  ],
+  "expected": "DEBUG-level logs, payload logging behind a flag, CORS restricted to the frontend origins.",
+  "actual": "Wide-open CORS and INFO body logging.",
+  "where": "backend config/security/AuthTokenFilter (l.56, 84, 136), config/CorsConfig",
+  "tests": [],
+  "verify": "OPTIONS with a foreign Origin returns no Access-Control-Allow-Origin; default log level shows no request bodies.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:16": {
+  "note": "MediaController: TOKEN_TTL = 3600 s (l.40) but javadoc at l.97 says 60 s; Cache-Control max-age=55 (l.114); token stored as the token itself (l.50), so it is not tied to a user or attachment.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The documentation says the public media token lasts 60 seconds, the code makes it last one hour, and any token opens the public preview of every attachment id. The binding problem is the larger security item (PB-3 in the source).",
+  "steps": [
+   "GET /api/media/generate-token as user A: expiresInSeconds is 3600.",
+   "Use the token on /api/public/media/{idA}/preview and on /api/public/media/{idB}/preview: both open."
+  ],
+  "expected": "Docs and code agree; token bound to the attachment id (and optionally the user).",
+  "actual": "Mismatch and unbound token confirmed by code.",
+  "where": "backend shared/controller/MediaController (generateToken l.48, publicPreview l.97-114)",
+  "tests": [],
+  "verify": "A token issued for id 1 must return 401 on /api/public/media/2/preview; javadoc matches TOKEN_TTL.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:17": {
+  "note": "RbacManagementServiceImpl.validateAssignmentScopeRules (l.326-334) still rejects an empty scope set only for RoleType.BUSINESS.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A non-business role can be assigned with globalAccess=false and no scopes. The permission check says yes, but scoped lists show nothing, so the same grant gives two different answers.",
+  "steps": [
+   "Pick a role whose roleType is not BUSINESS (SYSTEM or TEMPLATE).",
+   "Call the assign-role endpoint (RbacManagementController) with globalAccess=false and no scopeIds.",
+   "Open a scoped list as that user."
+  ],
+  "expected": "400 'requires scopeIds or globalAccess=true' for every role type.",
+  "actual": "By code the assignment is accepted.",
+  "where": "backend rbac/service/impl/RbacManagementServiceImpl.validateAssignmentScopeRules",
+  "tests": [],
+  "verify": "Assign a non-BUSINESS role with globalAccess=false and no scopes: expect 400.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:18": {
+  "note": "WorkflowActorResolver.isAdmin() (l.76-83) returns true whenever an authentication exists. No caller found outside the class.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A helper named isAdmin() answers yes for every logged-in user. Nothing calls it today, but the first endpoint that uses requireAdmin() would be unprotected.",
+  "steps": [
+   "Read WorkflowActorResolver.isAdmin/requireAdmin.",
+   "Any code that calls requireAdmin() lets a non-admin through."
+  ],
+  "expected": "isAdmin checks the platform admin role, or the methods are deleted.",
+  "actual": "Always true when logged in.",
+  "where": "backend shared/workflow/application/WorkflowActorResolver.isAdmin/requireAdmin",
+  "tests": [],
+  "verify": "Compile after deleting both (grep shows no caller), or unit test: a non-admin makes requireAdmin throw ForbiddenException.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:19": {
+  "note": "SpelConditionCompiler (~l.187-198) still concatenates rule.getValue() raw for GREATER_THAN/GTE/LESS_THAN/LTE.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A workflow trigger rule with a numeric operator pastes the typed value into an expression. A value like '0 or true' makes the trigger match every document, so a typo or abuse sends all documents into the wrong approval flow.",
+  "steps": [
+   "POST /api/workflow/definitions/configure with a trigger condition {field: amount, operator: GREATER_THAN, value: \"0 or true\"}, status ACTIVE.",
+   "Submit any document of that type."
+  ],
+  "expected": "400 'Operator needs a number'.",
+  "actual": "By code it compiles to '#amount > 0 or true'.",
+  "where": "backend shared/workflow/utils/SpelConditionCompiler (GREATER_THAN..LESS_THAN_OR_EQUALS branches), WorkflowConditionCatalogService.validateRules",
+  "tests": [],
+  "verify": "Step 1 must return 400; values 10 and \"10.5\" still save.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:20": {
+  "note": "EmailTemplateRenderer.render (l.22-28) replaces placeholders with raw values (no HtmlUtils.htmlEscape); WorkflowSeederRbacSupport.resolveModule (l.86-91) returns sales or inventory only.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Values like a user's first name are placed into the HTML email unescaped, so markup typed into a name appears in the welcome mail (which can carry a temporary password). Separately the dev seeder files accounting permissions under the inventory module.",
+  "steps": [
+   "Create a native user via POST /api/admin/users/native with firstName '<b>x</b>' and sendEmail=true.",
+   "Read the queued welcome email body."
+  ],
+  "expected": "Name appears as &lt;b&gt;x&lt;/b&gt;.",
+  "actual": "Raw <b>x</b> is inserted.",
+  "where": "backend shared/service/EmailTemplateRenderer.render, shared/workflow/init/WorkflowSeederRbacSupport.resolveModule",
+  "tests": [],
+  "verify": "Unit test: render with value '<b>x</b>' returns escaped text; seeding accounting.budget.view creates module 'accounting'.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:27": {
+  "note": "Not fixed by code: TableViewRequest has only @NotBlank on tableId (no @Size); CompanyRequestDTO has no @NotBlank/@Size; ExportRequestDTO has no page/size caps; AttachmentDTO still has filePath (l.16, 29); Permission.version still a manual Integer (l.48-50); enums ApprovalStageStatus.RETURN_FOR_CORRECTION vs RETURNED_FOR_CORRECTION still differ.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Several settings, RBAC and export request objects lack length and range limits, so overlong input ends in a raw 500 instead of a clear 400, reversed role-assignment dates are accepted, and the attachment storage key is returned to the browser.",
+  "steps": [
+   "POST /api/ui/table-views with a 101-character name.",
+   "POST /api/exports with size 1000000.",
+   "POST /api/companies with a name longer than 255 characters."
+  ],
+  "expected": "400 with a field message each.",
+  "actual": "500 or accepted.",
+  "where": "backend modules/ui/tableview/dto/TableViewRequest, organization/dto/CompanyRequestDTO, shared/export/ExportRequestDTO, rbac/dto/AssignRoleRequestDTO, shared/dto/AttachmentDTO, rbac/model/Permission",
+  "tests": [],
+  "verify": "Each call above returns 400.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:28": {
+  "note": "UserRepository (l.18-24) has case-sensitive findByUserId/existsByUserId; the schema has only V1__initial_schema.sql and no lower() unique index.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "'EMP-001' and 'emp-001' can exist as two accounts because uniqueness is case-sensitive, and the 'already in use' check passes for the second one.",
+  "steps": [
+   "POST /api/admin/users/native with userId 'Test-1'.",
+   "POST the same with userId 'test-1'."
+  ],
+  "expected": "Second call returns 409 'user_id already in use'.",
+  "actual": "Second account is created.",
+  "where": "backend auth/model/User (unique columns), auth/repository/UserRepository, DB uq_users_user_id / users_email_key",
+  "tests": [],
+  "verify": "Step 2 expects 409.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:30": {
+  "note": "TransactionSeriesConfigServiceImpl.update (l.44-56) loads with getById and copies nextSequence (l.52) with no FOR UPDATE; generateNextId uses findByETransactionTypeForUpdate.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Saving the numbering settings form can overwrite the live counter with an old value while documents are being numbered, so a document number can be issued twice.",
+  "steps": [
+   "Open Settings > Transaction Series and keep the form open.",
+   "Create several documents of that type in another session (the counter moves).",
+   "Save the open form: PUT /api/transaction-series-config/{id} with the old nextSequence."
+  ],
+  "expected": "Counter never goes backwards; update takes the same row lock.",
+  "actual": "Counter is set back.",
+  "where": "backend organization/service/TransactionSeriesConfigServiceImpl.update",
+  "tests": [],
+  "verify": "After step 3 the next generated number must be higher than the last issued one.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:31": {
+  "note": "TableViewRepository.findByUserIdAndTableIdAndIsDefaultTrue returns Optional (l.15); TableViewDomainService (l.59-61, 127-132) demotes then saves without a lock; the V1 schema has only a non-unique idx_table_views_user_table.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Two quick saves of a table view marked default give two defaults for one user and table; after that loading the default view fails with a server error until someone edits the data.",
+  "steps": [
+   "Send two POST /api/ui/table-views at the same time with isDefault=true for one tableId.",
+   "GET /api/ui/table-views/default?tableId=..."
+  ],
+  "expected": "Exactly one default; GET returns 200.",
+  "actual": "Two default rows and a 500 on GET.",
+  "where": "backend modules/ui/tableview/service/TableViewDomainService, repository/TableViewRepository, table_views table",
+  "tests": [],
+  "verify": "After step 1 only one row has is_default; step 2 returns 200.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:32": {
+  "note": "WorkflowEngine.start (l.112-117) is still check-then-insert; Long.parseLong(instance.getEntityId()) remains at l.399 and l.423.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Two simultaneous submissions of the same document: the second hits the unique index and the user sees an error instead of the idempotent result. A workflow with a non-numeric entity id fails only at its final approval step and rolls it back.",
+  "steps": [
+   "Submit the same document twice in parallel (e.g. the submit endpoint of a purchase order from two threads).",
+   "Start a workflow for an event-driven type with a non-numeric entity id and approve it."
+  ],
+  "expected": "Both calls return the same instance id; a bad entity id is refused at start.",
+  "actual": "500/409 on the second; NumberFormatException at the end.",
+  "where": "backend shared/workflow/application/WorkflowEngine.start, invokeHandler/onSentForRework",
+  "tests": [],
+  "verify": "Parallel starts return the same instance id.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:39": {
+  "note": "AttachmentHandler.storeAttachment (l.36-62) is @Transactional and uploads to MinIO inside it; MediaController l.72, 82, 113 build 'filename=\"...\"' by hand without escaping; content type comes from the client.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "File upload holds a database connection while it talks to storage, can leave an orphan file if the insert fails, and a file name containing a quote breaks the download header.",
+  "steps": [
+   "POST /api/media/upload with a file named a\"b.pdf.",
+   "GET /api/media/{id}/download and read Content-Disposition."
+  ],
+  "expected": "Valid, escaped header; no orphan object on failure.",
+  "actual": "Header contains a raw quote.",
+  "where": "backend shared/service/AttachmentHandler.storeAttachment, shared/controller/MediaController, ExportJobController",
+  "tests": [],
+  "verify": "Step 2 header parses; a simulated repository failure removes the MinIO object.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:40": {
+  "note": "AttachmentHandler.deleteAttachment (l.109-113) deletes the MinIO file first (l.111) then the DB row.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "If the database delete fails or rolls back, the attachment row stays but its file is gone and later downloads fail.",
+  "steps": [
+   "Attach a file to a document that references it.",
+   "DELETE /api/media/{id}: the DB delete fails (reference) after the file was removed."
+  ],
+  "expected": "Row deleted first, object removed after commit.",
+  "actual": "File removed first.",
+  "where": "backend shared/service/AttachmentHandler.deleteAttachment, shared/export/job/ExportJobService.cleanupOlderThan",
+  "tests": [],
+  "verify": "With a mocked MinioService: when the repository delete throws, deleteFile is never called.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:47": {
+  "note": "ApprovalHistoryService still calls findById per instance (l.163), findByInstanceId in prefetchNames (l.572) and findByInstanceIdOrderByCreatedAtAsc (l.187); only the definitions batch (l.585) is batched.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The approval-history tab runs about three queries per approval cycle, so a document edited many times opens slowly.",
+  "steps": [
+   "Edit and resubmit one approval document about 20 times.",
+   "Open its approval history with SQL logging on."
+  ],
+  "expected": "A fixed small number of queries.",
+  "actual": "About 3 queries per cycle.",
+  "where": "backend shared/workflow/application/ApprovalHistoryService.assemble/prefetchNames/buildCycle/buildStages",
+  "tests": [],
+  "verify": "SQL log count drops from ~3N+4 to ~4 with identical JSON.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:48": {
+  "note": "NativeUserIdGenerator.generateNext (l.19-31) still loops existsByUserId from nativeReservedMin.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The 'new native user' form asks for a suggested user id and the backend probes ids one at a time, so with thousands of users it runs thousands of queries on every open.",
+  "steps": [
+   "GET /api/admin/users/native/suggested-user-id with many native users present and SQL logging on."
+  ],
+  "expected": "One max() query.",
+  "actual": "One existsByUserId query per id.",
+  "where": "backend auth/policy/NativeUserIdGenerator, UserAdminController (suggested-user-id)",
+  "tests": [],
+  "verify": "Query count per call is 1.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:49": {
+  "note": "User.roles is still @ElementCollection EAGER (User.java l.81); UserDetailsServiceImpl.loadUserByUsername (l.35-37) throws InactiveAccountException before any password check.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Every authenticated request loads the legacy roles table for the user, and a login attempt for a deactivated account is told 'inactive' even with a wrong password, which reveals which accounts exist and are switched off.",
+  "steps": [
+   "POST /api/public/auth/login for a deactivated user with a wrong password.",
+   "Compare with an unknown user id."
+  ],
+  "expected": "Same 401 for both.",
+  "actual": "The inactive message appears for the first.",
+  "where": "backend config/security/UserDetailsServiceImpl, auth/model/User.roles, auth/service/impl/AuthServiceImpl.login",
+  "tests": [],
+  "verify": "A wrong password for an inactive user returns the same 401 as for an unknown user.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:51": {
+  "note": "EmailDeliveryStatus.SENT/FAILED are never set; only QUEUED is written (EmailNotificationService l.194, EmailCommunication l.115).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The email log screens always show 'QUEUED' even for mails that were sent or dead-lettered.",
+  "steps": [
+   "Trigger an email (e.g. create a user with sendEmail=true).",
+   "GET /api/email-communications."
+  ],
+  "expected": "Status changes to SENT or FAILED.",
+  "actual": "Stays QUEUED.",
+  "where": "backend shared/emailnotification/service/EmailNotificationService, shared/events/email/EmailRequestedListener",
+  "tests": [],
+  "verify": "After delivery the row shows SENT; a forced failure shows FAILED.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:52": {
+  "note": "GlobalExceptionHandler (l.536-543) still handles IllegalArgumentException with the generic handler built from the exception; HttpStatus.valueOf at l.502 remains.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Internal Java error texts can reach the client as a 400 and server bugs are reported as client errors; module-specific constraint names are hard-coded in the shared handler.",
+  "steps": [
+   "Trigger an Enum.valueOf failure with a bad enum value in a request body or filter."
+  ],
+  "expected": "Fixed generic text, no class names.",
+  "actual": "Raw exception text in the body.",
+  "where": "backend shared/exception/GlobalExceptionHandler",
+  "tests": [],
+  "verify": "The response body for a bad enum contains no class name.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:53": {
+  "note": "Grouped item, partly re-checked: NotificationController.getRegistrationInfo still has no permission; other sub-points (PDF font, export dates, SearchFilter wildcard escaping, FileHelper stub) not individually re-read.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A bundle of small leftovers: an unprotected registration-info endpoint, PDF export without Bengali font support, date handling in exports, unescaped LIKE wildcards in search, a stub file helper.",
+  "steps": [
+   "GET /api/cns/registration-info as a non-admin.",
+   "Search a list with the text 50% and observe the wildcard match."
+  ],
+  "expected": "Permission check and escaped wildcards.",
+  "actual": "Open endpoint and unescaped search.",
+  "where": "backend shared/controller/NotificationController, shared/export/*, filter/SearchFilter, helper/FileHelper",
+  "tests": [],
+  "verify": "Registration-info returns 403 for a non-admin; a search for '50%' matches only the literal.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:54": {
+  "note": "Grouped item, partly re-checked: InternalApiKeyFilter l.47 still compares keys with equals; CorsConfig still omits PATCH; other sub-points (HRMS exception text, SEPARATED NPE, stale javadoc) not re-read.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A group of low-risk tidy-ups: non-constant-time key comparison, HRMS error text returned to callers, a possible NullPointerException on a malformed HRMS 'separated' event, CORS missing PATCH.",
+  "steps": [
+   "Send POST /api/internal/identity/sync with eventType SEPARATED and no ids."
+  ],
+  "expected": "400 with a clear message.",
+  "actual": "Likely 500.",
+  "where": "backend config/security/InternalApiKeyFilter, auth/hrms/*Client, auth/service/impl/IdentitySyncServiceImpl.handleSeparated",
+  "tests": [],
+  "verify": "SEPARATED with blank ids returns 400; key compare uses MessageDigest.isEqual.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:55": {
+  "note": "WorkflowDefinitionSeeder.seedPettyCashApproval (l.47-51) still names workflow/definitions/petty-cash-approval.json; resources/workflow/definitions holds only po-approval-flow and sales-order-approval.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The dev-only workflow seeder always fails after publishing two workflows because a petty-cash file is missing, and a second run clashes on name/version. Only affects dev setup.",
+  "steps": [
+   "POST /dev/test/workflow/seed on a dev profile server."
+  ],
+  "expected": "200; on re-run versions v1 then v2.",
+  "actual": "IllegalStateException; a re-run fails on uq_name_version.",
+  "where": "backend shared/workflow/utils/WorkflowDefinitionSeeder, src/main/resources/workflow/definitions",
+  "tests": [],
+  "verify": "Run the seed twice on dev: both return 200.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:56": {
+  "note": "No hibernate.jdbc.time_zone or user.timezone found in application*.properties, pom or Dockerfile (grep empty); schema is V1 with TIMESTAMP columns.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Times are stored without a time zone, so saved values are right only while every server runs in the same zone; another zone would shift approval SLA deadlines and audit times.",
+  "steps": [
+   "Run two instances with different TZ, create a workflow with an SLA, compare due_at."
+  ],
+  "expected": "Zone pinned (e.g. UTC) in config.",
+  "actual": "Zone follows the JVM.",
+  "where": "backend src/main/resources/application*.properties, V1__initial_schema.sql",
+  "tests": [],
+  "verify": "Compare one existing creation_time with the wall clock to learn the zone, then pin it; the SLA escalates at the expected time.",
+  "owner": "Backend, settings-platform",
+  "status": "still-bug"
+ },
+ "purchase:C-P20": {
+  "note": "Behaviour still present by code: when no active workflow matches, handlers confirm directly (VendorBillWorkflowHandler ~l.88 'no active workflow matched'; BillCreditController l.59 'auto-approves when none is configured'). Owner decision pending.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "If the approval rule for vendor bills is switched to inactive or draft, new bills skip approval and are posted straight away. This is an approval bypass caused only by configuration.",
+  "steps": [
+   "Settings > Workflow: set the vendor-bill approval rule to INACTIVE.",
+   "Create and submit a vendor bill (Purchase > Vendor Bills).",
+   "Observe it is approved and posted without an approver."
+  ],
+  "expected": "Refuse to deactivate the last rule, or make auto-approve an explicit setting.",
+  "actual": "Auto-approves silently.",
+  "where": "backend modules/purchase/bill/handler/VendorBillWorkflowHandler, shared/workflow no-match path, WorkflowDefinitionService.toggleStatus",
+  "tests": [],
+  "verify": "After the decision: deactivating the last active bill rule returns 409, or bills stay pending.",
+  "owner": "Backend, settings-platform / purchase"
+ },
+ "purchase:C-P26": {
+  "note": "Code looks addressed: WorkflowEntityType lists purchase.vendor_bill.approve, purchase.vendor_return_request.approve and purchase.bill_credit.approve (the debit-note document), and the RBAC seed declares them. Needs API proof that the roles screen lists them and approving is refused without them.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The roles screen could not express 'may approve vendor bills' because no such permission key existed. Keys now appear in the code for bill, bill credit (debit note) and vendor return request.",
+  "steps": [
+   "GET /api/rbac/permissions and look for purchase.vendor_bill.approve.",
+   "Assign a role without it and try to approve a bill."
+  ],
+  "expected": "Keys exist and approval requires them.",
+  "actual": "Keys exist in code; enforcement unproven.",
+  "where": "backend shared/workflow/enums/WorkflowEntityType, RBAC seed (RbacBootstrapSeeder)",
+  "tests": [],
+  "verify": "GET /api/rbac/permissions: expect purchase.vendor_bill.approve, purchase.bill_credit.approve, purchase.vendor_return_request.approve; approving a bill without the key returns 403.",
+  "owner": "Backend, purchase / settings-platform"
+ },
+ "saleschain:C16": {
+  "note": "Not resolved: no template or mail relay answer recorded; the email log still never leaves QUEUED (see rv-be:settings-platform:51). Needs verification on an environment with a mail server.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The system has 102 email actions but no template had been saved and the test stack has no mail relay, so customer emails were never proven end to end.",
+  "steps": [
+   "Settings > Email templates: save a template for SALES_DEMAND.CREATED.",
+   "Create a sales demand and check the mail and GET /api/email-communications."
+  ],
+  "expected": "Mail delivered, log shows SENT.",
+  "actual": "Not verifiable on the test stack; log stays QUEUED.",
+  "where": "backend shared/emailnotification/*, EmailTemplateRenderer; frontend Settings email templates",
+  "tests": [],
+  "verify": "On an environment with a mail relay: save a template, trigger the event, receive the mail.",
+  "owner": "Both, settings-platform"
+ },
+ "saleschain:C5": {
+  "note": "Backend still has no reference check: SalesChannel update (modules/inventory/channel/service, l.88 setActive) just stores the flag; e2e SET-10-01 shows a business type toggles off and on freely. Decision still open.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A business type (sales channel) can be switched off while customers, items and stock still use it, and screens decide behaviour from the channel NAME, so a rename also breaks them.",
+  "steps": [
+   "Settings > Business Type: switch off a type that customers use (PUT /api/inventory/sales-channels/{id} with active=false).",
+   "Create a sales demand for a customer of that type."
+  ],
+  "expected": "Block deactivation while in use, or define what happens; send behaviour flags from the backend.",
+  "actual": "Returns 200 and customers keep selling.",
+  "where": "backend modules/inventory/channel/*; frontend business type screens",
+  "tests": [
+   "SET-10-01"
+  ],
+  "verify": "After the decision: deactivating a used channel returns 409.",
+  "owner": "Both, settings-platform / sales"
+ },
+ "saleschain:C6": {
+  "note": "Unchanged: WorkflowEntityType has sales entries only for demand, order, return, credit memo (and product distribution); no invoice, receipt, delivery or deposit. Decision still open.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Approval rules can only be set for four sales documents, so a rule such as 'invoices above a limit need manager approval' cannot be configured.",
+  "steps": [
+   "Settings > Workflow > new rule: open the document type list."
+  ],
+  "expected": "Invoice and receipt (and an amount field on order/invoice) are selectable.",
+  "actual": "Only demand, order, return and credit memo.",
+  "where": "backend shared/workflow/enums/WorkflowEntityType, workflow-condition-catalog.yml",
+  "tests": [],
+  "verify": "After the decision: GET /api/workflow/condition-catalog lists Invoice with grandTotal.",
+  "owner": "Backend, settings-platform / sales"
+ }
+}

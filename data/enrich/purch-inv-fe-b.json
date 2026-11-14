@@ -1,0 +1,557 @@
+{
+ "pt1110:B1": {
+  "note": "Frontend half still there: app/(erp)/purchase/purchase-requisition/new/page.tsx:122 sets receiveBy to options.receivers[0]. Backend half (admin missing from the Receive By list, approval assigned to that user) not checked here.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A new purchase requisition pre-selects the first employee in the list as 'Receive By'. That user may have no Purchase access, and the requester approval is assigned to them, so the requisition sits in 'Pending Requester Approval' and even the platform admin gets no Approve button.",
+  "steps": [
+   "Log in as a user who can create requisitions and open Purchase > Purchase Requisition > New.",
+   "Leave 'Receive By' as pre-filled (first employee), save and submit.",
+   "Open the requisition as the platform admin: no Approve button on Pending Requester Approval."
+  ],
+  "expected": "Receive By defaults to the logged-in user (or stays empty and required), and an admin can always approve.",
+  "actual": "Defaults to the first employee of the list; the requisition stays stuck.",
+  "where": "frontend src/app/(erp)/purchase/purchase-requisition/new/page.tsx:122; src/features/purchase/purchase-requisition/components/purchase-requisition-form-view.tsx:990; backend requisition approval assignment",
+  "verify": "Create a requisition without touching Receive By: the field shows the current user and the requester can approve it.",
+  "owner": "Both purchase",
+  "status": "still-bug",
+  "severity": "high"
+ },
+ "e2e:purchase:payment-save-stuck-after-refusal": {
+  "note": "Not reproducible by reading: bill-payment-create-view.tsx:266 usePurchaseSubmit returns false on a refusal, use-purchase-submit.ts throws SaveRefused so useSubmitGuard releases pending (use-submit-guard.ts:77-84). The code path looks right; the intermittent hang needs a browser run.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "After the 'exceeds available prepayment balance' refusal on a prepayment payment, the next valid Save sometimes stays in a loading state and sends nothing. Seen only intermittently in the e2e run.",
+  "steps": [
+   "Purchase > Bill Payment > New, method Prepayment, pick a prepayment with a small unapplied balance.",
+   "Enter an amount larger than the balance and Save: refusal message.",
+   "Correct the amount and Save again."
+  ],
+  "expected": "Second Save sends POST /api/purchase/vendor-payments and redirects.",
+  "actual": "Intermittently the button shows loading and no request is sent (e2e PUR-06-12).",
+  "where": "src/features/purchase/bill-payment/components/bill-payment-create-view.tsx:266; src/features/purchase/shared/use-purchase-submit.ts; src/shared/hooks/use-submit-guard.ts",
+  "verify": "Repeat the steps about 10 times in the browser with the network tab open; every second Save must send a request.",
+  "owner": "Frontend purchase",
+  "tests": [
+   "PUR-06-12 (test.fail, intermittent)",
+   "PUR-06-09"
+  ]
+ },
+ "pt1110:B3": {
+  "note": "The quotation payment term is not used when building the PO seed: erp-api/purchase/orders/index.ts:1182 seeds billingTerms '' and the preferredQuotation block (l.1160-1247) never reads its paymentTermId. Backend VendorBillMapper.toDTO now derives the bill due date from bill date + payment term, so the 'due date = bill date' half follows once the term reaches the bill.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A quotation with payment term 'Net 30' is chosen as preferred, but the purchase order created from it shows Payment Terms '-'. The term then does not reach the bill, so the due date falls on the bill date and the bill looks overdue at once.",
+  "steps": [
+   "Purchase > Purchase Requisition: create a requisition whose quotation has payment term Net 30, approve and select the vendor.",
+   "Generate the PO from the requisition (preferred quotation).",
+   "Open the PO: Payment Terms shows '-'."
+  ],
+  "expected": "PO form is pre-filled with the quotation's payment term (Net 30).",
+  "actual": "Payment term empty on the PO form and detail.",
+  "where": "src/erp-api/purchase/orders/index.ts:1160-1247 and :1182; src/features/purchase/purchase-order/components/purchase-order-form-view.tsx:363",
+  "verify": "Create a PO from a quotation with Net 30: Billing terms is pre-selected and the saved PO shows Net 30.",
+  "owner": "Frontend purchase",
+  "status": "still-bug"
+ },
+ "purchase:B-P9": {
+  "note": "Backend: VendorBillDTO (purchase/bill/dto/VendorBillDTO.java) still has no postingStatus/postingError field, so a bill whose journal FAILED cannot be flagged in list or detail. The GL Impact tab reads /api/purchase/postings and e2e 01-bill-to-payment.spec.ts:65-69 shows it for a posted bill; the FAILED case is covered by no test.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A vendor bill can be approved while its accounting journal fails (for example a missing account mapping). The bill is then payable although no payable was booked, and nothing on the bill list or header tells the user; only the posting log shows it.",
+  "steps": [
+   "Remove the Accounts Payable mapping for the vendor category (Settings > Accounting > Category mapping).",
+   "Approve a vendor bill (vendor bill decision endpoint under /api/purchase/vendor-bills/{id}).",
+   "GET /api/purchase/vendor-bills/{id} and GET /api/purchase/postings; open the bill's GL Impact tab and the bill list."
+  ],
+  "expected": "Bill DTO carries a posting status; list and detail show 'Posting failed', and payment is blocked or warned.",
+  "actual": "Bill DTO has no posting field; list shows an ordinary approved bill; only /api/purchase/postings and /api/accounting/posting-exceptions show FAILED.",
+  "where": "backend purchase/bill VendorBillDTO, VendorBillWorkflowHandler; frontend vendor-bill-detail-tabs.tsx, vendor-bill list",
+  "verify": "After the failing approval, GET /api/purchase/vendor-bills/{id} must include a posting status FAILED with reason; GET /api/accounting/posting-exceptions lists it.",
+  "owner": "Both purchase"
+ },
+ "rv-fe:purchase:1.1": {
+  "note": "Bill credit total is now rounded to the paisa and compared with moneyEquals: bill-credit-edit-view.tsx:336 roundMoney(subtotal+vatTotal), :475 moneyEquals(totals.applied, totals.grandTotal); fix log commit 24e4ad11.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A bill credit of 3 x 10.55 at 7.5% VAT is 34.02375. The form used to auto-fill 34.02 while the backend compared exactly and refused with a message nothing on screen explained.",
+  "steps": [
+   "Purchase > Bill Credit > New from a fulfilled vendor return of 3 x 10.55 with 7.5% VAT.",
+   "Let the form auto-fill the applied amount and Save."
+  ],
+  "expected": "Credit saves.",
+  "actual": "fixed: total and applied amount are rounded to 2 decimals and compared at the paisa. Whether the backend accepts the rounded value depends on its own rounding rule (not run).",
+  "where": "src/features/purchase/bill-credit/components/bill-credit-edit-view.tsx:336,475; src/shared/utils/money.ts",
+  "verify": "Save a credit of 3 x 10.55 at 7.5% VAT; it saves and posts 34.02.",
+  "owner": "Frontend purchase",
+  "status": "fixed"
+ },
+ "rv-fe:purchase:10.2": {
+  "note": "Fixed: bill credit open bills (status filter and all pages), PO and requisition vendor options (filterAllVendors, erp-api/purchase/orders/index.ts:1074, requisitions/index.ts:1149). Still capped: LC master new/edit pages load vendors with size 100 (app/(erp)/purchase/lc-master/new/page.tsx:43, [id]/edit/page.tsx:41); the fallback in lc-master-form-view.tsx:133 runs only when the list is empty.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Some selects load only the first 100 rows. With more than 100 vendors the 101st never appears in the LC master vendor select.",
+  "steps": [
+   "Have more than 100 vendors.",
+   "Purchase > LC Master > New and open the Vendor select: only 100 are offered."
+  ],
+  "expected": "Every vendor can be found (paged or searched).",
+  "actual": "LC master vendor select stops at 100.",
+  "where": "src/app/(erp)/purchase/lc-master/new/page.tsx:43; src/app/(erp)/purchase/lc-master/[id]/edit/page.tsx:41; src/features/purchase/bill-payment/actions.ts:144 (prepayments size 100)",
+  "verify": "With 120 vendors the LC master select reaches the last vendor.",
+  "owner": "Frontend purchase",
+  "status": "in-progress"
+ },
+ "rv-fe:purchase:8.5": {
+  "note": "List column prints the real margin amount: lc-import/components/columns.tsx:185 formatDecimal(row.lcMarginAmount ?? row.marginAmount ?? 0); share percent only on the detail page (lc-import-basic-information-section.tsx:73).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The LC list column 'LC MARGIN AMOUNT' used to print the share percentage (LC total / PI total) such as '60%'.",
+  "steps": [
+   "Purchase > LC Import list, read the LC Margin Amount column."
+  ],
+  "expected": "Amount of the margin.",
+  "actual": "fixed: amount shown. Open point: the detail card 'LC margin' still shows a percent, and that the backend sends lcMarginAmount (erp-api/purchase/lc/types.ts:48) is not verified.",
+  "where": "src/features/purchase/lc-import/components/columns.tsx:178-185",
+  "verify": "Open an LC with a known margin; the column equals it.",
+  "owner": "Frontend purchase",
+  "status": "fixed"
+ },
+ "rv-fe:purchase:9.1": {
+  "note": "Done: PI Email tab loads real emails, Settlement VAT panel only with accountingInfo (fix log commit 316e990f); fulfil shipment date no longer invented (vendor-return-fulfill-view.tsx:102). Left: fulfil form email tab still hard-codes an empty state 'No email communication recorded' (vendor-return-fulfill-view.tsx:937, English literal, no data source).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Several detail tabs showed data the backend never sends. Most are fixed; the vendor return fulfil form still has a placeholder email tab with untranslated text.",
+  "steps": [
+   "Purchase > Vendor Return > open an approved return > Fulfil, open the email communication tab."
+  ],
+  "expected": "Real emails, or no tab.",
+  "actual": "Placeholder text only.",
+  "where": "src/features/purchase/vendor-return/components/vendor-return-fulfill-view.tsx:934-937",
+  "verify": "Fulfil form has no placeholder tab and no hard-coded English.",
+  "owner": "Frontend purchase",
+  "status": "in-progress"
+ },
+ "rv-fe:purchase:1.15": {
+  "note": "purchase-order/components/purchase-order-overview-panels.tsx:22 still formats money with Math.round(value) (whole units). The other listed files no longer use maximumFractionDigits 0.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The purchase order overview cards round amounts to whole taka, so Billed 12,345.60 shows 12,346 and the parts do not add up.",
+  "steps": [
+   "Open a PO with a billed amount that has decimals and read the Overview cards."
+  ],
+  "expected": "Figures with 2 decimals.",
+  "actual": "Whole units.",
+  "where": "src/features/purchase/purchase-order/components/purchase-order-overview-panels.tsx:22,93,104",
+  "verify": "Billed 12,345.60 shows 12,345.60.",
+  "owner": "Frontend purchase",
+  "status": "still-bug"
+ },
+ "rv-fe:purchase:10.3": {
+  "note": "Page size is clamped to 10/20/50/100 (shared/purchase-list-query.ts:152-154, vendor-bill/query.ts:65). status is still forwarded unchecked in the shared parser (purchase-list-query.ts:159); only bill-credit validates it (query.ts:50).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "List screens trusted the URL. A huge page size could load everything and any status text was forwarded to the backend.",
+  "steps": [
+   "Open a purchase list URL with ?size=100000 (now falls back) and with ?status=junk (still sent)."
+  ],
+  "expected": "Unknown values fall back to defaults.",
+  "actual": "Size fixed; unknown status still forwarded in most lists.",
+  "where": "src/features/purchase/shared/purchase-list-query.ts:159",
+  "verify": "?status=junk shows the all-status list.",
+  "owner": "Frontend purchase",
+  "status": "in-progress"
+ },
+ "rv-fe:purchase:9.4": {
+  "note": "Auto-generate serials fixed (whole numbers, qty 1..1000; fix log commit d82e3bd7). Barcode label printing still has no cap (item-receipt/barcode-labels.ts, item-receipt-record-header.tsx); the cap is an open product decision.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Printing labels for 20,000 pieces builds a 20,000-label PDF on the main thread and freezes the page.",
+  "steps": [
+   "Open an item receipt with a very large quantity and press Print labels."
+  ],
+  "expected": "A cap with a warning.",
+  "actual": "No cap on labels.",
+  "where": "src/features/purchase/item-receipt/barcode-labels.ts:225-267",
+  "verify": "Printing labels for quantity 20000 warns or caps.",
+  "owner": "Frontend purchase",
+  "status": "in-progress"
+ },
+ "rv-fe:purchase:10.4": {
+  "note": "bill-credit new/edit, lc-import new and item-receipt new now use Promise.all; PO edit save still reads the full detail first (purchase-order/actions.ts:226 getPurchaseOrder) only to check the status.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Extra sequential network calls slow some pages and every PO edit save.",
+  "steps": [
+   "Open the network tab, edit and save a PO."
+  ],
+  "expected": "No pre-read, or parallel calls.",
+  "actual": "PO save first fetches the detail.",
+  "where": "src/features/purchase/purchase-order/actions.ts:226; src/features/purchase/vendor/components/vendor-list-view.tsx:115-194",
+  "verify": "Network tab shows no pre-read on PO save.",
+  "owner": "Frontend purchase",
+  "status": "in-progress"
+ },
+ "rv-fe:purchase:10.5": {
+  "note": "uploadPurchaseAttachments in erp-api/purchase/orders/index.ts (~l.1262) loops over the files with await inside the loop; same in requisitions/index.ts.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Attachments are uploaded one after another before the document is created. Three files mean three sequential uploads, and a failed create leaves orphan files while the retry uploads them again.",
+  "steps": [
+   "Purchase > PO > New, attach 3 files, force the create to fail, retry."
+  ],
+  "expected": "Parallel upload, no duplicates on retry.",
+  "actual": "Sequential upload, duplicates on retry.",
+  "where": "src/erp-api/purchase/orders/index.ts:1250-1265; src/erp-api/purchase/requisitions/index.ts",
+  "verify": "Retry after a failure creates no duplicate media rows.",
+  "owner": "Frontend purchase",
+  "status": "still-bug"
+ },
+ "rv-fe:purchase:10.6": {
+  "note": "material-requisition-form-view.tsx:431-481 still fires a lookup per line and writes the replies with methods.setValue by index (l.456-475).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Editing a material requisition with 30 lines sends 30 parallel lookups, and a late reply can overwrite what the user just typed.",
+  "steps": [
+   "Open an MR with many lines and edit a quantity right after the page opens."
+  ],
+  "expected": "The edit is kept.",
+  "actual": "A reply may overwrite it.",
+  "where": "src/features/purchase/material-requisition/components/material-requisition-form-view.tsx:431-481",
+  "verify": "Edit a quantity before replies arrive; it is kept.",
+  "owner": "Frontend purchase",
+  "status": "still-bug"
+ },
+ "rv-fe:purchase:11.3": {
+  "note": "VendorBillEditView still exists (vendor-bill/components/vendor-bill-edit-view.tsx) and generation does not require a file (vendor-bill-generation-view.tsx:686 uploads only if selectedFile). Fix log marks the file rule as a product call.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A bill can be generated with the 'attach document' requirement shown as met and no file; the old direct bill edit page has several wrong fields.",
+  "steps": [
+   "Purchase > Vendor Bill > Generate from a receipt without attaching a file, then Generate Bill."
+  ],
+  "expected": "Refused, or the requirement is not shown as met.",
+  "actual": "Generated without a file.",
+  "where": "src/features/purchase/vendor-bill/components/vendor-bill-generation-view.tsx:686; vendor-bill-edit-view.tsx",
+  "verify": "A new bill without a file cannot be generated (once the rule is confirmed).",
+  "owner": "Frontend purchase",
+  "status": "still-bug"
+ },
+ "rv-fe:purchase:12.1": {
+  "note": "English literals remain: erp-api/purchase/orders/index.ts:1172 and proforma-invoices/index.ts:862,992,1070 'To be Generated'; bill-payment-create-view.tsx:507 '(Unused: ...)'; purchase screens still import features/sales/shared/sales-posting-period-field (bill-credit-edit-view.tsx:28, bill-payment-create-view.tsx:22, lc-master-form-view.tsx:7). The USD default and deleteLc parts were fixed.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Some purchase texts are hard-coded English, so the Bangla UI shows them untranslated.",
+  "steps": [
+   "Switch to Bangla; open PO/PI new and the prepayment select in Bill Payment."
+  ],
+  "expected": "All texts translated.",
+  "actual": "English literals.",
+  "where": "src/erp-api/purchase/orders/index.ts:1172; src/erp-api/purchase/proforma-invoices/index.ts:862,992,1070; src/features/purchase/bill-payment/components/bill-payment-create-view.tsx:507",
+  "verify": "No English label in Bangla.",
+  "owner": "Frontend purchase",
+  "status": "still-bug"
+ },
+ "rv-fe:purchase:13.1": {
+  "note": "Fake vendor rows deleted (fix log 2nd pass), but shared/purchase-customer-type-options.ts and shared/purchase-placeholder-panel.tsx still exist and the erp-api/purchase/payable-bills and vendor-billing-documents facades remain.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Unused and always-empty code plus stale comments mislead developers.",
+  "steps": [
+   "Search the repo for the listed symbols."
+  ],
+  "expected": "Deleted.",
+  "actual": "Partly deleted.",
+  "where": "src/features/purchase/shared/purchase-placeholder-panel.tsx; src/erp-api/purchase/payable-bills; src/erp-api/purchase/vendor-billing-documents",
+  "verify": "pnpm lint and pnpm build pass after deletion.",
+  "owner": "Frontend purchase",
+  "status": "in-progress"
+ },
+ "rv-fe:purchase:13.2": {
+  "note": "Not changed per the fix logs (size L, skipped); the duplicated mutationFailure helpers remain in the facades.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The same helper code is copied across the purchase facades and the copies have drifted (for example one lacks the 401/403 mapping).",
+  "steps": [
+   "Compare mutationFailure in the proforma-invoices and orders facades."
+  ],
+  "expected": "One shared helper.",
+  "actual": "Copies.",
+  "where": "src/erp-api/purchase/*/index.ts",
+  "verify": "A PI save with a 403 returns PERMISSION_DENIED.",
+  "owner": "Frontend purchase",
+  "status": "still-bug"
+ },
+ "rv-fe:purchase:13.3": {
+  "note": "Zero unstable_rethrow in item-receipts, lc, lc-master, vendor-bills, vendor-payments, vendor-prepayments, proforma-invoices, vendor-returns and vendors facades (grep count 0); only orders, requisitions, bill-credits, material-requisitions have some.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A Next.js control-flow exception inside a broad catch is logged as a backend failure. No visible break today.",
+  "steps": [
+   "grep -c unstable_rethrow src/erp-api/purchase/*/index.ts"
+  ],
+  "expected": "First line of each broad catch.",
+  "actual": "Missing in most.",
+  "where": "src/erp-api/purchase/*/index.ts",
+  "verify": "pnpm build passes.",
+  "owner": "Frontend purchase",
+  "status": "still-bug"
+ },
+ "rv-fe:purchase:13.5": {
+  "note": "Fixed: LC master list row key (no Math.random), bill credit with no status. Open: prepayments loaded for every method, raw antd wrappers, plain-text vendor cells (fix log skipped list); LC master payableAccount field name unverified (erp-api/purchase/lc-master/index.ts:202).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Several small defects were grouped in one entry; the worst were fixed.",
+  "steps": [
+   "See entry 13.5 in code-review-2026-11/FRONTEND-BY-MODULE/02-purchase.md."
+  ],
+  "expected": "All grouped defects gone.",
+  "actual": "Partly.",
+  "where": "src/erp-api/purchase/lc-master/index.ts:202",
+  "verify": "Check each listed file.",
+  "owner": "Frontend purchase",
+  "status": "in-progress"
+ },
+ "e2e:purchase:payment-delete-missing": {
+  "note": "deleteVendorPaymentAction (bill-payment/actions.ts:87) has no caller; grep finds only the definition.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A pending vendor payment cannot be deleted from the screen, so a payment saved by mistake stays.",
+  "steps": [
+   "Create a payment (pending) and open its detail page: no Delete button."
+  ],
+  "expected": "Delete button for a pending payment (with permission).",
+  "actual": "No button.",
+  "where": "src/features/purchase/bill-payment/actions.ts:87",
+  "verify": "Delete a pending payment from the detail page.",
+  "owner": "Frontend purchase",
+  "status": "still-bug",
+  "tests": [
+   "PUR-06-06 (test.fail)"
+  ]
+ },
+ "pt1110:B12": {
+  "note": "messages/purchase/en.json: purchaseOrder.proformaModal.createNew.description (l.736) says 'customer quotations or advance sales'; lcImport.form.subtitle (l.1882) copies the prepayment text 'Record advance payments made to vendors...'.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Two screens show text copied from other screens.",
+  "steps": [
+   "Purchase Order detail > Create Proforma dialog.",
+   "Purchase > LC Import > New."
+  ],
+  "expected": "Texts about a vendor proforma invoice and an LC import.",
+  "actual": "Wrong copy.",
+  "where": "src/messages/purchase/en.json:736,1882 and bn.json",
+  "verify": "Both texts describe their own screen in en and bn.",
+  "owner": "Frontend purchase",
+  "status": "still-bug"
+ },
+ "pt1110:B14": {
+  "note": "Not fully checked: no code change found for the three behaviours (Enter in LC date, confirm dialog on some Approve buttons only, button order).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Small form inconsistencies: Enter inside the LC expiry date submits the form, Approve asks for confirmation on bills and payments but not on PR, PO or proforma, and Approve and Reject swap places between pages.",
+  "steps": [
+   "LC Import > New: press Enter in the LC expiry date.",
+   "Approve a PO and a vendor bill and compare."
+  ],
+  "expected": "Enter does not submit; one rule for confirmations and button order.",
+  "actual": "As described.",
+  "where": "src/features/purchase/lc-import/components/lc-import-form-view.tsx; purchase-order/components/purchase-order-record-actions.tsx:212-215",
+  "verify": "Repeat the steps.",
+  "owner": "Frontend purchase"
+ },
+ "pt1110:B17": {
+  "note": "Backend VendorReturnRequest has no header reason (reason exists only on VendorReturnRequestLine.java:106); the header card labelled Reason for return prints detail.remarks (vendor-return-primary-information-section.tsx:96-98).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A reason typed on a vendor return line does not appear in the header 'Reason for return', which shows the remarks and therefore '-'.",
+  "steps": [
+   "Create a vendor return and type a reason on a line.",
+   "Open its detail page."
+  ],
+  "expected": "Header shows the line reasons or is labelled Remarks.",
+  "actual": "'-'.",
+  "where": "src/features/purchase/vendor-return/components/vendor-return-primary-information-section.tsx:96",
+  "verify": "Header matches what was typed.",
+  "owner": "Frontend purchase",
+  "status": "still-bug"
+ },
+ "pt1110:B18": {
+  "note": "Not reproduced by code reading; needs a browser check.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Right after 'Set as Preferred' the requisition re-renders and the 'Confirm Vendor & Send for Approval' button moves, so a quick click misses.",
+  "steps": [
+   "Open a requisition with quotations, press Set as Preferred, click Confirm Vendor at once."
+  ],
+  "expected": "The click lands.",
+  "actual": "Sometimes misses.",
+  "where": "src/features/purchase/purchase-requisition/components/purchase-requisition-record-header.tsx",
+  "verify": "Click right after the update works.",
+  "owner": "Frontend purchase"
+ },
+ "pt1110:B4": {
+  "note": "Backend half not checked here; the frontend only labels paidQty (vendor-return-form-view.tsx:504-507).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The vendor return form column PAID shows 0 for a bill paid 350 of 500, because the backend counts paid quantity of fully paid bills only.",
+  "steps": [
+   "Pay a bill partly, open Authorize Return from the PO."
+  ],
+  "expected": "Paid quantity matches the bill, or the column is relabelled.",
+  "actual": "0.",
+  "where": "src/features/purchase/vendor-return/components/vendor-return-form-view.tsx:504; backend returnable quantity rule",
+  "verify": "Same steps.",
+  "owner": "Both purchase"
+ },
+ "pt1110:B5": {
+  "note": "bill-payment/form-model.ts:153 sets payment = amountDue for a selected bill, with no cap by the selected prepayment's unusedAmount (bill-payment-create-view.tsx:190).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Applying a prepayment of 200 to a bill of 500 pre-fills 500, which the Save then refuses.",
+  "steps": [
+   "Bill Payment > New, method Prepayment, pick a prepayment with 200 unapplied, tick a bill of 500."
+  ],
+  "expected": "Pre-fill is min(due, unapplied).",
+  "actual": "500.",
+  "where": "src/features/purchase/bill-payment/form-model.ts:153",
+  "verify": "Pre-fill shows 200.",
+  "owner": "Frontend purchase",
+  "status": "still-bug"
+ },
+ "pt1110:B6": {
+  "note": "bill-payment-create-view.tsx:193-196: availableBalance is the prepayment unused amount or sourceBill.availableBalance (what the vendor is owed); never the bank or cash account balance.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Available Balance on a bill payment shows the bill due, not the money in the chosen bank or cash account.",
+  "steps": [
+   "Bill Payment > New, choose City Bank as the account."
+  ],
+  "expected": "The account balance.",
+  "actual": "The bill due.",
+  "where": "src/features/purchase/bill-payment/components/bill-payment-create-view.tsx:193-196",
+  "verify": "Choosing an account shows its balance.",
+  "owner": "Frontend purchase",
+  "status": "still-bug"
+ },
+ "rv-fe:purchase:1.19": {
+  "note": "Decision pending (fix log: needs decision); vendor-return-form-view.tsx:521-536 keeps price editable for selected rows.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "On a vendor return the user can raise price and VAT above the source line and the refund follows. This may be intended.",
+  "steps": [
+   "Vendor Return form: edit Unit Price above the order price."
+  ],
+  "expected": "Decision first, then read-only or capped.",
+  "actual": "Editable.",
+  "where": "src/features/purchase/vendor-return/components/vendor-return-form-view.tsx:521-584",
+  "verify": "Price cannot exceed the source line, if decided.",
+  "owner": "Frontend purchase",
+  "status": "open"
+ },
+ "rv-fe:purchase:3.5": {
+  "note": "Done: item receipt Edit only for PENDING, prepayment and bill payment edit routes redirect. Left: PO list shows Edit by status only (purchase-order/components/columns.tsx:82-96, no permission check), vendor-bill and PI edit routes have no status redirect.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Users without edit rights see a live Edit link and land on a refusal; typing the edit URL of an approved document opens a form that fails on Save.",
+  "steps": [
+   "As a read-only user open the PO list: Edit link is shown.",
+   "Open /purchase/vendor-bill/{approved id}/edit."
+  ],
+  "expected": "Edit hidden or disabled; redirect to detail.",
+  "actual": "Partly done.",
+  "where": "src/features/purchase/purchase-order/components/columns.tsx:82; src/app/(erp)/purchase/vendor-bill/[id]/edit/page.tsx",
+  "verify": "Check with a restricted role.",
+  "owner": "Frontend purchase",
+  "status": "in-progress"
+ },
+ "rv-fe:purchase:4.4": {
+  "note": "Only shared/purchase-pack-sizes.tsx:42 has a catch; the pack option cache is a module-level Map for the whole session (l.36); no catch found in the PO and requisition form lookups.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Failed item, pack-size or bin lookups give an empty select instead of an error message.",
+  "steps": [
+   "Make the pack-size lookup fail and open a PO line."
+  ],
+  "expected": "An error message.",
+  "actual": "Empty options.",
+  "where": "src/features/purchase/shared/purchase-pack-sizes.tsx:36-50",
+  "verify": "A failed lookup shows lookupFailed.",
+  "owner": "Frontend purchase",
+  "status": "still-bug"
+ },
+ "rv-fe:purchase:6.3": {
+  "note": "Item link is now null-checked (lc-import-items-panel.tsx:30). VAT is only floored at 0 (lc-import-form-items-panel.tsx:64), no max 100.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "LC item links used to point to /inventory/items/undefined, and a VAT of 4000% was accepted.",
+  "steps": [
+   "LC Import > New, type 4000 in VAT %."
+  ],
+  "expected": "Max 100.",
+  "actual": "Accepted.",
+  "where": "src/features/purchase/lc-import/components/lc-import-form-items-panel.tsx:64",
+  "verify": "A VAT over 100 is refused.",
+  "owner": "Frontend purchase",
+  "status": "in-progress"
+ },
+ "rv-fe:purchase:8.7": {
+  "note": "Status colours fixed (purchase-status-badge.tsx:77-86 fully-paid, partially-paid). The edit header still shows paymentStatus first (vendor-bill-edit-view.tsx:302), so a pending bill says Not Paid.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Paid bills now get colours, but the bill edit header still shows 'Not Paid' for a pending bill.",
+  "steps": [
+   "Edit a pending vendor bill."
+  ],
+  "expected": "Shows Pending.",
+  "actual": "Not Paid.",
+  "where": "src/features/purchase/vendor-bill/components/vendor-bill-edit-view.tsx:302",
+  "verify": "A pending bill shows Pending.",
+  "owner": "Frontend purchase",
+  "status": "in-progress"
+ },
+ "rv-fe:purchase:9.2": {
+  "note": "lc-import-detail-tabs.tsx:58 still defaults shipment mode to 'Sea'; vendor-overview-sidebar.tsx:404,516 '--' rows remain.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Screens fill in made-up defaults (shipment mode Sea) instead of showing '-' for missing data.",
+  "steps": [
+   "Open an LC that has no shipment mode."
+  ],
+  "expected": "Shows '-'.",
+  "actual": "Shows Sea.",
+  "where": "src/features/purchase/lc-import/components/lc-import-detail-tabs.tsx:58",
+  "verify": "An LC without a mode shows '-'.",
+  "owner": "Frontend purchase",
+  "status": "still-bug"
+ },
+ "purchase:C-P17": {
+  "note": "Decision item, no code change. Backend posting is asynchronous; the GL Impact tab does not poll.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Posting is asynchronous: the GL or ledger read right after approval can be empty for 5-15 seconds.",
+  "steps": [
+   "Approve a bill and open GL Impact at once."
+  ],
+  "expected": "Decision: posting status in the approve response, or UI polling.",
+  "actual": "Stale for a few seconds.",
+  "where": "backend posting outbox; vendor-bill-detail-tabs.tsx",
+  "verify": "Decision recorded.",
+  "owner": "Both purchase"
+ },
+ "purchase:C-P9": {
+  "note": "Code looks fixed in backend: the bill DTO due date is derived from bill date plus payment term (VendorBillMapper.toDTO ~l.74, PaymentTermDueDate) and CreateVendorBillRequestDTO has no dueDate, so a due date before the bill date cannot be stored; needs API proof. Frontend still holds a dueDate field (vendor-bill-generation-view.tsx:342,667) that the backend ignores.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A bill due date earlier than the bill date used to be accepted and showed as overdue at once.",
+  "steps": [
+   "POST /api/purchase/vendor-bills with a due date before the bill date."
+  ],
+  "expected": "Refused or ignored.",
+  "actual": "Backend derives the due date from the term.",
+  "where": "backend VendorBillMapper.toDTO; frontend vendor-bill-generation-view.tsx:342,667",
+  "verify": "POST /api/purchase/vendor-bills with billingInformation.paymentTermId = Net 30 and date 2026-11-10; GET it: dueDate is 2026-12-10 whatever was sent.",
+  "owner": "Both purchase"
+ }
+}

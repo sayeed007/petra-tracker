@@ -1,0 +1,586 @@
+{
+ "rv-fe:settings-platform:16": {
+  "note": "Still in code: warehouse-settings-page.tsx confirmCascadeUpdate (~l.376-392) never clears the panel's edit state; only submitPropertiesEdit in warehouse-detail-panel.tsx (~l.409-415) does, and that path returns false when the cascade dialog was opened.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "After a warehouse location change needs a 'cascade to children' confirmation and the user confirms, the Properties form stays in edit mode showing the saved values. A second Save then sends a pointless cascading update to the backend. Only affects Settings > Warehouse users who change a location purpose with children.",
+  "steps": [
+   "Open Settings > Warehouse and select a location that has child locations.",
+   "Click Edit on Properties, change the storage purpose and Save.",
+   "The cascade confirmation dialog opens; confirm it."
+  ],
+  "expected": "After the successful confirmed update the Properties card returns to read-only view.",
+  "actual": "The success message shows but the form stays editable (editingPropertiesNodeId is still set).",
+  "where": "src/features/settings/warehouse/components/warehouse-detail-panel.tsx (editingPropertiesNodeId state l.76, submitPropertiesEdit l.409); src/features/settings/warehouse/warehouse-settings-page.tsx confirmCascadeUpdate l.376",
+  "verify": "Repeat the steps; after confirming, the read-only view must show. Fix by lifting editingPropertiesNodeId to the page and clearing it in confirmCascadeUpdate success.",
+  "owner": "Frontend settings",
+  "status": "still-bug",
+  "tests": [
+   "e2e/tests/settings/04-warehouse.spec.ts (no case for the cascade confirm)"
+  ]
+ },
+ "rv-fe:settings-platform:20": {
+  "note": "Still in code: no AccessGuard/useHasPermission anywhere under src/features/settings/inventory (grep), so Create/Edit/toggle buttons in brands, category, manufacturer, item type, shipping carrier and business type render for everyone. Same class as fe-A02-9. The facade asserts on the server, so this is a visible-button problem, not a data hole.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A user who may only view inventory settings still sees Create, Edit and active/inactive switches on the Item master and Business type screens. Clicking them ends in a refusal from the server instead of the button simply not being offered.",
+  "steps": [
+   "Sign in as a user whose role has inventory settings view but no create/edit.",
+   "Open Settings > Inventory > Item master (Brands) and Business type."
+  ],
+  "expected": "No Create, Edit or status switch for a view-only user.",
+  "actual": "All of them are shown.",
+  "where": "src/features/settings/inventory/components/item-master/{brands,item-category,manufacturer,item-type,shipping-carrier}-section.tsx; business-type-root.tsx",
+  "verify": "Sign in as the view-only user; the buttons must be absent. The inventory settings permission code has to be decided first (see FIX-LOG-settings-platform).",
+  "owner": "Frontend settings",
+  "status": "still-bug",
+  "tests": [
+   "e2e/tests/settings/05-inventory-setup.spec.ts (admin only)"
+  ]
+ },
+ "rv-fe:settings-platform:23": {
+  "note": "Still in code: providers/access-provider.tsx keeps lastFetchedAt (l.38,170) but nothing reads it and there is no refetch on focus; shared/access/assert-permission.ts checkPermission (~l.53-57) returns true for any entry with globalAccess || scopes.length > 0.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The menu and button permissions are read once at sign-in, so a role change made by an admin only reaches a user after a page reload. Separately, a user who holds a permission only for one warehouse or territory passes every server-side check for that permission code in Next.js (the backend still enforces the scope).",
+  "steps": [
+   "Sign in as user A in one browser.",
+   "In another session change A's role (remove a permission).",
+   "Return to A's tab and refocus it; open the menu."
+  ],
+  "expected": "Menu refreshes after focus (or after a few minutes); a scoped permission is not treated as full in checkPermission, or it is documented that the backend alone enforces scope.",
+  "actual": "Menu keeps the old permissions until a full reload; checkPermission accepts any scoped entry.",
+  "where": "src/providers/access-provider.tsx; src/shared/access/assert-permission.ts",
+  "verify": "Change a role while another session is open, refocus the tab, the menu must update.",
+  "owner": "Frontend settings",
+  "status": "still-bug",
+  "tests": [
+   "e2e/tests/settings/02-users-and-roles.spec.ts SET-02-06 (reload only)"
+  ]
+ },
+ "rv-fe:settings-platform:24": {
+  "note": "Main part fixed: users-and-roles/utils/index.ts covered-code loop (~l.165-190) now applies the same row.actions filter as computeModuleStats via columnsFor(). Not fixed: orphan rows are only matched against top-level rows (~l.236 targetMod.rows.find), so an orphan equal to a child row key is still added as a duplicate top-level row.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "On the role editor, permission codes that exist in the catalog but are excluded by a matrix row's action list used to be treated as covered and never drawn, so they could not be granted. That is fixed. A smaller leftover: a code that belongs to a child row can appear a second time as its own top-level row.",
+  "steps": [
+   "Open Settings > Users & Roles > New role.",
+   "Search the permission matrix for a module that has child rows and extra catalog codes."
+  ],
+  "expected": "Every catalog code appears exactly once and can be ticked.",
+  "actual": "No hidden codes now; possible duplicate row for child-row codes.",
+  "where": "src/features/settings/users-and-roles/utils/index.ts (orphan augmentation, existingRow lookup ~l.236)",
+  "verify": "Search children before pushing a new row; a code of a child row must not create a top-level row.",
+  "owner": "Frontend settings",
+  "status": "in-progress",
+  "tests": [
+   "e2e/tests/settings/02-users-and-roles.spec.ts SET-02-01"
+  ]
+ },
+ "rv-fe:settings-platform:26": {
+  "note": "Still in code: guide/actions.ts supportLoginAction (~l.25-29) only sleeps 800 ms after a wrong password; no attempt counter or lockout.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The support guide area has one shared username and password. The login form only waits 0.8 seconds per failed answer, so someone can guess in parallel from many connections, and a correct login stays valid for 12 hours.",
+  "steps": [
+   "Open the /guide support login.",
+   "Submit wrong credentials 20 times within a minute (parallel requests)."
+  ],
+  "expected": "After N failures per minute the form locks out for a while.",
+  "actual": "Every attempt is answered after 0.8 s, never locked.",
+  "where": "src/features/guide/actions.ts supportLoginAction, FAILED_LOGIN_DELAY_MS",
+  "verify": "20 failed attempts in a minute show a lockout message.",
+  "owner": "Frontend settings",
+  "status": "still-bug"
+ },
+ "rv-fe:settings-platform:28": {
+  "note": "Still in code: auth.ts authorize (~l.84-86) throws 'Invalid username or password' for every non-ok response (500, 503, 429 included); erp-api/auth/login.ts (~l.34-36) returns error.cause.err.message or an English string.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "When the backend is down or throttling, the sign-in page still says the password is wrong, so users reset passwords for no reason. All login errors are English even in the Bangla UI.",
+  "steps": [
+   "Stop or block the backend API.",
+   "Open the login page and sign in with correct credentials."
+  ],
+  "expected": "A translated 'service unavailable, try again later' message; 'wrong password' only for 401/400.",
+  "actual": "'Invalid username or password' in English (or raw fetch text).",
+  "where": "src/auth.ts authorize; src/erp-api/auth/login.ts doLogin; src/features/auth/components/login-form.tsx l.43-50",
+  "verify": "With the backend stopped the login form shows the 'try again later' text in the active language.",
+  "owner": "Frontend settings",
+  "status": "still-bug",
+  "tests": [
+   "e2e/tests/settings/01-auth-and-shell.spec.ts SET-01-01 (wrong password only)"
+  ]
+ },
+ "rv-fe:settings-platform:38": {
+  "note": "Partly fixed: users-and-roles-root.tsx l.105 now joins the names of all role codes (formatRoleCode). Remaining: when the viewer has no role-view permission the roles list is empty (l.73 Promise.resolve([])), so title-cased codes like 'Sales Mgr' still show instead of real names.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The Users list used to show only the first role of a user. It now lists all of them. A viewer who can see users but not roles still sees code-derived names instead of the real role names.",
+  "steps": [
+   "Give a user two roles.",
+   "Open Settings > Users & Roles as a user with user-view but no role-view permission."
+  ],
+  "expected": "Both real role names are shown.",
+  "actual": "All roles shown; names are title-cased codes when the viewer cannot read roles.",
+  "where": "src/features/settings/users-and-roles/components/users-and-roles-root.tsx formatRoleCode l.13, l.73, l.105",
+  "verify": "As the restricted viewer the list shows real names (needs roleNames in the user list DTO or a role read that needs no role permission).",
+  "owner": "Frontend settings",
+  "status": "in-progress",
+  "tests": [
+   "e2e/tests/settings/02-users-and-roles.spec.ts SET-02-04"
+  ]
+ },
+ "rv-fe:settings-platform:39": {
+  "note": "Partly fixed per FIX-LOG: schema.ts name max 120; new-role-form-view.tsx l.196-201 adds a unique suffix for names with no Latin letters and cuts to 80 chars. Not fixed: 'Sales Manager' and 'Sales-Manager' still derive the same code; no collision check or field error before sending.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A new role's code is generated from its name. Bangla names no longer all become ROLE_, but two names that differ only by punctuation still produce the same code and the second save fails with a backend message.",
+  "steps": [
+   "New role named 'Sales Manager', save.",
+   "New role named 'Sales-Manager', save."
+  ],
+  "expected": "A field error asks for another name/code before the request.",
+  "actual": "Second save is refused by the backend and only a generic error shows.",
+  "where": "src/features/settings/users-and-roles/components/new-role-form-view.tsx onSubmit l.183-201; users-and-roles/schema.ts l.27",
+  "verify": "Create the two roles; the second shows a field-level message.",
+  "owner": "Frontend settings",
+  "status": "in-progress",
+  "tests": [
+   "e2e/tests/settings/02-users-and-roles.spec.ts SET-02-03 (hyphen name saves)"
+  ]
+ },
+ "rv-fe:settings-platform:4": {
+  "note": "Partly done: account-roles-section.tsx l.305-308 shows a warning when the chart load fails, and l.262-270 names a stored account that is not in the chart. Still: Save (l.383 disabled={isSaving || changedKeys.length === 0}) is not disabled by accountsError, and the stored account is shown as the bare id.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "If the chart of accounts fails to load, the Account roles screen shows empty pickers and the saved accounts by number only. A user can still press Save, which risks overwriting mappings from a screen that could not show them.",
+  "steps": [
+   "Open Settings > Accounting > Account roles with the chart-of-accounts call failing.",
+   "Look at a role that already has an account; change one and try Save."
+  ],
+  "expected": "Pickers and Save disabled; stored account name from the snapshot shown.",
+  "actual": "Warning shown, ids only, Save still reachable after a change.",
+  "where": "src/features/settings/accounting/components/account-roles-section.tsx l.262-320, l.377-383",
+  "verify": "Fail the chart call: rows show names or are disabled and Save is disabled.",
+  "owner": "Frontend settings",
+  "status": "in-progress",
+  "tests": [
+   "e2e/tests/settings/09-inventory-mapping.spec.ts (happy path only)"
+  ]
+ },
+ "rv-fe:settings-platform:42": {
+  "note": "Fixed: features/settings/inventory/schema.ts builds schemas with the translator (createInventorySchemas(t)), trims names, uses .max(120/50/500) and delivery days use .int() (l.52-55).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Inventory settings forms used English validation text in the Bangla UI, accepted whitespace names and fractional delivery days.",
+  "steps": [
+   "Open Settings > Inventory > Item master, Add brand.",
+   "Enter spaces only as name and Save (Bangla UI)."
+  ],
+  "expected": "Required message in Bangla.",
+  "actual": "fixed: translated, trimmed, integer-checked messages.",
+  "where": "src/features/settings/inventory/schema.ts",
+  "verify": "Whitespace name is refused in Bangla; 1.5 delivery days is refused on Shipping carrier.",
+  "owner": "Frontend settings",
+  "status": "fixed",
+  "tests": [
+   "e2e/tests/settings/05-inventory-setup.spec.ts"
+  ]
+ },
+ "rv-fe:settings-platform:43": {
+  "note": "Country half fixed: manufacturer-section.tsx l.57-63 appends the current country to the options so 'Japan' is not blank. Not fixed: features/settings/inventory/constants.ts still has only five countries and field-force/constants.ts CUSTOMER_DOT_COLOR (l.36-41) still keys colours by channel name, so a renamed channel gets a grey dot.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Fixed lookup lists in code do not match real data. A manufacturer in another country can only be picked if it was already stored, and customer-type colour dots depend on the exact channel name.",
+  "steps": [
+   "Settings > Inventory > Item master > Manufacturer > Add: open the Country list.",
+   "Rename a sales channel and look at the dot in the Settings > Field Force org tree."
+  ],
+  "expected": "Full country list; colour does not depend on a name.",
+  "actual": "Five countries; grey dot after rename.",
+  "where": "src/features/settings/inventory/constants.ts; src/features/settings/field-force/constants.ts; org-tree-node.tsx l.170",
+  "verify": "Pick 'Japan' for a new manufacturer; rename a channel and its dot keeps its colour.",
+  "owner": "Frontend settings",
+  "status": "in-progress"
+ },
+ "rv-fe:settings-platform:46": {
+  "note": "Still in code: erp-api/settings/sales/index.ts safeSalesPricingErrorCode (~l.1378) matches the message text 'status 403'; getGeographyOptions (l.1159) has no try/catch and is awaited in Promise.all in getSalesPricingFormOptions (l.1181); erp-api/settings/users-and-roles/index.ts l.3 and settings/system/index.ts import from @/features.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The sales settings facade handles backend errors in three different ways, one of them by searching error text. A rejected pricing save (e.g. 422) becomes a generic message, and one failing geography call stops the whole pricing form from opening.",
+  "steps": [
+   "Settings > Sales > Pricing scheme > New.",
+   "Make the field-force geography options call fail (or save a scheme the backend answers with 422)."
+  ],
+  "expected": "The form opens with an empty geography list; the 422 backend message shows.",
+  "actual": "Form fails to load; generic SCHEME_SAVE_FAILED.",
+  "where": "src/erp-api/settings/sales/index.ts l.1159-1182, l.1374-1450; src/erp-api/settings/users-and-roles/index.ts l.3; src/erp-api/settings/system/index.ts",
+  "verify": "Fail the geography call: the scheme form still opens; a 422 on save shows its message.",
+  "owner": "Frontend settings",
+  "status": "still-bug",
+  "tests": [
+   "e2e/tests/settings/07-sales-settings.spec.ts"
+  ]
+ },
+ "rv-fe:settings-platform:47": {
+  "note": "Fixed: notification-popover.tsx handleOpenAction (~l.703-722) awaits markRead but then always navigates ('A failed mark-read keeps its row error but must not stop the user reaching the record'); a failed row shows a retry (l.871-892).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Clicking Open on a notification used to do nothing if marking it read failed, so the record could not be reached.",
+  "steps": [
+   "Make the mark-read PUT fail.",
+   "Open the bell and click Open on a notification."
+  ],
+  "expected": "Navigates to the record; the row shows a retry.",
+  "actual": "fixed: navigates.",
+  "where": "src/features/notifications/notification-popover.tsx",
+  "verify": "Fail mark-read; Open still navigates.",
+  "owner": "Frontend settings",
+  "status": "fixed",
+  "tests": [
+   "e2e/tests/notifications/01-notifications.spec.ts NOT-01-03"
+  ]
+ },
+ "rv-fe:settings-platform:48": {
+  "note": "Fixed for the query params: app/api/notifications/route.ts clampInt (l.5-9, 17-18) clamps page to 0..10000 and size to 1..100. The optional tidy-up (moving sales-settings page orchestration into features) was not done; it is a style point.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The notifications API route passed page and size straight through, so size=100000 or non-numbers reached the backend.",
+  "steps": [
+   "GET /api/notifications?size=100000&page=abc as a signed-in user."
+  ],
+  "expected": "size is clamped to 100, page falls back to 0.",
+  "actual": "fixed: clamped.",
+  "where": "src/app/api/notifications/route.ts",
+  "verify": "Request with size=100000; the backend call carries size=100.",
+  "owner": "Frontend settings",
+  "status": "fixed",
+  "tests": [
+   "e2e/tests/notifications/01-notifications.spec.ts"
+  ]
+ },
+ "rv-fe:settings-platform:51": {
+  "note": "Fixed for the bug in the title: i18n/request.ts l.7-12 only accepts 'bn', else 'en', so locale=fr no longer throws. Cosmetic leftover: i18n/messages.ts still lists the settings messages twice (l.53/55 and 68/70).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A stray locale cookie such as 'fr' used to make every page fail to render.",
+  "steps": [
+   "Set the cookie locale=fr and open any page."
+  ],
+  "expected": "App opens in English.",
+  "actual": "fixed: opens in English.",
+  "where": "src/i18n/request.ts; src/i18n/messages.ts",
+  "verify": "Set locale=fr; the app opens in English.",
+  "owner": "Frontend settings",
+  "status": "fixed",
+  "tests": [
+   "e2e/tests/settings/99-global-preferences.spec.ts"
+  ]
+ },
+ "rv-fe:settings-platform:52": {
+  "note": "Mostly fixed: app/loading.tsx uses getTranslations('common').loadingPage, global-error.tsx has a bilingual pair and bg-background. Still English only: app/(guide)/guide/layout.tsx l.5-8 metadata title 'Guide' / 'Petra ERP Guide'.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Root files used English-only text and a fixed colour that ignored dark mode. Loading and error pages are fixed; the guide page title is still English.",
+  "steps": [
+   "Switch to Bangla.",
+   "Open any route and look at the loading line; open /guide and read the browser tab title."
+  ],
+  "expected": "All Bangla.",
+  "actual": "Loading and error fixed; guide title English.",
+  "where": "src/app/(guide)/guide/layout.tsx",
+  "verify": "Bangla UI: the guide tab title is Bangla.",
+  "owner": "Frontend settings",
+  "status": "in-progress"
+ },
+ "rv-fe:settings-platform:53": {
+  "note": "Fixed: sales-settings.css active tab (l.99-103) uses var(--primary)/var(--primary-foreground); app-layout.css l.743 scopes the badge rule to .petra-header .ant-badge-count; profile hover uses var(--surface-hover).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Sales settings tabs ignored the accent colour and a mobile badge rule hit every badge on small screens.",
+  "steps": [
+   "Change the brand accent; open Settings > Sales."
+  ],
+  "expected": "Active tab follows the accent.",
+  "actual": "fixed.",
+  "where": "src/features/settings/sales/sales-settings.css; src/shared/components/app-layout/app-layout.css",
+  "verify": "Change the accent; the tab follows.",
+  "owner": "Frontend settings",
+  "status": "fixed"
+ },
+ "rv-fe:settings-platform:54": {
+  "note": "Fixed: app-header.tsx has no mobile search button any more, and the sidebar toggle has aria-label={t('toggleMenu')} (l.56).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A search icon on phones did nothing and the menu button had no accessible name.",
+  "steps": [
+   "Open the app at phone width."
+  ],
+  "expected": "No dead icon; menu button named.",
+  "actual": "fixed.",
+  "where": "src/shared/components/app-layout/app-header.tsx",
+  "verify": "Phone width shows no search icon.",
+  "owner": "Frontend settings",
+  "status": "fixed"
+ },
+ "rv-fe:settings-platform:55": {
+  "note": "Still in code: app-layout.tsx l.166-172 renders the /examples (Component Gallery) link for everyone and app/examples/page.tsx has no production guard; demo-sections.tsx is 3368 lines.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Every user sees a flask icon in the sidebar footer that opens a developer component showcase with fake rows. It is not an ERP screen and ships in production.",
+  "steps": [
+   "Sign in with any user.",
+   "Click the flask icon at the bottom of the sidebar (or open /examples)."
+  ],
+  "expected": "No link, and the route returns 404 in production.",
+  "actual": "The gallery opens.",
+  "where": "src/shared/components/app-layout/app-layout.tsx l.166; src/app/examples/**",
+  "verify": "Production build: /examples returns 404 and no icon is shown.",
+  "owner": "Frontend settings",
+  "status": "still-bug"
+ },
+ "rv-fe:settings-platform:56": {
+  "note": "Not changed, stays open and waits for the product decision named in the plan (keep the four disabled sections visible?). general-preference-tab.tsx l.63-68 still wires EnableFeatureSection, ReminderSection, CustomerPortalSection (and PDF template) as 'under development'.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The System settings screen contains four placeholder sections (reminder, customer portal, PDF template, feature toggles) and unused schemas/constants that users cannot use.",
+  "steps": [
+   "Open Settings > System > General preference and click those four entries."
+  ],
+  "expected": "Either working screens or the entries removed.",
+  "actual": "Placeholder 'under development' content.",
+  "where": "src/features/settings/system/components/{enable-feature,reminder,customer-portal,pdf-template}-section.tsx; general-preference-tab.tsx",
+  "verify": "Decide, then delete or build; build and lint must pass.",
+  "owner": "Frontend settings"
+ },
+ "rv-fe:settings-platform:57": {
+  "note": "Still in code: displayValue is defined twice (users-and-roles/components/role-list-tab.tsx l.28 and user-list-tab.tsx l.37) plus the same helper family in the settings *-ui.tsx files.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The same small helper functions are copied into several settings files, which drift apart over time. No user impact.",
+  "steps": [
+   "grep 'function displayValue' under src/features/settings."
+  ],
+  "expected": "One shared helper.",
+  "actual": "Copies in at least two files.",
+  "where": "src/features/settings/users-and-roles/components/{user-list-tab,role-list-tab}.tsx; users-and-roles-ui.tsx; workflow-automation-ui.tsx; warehouse-settings-ui.tsx",
+  "verify": "grep finds one definition; lint and build pass.",
+  "owner": "Frontend settings",
+  "status": "still-bug"
+ },
+ "rv-fe:settings-platform:58": {
+  "note": "Partly fixed: RoleDto.status is ROLE_STATUS (users-and-roles/types.ts l.65); only one CurrencyCode type remains (features/settings/system/types.ts l.40; sales-demand/types.ts has none). Still: features/settings/field-force/constants.ts ROLE_LABEL (l.21) coexists with erp-api ROLE_LABEL_BY_KIND (l.175).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Duplicate or out-of-date type and constant names in settings code. No user-visible effect yet; the risk is that one copy is edited and the other forgotten.",
+  "steps": [
+   "grep ROLE_LABEL and CurrencyCode in src."
+  ],
+  "expected": "One definition each.",
+  "actual": "One duplicate (ROLE_LABEL) left.",
+  "where": "src/features/settings/field-force/constants.ts; src/erp-api/settings/field-force/index.ts",
+  "verify": "Type-check passes; grep finds a single ROLE_LABEL.",
+  "owner": "Frontend settings",
+  "status": "in-progress"
+ },
+ "rv-fe:settings-platform:59": {
+  "note": "Fixed: src/erp-api/shared/ no longer exists and the orphan comment blocks near erp-api/workflow/index.ts l.145 are gone.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A dead server action could read any media id with the caller's token and return it as base64 without a size limit.",
+  "steps": [
+   "grep for the old media-preview action."
+  ],
+  "expected": "Action removed.",
+  "actual": "fixed: removed.",
+  "where": "src/erp-api/shared (deleted); src/erp-api/workflow/index.ts",
+  "verify": "grep finds no importer; build passes.",
+  "owner": "Frontend settings",
+  "status": "fixed"
+ },
+ "rv-fe:settings-platform:6": {
+  "note": "Still in code: sales-mapping-section.tsx l.100 loads getSalesChannels({active:true}); a failed call becomes [] (l.133-137) without a message and l.183 shows `#${id}` for a channel not in that list.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "On the Sales account mapping screen an override for a channel that was later deactivated is shown as '#12' instead of the name, and if the channel call fails the screen just shows no channels with 'Add override' disabled and no reason.",
+  "steps": [
+   "Create a sales channel and an account override for it (Settings > Accounting > Sales mapping).",
+   "Deactivate the channel and reopen the screen."
+  ],
+  "expected": "The row shows the channel name; a warning if the channel call fails.",
+  "actual": "Row shows '#<id>'.",
+  "where": "src/features/settings/accounting/components/sales-mapping-section.tsx l.100, 133-137, 183; src/erp-api/common/index.ts getSalesChannels l.39-43 (forces active=true)",
+  "verify": "Deactivate a channel that has an override: the row still shows its name.",
+  "owner": "Frontend settings",
+  "status": "still-bug"
+ },
+ "rv-fe:settings-platform:60": {
+  "note": "Not changed (not re-measured): erp-api/settings/warehouses/index.ts builds label paths by walking parent ids through nodesById per node (buildLabelPath ~l.436); no childrenByParent index exists. Source rates it LIKELY, low severity.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Printing labels for a warehouse loads all locations and walks the tree repeatedly, which could be slow for thousands of bins.",
+  "steps": [
+   "Settings > Warehouse > Print labels on a location with many bins."
+  ],
+  "expected": "Stays fast with 5,000 bins.",
+  "actual": "Not measured here.",
+  "where": "src/erp-api/settings/warehouses/index.ts",
+  "verify": "Print labels for 5,000 bins and time it.",
+  "owner": "Frontend settings"
+ },
+ "rv-fe:settings-platform:61": {
+  "note": "Fixed: guide-blocks.tsx and support-views.tsx keys now include the index (key={`${index}-${item.label}`}, l.67, 93, 130, 155 ...).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Guide lists used the text as React key, so two equal lines produced duplicate keys.",
+  "steps": [
+   "Render a guide list with two equal lines."
+  ],
+  "expected": "Both render.",
+  "actual": "fixed.",
+  "where": "src/features/guide/components/guide-blocks.tsx; support-views.tsx",
+  "verify": "A list with two equal lines renders both without a React warning.",
+  "owner": "Frontend settings",
+  "status": "fixed"
+ },
+ "rv-fe:settings-platform:62": {
+  "note": "Still in code: company-profile-tab.tsx getLogoBlob (l.28-40) downloads the kept logo from its URL and the save appends it again (l.172-174); both logoId and logoAttachmentId are sent (l.160-161). e2e SET-08-02 covers upload, keep and remove, so remove works; only the re-upload is wasteful.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Saving the company profile re-downloads and re-uploads the existing logo every time, and sends the same id in two fields.",
+  "steps": [
+   "Settings > System > Company profile with a logo; change the name and Save; watch the network."
+  ],
+  "expected": "Logo sent only when a new file was picked.",
+  "actual": "Logo re-uploaded on every save.",
+  "where": "src/features/settings/system/components/company-profile-tab.tsx l.28-40, 144-175",
+  "verify": "Save without touching the logo: no multipart 'logo' part in the request.",
+  "owner": "Frontend settings",
+  "status": "still-bug",
+  "tests": [
+   "e2e/tests/settings/08-system.spec.ts SET-08-02"
+  ]
+ },
+ "rv-fe:settings-platform:63": {
+  "note": "Still in code: eslint.config.mjs no-restricted-imports (l.29-38) only bans @hookform/devtools; nothing blocks @/erp-api/api-client outside src/erp-api; features/purchase/vendor-return/actions.ts l.300 still imports it.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The rule that screens must reach the backend only through erp-api facades is documented but not enforced by lint, and one purchase action already breaks it.",
+  "steps": [
+   "Add a feature file that imports @/erp-api/api-client; run pnpm lint."
+  ],
+  "expected": "Lint fails.",
+  "actual": "Lint passes.",
+  "where": "eslint.config.mjs; src/features/purchase/vendor-return/actions.ts l.300",
+  "verify": "pnpm lint fails on a deliberate violation.",
+  "owner": "Frontend settings",
+  "status": "still-bug"
+ },
+ "rv-fe:settings-platform:7": {
+  "note": "Still in code: customer-deposit-ledgers.tsx l.85 loads getSalesChannels({active:true}) only and l.225 / l.313 fall back to `#${salesChannelId}`.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A sales channel deactivated after it got a customer deposit ledger mapping is labelled 'Customer deposit ledger for #12' instead of its name.",
+  "steps": [
+   "Map a deposit ledger for a channel in Settings > Accounting.",
+   "Deactivate that channel and reopen the screen."
+  ],
+  "expected": "The channel name is shown.",
+  "actual": "'#<id>' shown.",
+  "where": "src/features/settings/accounting/components/customer-deposit-ledgers.tsx l.85, 225, 313; src/erp-api/common/index.ts getSalesChannels",
+  "verify": "Deactivate a channel with a ledger; the label shows its name.",
+  "owner": "Frontend settings",
+  "status": "still-bug"
+ },
+ "saleschain:FD-P3-1": {
+  "note": "Fixed by removal: the Transaction series screen (transaction-series-section.tsx) is read-only now, it has no Save, and nothing calls saveTransactionSeriesConfigsBulk (erp-api/settings/system/index.ts l.192-200, dead code). Backend TransactionSeriesConfigController has POST /, PUT /{id}, no /bulk. e2e SET-08-05 checks the preview only.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The old Save sent POST /api/transaction-series-config/bulk, which the backend answers with 405 because it only has PUT /{id}. The screen no longer offers editing, so the failure cannot happen; editing series from the UI is simply not available now.",
+  "steps": [
+   "Settings > System > General preference > Transaction series."
+  ],
+  "expected": "Either per-row PUT /{id} saves or no Save button.",
+  "actual": "fixed: no Save, no call to /bulk. The unused bulk function remains and can be deleted.",
+  "where": "src/features/settings/system/components/transaction-series-section.tsx; src/erp-api/settings/system/index.ts l.192-200",
+  "verify": "Open the section: no Save; grep shows no caller of saveTransactionSeriesConfigsBulk.",
+  "owner": "Frontend settings",
+  "status": "fixed",
+  "tests": [
+   "e2e/tests/settings/08-system.spec.ts SET-08-05"
+  ]
+ },
+ "saleschain:FD-P3-2": {
+  "note": "Fixed by code: invoice-order-print-document.tsx now uses useFormatDate().formatDate (l.43,161,163) and useFormatNumber formatAmount/formatQuantity (l.44,63,253), the shared formatters that apply language digits and the company date format (see FIX-LOG-bangla-digits.md). Not visually re-run.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The printed sales invoice kept Western digits and ISO dates in Bangla and ignored the company date format.",
+  "steps": [
+   "Switch to Bangla and set a company date format.",
+   "Open Sales > Invoice > a posted invoice > Print."
+  ],
+  "expected": "Bangla digits and the company date format.",
+  "actual": "fixed by code: shared formatters used.",
+  "where": "src/features/sales/invoice-order/components/invoice-order-print-document.tsx",
+  "verify": "Print an invoice in Bangla; digits and dates follow the settings.",
+  "owner": "Frontend sales",
+  "status": "fixed"
+ },
+ "saleschain:FD-P3-4": {
+  "note": "Sidebar fixed: app-layout.tsx l.90-101 filters the menu by permission and fails closed; app-menu.config.tsx gives Settings > Sales, Users, Workflow, Accounting a requiredPermission. Still open: the Settings > System entry (app-menu.config.tsx l.555-559) has no requiredPermission and system-settings-root.tsx has no permission check; Settings > Sales root checks permissions.canAccess (sales-settings-root.tsx l.65), so FD-P3-5 is fixed for Sales only.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A view-only user used to see every module in the sidebar and could open Settings > Sales (with a New button) and Settings > System (13 inputs). The sidebar and Sales settings are now gated; System settings still opens for any signed-in user.",
+  "steps": [
+   "Sign in as a user with only view rights on sales.",
+   "Check the sidebar; open /settings/system directly."
+  ],
+  "expected": "System settings is hidden and shows No Access without a settings right.",
+  "actual": "Sidebar filtered; /settings/system still renders.",
+  "where": "src/shared/components/app-layout/app-menu.config.tsx l.555; src/features/settings/system/components/system-settings-root.tsx",
+  "verify": "As a user without settings rights /settings/system shows No Access and has no sidebar entry. The backend permission code for company settings must be named first.",
+  "owner": "Frontend settings",
+  "status": "in-progress",
+  "tests": [
+   "e2e/tests/settings/01-auth-and-shell.spec.ts SET-01-02"
+  ]
+ },
+ "saleschain:FD-P3-7": {
+  "note": "Not re-checked: it is a visual defect in the dark theme (shared select/filter styling) and cannot be judged from code reading. No dark-mode select assertion in e2e (SET-01-06 only toggles the theme class).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "On list screens in the dark theme the filter select and the page-size select render with a white background and a barely readable placeholder.",
+  "steps": [
+   "Switch to dark theme.",
+   "Open Commission, Sales demand or another list with filter selects."
+  ],
+  "expected": "Selects use the dark surface colours.",
+  "actual": "Reported white with unreadable placeholder (2026-10-31).",
+  "where": "shared AppSelect / filter bar CSS; fix in a feature-scoped CSS file, not globals.css",
+  "verify": "Look at three list screens in dark mode.",
+  "owner": "Frontend settings",
+  "tests": [
+   "e2e/tests/settings/01-auth-and-shell.spec.ts SET-01-06 (toggle only)"
+  ]
+ },
+ "saleschain:FD-P3-9": {
+  "note": "Mostly fixed: landing pages /sales-demand, /field-force, /inventory-warehouse, /settings now call redirectToFirstAccessible (not placeholders); customer-assignment-modal shows modal.currentTerritory (l.214); 'partnerId' is gone from messages/sales-demand/en.json. Not verifiable by code reading: the long list of untranslated Bengali labels, role editor module headings from the backend matrix (FD-P3-10), Gift Distribution 'New Entry' (FD-P3-11; no such button found in features/inventory/product-distribution).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A bundle of small polish defects: English words in the Bangla UI, placeholder landing pages, a dead 'New Entry' button and a customer assignment dialog that did not show the current territory. Landing pages and the territory display are fixed.",
+  "steps": [
+   "Switch to Bangla and open Commissions, Coverage planning, IMS.",
+   "Open /settings/users-and-roles/new and read the module headings."
+  ],
+  "expected": "All labels translated; headings readable.",
+  "actual": "Structural items fixed; label coverage not rechecked.",
+  "where": "src/messages/**; src/app/(erp)/{sales-demand,field-force,inventory-warehouse,settings}/page.tsx; features/settings/field-force/components/customer-assignment-modal.tsx",
+  "verify": "Run a Bangla pass over the screens listed in section F of HARD-TEST-SALES-CHAIN-P3.md.",
+  "owner": "Frontend settings",
+  "status": "in-progress",
+  "tests": [
+   "e2e/tests/settings/06-field-force-structure.spec.ts"
+  ]
+ }
+}

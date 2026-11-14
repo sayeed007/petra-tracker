@@ -1,0 +1,32 @@
+{
+ "assets:A-83": {
+  "tests": [
+   "FAS-07-01"
+  ]
+ },
+ "assets:A-37b": {
+  "status": "still-bug",
+  "note": "e2e FAS-07-02 (test.fail) reproduces it on deployment/dev@b2597ef11: forecastRemaining is 0 for an active 2,400/24-month asset with 3 months posted, expected 2,100. DepreciationScheduleService.java:164 subtracts `accumulated`, which already includes the whole forecast; postedToDate (300) and net book value (2,100) are correct.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-14",
+  "tests": [
+   "FAS-07-02"
+  ]
+ },
+ "saleschain:SC-10": {
+  "tests": [
+   "FF-SET-06",
+   "SET-06-02"
+  ]
+ },
+ "saleschain:FD-P3-4": {
+  "tests": [
+   "SET-08-06"
+  ]
+ },
+ "rv-fe:settings-platform:37": {
+  "tests": [
+   "SET-09-04"
+  ]
+ }
+}

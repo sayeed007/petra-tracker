@@ -1,0 +1,51 @@
+[
+  {
+    "id": "e2e:accounting:vat-settle-paid-from",
+    "module": "accounting",
+    "side": "frontend",
+    "severity": "medium",
+    "title": "VAT settlement dialog still asks 'Paid from' and says the money leaves that account, but the backend books it to VAT Payable",
+    "summary": "When a VAT return is settled the dialog asks the user to choose the account the VAT is paid from and tells them the money leaves it. The backend now ignores that account and books the amount to VAT Payable (2136), so the choice does nothing and the message is false.",
+    "steps": [
+      "Accounting > VAT returns: open a filed VAT return.",
+      "Press Settle: the dialog asks 'Paid from' and says the money leaves the chosen account.",
+      "Settle, then open the journal entry created (for example JV/26-27/000212)."
+    ],
+    "expected": "Either the dialog does not ask for or promise a paying account, or the backend uses it.",
+    "actual": "The journal is Dr 1161 VAT Current Account / Cr 2136 VAT Payable whatever account was chosen.",
+    "where": "Frontend: the VAT return settle dialog (src/features/accounting/vat-returns). Backend: VatReturnService settlement posting.",
+    "tests": ["ACC-11-04"],
+    "verify": "Remove the 'Paid from' field and the money-leaves-account text (or send and use the account); ACC-11-04 asserts what the backend books.",
+    "owner": "Frontend (Accounting)",
+    "status": "open",
+    "status_evidence": "Found by the e2e refresh 2026-11-14: ACC-11-04 now asserts the booked entry; the dialog text was read on screen.",
+    "evidence_level": "verified",
+    "found": "2026-11-14",
+    "checked": {"ref": "release_beta_1.0.0@05aecf15 + deployment/dev@b2597ef11", "date": "2026-11-14"},
+    "refs": ["e2e/tests/accounting/11-vat-returns.spec.ts"]
+  },
+  {
+    "id": "e2e:settings:commission-slabs-overlap",
+    "module": "settings-platform",
+    "side": "frontend",
+    "severity": "medium",
+    "title": "Commission settings: the seeded extra-lifting slabs are flagged as overlapping and Save does nothing",
+    "summary": "On Settings > Sales > Commission & Incentives the default slabs (0-20000, 20000-50000, 50000-open) are marked as overlapping, so nothing on the page can be saved with the default data. The backend ranges are half-open [from, to) and accepts them.",
+    "steps": [
+      "Open Settings > Sales > Commission & Incentives with the seeded configuration.",
+      "Change any field and press Save."
+    ],
+    "expected": "The page saves; slabs that touch at a boundary (to = next from) are valid.",
+    "actual": "The extra-lifting slabs are flagged as overlapping and Save is blocked.",
+    "where": "src/features/settings/.../commission-config-conflicts.ts: the check `row.fromAmount <= previous.toAmount` (commit 7764c7be) should be `<`. Backend: CommissionIncentiveConfigController.java:67 accepts half-open ranges.",
+    "tests": ["SET-07-03"],
+    "verify": "Change `<=` to `<`; remove test.fail() from SET-07-03.",
+    "owner": "Frontend (Settings)",
+    "status": "still-bug",
+    "status_evidence": "SET-07-03 (test.fail) reproduces it on the seeded data, e2e refresh 2026-11-14.",
+    "evidence_level": "verified",
+    "found": "2026-11-14",
+    "checked": {"ref": "release_beta_1.0.0@05aecf15", "date": "2026-11-14"},
+    "refs": ["e2e/tests/settings"]
+  }
+]

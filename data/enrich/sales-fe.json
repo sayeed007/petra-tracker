@@ -1,0 +1,801 @@
+{
+ "st1111:S1": {
+  "note": "Still open: feature gap. The sales demand form shows the Available Offer column only for the 'general' (retail) grid (sales-demand-form-item-row.tsx:256) and Retail channels are disabled in Customer Type on that form (sales-demand-form-view.tsx:393-399), so no reachable channel can pick a scheme. Only the Field Force ASE screen sends appliedPricingSchemaId (ase-create-demand-view.tsx:205). Decision needed: offer schemes on Modern Trade / Corporate demands or keep them ASE-only.",
+  "ref": "release_beta_1.0.0@05aecf15 / deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Pricing schemes (discount, cashback, promo) made in Settings > Sales never reach a demand created on the Sales module screen. A user raising a Modern Trade demand gets no scheme discount, even for an active scheme that targets Modern Trade. Only Field Force ASE demands can use schemes.",
+  "steps": [
+   "Settings > Sales > Pricing Schemes: create an active DISCOUNT scheme (10% off Item A, 10+ units, customer type Modern Trade).",
+   "Open /sales-demand/demand-order/new, choose a Modern Trade customer, add Item A x 20.",
+   "Look at the line and the summary Discount."
+  ],
+  "expected": "The scheme is offered or applied and the discount appears.",
+  "actual": "Discount 0.00; no offer column on the grid; the demand line carries no appliedPricingSchemaId.",
+  "where": "FE features/sales/sales-demand/components/sales-demand-form-item-row.tsx:256, sales-demand-form-view.tsx:399, utils.ts:741; BE SalesDemandDomainService.injectPromoFreeLines (~l.1440-1470, only acts on lines that carry a scheme id)",
+  "verify": "After the product decision, repeat steps 2-3 and confirm the saved line has applied_pricing_schema_id and the discount reaches the order and invoice.",
+  "owner": "Both, sales"
+ },
+ "st1111:S15": {
+  "status": "still-bug",
+  "note": "Still a bug in code: the credit memo detail header has only Edit and Apply refund (credit-memo-record-header.tsx:44-67). The facade maps the workflow task id (erp-api/sales/credit-memos/index.ts:528) but no component uses it. On the dev backend memos are APPROVED as saved (e2e SAL-12-06), so the gap only shows when an approval workflow is active for credit memos.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "When a credit memo needs approval it is saved as Pending Approval, but its page has no Approve or Reject button. The approver has to call the workflow API by hand, so the money chain return -> credit memo -> refund stops.",
+  "steps": [
+   "Activate an approval workflow for credit memos (Settings > Workflow).",
+   "Create a sales return, receive it, then Credit Memos > New for it and save.",
+   "Open the memo as the approver (/sales-demand/credit-memos/{id})."
+  ],
+  "expected": "Approve and Reject buttons (permission guarded) complete the workflow task (POST /api/workflow/tasks/{taskId}/complete).",
+  "actual": "Header shows only Edit and Apply refund; memo stays Pending Approval.",
+  "where": "FE features/sales/credit-memos/components/credit-memo-record-header.tsx, erp-api/sales/credit-memos/index.ts:528 (workflowTaskId unused)",
+  "tests": [
+   "SAL-12-06 (memos are approved at once without a workflow)"
+  ],
+  "verify": "With a workflow active, the approver sees Approve/Reject on the memo; after Approve the status is Open and Apply refund appears.",
+  "owner": "Frontend, sales"
+ },
+ "st1111:S20": {
+  "note": "Still open, needs a business decision. e2e helper createInvoice posts an invoice straight from an approved sales order with no fulfilment and the backend accepts it (e2e/support/sales.ts:324; used by SAL-08-* invoice tests). Over-invoicing beyond the order quantity is refused (SAL-08-04).",
+  "ref": "release_beta_1.0.0@05aecf15 / deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "An invoice can be raised and posted (revenue, VAT, receivable booked) while the sales order is still Not Fulfilled. For prepaid corporate sales this may be wanted, for others it books revenue before goods leave.",
+  "steps": [
+   "Create and approve a demand, then a sales order (do not fulfil or ship).",
+   "Sales > Invoices > New for that order, save.",
+   "Check the order status and the journal."
+  ],
+  "expected": "Either the invoice is refused until goods are dispatched, or the rule is documented per channel.",
+  "actual": "Invoice posts (SV journal) while the order shows Not Fulfilled.",
+  "where": "BE POST /api/sales/invoices (InvoiceDomainService), FE invoice-order form",
+  "tests": [
+   "SAL-08-04"
+  ],
+  "verify": "Decide the rule; then POST /api/sales/invoices for an order with no delivery order and expect 4xx (or accepted if the rule allows it).",
+  "owner": "Both, sales"
+ },
+ "st1111:S25": {
+  "status": "still-bug",
+  "note": "Still a bug visible in code (backend). After Confirm Quantities the demand is re-priced by SalesDemandDomainService.refreshCustomerCategoryDiscount -> applyCustomerCategoryDiscount (~l.1079-1101), which only recalculates the customer-category discount on the line total. Nothing recomputes a DISCOUNT or CASHBACK scheme reward from appliedPricingSchemaId (only promo free lines are injected, ~l.1440-1470). So the scheme reduction shown on the ASE review is dropped.",
+  "ref": "release_beta_1.0.0@05aecf15 / deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A scheme discount or cashback shown on the Field Force ASE review screen disappears once the sales office runs Confirm Quantities. The demand, order, invoice and journal then carry the higher price, so the customer is billed too much and the scheme amount never appears in the books. Promo (free goods) survives.",
+  "steps": [
+   "As an ASE user (Retail Food, Retailer 7%), create a demand for Item A x 10 with an active 10% discount scheme: review shows 80 - 8 = 72, trade discount 5.04, total 66.96.",
+   "As admin open the demand, Receive Deposit, Verify Payment, Confirm Quantities.",
+   "Read the summary and create the sales order and invoice."
+  ],
+  "expected": "Total stays 66.96 (scheme applied once, trade discount on the agreed base).",
+  "actual": "Summary becomes Gross 80, Discount 7% 5.60, total 74.40; order, invoice and journal use 74.40; scheme 8.00 is lost. Cashback behaves the same.",
+  "where": "BE SalesDemandDomainService.refreshCustomerCategoryDiscount / applyCustomerCategoryDiscount; SalesDemandCoordinationService.verifyQuantity; FE field-force ase-create-demand use-trade-discount.ts (preview only)",
+  "verify": "Repeat the steps on deployment/dev; after the fix GET /api/sales/demands/{id} after Confirm Quantities must still show the scheme reduction and the same total as the ASE review.",
+  "owner": "Both, sales",
+  "severity": "high"
+ },
+ "rv-fe:sales:18": {
+  "status": "decision",
+  "note": "Mostly by design, not a frontend defect: the backend also takes Modern Trade VAT flat (rate x price, 15.8% of 100 = 15.80) via SalesTax.tax(..., flat=true) (SalesTax.java). The frontend grid mirrors it (utils.ts:471-473 K = L x 15.8%, matching the client sheet). What remains: the grid uses the constant SALES_DEMAND_VAT_RATE 0.158 (utils.ts:174) and ignores the item's own tax rate. Same business question as st1111:S19.",
+  "ref": "release_beta_1.0.0@05aecf15 / deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The demand form computes VAT with a fixed 15.8 percent. For Modern Trade it takes 15.8% of the already VAT-inclusive price (flat) instead of extracting it, which gives a higher VAT than extraction (25.28 instead of 21.84 on 160). Retail channels should carry no VAT.",
+  "steps": [
+   "Open /sales-demand/demand-order/new, choose a Modern Trade customer.",
+   "Add Item A with offer TP 8 x 20 (total 160).",
+   "Read the VAT & AIT cell and the summary."
+  ],
+  "expected": "VAT method follows the channel rule stated by the client, with the item's rate.",
+  "actual": "VAT 25.28 (15.8% flat), same as the backend; item tax rate not read.",
+  "where": "FE features/sales/sales-demand/utils.ts:174,471-473; BE SalesTax.tax (flat for SalesChannel.flatVatRate)",
+  "tests": [
+   "SAL-03-05"
+  ],
+  "verify": "Get the written rule from the client; compare the form VAT with GET /api/sales/demands/{id} line taxAmount for one MT demand (they must match).",
+  "owner": "Both, sales"
+ },
+ "rv-fe:sales:21": {
+  "status": "still-bug",
+  "note": "Still visible in code: the lineTaxRate comment says retail has no VAT and the discount base is gross (use-trade-discount.ts ~l.150-157), but useDemandValueSummary computes the discount base net of the item's tax (amountNetOfTax, same file ~l.188-196) and its doc comment says 'goods net of it'. The two disagree.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The Field Force ASE review screen computes the trade discount on a base that its own comments contradict. If the item carries a 15.8% rate the preview shows less discount than the backend settles (8,640 at 7%: base 7,461 instead of 8,640).",
+  "steps": [
+   "Field Force > ASE > a Retail customer > Create Demand, add an item whose master has VAT+AIT rate 15.8% totalling 8,640.",
+   "On the review step read Discount (7%).",
+   "Compare with the saved demand's customerDiscountAmount."
+  ],
+  "expected": "Preview discount equals the backend's customerDiscountAmount.",
+  "actual": "Preview discounts the VAT-extracted base; comments state the opposite.",
+  "where": "FE features/field-force/ase-create-demand/use-trade-discount.ts (lineTaxRate, useDemandValueSummary)",
+  "verify": "Compare the review total with GET /api/sales/demands/{id} total for the 8,640 example.",
+  "owner": "Frontend, sales / field force"
+ },
+ "rv-fe:sales:26": {
+  "status": "in-progress",
+  "note": "Partly addressed. sales-tax.ts now documents the two scales, mirrors backend SalesTax.toFraction (value above 1 = percent, same guess) and toTaxPercent rounds away the float tail (sales-tax.ts:45-52). The guess for a rate of exactly 1 remains but is identical on both sides. Not rechecked: unit mismatch between item-returns and invoices facades.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A tax rate cell is read as percent or fraction by guessing (above 1 = percent). The unit also differs between facades (returns hold a fraction, invoices a percent).",
+  "steps": [
+   "Open a sales return line and an invoice line for the same item and compare the rate shown."
+  ],
+  "expected": "Same unit and a named conversion.",
+  "actual": "toTaxPercent now rounds; guess stays (same as backend); facade unit difference not rechecked.",
+  "where": "FE shared/sales-tax.ts:32-52; erp-api/sales/item-returns/index.ts; features/sales/sales-return/mappers.ts",
+  "verify": "Return line shows 15.8, not 0.158; unit test for rate 1.",
+  "owner": "Frontend, sales"
+ },
+ "rv-fe:sales:28": {
+  "status": "in-progress",
+  "note": "Partly fixed: 'Select all' is now disabled while a search narrows the list (pricing-scheme-form-page.tsx:1073-1079). Still open: unticking one chip with 'all' on builds the list from the loaded page only (toggleItem l.640-651 uses optionValues(itemOptions)) and the label is still 'Select all'.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "In the pricing scheme form, 'Select all' means 'no item restriction'. Unticking one item while all is on silently narrows the scheme to the items loaded on the first page, so a scheme meant for the whole catalogue ends up covering one page.",
+  "steps": [
+   "Settings > Sales > Pricing Schemes > New.",
+   "Click Select all, then untick one item.",
+   "Save and open the scheme."
+  ],
+  "expected": "All items except the unticked one, or a clear prompt to pick items.",
+  "actual": "Scope becomes only the loaded page items minus the one.",
+  "where": "FE features/settings/sales/components/pricing-scheme-form-page.tsx:632-651",
+  "verify": "With more items than one page: select all, untick one, save; scope lists every other item.",
+  "owner": "Frontend, sales settings"
+ },
+ "rv-fe:sales:34": {
+  "status": "in-progress",
+  "note": "Partly fixed: Verify is now disabled for 0 or empty (sales-demand-advance-payment-section.tsx:92-95, e2e SAL-03-19). Still open: Deposit Amount > 0 is required on every create/edit (sales-demand/schema.ts:220-225), so a credit customer needs an invented figure; the list column Advance Paid shows the typed amount (columns.tsx:232-241).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A demand cannot be saved without a deposit amount greater than zero, even for a customer on credit, and the typed amount appears as Advance Paid before anyone verified it.",
+  "steps": [
+   "Open /sales-demand/demand-order/new with a credit customer, fill lines, leave Deposit Amount empty.",
+   "Press Save."
+  ],
+  "expected": "Deposit optional (>= 0), slip only when an amount is entered (after the client confirms the rule).",
+  "actual": "Save blocked: 'Enter a number greater than zero'.",
+  "where": "FE features/sales/sales-demand/schema.ts:220-225, components/columns.tsx:232-241",
+  "tests": [
+   "SAL-03-03",
+   "SAL-03-19"
+  ],
+  "verify": "Credit-customer demand saves with no deposit.",
+  "owner": "Frontend, sales"
+ },
+ "rv-fe:sales:36": {
+  "status": "still-bug",
+  "note": "Still true: types.ts:120 still carries the TODO 'receipt screens do not capture VDS/TDS yet; nothing sends these today'; ReceiptWithholdingPayload exists but no form field sets it. Needs a product decision first.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A customer who pays net of VDS or TDS cannot have the withheld tax recorded on the receipt, and cheque payments cannot store a cheque number. The invoice stays partly open and the withheld tax is unbooked.",
+  "steps": [
+   "Sales > Receipts > New, choose Cheque.",
+   "Look for cheque number, VDS or TDS fields."
+  ],
+  "expected": "Fields to record cheque no, VDS/TDS amount and certificate, or the dead payload removed.",
+  "actual": "No such fields.",
+  "where": "FE erp-api/sales/receipts/types.ts:118-132, features/sales/receipt/actions.ts, receipt-print-document.tsx",
+  "verify": "Receive a net-of-TDS payment; the invoice settles.",
+  "owner": "Frontend, sales"
+ },
+ "rv-fe:sales:38": {
+  "status": "still-bug",
+  "note": "Still visible: customer-overview-sidebar.tsx:6,316 calls updateCustomer from the facade directly (no action layer/zod); customer-deposit [depositId]/page.tsx generateMetadata reads the record before any permission check (lines 14-27). Receive deposit button is now guarded (customer-record-header.tsx:136-145, fixed part).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Some customer screens call the server facade straight from the browser and some pages read a record before checking the user's permission, so errors are raw and a document number can show in the tab title to a user who cannot open it.",
+  "steps": [
+   "Open a customer, edit an address in the sidebar with the backend refusing the save.",
+   "As a user without deposit view permission open /sales-demand/customer-deposit/{id} and read the tab title."
+  ],
+  "expected": "Server Action with permission and typed error; no title leak.",
+  "actual": "Direct facade call; title leaks the document number.",
+  "where": "FE features/sales/customer/components/customer-overview-sidebar.tsx:316, app/(erp)/sales-demand/customer-deposit/[depositId]/page.tsx:14-27",
+  "verify": "Without permission the tab title is generic; a failed sidebar save shows a translated message.",
+  "owner": "Frontend, sales"
+ },
+ "rv-fe:sales:39": {
+  "status": "in-progress",
+  "note": "Partly fixed: getCustomerDepositById now returns null only for 404 and throws otherwise (erp-api/sales/customer-deposits/index.ts:202-220). Still open: getCustomer wraps every error in new Error(String(error)) (customers/index.ts:287-293) and getImsReportSummary returns 0 pending on any error (ims-reports/index.ts:40-52).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Some detail and summary reads turn a server error into 'not found' or a zero count, so an outage looks like missing data.",
+  "steps": [
+   "Stop the backend (or force a 500), open the ASE IMS home.",
+   "Open /sales-demand/customer/{badId}/edit."
+  ],
+  "expected": "An error state with retry; not found only for 404.",
+  "actual": "IMS shows 0 pending uploads; customer read throws raw text.",
+  "where": "FE erp-api/sales/customers/index.ts:287, erp-api/sales/ims-reports/index.ts:46-52",
+  "verify": "With the backend stopped the page shows an error and retry, not zero.",
+  "owner": "Frontend, sales"
+ },
+ "rv-fe:sales:47": {
+  "status": "in-progress",
+  "note": "Partly fixed: the form now opens on today's date and posting month (item-fulfillment-form-view.tsx:96-105). Still open: Ship Date is pre-filled with the order's estimated ship date (l.99,107). Untracked re-allocation own-reservation handling not confirmed (delivery-orders/index.ts ~l.251 and l.2077).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A new fulfilment shows the estimate as the real Ship Date. On an edit, re-allocating an untracked line may ignore the stock this fulfilment already reserved, so the quantity drops or reads 'no stock'.",
+  "steps": [
+   "Sales order > New Item Fulfillment for an approved order with an estimated ship date.",
+   "Read Ship Date."
+  ],
+  "expected": "Ship Date empty (estimate only as hint).",
+  "actual": "Ship Date = order estimate.",
+  "where": "FE features/sales/item-fulfillment/components/item-fulfillment-form-view.tsx:99-107; erp-api/sales/delivery-orders/index.ts:2077",
+  "verify": "Open the form: Ship Date empty. Edit a fulfilment holding part of free stock: quantity stays.",
+  "owner": "Frontend, sales"
+ },
+ "rv-fe:sales:53": {
+  "status": "still-bug",
+  "note": "Still true: item-receives/index.ts:381 ITEM_RECEIVE_FILTER_SCAN_SIZE = 500 and matchesItemReceiveFilters (l.342) filters the newest 500 in the server process.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The Item Receive list with any filter or search reads only the newest 500 receipts and filters in memory, so an older receipt is never found and the totals are wrong.",
+  "steps": [
+   "Have more than 500 item receives.",
+   "Sales > Item Receive, search for the document number of an old one."
+  ],
+  "expected": "Found; paging from the backend.",
+  "actual": "Not found.",
+  "where": "FE erp-api/sales/item-receives/index.ts:342-428",
+  "verify": "Search a document older than the 500th newest: found.",
+  "owner": "Frontend, sales"
+ },
+ "rv-fe:sales:54": {
+  "status": "still-bug",
+  "note": "Still true: detail pages call getEmailCommunications with size 100 (e.g. customer-deposit/[depositId]/page.tsx:57-62), the receipt page has its own loadCompanyName (receipt/[receiptId]/page.tsx:24), customer-detail-view.tsx:53 refetches the customer.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Opening a sales document makes extra backend calls (100 email rows, company name twice, customer fetched on the server and again in the browser), which slows every detail page.",
+  "steps": [
+   "Open a customer deposit, a receipt and a customer; watch the network panel."
+  ],
+  "expected": "One read per resource, small email page.",
+  "actual": "3-6 calls per page.",
+  "where": "FE app/(erp)/sales-demand/**/[id]/page.tsx, features/sales/customer/components/customer-detail-view.tsx:53",
+  "verify": "Network panel: customer open sends one GET.",
+  "owner": "Frontend, sales"
+ },
+ "rv-fe:sales:32": {
+  "status": "still-bug",
+  "note": "Not fully rechecked: address default toggle is radio-like (customer-form-tabs.tsx:245); the modal rule difference and 'remove default leaves none' were not re-verified. Keeping the status.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The contact and address modals follow different rules (contact needs name and title, address can save blank) and removing the default address can leave a group with no default.",
+  "steps": [
+   "Customer > Edit > Addresses, remove the default billing address and save."
+  ],
+  "expected": "Another address becomes default; blank address refused.",
+  "actual": "Not rechecked.",
+  "where": "FE features/sales/customer/components/customer-contact-modal.tsx, customer-address-modal.tsx, customer-form-tabs.tsx",
+  "verify": "Remove the default address: another is default.",
+  "owner": "Frontend, sales"
+ },
+ "rv-fe:sales:35": {
+  "status": "in-progress",
+  "note": "Partly fixed: new sales order opens with paymentOption 'cash' (sales-order-form-view.tsx:259, no longer 'Cheque'). Still there: trade-discount preview defaults to 15000 and replaces bad input (trade-discount-panel.tsx:779-781,880); ASE delivery details fall back to `|| 1` and 'ctn' (delivery-details-view.tsx:95-96,121).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Small invented defaults: a fixed order value of 15000 in the trade-discount preview, quantity 1 and unit 'ctn' shown as real data on ASE delivery details.",
+  "steps": [
+   "Settings > Sales > Trade discount preview: type 'abc' in the order value.",
+   "Open an ASE delivery detail with a missing quantity."
+  ],
+  "expected": "A validation message / dash.",
+  "actual": "15000 silently used; 1 and 'ctn' shown.",
+  "where": "FE features/settings/sales/components/trade-discount-panel.tsx:779,880; features/field-force/ase-customer/delivery-details-view.tsx:95",
+  "verify": "Typing abc shows a message, not 15000.",
+  "owner": "Frontend, sales"
+ },
+ "rv-fe:sales:45": {
+  "status": "in-progress",
+  "note": "Partly fixed: website href strips the scheme (customer-overview-sidebar.tsx:435), invoice payment history key is no longer receiptDocNumber (invoice-order-detail-tabs.tsx:139), sales-order page fallback uses loadError false (sales-order/[orderId]/page.tsx:64). Still: receipt header always shows Paid (receipt-record-header.tsx:23-25).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Small display errors on the customer overview, payment history and receipt header; the receipt header says Paid for every receipt.",
+  "steps": [
+   "Open a receipt that is only partly applied and read the header badge."
+  ],
+  "expected": "Badge from real status or removed.",
+  "actual": "Always Paid.",
+  "where": "FE features/sales/receipt/components/receipt-record-header.tsx:23",
+  "verify": "Header status reflects the receipt.",
+  "owner": "Frontend, sales"
+ },
+ "rv-fe:sales:55": {
+  "status": "still-bug",
+  "note": "Still true: receipt print falls back to 'BDT' (receipt-print-document.tsx:25) and the receipt create form still has currency and exchange rate fields (receipt-create-form-fields.tsx:125-140) although the system is BDT only (decided 2026-10-20).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Hardcoded English text, a currency picker and exchange rate on receipts, and fake option labels remain although the system is BDT only.",
+  "steps": [
+   "Sales > Receipts > New: currency and exchange rate fields appear.",
+   "Switch to Bangla and open a receipt print."
+  ],
+  "expected": "No currency or rate; no English in Bangla.",
+  "actual": "Fields present; English literals.",
+  "where": "FE features/sales/receipt/components/receipt-create-form-fields.tsx:125-140, receipt-print-document.tsx",
+  "verify": "Bangla session shows no English on receipt, deposit and return screens.",
+  "owner": "Frontend, sales"
+ },
+ "rv-fe:sales:56": {
+  "status": "in-progress",
+  "note": "Partly cleaned: mockDocNo and console.log are no longer in features/sales or erp-api/sales. The other listed dead code (unreachable export button, dead acknowledge dialog, dead customer columns, splitTax constants) was not individually rechecked.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Dead code, fake data and stale comments in the sales module make review harder.",
+  "steps": [
+   "grep the files listed in the source note."
+  ],
+  "expected": "No dead code.",
+  "actual": "Part removed.",
+  "where": "FE features/sales/**, erp-api/sales/**",
+  "verify": "pnpm lint and pnpm build pass; grep finds no importer of removed items.",
+  "owner": "Frontend, sales"
+ },
+ "rv-fe:sales:57": {
+  "status": "still-bug",
+  "note": "Still true: no shared mutation-failure helper exists in erp-api/sales; credit-memos and customer-refunds still emit backend_message (credit-memos/index.ts:107,664) while others use backendMessage.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The same mutation-failure mapping is copied across seven facades with two different field names and uneven logging.",
+  "steps": [
+   "Fail an order save and check the server log."
+  ],
+  "expected": "One helper, one field name, one log line.",
+  "actual": "Copies remain.",
+  "where": "FE erp-api/sales/{orders,receipts,invoices,item-returns,item-receives,sales-demand}/index.ts",
+  "verify": "A failed order save leaves one server log line.",
+  "owner": "Frontend, sales"
+ },
+ "rv-fe:sales:58": {
+  "status": "still-bug",
+  "note": "Still true and larger: delivery-orders/index.ts 2123 lines, invoices 1724, orders 1527, sales-demand 1930; eslint-disable without reason at customer-form-tabs.tsx:393, receipt-create-form-view.tsx:131, use-receipt-customer-invoices.tsx:82.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Very large facade files and uncommented lint suppressions slow review and cause merge conflicts.",
+  "steps": [
+   "wc -l the four facade index.ts files."
+  ],
+  "expected": "Split into index/mappers/types; each disable has a reason.",
+  "actual": "Not split.",
+  "where": "FE erp-api/sales/*/index.ts",
+  "verify": "lint passes, no behaviour change.",
+  "owner": "Frontend, sales"
+ },
+ "st1111:S11": {
+  "note": "Still open (behaviour may be by design): e2e SAL-02-11 shows the backend refuses a return above the shipped quantity, so a return needs shipment first; the generic toast is the usability part.",
+  "ref": "release_beta_1.0.0@05aecf15 / deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Sales Return cannot be created until goods are shipped; the toast says only 'A return quantity is higher than what the line allows', which does not tell the user why.",
+  "steps": [
+   "Fulfil and invoice an order but do not dispatch.",
+   "Create a Sales Return for part of it."
+  ],
+  "expected": "A clear message ('ship first') or a documented rule.",
+  "actual": "Generic error; Fulfilled shows 0 until dispatch.",
+  "where": "BE sales return validation (shipped quantity); FE sales-return create",
+  "tests": [
+   "SAL-02-11"
+  ],
+  "verify": "Return after dispatch works; before dispatch the message names the cause.",
+  "owner": "Both, sales"
+ },
+ "st1111:S12": {
+  "status": "in-progress",
+  "note": "Part fixed: the carrier form now shows a message (settings/inventory/schema.ts:52-55 min 1, 'Delivery days must be a whole number of at least 1'). Still open: Time To Delivery defaults to 0 (shipping-carrier-section.tsx useForm defaults) and the shared 'No shipping carrier is configured.' text (messages/shared/en.json:807) has no link to Settings. The ship screen now preselects a carrier and shows a Confirm dispatch dialog (SAL-06-07).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Dispatch needs a shipping carrier; the carrier dialog opens with Time To Delivery 0, which is invalid, so the first Create fails.",
+  "steps": [
+   "Settings > Inventory > Item Master > Shipping Carrier > New, fill the name and press Create."
+  ],
+  "expected": "Default 1 or empty field; a link from the empty state to the carrier settings.",
+  "actual": "Default 0; message appears but no link.",
+  "where": "FE features/settings/inventory/components/item-master/shipping-carrier-section.tsx; features/settings/inventory/schema.ts:52",
+  "tests": [
+   "SAL-06-07"
+  ],
+  "verify": "Create a carrier with default values; the ship screen links to settings when none exist.",
+  "owner": "Frontend, sales / inventory"
+ },
+ "st1111:S13": {
+  "note": "Not reproduced in code: the FE maps backend totalDeposited and totalPaymentReceived straight to Deposit Applied and Payments Received (erp-api/sales/orders/index.ts:1051-1053). Whether the wrong figure comes from the backend fields or the mapping needs a run.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Sales Order Payment Summary shows Deposit Applied 0.00 and counts the applied deposit under Payments Received.",
+  "steps": [
+   "Apply a deposit to an order's invoice.",
+   "Open the sales order, Payment Summary."
+  ],
+  "expected": "Deposit Applied = deposit amount.",
+  "actual": "Deposit Applied 0.00, Payments Received 160.00.",
+  "where": "FE erp-api/sales/orders/index.ts:1051-1053; BE sales order payment summary DTO (totalDeposited)",
+  "verify": "GET /api/sales/orders/{id} after the apply: totalDeposited must hold the deposit.",
+  "owner": "Frontend, sales (maybe Both)"
+ },
+ "st1111:S19": {
+  "status": "decision",
+  "note": "Open: product decision. Backend SalesTax javadoc states Modern Trade is flat (15.8% of price) and others extracted; no screen explains this. Same issue as rv-fe:sales:18.",
+  "ref": "release_beta_1.0.0@05aecf15 / deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The VAT method differs by channel (Modern Trade flat vs extracted for Corporate) while the screens use the same '15.8%' label, so the same item gives different VAT per channel with no explanation.",
+  "steps": [
+   "Create a Modern Trade and an Other Corporate demand for the same item and price 100.",
+   "Compare the VAT shown."
+  ],
+  "expected": "Rule written down and shown (a hint on the form).",
+  "actual": "MT 15.80 vs corporate 13.64.",
+  "where": "BE SalesTax.tax; FE sales-demand/utils.ts",
+  "verify": "Client sign-off on the rule.",
+  "owner": "Both, sales"
+ },
+ "st1111:S21": {
+  "status": "still-bug",
+  "note": "Still visible in code: corporate salesTp = offer price - (VAT + client support + box + repack) with no lower bound (sales-demand/utils.ts:~437) and the line total is the typed PO value (poTotalValue, utils.ts:428); the schema has no check on salesTp.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "On an Other Corporate demand, the cost boxes can push Sales TP below zero and the demand saves with a negative Sales TP, no warning. 'Total value' is free text not tied to quantity x TP.",
+  "steps": [
+   "New demand, Other Corporate, Item A x 10, PO total 100, support 5, box 3, repack 2.",
+   "Read Sales TP and save."
+  ],
+  "expected": "Warning or block on negative Sales TP; cost meaning explained.",
+  "actual": "Sales TP -1.36 saved.",
+  "where": "FE features/sales/sales-demand/utils.ts:428-440, schema.ts",
+  "tests": [
+   "SAL-03-05"
+  ],
+  "verify": "Negative Sales TP is refused.",
+  "owner": "Both, sales"
+ },
+ "st1111:S22": {
+  "status": "still-bug",
+  "note": "Still true: depositAmount is required and must be > 0 on every demand (schema.ts:220-225, message 'Enter a number greater than zero'); the field is not marked as customer-type dependent.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Corporate demands need a deposit greater than zero but the field gives no reason, and the Save error says only 'Fix the highlighted fields' while the field may be off screen.",
+  "steps": [
+   "New Other Corporate demand, leave deposit empty, Save."
+  ],
+  "expected": "Required marker and a message that says why.",
+  "actual": "Generic message.",
+  "where": "FE features/sales/sales-demand/schema.ts:220; sales-demand-form-view.tsx",
+  "tests": [
+   "SAL-03-03"
+  ],
+  "verify": "Field shows the requirement before Save.",
+  "owner": "Frontend, sales"
+ },
+ "st1111:S23": {
+  "status": "still-bug",
+  "note": "Still a bug in code: the demand's stockQty comes from inventoryBalanceFacade.sumOnHandQtyByItemIds (SalesDemandDomainService.java:489), i.e. all channels and bins; the FE only shows it (erp-api/sales/sales-demand/index.ts:955, columns.tsx:362).",
+  "ref": "release_beta_1.0.0@05aecf15 / deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The quantity validation 'Stock qty' counts stock of every channel and bin (including returned pieces), so a channel with 30 pieces shows 95 and a demand for more than the channel holds passes.",
+  "steps": [
+   "Transfer stock between channels so channel and total differ.",
+   "Demand for Other Corporate, open Quantity Validation."
+  ],
+  "expected": "Stock of the demand's channel only.",
+  "actual": "All-channel sum.",
+  "where": "BE SalesDemandDomainService.java:489 (sumOnHandQtyByItemIds), FE columns.tsx:362",
+  "verify": "GET /api/sales/demands/{id}: line stockQty equals the channel stock.",
+  "owner": "Both, sales"
+ },
+ "st1111:S27": {
+  "status": "still-bug",
+  "note": "Still a bug in code: pricing-schemes/by-items has no customer-type filter (PricingSchemeController params: search, schemeType, status, itemId, itemIds), the FE call sends only status and itemIds (erp-api/sales/sales-demand/index.ts:1903), and the policy's customerTypes are stored but never used to filter (PricingSchemePolicyMapper only).",
+  "ref": "release_beta_1.0.0@05aecf15 / deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A scheme created for Modern Trade is offered to a Retail Food customer on the ASE screen and applied, because customer-type targeting is never enforced.",
+  "steps": [
+   "Create a scheme for Modern Trade only.",
+   "ASE for a Retail Food customer: create a demand with that item."
+  ],
+  "expected": "Scheme not offered to other types.",
+  "actual": "Offered and applied.",
+  "where": "BE PricingSchemeController by-items; FE erp-api/sales/sales-demand/index.ts:1903",
+  "verify": "GET /api/sales/pricing-schemes/by-items?itemIds=..&customerTypeId=.. returns only matching schemes (needs the new parameter).",
+  "owner": "Both, sales"
+ },
+ "st1111:S28": {
+  "note": "Still open (not changed in the code checked): three points (status wording between ASE and the sales screen, Location required to create the order, deposit slip mandatory in ASE).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The ASE flow says 'sent to BOTM for approval / Pending Approval' while the sales screen says Pending Verification; creating the sales order needs a Location the ASE flow never sets; deposit amount and slip are mandatory.",
+  "steps": [
+   "ASE create-demand for a customer, submit with deposit and slip.",
+   "Open the demand as admin and Create Sales Order."
+  ],
+  "expected": "Same status wording; Location defaulted; deposit optional by rule.",
+  "actual": "As described.",
+  "where": "FE features/field-force/ase-create-demand, features/sales/sales-order form",
+  "verify": "Repeat the steps.",
+  "owner": "Frontend, sales / field force"
+ },
+ "st1111:S3": {
+  "status": "still-bug",
+  "note": "Still true: messages/sales-demand/en.json:333 salesOrder.subtitle = 'Transfer inventory from one location to another', used at sales-order-form-view.tsx:934.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The New Sales Order page subtitle is a leftover from the stock transfer screen.",
+  "steps": [
+   "Open /sales-demand/sales-order/new and read the subtitle."
+  ],
+  "expected": "A sales order description.",
+  "actual": "Stock transfer text.",
+  "where": "FE src/messages/sales-demand/en.json:333 (and bn.json), features/sales/sales-order/components/sales-order-form-view.tsx:934",
+  "verify": "Subtitle matches the screen in en and bn.",
+  "owner": "Frontend, sales"
+ },
+ "st1111:S30": {
+  "status": "decision",
+  "note": "Open: business decision, no code defect. The slab applies to the whole order value (resolveTradeDiscount in sales-demand/utils.ts; backend CustomerCategoryDiscountResolver), so 297 pays 2% and 306 pays 4%.",
+  "ref": "release_beta_1.0.0@05aecf15 / deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The Super Trader discount jumps from 2% to 4% on the whole order at 300, so a slightly bigger order is priced in odd ways, and nothing tells the user how far they are from the next band.",
+  "steps": [
+   "ASE or demand for a Super Trader: order value 297, then 306."
+  ],
+  "expected": "Whole-order vs marginal decided; hint 'add X for 4%'.",
+  "actual": "Cliff at 300.",
+  "where": "FE features/sales/sales-demand/utils.ts resolveTradeDiscount; BE CustomerCategoryDiscountResolver",
+  "verify": "Client decision.",
+  "owner": "Both, sales"
+ },
+ "st1111:S31": {
+  "note": "Feature not implemented: Customer Refunds start only from a credit memo (customer-refund create takes memoId); no screen or API to refund or reassign an unapplied deposit of a rejected or cancelled demand.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A deposit taken for a demand that is then rejected stays in Unearned Revenue with no way to give it back or move it to another demand.",
+  "steps": [
+   "Receive a deposit for a demand, reject the demand.",
+   "Look for a refund action on the deposit."
+  ],
+  "expected": "Refund or reassign the unapplied deposit.",
+  "actual": "None.",
+  "where": "FE features/sales/customer-deposit, credit-memos/components/customer-refund-create-view.tsx; BE customer refund service",
+  "verify": "Needs design first.",
+  "owner": "Both, sales"
+ },
+ "st1111:S32": {
+  "status": "still-bug",
+  "note": "Still true: Reject Demand calls onReject directly (sales-demand-record-header.tsx:160-175, AppActionGuard onAction=onReject) and handleReject completes the workflow task with decision rejected without confirmation or reason (sales-demand-detail-view.tsx:250-268).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "One click on Reject Demand closes the demand at once with no confirm and no reason, and it cannot be undone from the screen.",
+  "steps": [
+   "Open a pending demand with the decision buttons and press Reject Demand."
+  ],
+  "expected": "Confirm dialog (AppConfirmAction) with a reason.",
+  "actual": "Rejected immediately.",
+  "where": "FE features/sales/sales-demand/components/sales-demand-record-header.tsx:160, sales-demand-detail-view.tsx:250",
+  "tests": [
+   "SAL-03-11"
+  ],
+  "verify": "Click shows a confirm; reason saved.",
+  "owner": "Frontend, sales"
+ },
+ "st1111:S35": {
+  "status": "still-bug",
+  "note": "Still a bug in code: nothing in the backend increments PricingScheme totalBudgetUsed or a redemption count (grep over modules/sales finds only the field, DTO and mapper; PricingSchemeDomainService.java:326 calls them system-maintained but no code updates them).",
+  "ref": "release_beta_1.0.0@05aecf15 / deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Scheme redemption and budget counters stay at zero after schemes are used, so max redemptions and total budget limits cannot be enforced.",
+  "steps": [
+   "Use a scheme on an ASE demand.",
+   "Settings > Sales > Pricing Schemes: read Redemptions and Budget used."
+  ],
+  "expected": "Counters move per use; limits enforced.",
+  "actual": "Always 0.",
+  "where": "BE PricingScheme.totalBudgetUsed (no writer), PricingSchemeDomainService",
+  "verify": "GET /api/sales/pricing-schemes/{id} after a demand using it: totalBudgetUsed > 0.",
+  "owner": "Both, sales"
+ },
+ "st1111:S36": {
+  "status": "still-bug",
+  "note": "Partly visible: the collection modal only checks amount > 0 (record-collection-modal.tsx:79-84), no cap at the dues. The unapplied-deposit and outstanding-0 behaviour is backend/ASE summary and was not rechecked.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A field collection only creates an unapplied customer deposit; the ASE screen already shows outstanding 0 and accepts an amount above the dues with no warning.",
+  "steps": [
+   "ASE > Collection: customer with dues 108.8, record 200."
+  ],
+  "expected": "Warn or cap at dues; outstanding follows applied money.",
+  "actual": "Accepted; outstanding 0.",
+  "where": "FE features/field-force/ase-collection/components/record-collection-modal.tsx:79; BE collection approval",
+  "verify": "Recording more than the dues shows a warning.",
+  "owner": "Both, sales / field force"
+ },
+ "st1111:S38": {
+  "note": "Open: the FE offers Edit on any open (unpaid) invoice (erp-api/sales/invoices/index.ts:965 canEdit = open) and the backend reverses and reposts without approval (e2e SAL-08-07 edits an open invoice). No lock or reason exists.",
+  "ref": "release_beta_1.0.0@05aecf15 / deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A posted invoice can be edited by its creator with no approval, reason or lock; reversal and repost is correct but changes revenue freely.",
+  "steps": [
+   "Open an unpaid invoice, Edit, reduce the units, Save."
+  ],
+  "expected": "Approval or reason for edits of posted invoices.",
+  "actual": "Edit allowed.",
+  "where": "FE erp-api/sales/invoices/index.ts:965; BE invoice update",
+  "tests": [
+   "SAL-08-07"
+  ],
+  "verify": "Policy decision.",
+  "owner": "Both, sales"
+ },
+ "st1111:S4": {
+  "status": "in-progress",
+  "note": "Part fixed: on create the form now sends status ACTIVE or DRAFT (settings/sales/actions.ts:231). Still open: on edit no status is sent (`values.id ? {}`) and the backend update does not change status (status moves only via updateStatus, PricingSchemeDomainService.java:103), so the Active/Draft choice on the edit form does nothing.",
+  "ref": "release_beta_1.0.0@05aecf15 / deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The scheme form shows an Active/Draft choice on edit that is ignored; a scheme is activated only from the list toggle.",
+  "steps": [
+   "Edit a Draft scheme, set Active, Save.",
+   "Open the scheme."
+  ],
+  "expected": "Status changes or the choice is hidden on edit.",
+  "actual": "Stays Draft.",
+  "where": "FE features/settings/sales/actions.ts:231, pricing-scheme-form-page.tsx:812-830; BE PricingSchemeDomainService.updateStatus",
+  "verify": "Edit Draft to Active and save: status Active (or the choice is hidden).",
+  "owner": "Both, sales settings"
+ },
+ "st1111:S5": {
+  "status": "in-progress",
+  "note": "Part fixed: the button is now 'Approve Demand' (messages/sales-demand/en.json:44). Still open: the dialog text still says approving will 'create a sales order' (en.json:289) but creating the order is a separate step (handleApprove only completes the workflow task, sales-demand-detail-view.tsx:274-292).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The approval dialog promises a sales order but the demand only becomes Approved; the user must press Create Sales Order next.",
+  "steps": [
+   "Approve a verified demand and read the dialog, then the result."
+  ],
+  "expected": "Dialog text matches the result.",
+  "actual": "Mentions sales order creation.",
+  "where": "FE src/messages/sales-demand/en.json:289 (and bn.json)",
+  "tests": [
+   "SAL-03-10"
+  ],
+  "verify": "Dialog text edited, or approve creates the order.",
+  "owner": "Frontend, sales"
+ },
+ "st1111:S6": {
+  "note": "Open: invoice Amount Due comes from the backend (invoice-order-summary-card.tsx:105); the deposit is applied only from the deposit page, so Amount Due stays gross. The label for the net 'Customer balance' on the receipt form was not checked.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "An invoice shows Amount Due 160 although a 100 deposit exists for the same order; it only drops once the deposit is applied.",
+  "steps": [
+   "Receive a deposit for an order, invoice it, open the invoice."
+  ],
+  "expected": "A hint 'deposit available 100, apply' or a labelled net balance.",
+  "actual": "Amount Due 160, no hint.",
+  "where": "FE features/sales/invoice-order/components/invoice-order-summary-card.tsx:105; receipt form balance",
+  "verify": "Invoice shows deposit available.",
+  "owner": "Frontend, sales"
+ },
+ "st1111:S7": {
+  "status": "still-bug",
+  "note": "Still true: receipt create wraps the form in FormSelectDefaultsProvider autoSelectFirst with the comment that the customer picker preselects the first option (receipt-create-form-view.tsx:233-236).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A new receipt opens with the first customer alphabetically already chosen, so a careless user posts money against the wrong customer.",
+  "steps": [
+   "Sales > Receipts > New with no source document."
+  ],
+  "expected": "Customer empty.",
+  "actual": "First customer preselected.",
+  "where": "FE features/sales/receipt/components/receipt-create-form-view.tsx:233-236",
+  "verify": "Customer empty on open.",
+  "owner": "Frontend, sales"
+ },
+ "e2e:sales:credit-memo-edit-unreachable": {
+  "note": "Unchanged: decision. Edit is draft-only (c0c704a3) and the backend approves memos as saved, so Edit never shows (e2e SAL-12-06 asserts APPROVED, Apply offered, no Edit, PUT refused). Same root as st1111:S15 (workflow approval).",
+  "ref": "release_beta_1.0.0@05aecf15 / deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Credit memos are APPROVED the moment they are saved, so the Edit action meant for drafts can never appear.",
+  "steps": [
+   "Create a credit memo from an approved return and open it."
+  ],
+  "expected": "Product decides: keep memos editable until applied, or remove the Edit action.",
+  "actual": "No Edit; PUT refused.",
+  "where": "FE features/sales/credit-memos/constants.ts (canEditCreditMemo); BE credit memo save",
+  "tests": [
+   "SAL-12-06"
+  ],
+  "verify": "Decision recorded.",
+  "owner": "Both, sales"
+ },
+ "e2e:sales:credit-memo-list-number": {
+  "note": "Unchanged: open. Credit Memos list rows show the return number (RTN-) under Created Form and no memo-number column (e2e SAL-13-13 notes this; search by memo number still works).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The Credit Memos list never shows the memo's own number (CM-...), so users cannot match a memo to the document they hold.",
+  "steps": [
+   "Open /sales-demand/credit-memos."
+  ],
+  "expected": "A Credit Memo No column.",
+  "actual": "Only the return number is shown.",
+  "where": "FE features/sales/credit-memos/components/columns.tsx",
+  "tests": [
+   "SAL-13-13"
+  ],
+  "verify": "Column added.",
+  "owner": "Frontend, sales"
+ },
+ "st1111:S18": {
+  "note": "Open: the summary discount is the customer trade discount only (backend customerDiscountAmount via applyCustomerCategoryDiscount); an offer price below TP is not counted as a discount. Not changed in the code checked.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The summary says 'Discount (VAT exclusive) 0.00' although the offer price is below the trade price, so the price cut is invisible in the discount line.",
+  "steps": [
+   "Demand with TP 8 and offer TP 7 x 10, read the summary."
+  ],
+  "expected": "Offer-price reduction shown or explained.",
+  "actual": "0.00.",
+  "where": "FE features/sales/sales-demand summary; BE SalesDemandDomainService.applyCustomerCategoryDiscount",
+  "verify": "Summary shows the cut or a note.",
+  "owner": "Frontend, sales"
+ },
+ "st1111:S24": {
+  "note": "Open, by design: retail channels stay listed but disabled because getSalesChannelBehavior(label).allowNewDemand is false (sales-demand-form-view.tsx:393-399); they go through Field Force ASE. The screen still gives no reason.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Retail channels appear greyed in Customer Type on the sales demand form without saying why, so schemes and trade discounts cannot be tested from this module.",
+  "steps": [
+   "Open /sales-demand/demand-order/new and open Customer Type."
+  ],
+  "expected": "A tooltip 'use Field Force ASE'.",
+  "actual": "Greyed, no reason.",
+  "where": "FE features/sales/sales-demand/components/sales-demand-form-view.tsx:393-399",
+  "verify": "Disabled options carry a reason.",
+  "owner": "Frontend, sales"
+ },
+ "st1111:S33": {
+  "status": "still-bug",
+  "note": "Still true: Request Override is disabled with only a title hover (sales-demand-credit-limit-section.tsx:~252-258); no code stops the creator authorising their own override.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The credit-limit override button is disabled without a visible reason and the creator can authorise it, so maker and checker are the same person.",
+  "steps": [
+   "Exceed a customer's credit limit, look at Request Override before verifying the deposit."
+  ],
+  "expected": "Visible hint; maker cannot approve own override.",
+  "actual": "Hover title only.",
+  "where": "FE features/sales/sales-demand/components/sales-demand-credit-limit-section.tsx:252-258",
+  "tests": [
+   "SAL-03-15"
+  ],
+  "verify": "A different user must authorise.",
+  "owner": "Frontend, sales"
+ },
+ "st1111:S34": {
+  "status": "still-bug",
+  "note": "Still true: the apply screen clamps a typed amount silently to the unused room with no message (customer-deposit-apply-view.tsx:163-165); the over-total error exists only on Save (l.190).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Typing more than the unused deposit is silently cut to the unused amount, so the user does not notice what was applied.",
+  "steps": [
+   "Deposit 50 unused, Apply screen, type 80 on an invoice."
+  ],
+  "expected": "Message that the amount was capped.",
+  "actual": "Silently 50.",
+  "where": "FE features/sales/customer-deposit/components/customer-deposit-apply-view.tsx:163-165",
+  "verify": "Message appears.",
+  "owner": "Frontend, sales"
+ },
+ "st1111:S37": {
+  "status": "still-bug",
+  "note": "Still true: upload-ims-drawer.tsx:358 shows success 'Updated sold quantities for N item(s)' even for 0, in hardcoded English.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The IMS CSV upload reports success when 0 items were updated, with no hint why.",
+  "steps": [
+   "ASE > IMS report > upload a CSV with no matching delivered items."
+  ],
+  "expected": "Warning when 0 updated; translated text.",
+  "actual": "Success message with 0.",
+  "where": "FE features/field-force/ase-customer-ims-report/components/upload-ims-drawer.tsx:335-358",
+  "verify": "0 updated shows a warning.",
+  "owner": "Frontend, sales / field force"
+ }
+}

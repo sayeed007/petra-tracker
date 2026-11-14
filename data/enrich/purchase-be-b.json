@@ -1,0 +1,598 @@
+{
+ "rv-be:purchase:6": {
+  "status": "still-bug",
+  "note": "still visible in code: BillCreditDomainService.validateCommon (~l.103-132) only checks refundQty > 0; mergeLines (~l.296-306) copies unitPrice, vatRate and vendorReturnRequestLineId from the client. No e2e case tries an oversized credit (PUR-07-x cover the normal path only). Same family as purchase:B-P5.",
+  "summary": "A bill credit (debit note against a vendor) takes its price, VAT rate and quantity from the request instead of from the approved vendor return line. A client or script can therefore credit more quantity, or a higher price, than was returned and bought. The only limit is the outstanding balance of the bill it is applied to, so the vendor payable can be reduced by a wrong amount.",
+  "steps": [
+   "Create and approve a vendor return request (POST /api/purchase/vendor-return-requests, then approve) for 20 units bought at 8.",
+   "POST /api/purchase/bill-credits with vendorReturnRequestId of that return, one line refundQty 999, unitPrice 5000, any itemId, and appliedLines to an approved bill whose outstanding is at least the line total.",
+   "Approve the credit."
+  ],
+  "expected": "400: refundQty must not exceed the return line quantity, and unitPrice/vatRate must come from (or be validated against) the return line.",
+  "actual": "201: the credit is saved and approved with the client quantity and price.",
+  "where": "backend purchase/billcredit/service/BillCreditDomainService.validateCommon and mergeLines; POST /api/purchase/bill-credits",
+  "verify": "Repeat the POST in step 2 after the fix: expect HTTP 400 naming the line; a credit with refundQty equal to the returned quantity at the return price still returns 201.",
+  "severity": "medium",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": [],
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:7": {
+  "status": "still-bug",
+  "note": "still visible in code: PurchaseCloseDataProviderImpl.factsFor (~l.77-78) computes payable = sumApprovedGrandTotalUpTo minus sumApprovedAppliedToBillsUpTo (payments only); bill credits and proforma-invoice applications are not subtracted, unlike VendorBillPaymentStatusService.settledDirectly.",
+  "summary": "The Period Closing purchase check reports a payable balance that ignores credits applied to bills. After a debit note the month-close screen still shows the old payable, so the figure the accountant sees does not match the ledger.",
+  "steps": [
+   "Approve a bill of 1000, approve a bill credit of 300 applied to it, approve a payment of 700 for it, all in one open month.",
+   "GET /api/accounting/period-close/{periodId}/summary and read the purchase facts (payableBalance)."
+  ],
+  "expected": "payableBalance 0 (1000 - 300 - 700).",
+  "actual": "payableBalance 300 (credit not subtracted).",
+  "where": "backend purchase/itemreceipt/service/PurchaseCloseDataProviderImpl.factsFor; VendorBillPaymentStatusService.settledDirectly holds the correct rule",
+  "verify": "Repeat the steps after the fix: payableBalance must be 0.",
+  "severity": "medium",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": [],
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:8": {
+  "status": "still-bug",
+  "note": "still visible in code: VendorReturnRequestDomainService.mergeLines (~l.190-206) copies itemId, unitPrice and vatRate from the client; the returnable check works on the PO line quantity only.",
+  "summary": "A vendor return request stores the unit price, VAT rate and item sent by the client, not those of the PO or proforma line it refers to. A wrong or tampered request can therefore carry a different money value into the later bill credit.",
+  "steps": [
+   "POST /api/purchase/vendor-return-requests for a valid purchaseOrderItemId, but with unitPrice 9999 and a different itemId (and another existing vendorId).",
+   "Read the saved request with GET /api/purchase/vendor-return-requests/{id}."
+  ],
+  "expected": "400, or price/item/vendor are taken from the source PO line.",
+  "actual": "201 and the client values are stored.",
+  "where": "backend purchase/vendorreturn/service/VendorReturnRequestDomainService.mergeLines and create",
+  "verify": "Repeat step 1 after the fix: expect 400 or stored values equal to the PO line.",
+  "severity": "medium",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": [],
+  "owner": "Backend, purchase"
+ },
+ "e2e:platform:vendor-bill-dev-seeder-crash": {
+  "status": "still-bug",
+  "note": "visible in code: VendorBillDevSeeder.buildBilling (~l.142-147) indexes options (4 entries) with receipt.getId() % terms.length (5 entries), so id % 5 == 4 throws ArrayIndexOutOfBounds. Seen live on the e2e stack (findings-purchase.md, Backend note); the crash loop stopped only after the DB was reset.",
+  "summary": "In the dev profile the seeder creates a billing tab for every approved, unbilled item receipt. It uses one index for two arrays of different length (5 and 4), so a receipt whose id leaves remainder 4 aborts startup and the container restarts forever. It affects shared dev and e2e stacks once test receipts exist, not production.",
+  "steps": [
+   "Run the backend with the dev profile.",
+   "Create and approve an item receipt whose id % 5 == 4 and leave it unbilled.",
+   "Restart the backend."
+  ],
+  "expected": "Backend starts.",
+  "actual": "Startup aborts with an array index error and the container restarts in a loop.",
+  "where": "backend purchase/bill/init/VendorBillDevSeeder.buildBilling",
+  "verify": "Restart with an approved unbilled receipt of id 4, 9, 14: backend must start (use options[index % options.length]).",
+  "owner": "Backend, platform/dev seed",
+  "severity": "low",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "pt1110:B11": {
+  "status": "decision",
+  "note": "Code confirms the behaviour: PurchaseRequisitionWorkflowHandler.nextStageAfterApproval (~l.116-120) sends LOCAL to PENDING_VENDOR_QUOTATION and INTERNATIONAL straight to PENDING_PO_CONVERSION. It is a business decision; no e2e case.",
+  "summary": "An approved international purchase requisition goes straight to 'Pending PO Conversion'; the vendor quotation and vendor selection steps that a local requisition needs are skipped. The owner has to confirm that international purchases really pick the vendor on the PO.",
+  "steps": [
+   "Create an INTERNATIONAL requisition (POST /api/purchase/requisitions, procurementType INTERNATIONAL) and approve it.",
+   "Read its procurement stage."
+  ],
+  "expected": "Decision: either international also requires quotation and selection, or the skip is documented as intended.",
+  "actual": "Stage is PENDING_PO_CONVERSION; Generate PO lets the user pick the vendor directly.",
+  "where": "backend purchase/requisition/handler/PurchaseRequisitionWorkflowHandler.nextStageAfterApproval",
+  "verify": "After the decision: approve an international requisition and check the stage matches it.",
+  "owner": "Backend, purchase (business decision)",
+  "severity": "low",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "pt1110:B13": {
+  "status": "decision",
+  "note": "not changed in code: no maker/checker rule found in the purchase approval path. Same as purchase:C-P25, where the meeting of 2026-11-01 (D-24) decided that the creator may approve own document, no change.",
+  "summary": "A user with create and approve rights (the demo admin) can approve the document he or she created, for example vendor prepayment VPREP-000001. There is no rule or even a warning. It is acceptable for a super admin but is an internal-control gap for other users.",
+  "steps": [
+   "Log in as a user with both create and approve rights.",
+   "Create a vendor prepayment (POST /api/purchase/vendor-prepayments), then approve it as the same user."
+  ],
+  "expected": "Decision: refuse, or warn, or allow by a setting.",
+  "actual": "Approved without any warning.",
+  "where": "backend purchase approval / workflow task completion (no creator check)",
+  "verify": "If the decision is to enforce: approving own document returns 4xx.",
+  "owner": "Backend, purchase (business decision)",
+  "severity": "low",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "rv-be:purchase:10": {
+  "status": "still-bug",
+  "note": "still visible in code: ExtraCostAllocator.allocate (~l.47) divides every share HALF_UP at scale 4 and gives no remainder to the last line; used by VendorChallanService.applyLandingCosts and the LC master.",
+  "summary": "Landed extra cost (freight, duty) is spread over the receipt lines with rounding on every line, and the leftover fraction is lost. The sum of landed costs can be a little less or more than the cost entered, so inventory value and the posted journal differ by the rounding.",
+  "steps": [
+   "Create a vendor challan / bill for a receipt with 3 equal lines and extra cost 100 (bill generate call under /api/purchase/vendor-bills).",
+   "Read the landing cost of each line."
+  ],
+  "expected": "Lines add up to exactly 100 (last line takes the remainder).",
+  "actual": "33.3333 x 3 = 99.9999.",
+  "where": "backend purchase/bill/service/ExtraCostAllocator.allocate; VendorChallanService.applyLandingCosts",
+  "verify": "After the fix the line landing costs sum to exactly the extra cost for the 3-line case.",
+  "severity": "low",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": [],
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:11": {
+  "note": "not a clear defect: PurchaseOrderRelatedRecordsService (~l.153) lists payment.getPaymentAmount() (the whole payment) for an approved payment applied to bills of the order. Bills and returns also show whole-document amounts, so it may be by design; needs a business decision (the plan asks the owner).",
+  "summary": "On a purchase order's Related Records tab each payment row shows the full payment amount, even when the payment also covers bills of other orders. It is unclear whether the owner wants the full document amount or only the part that belongs to this order.",
+  "steps": [
+   "Approve one payment that is applied to bills of two different purchase orders.",
+   "Open Related Records on one of the orders (the PO detail screen)."
+  ],
+  "expected": "Decision pending: the whole payment, or only the part applied to this order.",
+  "actual": "The whole payment amount is shown.",
+  "where": "backend purchase/order/service/PurchaseOrderRelatedRecordsService (payment rows)",
+  "verify": "After a decision, repeat step 2 and compare the amount.",
+  "owner": "Backend, purchase (business decision)",
+  "severity": "low",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "rv-be:purchase:21": {
+  "status": "still-bug",
+  "note": "still visible in code: PurchaseOrderFacadeImpl.workflowDecision (~l.303-315) only checks APPROVE on order {id} (load(id, APPROVE)), then completes decision.taskId without checking the task belongs to that order; other purchase facades are the same. The caller must still be the task assignee (TaskAuthorizationService), so impact is low.",
+  "summary": "The workflow-decision endpoint of a purchase document trusts the taskId in the body. An approver can send the task of another document under this document's URL and that other document is decided, while the response shows the wrong one.",
+  "steps": [
+   "As an approver with pending tasks on orders A and B, POST /api/purchase/orders/{A}/workflow-decision with {\"taskId\": <task of order B>, \"decision\": \"APPROVED\"}."
+  ],
+  "expected": "400/404: the task does not belong to order A.",
+  "actual": "Order B is approved; the response shows order A.",
+  "where": "backend purchase/order/facade/PurchaseOrderFacadeImpl.workflowDecision (same method in the other purchase facades)",
+  "verify": "Repeat the call after the fix: expect 4xx and order B still pending.",
+  "severity": "low",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": [],
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:26": {
+  "status": "still-bug",
+  "note": "still visible in code: ItemReceiptMapper.toAttachmentEntities (~l.277) and ItemReceiptDomainService.updateFields (~l.148) take attachmentId from the request with no lookup; the review found no FK or uniqueness on item_receipt_attachment.attachment_id.",
+  "summary": "A goods receipt accepts any attachment id in the body, including ids that do not exist or belong to another document. The receipt then points to a file the caller may not be allowed to see or to a missing file.",
+  "steps": [
+   "PUT /api/purchase/item-receipts/{id} for a PENDING receipt with attachments [{\"attachmentId\": 999999, \"attachmentType\": \"OTHER\"}]."
+  ],
+  "expected": "400 (attachment not found / not owned).",
+  "actual": "200 and the dangling id is stored.",
+  "where": "backend purchase/itemreceipt/mapper/ItemReceiptMapper.toAttachmentEntities; ItemReceiptDomainService.updateFields",
+  "verify": "Repeat the PUT after the fix: expect 4xx and an unchanged receipt.",
+  "severity": "low",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": [],
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:27": {
+  "status": "still-bug",
+  "note": "partly fixed, rest still visible: MaterialRequisitionFacadeImpl.applyPurchaseRequisitionLinks (~l.285-312) now refuses a line id that is not on the requisition and resolvePurchaseRequisition (~l.315-322) refuses an unknown PR number (400), but the lookup is by number only, with no status or item check. Other edits on an approved MR are ignored on purpose (frozen content, code comment ~l.160).",
+  "summary": "On an approved material requisition the only allowed change is linking each line to a purchase requisition. The link is checked only for the existence of the PR number, so a pending, rejected or unrelated PR can be linked, and any other field sent in the same edit is silently dropped without a message.",
+  "steps": [
+   "PUT /api/purchase/material-requisitions/{id} (status APPROVED) with items [{\"id\": <line id>, \"purchaseRequisitionNo\": \"<number of a PENDING or unrelated PR>\"}]."
+  ],
+  "expected": "400 when the PR is not approved or does not contain that item; a message when other fields are ignored.",
+  "actual": "200 and the line is linked.",
+  "where": "backend purchase/materialrequisition/facade/MaterialRequisitionFacadeImpl.update, applyPurchaseRequisitionLinks, resolvePurchaseRequisition",
+  "verify": "Repeat step 1 with a pending PR after the fix: expect 400.",
+  "severity": "low",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": [],
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:29": {
+  "status": "still-bug",
+  "note": "still visible in code: VendorPaymentDomainService.validateCommon does not look at bankChargeAmount or exchangeRate (only copied at ~l.369-384) and the DTO has no constraint annotations; the only @Valid in the purchase package is on VendorQuotationController (~l.127).",
+  "summary": "A vendor payment accepts a negative bank charge, a zero or negative exchange rate and other malformed values, because neither the service nor the DTO validates them. The charge then flows into the journal with the wrong sign.",
+  "steps": [
+   "POST /api/purchase/vendor-payments with an otherwise valid body plus bankChargeAmount -500 and exchangeRate 0."
+  ],
+  "expected": "400 on the field.",
+  "actual": "201 saved.",
+  "where": "backend purchase/payment/service/VendorPaymentDomainService.validateCommon; VendorPaymentDTO",
+  "verify": "Repeat the POST after the fix: expect 400 for bankChargeAmount < 0 and exchangeRate <= 0.",
+  "severity": "low",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": [],
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:30": {
+  "status": "still-bug",
+  "note": "still visible in code: PurchaseOrderDomainService.validateCommon (~l.78-105) checks orderedQty > 0 and exchangeRate >= 0 only; unitPrice, discountAmount and taxAmount are unchecked. LC master and material requisition are similar per the review. Same family as purchase:B-P1.",
+  "summary": "Purchase order, LC master and material requisition do not validate money fields. A negative unit price, a discount larger than the line or a negative tax is saved and produces negative totals.",
+  "steps": [
+   "POST /api/purchase/orders with an item unitPrice -100 and discountAmount 5000."
+  ],
+  "expected": "400 per field.",
+  "actual": "201 with negative totals.",
+  "where": "backend purchase/order/service/PurchaseOrderDomainService.validateCommon; lcmaster and materialrequisition DTOs",
+  "verify": "Repeat the POST after the fix: expect 400; also try a discount above gross and a negative tax rate.",
+  "severity": "low",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": [],
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:34": {
+  "status": "still-bug",
+  "note": "still visible in code: ItemReceiptSplitValidator.validateDemandSplitsSumToAccepted (~l.55-72) only checks the sum, so splits 15 and -5 for accepted 10 pass; VendorChallanService.requirePositive (~l.216-221) allows 0 although its name says positive.",
+  "summary": "Receipt, challan and LC line checks are loose: a demand-channel split can be negative if the total still matches, and a challan line with quantity or price 0 is accepted. This lets wrong stock splits and empty documents through.",
+  "steps": [
+   "POST /api/purchase/item-receipts/generate with a line acceptedQty 10 and demandSplits [{channel A, 15}, {channel B, -5}]."
+  ],
+  "expected": "400: each split must be >= 0.",
+  "actual": "201.",
+  "where": "backend purchase/itemreceipt/service/ItemReceiptSplitValidator; purchase/bill/service/VendorChallanService.requirePositive",
+  "verify": "Repeat the POST after the fix: expect 400.",
+  "severity": "low",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": [],
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:37": {
+  "status": "still-bug",
+  "note": "still visible in code but deliberate: BillCreditFacadeImpl.getById (~l.128) is plain @Transactional; enrichApprovals (~l.266) calls approvalMirrorService.syncMainWorkflow, which uses findCurrentForUpdate (ApprovalRequestRepository ~l.31, PESSIMISTIC_WRITE) and writes steps. Low impact.",
+  "summary": "Opening a bill credit detail locks and may rewrite approval rows, because the read syncs the workflow mirror. Two people opening the same document can wait on each other, and a plain read causes writes.",
+  "steps": [
+   "Turn on SQL logging, then GET /api/purchase/bill-credits/{id}."
+  ],
+  "expected": "Read only: no row lock and no update.",
+  "actual": "SELECT ... FOR UPDATE on approval_request and step updates.",
+  "where": "backend purchase/billcredit/facade/BillCreditFacadeImpl.getById and enrichApprovals; purchase/approval/service/PurchaseApprovalMirrorService.syncMainWorkflow",
+  "verify": "Repeat step 1 after the fix: no FOR UPDATE and no UPDATE statements.",
+  "severity": "low",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": [],
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:43": {
+  "status": "still-bug",
+  "note": "still visible in code (performance only): VendorReturnRequestRepository.findInFlightRequestIds (~l.49-55) returns the ids of every live return request in the system; PurchaseOrderReturnQuantityService passes them as an IN list on each create, update and preview.",
+  "summary": "Every vendor return create, update or preview first loads all live return ids and then filters. It works now but gets slower as returns accumulate.",
+  "steps": [
+   "Enable SQL logging, then POST /api/purchase/vendor-return-requests or call the returnable-lines preview."
+  ],
+  "expected": "Query limited to the lines of the source order.",
+  "actual": "System-wide select of live request ids.",
+  "where": "backend purchase/vendorreturn/repository/VendorReturnRequestRepository.findInFlightRequestIds; PurchaseOrderReturnQuantityService.inFlightClaimByLineIds",
+  "verify": "After the fix the SQL for step 1 filters by the line ids.",
+  "severity": "low",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": [],
+  "owner": "Backend, purchase"
+ },
+ "rv-be:purchase:44": {
+  "status": "still-bug",
+  "note": "still visible in code: VendorPayment.chequeNo (payment/model/VendorPayment.java ~l.105) maps to a 100-char column with no DTO @Size; the review's claims about payable_bill (a view) and uq_requisition_requester (exists) are wrong, so only the length/validation part counts.",
+  "summary": "Some text columns have a shorter database limit than the API allows, so an oversized value fails with a database error (HTTP 500) instead of a clear field error. Minor hygiene.",
+  "steps": [
+   "POST /api/purchase/vendor-payments with a 101 character chequeNo."
+  ],
+  "expected": "400 naming chequeNo.",
+  "actual": "Database error / 500.",
+  "where": "backend purchase/payment VendorPayment and DTO; V1 migration cheque_no VARCHAR(100)",
+  "verify": "Repeat step 1 after the fix: expect a field 400.",
+  "severity": "low",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": [],
+  "owner": "Backend, purchase"
+ },
+ "purchase:C-P11": {
+  "status": "decision",
+  "note": "behaviour unchanged: VendorBillGenerationService (~l.106) sets vendorId from the receipt. No e2e case.",
+  "summary": "If a vendor bill request carries a vendorId different from the receipt's vendor, the request value is ignored and the receipt's vendor is used. This is safe but silent; the question is whether to refuse a mismatch.",
+  "steps": [
+   "POST /api/purchase/vendor-bills/generate for a receipt of vendor 1 with vendorId 2."
+  ],
+  "expected": "Optionally 400 for a mismatch.",
+  "actual": "Bill is created for vendor 1.",
+  "where": "backend purchase/bill/service/VendorBillGenerationService",
+  "verify": "After a decision: repeat step 1.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P13": {
+  "status": "decision",
+  "note": "unchanged in code: BillCreditDomainService.validateCommon (~l.119-124) requires appliedLines ('applied in full'); e2e PUR-07-06 confirms the refusal of a partial application.",
+  "summary": "A vendor return can only be settled by applying the debit note in full to another approved bill with an open balance. If the vendor has none, there is no way to keep the credit or get a refund, so returns get stuck. Client decision D-11 is open (recommendation: allow it).",
+  "steps": [
+   "Approve a vendor return for a bill with no other open bill.",
+   "POST /api/purchase/bill-credits without appliedLines."
+  ],
+  "expected": "Credit can stay as vendor balance or be refunded.",
+  "actual": "400: at least one applied bill is required.",
+  "where": "backend purchase/billcredit/service/BillCreditDomainService.validateCommon",
+  "verify": "After the decision, repeat step 2.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": [
+   "PUR-07-06"
+  ]
+ },
+ "purchase:C-P14": {
+  "status": "decision",
+  "note": "unchanged: no credited-amount field found in purchase/bill or purchase/billcredit.",
+  "summary": "When a bill credit is applied, the amount is added to the bill's paid_amount (status PARTIALLY_PAID or FULLY_PAID), because there is no separate credited amount. The payment history and the paid column of the bill then differ by the credits.",
+  "steps": [
+   "Approve a bill of 1000 and a credit of 300 applied to it.",
+   "GET /api/purchase/vendor-bills/{id}: paid_amount shows 300 with no payment."
+  ],
+  "expected": "A separate credited_amount.",
+  "actual": "paid_amount includes credits.",
+  "where": "backend purchase/bill VendorBill (no credited column), VendorBillPaymentStatusService",
+  "verify": "After the decision, repeat step 2.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P15": {
+  "status": "decision",
+  "note": "unchanged: BillCreditDomainService.validateCommon has no VAT check; mergeLines copies vatRate from the client (see rv-be:purchase:6).",
+  "summary": "A debit note accepts any VAT rate and reverses Input VAT even when the original bill line had none. The recommendation is to take the VAT rate from the bill line.",
+  "steps": [
+   "POST /api/purchase/bill-credits for a bill without VAT with a line vatRate 15, approve it, read the journal."
+  ],
+  "expected": "VAT rate taken from the bill line.",
+  "actual": "Input VAT is reversed at 15.",
+  "where": "backend purchase/billcredit/service/BillCreditDomainService",
+  "verify": "After the decision: the journal has no VAT line for a non-VAT bill.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P16": {
+  "status": "decision",
+  "note": "unchanged: VendorReturnRequestController (~l.64-70) and PurchaseOrderReturnQuantityService use paidQty as the returnable ceiling.",
+  "summary": "A return can only be raised for quantity that was fully paid; unpaid bills cannot have returns. This blocks the normal case where goods are returned before payment.",
+  "steps": [
+   "Approve a bill and do not pay it.",
+   "Call the returnable-lines preview of VendorReturnRequestController for that purchase order."
+  ],
+  "expected": "Returnable also for unpaid goods; the bill is reduced.",
+  "actual": "Returnable = paid quantity only.",
+  "where": "backend purchase/vendorreturn/service/PurchaseOrderReturnQuantityService",
+  "verify": "After the decision, repeat step 2.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P18": {
+  "status": "decision",
+  "note": "unchanged: packSizes are only copied in the merge methods (ItemReceiptDomainService ~l.188, VendorBillDomainService ~l.377); no validator found.",
+  "summary": "The pack breakdown on lines (packSizes) is stored as sent: factor 0, an unknown unit or a sum that differs from the quantity are all accepted, so the screen can show wrong packs.",
+  "steps": [
+   "POST /api/purchase/orders with an item packSizes [{unit 'X', factor 0, qty 5}] and orderedQty 10."
+  ],
+  "expected": "400.",
+  "actual": "201.",
+  "where": "backend purchase (all line DTOs with packSizes)",
+  "verify": "After the decision, repeat step 1.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P21": {
+  "status": "decision",
+  "note": "unchanged: PaymentTermService (shared/service) checks only the code (~l.33) and dueDays >= 0 (~l.101).",
+  "summary": "A payment term can be created with the same name as another one (different code) and with a huge due-days value such as 100000. Recommended: unique name and a ceiling like 365.",
+  "steps": [
+   "Create a payment term with a name that already exists and dueDays 100000 (Settings payment terms screen or the payment-terms API)."
+  ],
+  "expected": "409 on duplicate name; 400 above the ceiling.",
+  "actual": "201.",
+  "where": "backend shared/service/PaymentTermService.create and validateDueDays",
+  "verify": "After the decision, repeat step 1.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P22": {
+  "status": "decision",
+  "note": "unchanged: VendorDomainService (~l.92 and ~l.106) checks only partnerCode; e-mail is only copied (~l.155). D-29 reported to backend.",
+  "summary": "A vendor can be created with a company name that already exists and with an invalid e-mail address. Duplicates make it easy to pay the wrong vendor twice.",
+  "steps": [
+   "POST /api/sales/vendors twice with the same companyName and email 'not-an-email'."
+  ],
+  "expected": "Warning/409 on duplicate name; 400 on e-mail.",
+  "actual": "201 both times.",
+  "where": "backend sales/business_partner/vendor/service/VendorDomainService",
+  "verify": "After the decision, repeat the POST.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P24": {
+  "status": "decision",
+  "note": "unchanged: PurchasePostingController GET /api/purchase/postings requires only purchase.vendor_bill.view (or bill_credit.view etc.), ~l.36.",
+  "summary": "A user with only view rights on purchase documents can read a bill's accounting journal and the payable/bank ledger lists. Accounting data is exposed without an accounting view permission.",
+  "steps": [
+   "Log in as a user with only purchase.vendor_bill.view.",
+   "GET /api/purchase/postings?documentType=PURCHASE_VENDOR_BILL&documentId={id}."
+  ],
+  "expected": "403 without an accounting view permission.",
+  "actual": "200 with journal lines.",
+  "where": "backend purchase/posting/PurchasePostingController",
+  "verify": "After the decision, repeat step 2 with that user.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P25": {
+  "status": "decision",
+  "note": "unchanged and decided: no creator check in the approval path. Same as pt1110:B13. D-24 says no change.",
+  "summary": "A user who has create and approve rights (and is a named approver) can approve their own PO, bill or payment. Decision D-24 of the meeting on 2026-11-01 was to leave it as it is.",
+  "steps": [
+   "As one user create a PO, then approve the pending task: POST /api/purchase/orders/{id}/workflow-decision."
+  ],
+  "expected": "Per D-24: allowed.",
+  "actual": "200 approved.",
+  "where": "backend purchase approval / workflow task completion",
+  "verify": "None unless the decision changes.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P28": {
+  "status": "decision",
+  "note": "unchanged: only PurchaseOrderController and RequisitionController have a /cancel endpoint; none exists for bill, payment, receipt or credit.",
+  "summary": "An approved payment, bill, receipt or debit note cannot be deleted, cancelled or reversed; no endpoint exists. A wrong approved document cannot be corrected. Client decision D-22 is unanswered.",
+  "steps": [
+   "Approve a vendor bill.",
+   "Look for a delete/cancel/reverse call under /api/purchase/vendor-bills/{id}."
+  ],
+  "expected": "A reversal document (reversal journal, unwound paid amount and stock).",
+  "actual": "No endpoint.",
+  "where": "backend purchase/* controllers",
+  "verify": "After a decision: reverse an approved bill and check the journal and paid amount.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P29": {
+  "status": "decision",
+  "note": "unchanged: PurchaseOrderFacadeImpl.cancel (~l.280-285) refuses APPROVED and CLOSED with 400; only draft/pending POs can be cancelled.",
+  "summary": "An approved purchase order cannot be cancelled or closed, even if nothing was received, and a partly received PO cannot be closed short for the remainder, so stale open POs stay on the open-PO report.",
+  "steps": [
+   "Approve a PO with no receipt.",
+   "POST /api/purchase/orders/{id}/cancel."
+  ],
+  "expected": "Cancel allowed while nothing is received; close-short for the rest.",
+  "actual": "400 'Approved or closed purchase orders cannot be cancelled'.",
+  "where": "backend purchase/order/facade/PurchaseOrderFacadeImpl.cancel",
+  "verify": "After the decision, repeat step 2.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P3": {
+  "status": "decision",
+  "note": "unchanged: no ceiling or scale check in PurchaseOrderDomainService.validateCommon or the bill validators (see rv-be:purchase:30).",
+  "summary": "The API accepts quantity up to 1e9 and prices up to 1e12 and silently rounds values with 5 to 6 decimals to 4 places. Recommended: reject above a ceiling and reject more than 4 decimals.",
+  "steps": [
+   "POST /api/purchase/orders with orderedQty 1000000000 and unitPrice 1e12, or orderedQty 1.123456."
+  ],
+  "expected": "400.",
+  "actual": "201; the extra decimals are rounded away.",
+  "where": "backend purchase DTO and domain services",
+  "verify": "After the decision, repeat step 1.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P4": {
+  "status": "decision",
+  "note": "unchanged: ItemReceiptSplitValidator (~l.32-34) only rejects negative received quantity; ItemReceiptDomainService (~l.93) only needs at least one line.",
+  "summary": "A goods receipt where every line has received quantity 0 is accepted, which creates empty documents.",
+  "steps": [
+   "POST /api/purchase/item-receipts/generate with one line receivedQty 0 and acceptedQty 0."
+  ],
+  "expected": "400: at least one line with quantity > 0.",
+  "actual": "201.",
+  "where": "backend purchase/itemreceipt/service/ItemReceiptSplitValidator and ItemReceiptDomainService",
+  "verify": "After the decision, repeat step 1.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P5": {
+  "status": "decision",
+  "note": "unchanged: ItemReceiptSplitValidator.validateDemandSplitsSumToAccepted only checks that channel ids are present and the sum matches. D-31 reported to backend.",
+  "summary": "A receipt split to a demand channel for which the item has no allocation is accepted, so stock may become sellable in a channel nobody planned.",
+  "steps": [
+   "POST /api/purchase/item-receipts/generate with a demandSplit to a channel that has no allocation for that item."
+  ],
+  "expected": "400, or the pool is created on purpose.",
+  "actual": "201.",
+  "where": "backend purchase/itemreceipt/service/ItemReceiptSplitValidator",
+  "verify": "After the decision, repeat step 1.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P6": {
+  "status": "decision",
+  "note": "unchanged: ItemReceiptSplitValidator treats damaged quantity only as a separate partition; no damaged-cost or loss journal code found in purchase.",
+  "summary": "Damaged units on a receipt carry no cost and no loss or claim journal, and the PO shows FULLY_RECEIVED even if 10 of 50 are damaged, so the PO is never reopened for the damaged part.",
+  "steps": [
+   "Receive 50 against a PO with 40 accepted and 10 damaged.",
+   "GET the PO and read its status."
+  ],
+  "expected": "PO stays open for the damaged quantity or a return path exists; cost tracked.",
+  "actual": "FULLY_RECEIVED.",
+  "where": "backend purchase/itemreceipt and the PO status calculation",
+  "verify": "After the decision, repeat the receipt and compare the PO status.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P7": {
+  "status": "decision",
+  "note": "unchanged: no tolerance setting found in backend purchase (grep 'tolerance' returns nothing); VendorChallanService.requirePositive allows 0.",
+  "summary": "A bill that differs from the PO (price +10%, quantity short, quantity or price 0) is accepted with no flag, and the PO then shows FULLY_BILLED. Recommended: a configurable tolerance with an approval flag. D-17 awaits the client.",
+  "steps": [
+   "Generate a vendor bill for a receipt with billUnitPrice 10% above the PO price."
+  ],
+  "expected": "A flag or approval for out-of-tolerance bills.",
+  "actual": "Accepted without a flag.",
+  "where": "backend purchase/bill/service (VendorBillGenerationService, VendorChallanService)",
+  "verify": "After the decision, repeat step 1.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ },
+ "purchase:C-P8": {
+  "status": "decision",
+  "note": "unchanged: no existsBy...DeliveryChallanNo query found; ItemReceiptConversionService (~l.109, ~l.150) and VendorChallanService (~l.97) only copy the number.",
+  "summary": "The same vendor delivery challan number can be entered on a second receipt and a second bill, which allows double billing of one vendor invoice. Recommended: unique per vendor and challan number. D-17 awaits the client.",
+  "steps": [
+   "Create two receipts for the same vendor with the same deliveryChallanNo.",
+   "Generate a bill for each."
+  ],
+  "expected": "Refuse or warn on the duplicate.",
+  "actual": "Both accepted.",
+  "where": "backend purchase/itemreceipt/service/ItemReceiptConversionService; purchase/bill/service/VendorChallanService",
+  "verify": "After the decision, repeat step 1.",
+  "owner": "Backend, purchase (business decision)",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "tests": []
+ }
+}

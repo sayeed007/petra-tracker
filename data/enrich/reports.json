@@ -1,0 +1,899 @@
+{
+ "rv-fe:reports:24": {
+  "status": "fixed",
+  "note": "Only the active tab is built: app/(erp)/field-force/ase/customer/page.tsx l.62-71 (children only when channel == activeTab), ase-collection-view.tsx l.123-133 and ase-demand-list-view.tsx l.32-59 do the same; commit 7835f63c.",
+  "summary": "The ASE (Area Sales Executive) pages used to build every tab on the server at once, so a page with N sales channels made about 3N backend calls to show one tab, and every tab click repeated them. This slowed the field-force screens and loaded the backend for no reason.",
+  "steps": [
+   "Log in as a user with field-force access and open /field-force/ase/customer.",
+   "Open the browser network panel and reload the page.",
+   "Switch channel tabs and watch the requests."
+  ],
+  "expected": "Only the selected tab's data is requested.",
+  "actual": "fixed: non-active tabs get children = null, so only one tab is rendered per request.",
+  "where": "src/app/(erp)/field-force/ase/customer/page.tsx; src/features/field-force/ase-collection/ase-collection-view.tsx; src/features/field-force/ase-demand-list/ase-demand-list-view.tsx",
+  "tests": [],
+  "verify": "With 3+ channels, load /field-force/ase/customer: the network panel shows customer-list calls for one channel only.",
+  "owner": "Frontend, field-force",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:25": {
+  "status": "in-progress",
+  "note": "Range reports now open on the current month (features/reports/shared/default-range.ts; used by ar-register, payment-history, physical-inventory, purchase and sales report views, commit 8b2f4970). Missing part: use-engine-report.ts l.35-62 still lists page and size in the effect deps, so every page click re-POSTs /api/reports/{key} and the backend regenerates the whole report; aging, Open Invoices/Bills, open sales/purchase orders deliberately have no default range.",
+  "summary": "Engine reports (A/R register, payment history, sales and purchase reports) used to open with no date range, so the first load ran the whole history, and each page click asked the backend to regenerate the full report again. The first part is fixed (current month default); the page-click re-run is still there.",
+  "steps": [
+   "Open Reports > Receivables > A/R Register.",
+   "Check the request body of POST /api/reports/<key>: it now has startDate/endDate of the current month.",
+   "Click page 2 of the table and watch the network panel."
+  ],
+  "expected": "Paging does not rerun the full report (fetch once and page locally, or have the backend cache).",
+  "actual": "Each page click sends a new POST /api/reports/{reportKey}?page=..&size=.. and the backend (ReportService.run) generates everything then cuts the page.",
+  "where": "src/features/reports/shared/use-engine-report.ts; src/features/reports/shared/default-range.ts; backend shared/report/ReportService.run",
+  "tests": [],
+  "verify": "Open a report with 3 pages, click page 2: no new POST (or a cheap one). Aging and Open Invoices/Bills as-of must still include unpaid items from earlier years.",
+  "owner": "Both, reports (see backend RB2 notes)",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-be:reports:10": {
+  "note": "Part fixed: account/party/voucher predicates are now (:p IS NULL OR col = :p) (earlier commit 635f43685 per status_evidence). Still open: 12 queries in LedgerBalanceRepository still use COALESCE(:excludedFromDate, entry.postingDate) (lines 209, 281, 323, 404, 707, 735, 750, 961, 991, 1042, 1056, 1087), and JournalEntryRepository search still has COALESCE. Whether it hurts is unproven (SUSPECT in the review).",
+  "summary": "Several ledger report queries use one SQL for 'one account', 'one party' or 'everything' with COALESCE(:param, column). On a large database PostgreSQL may reuse a generic plan that cannot use the index on the account column, so the report gets slow. The account/party filters were rewritten; the date filter still uses the old pattern.",
+  "steps": [
+   "On a database copy with 1M+ journal_line rows, run EXPLAIN (ANALYZE) for LedgerBalanceRepository.findAccountLinesPaged for one accountId after SET plan_cache_mode = force_generic_plan.",
+   "Check whether idx_journal_line_account is used."
+  ],
+  "expected": "Index scan on the account for a single-account ledger.",
+  "actual": "Date COALESCE remains on 12 queries; account/party predicates already rewritten.",
+  "where": "backend ACC/report/repository/LedgerBalanceRepository (lines listed above); JournalEntryRepository search",
+  "verify": "EXPLAIN ANALYZE as above with the generic plan forced; compare run time of GET /api/accounting/reports/general-ledger for one account before and after.",
+  "owner": "Backend, reports/accounting",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "rv-be:reports:5": {
+  "note": "code looks fixed (shared/report/ReportService.runFromBody ~line 84 and the 2-arg run ~line 91 now carry @Transactional(readOnly = true)); needs API/test proof. Isolation is not REPEATABLE_READ, so two separate reads inside one report can still see different states.",
+  "summary": "Reports are meant to run in one read-only transaction so an aging report reads documents and settlements from the same snapshot. The annotation used to sit only on a method that the controller never called through the Spring proxy, so no report ran in a transaction.",
+  "steps": [
+   "Add a test that calls ReportService.runFromBody(\"CUSTOMER_AGING\", params, null, null) with a stub generator.",
+   "Assert TransactionSynchronizationManager.isActualTransactionActive() and isCurrentTransactionReadOnly() inside the generator."
+  ],
+  "expected": "Generators run inside a read-only transaction.",
+  "actual": "By code: annotated on all three entry points. Not proven on a running backend.",
+  "where": "backend com.nsl.erp.shared.report.ReportService (runFromBody, run 2-arg, run 4-arg); ReportController line ~57",
+  "verify": "No HTTP-only proof exists. A Spring test with the transaction assertions above is the real proof; as a smoke check run POST /api/reports/CUSTOMER_AGING and confirm it still returns the same totals.",
+  "owner": "Backend, reports",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "rv-be:reports:6": {
+  "status": "still-bug",
+  "note": "visible in code: ExportJobRunner.run (~l.40-47) reads the job and checks PENDING with no conditional update (two threads can both pass), no code recovers a job stuck in RUNNING (ExportJobCleanupScheduler only re-dispatches stale PENDING, l.26-46), and the catch block (~l.97) stores truncate(e.getMessage()) as the user-visible errorMessage.",
+  "summary": "Export jobs run asynchronously. If the server restarts while a job is RUNNING it stays RUNNING forever. A job queued over 5 minutes is re-dispatched and two threads can both see PENDING and build the same file. When an export fails, the raw exception text (which can contain SQL or class names) is saved and shown to the user.",
+  "steps": [
+   "Create an export job: POST /api/export/jobs for a large report (Excel).",
+   "Restart the backend while the job is RUNNING.",
+   "GET /api/export/jobs/{id} after the restart."
+  ],
+  "expected": "The job is marked FAILED (timed out) after a limit, runs only once, and shows a generic message such as 'Export failed'.",
+  "actual": "Status stays RUNNING; duplicate dispatch is possible; errorMessage holds e.getMessage().",
+  "where": "backend com.nsl.erp.shared.export.job.ExportJobRunner.run, ExportJobCleanupScheduler, ExportJob (no @Version)",
+  "verify": "Two concurrent run(jobId) calls execute the data source once; a job left RUNNING for 31 minutes becomes FAILED; force a SQL error and check errorMessage has no SQL text.",
+  "owner": "Backend, reports/export",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "rv-be:reports:7": {
+  "status": "still-bug",
+  "note": "visible in code: CommissionReportExportDataSource.columns() line 79 runs fetchReport(filters, PageRequest.of(0, 1)) only to read milestone percents, then fetchRows (line 91) runs the report again with Pageable.unpaged().",
+  "summary": "Exporting the commission report to Excel/PDF computes the whole commission report twice: once to find which milestone columns exist, then again for the rows. The extra run doubles load on a heavy report.",
+  "steps": [
+   "Request the commission report export for a month (data source CommissionReportExportDataSource, via POST /api/export/jobs).",
+   "Count calls to CommissionReportQueryService.getReport with a spy or the SQL log."
+  ],
+  "expected": "One report run per export; milestone percents read directly from CommissionCalculator.loadRates().",
+  "actual": "Two runs (probe page of 1 plus the unpaged run).",
+  "where": "backend modules/sales/commission/export/CommissionReportExportDataSource.columns (line 79); also check CommissionReportBySpoExportDataSource",
+  "verify": "After the fix, the counting spy shows getReport called once per export.",
+  "owner": "Backend, reports/commission",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "rv-be:reports:8": {
+  "note": "Part fixed: the low-stock list is limited in SQL and reorder point is in WHERE (DashboardQueryRepository ~l.441-536, setMaxResults, commit 117a54960). Still open: DashboardKpiService line 63 and DashboardInventoryOverviewService line 63 both call queries.inventoryValue() with no @Cacheable, and the ledger aggregates are not cached.",
+  "summary": "Opening the dashboard runs several heavy queries: inventory value is computed twice (KPIs and inventory overview), and ledger aggregates (aging, KPIs, cash flow, income/expense, top expenses) scan the whole ledger history each time. The dashboard gets slow as data grows.",
+  "steps": [
+   "Open the dashboard (frontend /dashboard, which calls GET /api/dashboard/kpis, /api/dashboard/inventory-overview, /api/dashboard/receivables-aging in parallel).",
+   "Look at the backend SQL log or timings: inventoryValue runs twice."
+  ],
+  "expected": "Inventory value computed once per load (short cache); ledger aggregates cached briefly and evicted on posting.",
+  "actual": "Low-stock list is fixed; inventoryValue duplication and ledger scans remain.",
+  "where": "backend modules/dashboard DashboardKpiService line 63, DashboardInventoryOverviewService line 63, DashboardQueryRepository.inventoryValue, AccountingFacade ledger aging/KPIs",
+  "verify": "Call GET /api/dashboard/kpis and /api/dashboard/inventory-overview twice: second call under 50 ms with the same values; post a journal and the next call shows the new balance.",
+  "owner": "Backend, dashboard",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:1": {
+  "status": "fixed",
+  "note": "features/settings/sales/components/commission-incentive-config-panel.tsx l.439 canSave = permissions.canEdit && !loadError; Save buttons disabled with !canSave (l.800, 826, 835); commit d39e99a3 adds the confirm dialog for fewer rows.",
+  "summary": "When the commission settings failed to load, the panel held an empty config but Save was still enabled. Saving would send the whole config (PUT) with no rules and wipe the live milestone and extra-lifting rules, causing wrong payouts to field staff.",
+  "steps": [
+   "Open Settings > Sales > Commission incentive config.",
+   "Make GET /api/sales/commission-incentive-config fail (block the call in devtools) and reload.",
+   "Try to press Save."
+  ],
+  "expected": "Error state shown and Save disabled; deleting all rows needs a confirmation.",
+  "actual": "fixed: loadError renders AppLoadError and disables Save.",
+  "where": "src/features/settings/sales/components/commission-incentive-config-panel.tsx",
+  "tests": [],
+  "verify": "Block the config GET: Save stays disabled. Remove all rows and save: confirm dialog appears.",
+  "owner": "Frontend, settings/commission",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:10": {
+  "status": "fixed",
+  "note": "One shared permission table: financialReportPermission() in features/reports/financial/config.ts l.242 is read by both app/(erp)/reports/financial/[reportKey]/page.tsx l.52 and the hub (reports/accounts/config.ts l.109); hub filters with permitted.get(..) === true (report-catalog-view.tsx l.252-268). Commit ce6b649d.",
+  "summary": "The reports hub showed General Ledger, Transaction Details and two voucher reports as links to a user who only had the basic report-view permission, then the report page said 'no access'. The hub and the route used different permission tables.",
+  "steps": [
+   "Log in as a user with only the report-view permission.",
+   "Open /reports and look at the Financial category."
+  ],
+  "expected": "Reports the user cannot open are not listed.",
+  "actual": "fixed: hub and route read one permission function; hub fails closed.",
+  "where": "src/features/reports/financial/config.ts; src/features/reports/accounts/config.ts; src/features/reports/accounts/components/report-catalog-view.tsx",
+  "tests": [
+   "REP-04-06"
+  ],
+  "verify": "Report-view-only user: the four reports are not shown in the hub.",
+  "owner": "Frontend, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:11": {
+  "status": "fixed",
+  "note": "erp-api/field-force/collections/index.ts now returns CollectionsReadResult {ok:true,data}|{ok:false} (l.67-106, 123-126, 236-239) and review returns ok:false with a status/message (l.137-142); commit 7835f63c. Raw 'API fetch failed' text is no longer used in erp-api/field-force.",
+  "summary": "The collections screens showed 'no collections' when the backend call failed, and rejecting a collection could print raw or redacted error text. Users could not tell an empty queue from an outage.",
+  "steps": [
+   "Open /field-force/ase/collection (or the collections table in field-force).",
+   "Block the collections filter/summary request in devtools and reload."
+  ],
+  "expected": "An error message, not an empty queue.",
+  "actual": "fixed: facade returns ok:false and the view shows a translated loadError.",
+  "where": "src/erp-api/field-force/collections/index.ts; src/features/field-force/collections/components/collections-data-table.tsx",
+  "tests": [],
+  "verify": "Block the backend: table shows an error state.",
+  "owner": "Frontend, field-force",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:12": {
+  "status": "fixed",
+  "note": "New erp-api/field-force/failure.ts (toFieldForceFailure) is used by sales-performance (l.50,117,151,209), spo-directory, territory-sales and analytics; no 'API fetch failed' strings remain in erp-api/field-force/*; commit 7835f63c.",
+  "summary": "Field-force facades threw raw errors, so production showed a generic framework message and development showed 'Error: API fetch failed ...'. Saving a sales target could not show the real reason.",
+  "steps": [
+   "Open /field-force/sales-performance and save a target the backend rejects (for example a negative amount).",
+   "Read the message."
+  ],
+  "expected": "A translated business message from the backend.",
+  "actual": "fixed: typed ok:false results with parsed backend errors.",
+  "where": "src/erp-api/field-force/failure.ts; src/erp-api/field-force/sales-performance/index.ts; spo-directory; territory-sales",
+  "tests": [],
+  "verify": "Save a rejected target: translated reason appears, no 'API fetch failed' text.",
+  "owner": "Frontend, field-force",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:13": {
+  "status": "fixed",
+  "note": "erp-api/field-force/area-dashboard/index.ts l.46-69 returns {ok:false, code:'LOAD_FAILED'|'NO_DATA'} instead of zeros; hero, attention list and quick stats show AppLoadError (commit 7835f63c).",
+  "summary": "When the area dashboard call failed (outage or 403) the ASE home showed '0 sales, 0 target, 0 pending', which looks like real data. Field staff would believe they have no sales.",
+  "steps": [
+   "Open /field-force/ase/home.",
+   "Stop the backend or block GET /api/sales/area-dashboard/summary and reload."
+  ],
+  "expected": "An error or 'not available' state.",
+  "actual": "fixed: AreaDashboardResult carries ok:false and the cards show an error.",
+  "where": "src/erp-api/field-force/area-dashboard/index.ts; src/features/field-force/ase-home/*",
+  "tests": [],
+  "verify": "Block the summary call: ASE home shows an error, not zeros.",
+  "owner": "Frontend, field-force",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:17": {
+  "status": "fixed",
+  "note": "grep finds no sharedSelectedMonth in src/features; the month now comes from ?reportMonth (commit 7835f63c).",
+  "summary": "The IMS report tab kept the chosen month in a variable shared by all users of the server process, never reset. Opening a link with ?reportMonth=2026-08 could show an old month, and different users could see each other's choice.",
+  "steps": [
+   "Open /field-force/ase/customer-ims-report, pick month A.",
+   "Open the link with ?reportMonth=<month B>."
+  ],
+  "expected": "The URL month wins.",
+  "actual": "fixed: module-level state removed.",
+  "where": "src/features/field-force/ims/components/ims-report-tab-content.tsx",
+  "tests": [],
+  "verify": "Pick one month, then open a ?reportMonth= link: the URL month is shown.",
+  "owner": "Frontend, field-force",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:18": {
+  "status": "fixed",
+  "note": "commission-list-view.tsx has reloadKey (l.136, 191) bumped after Set Target, an error message on failure (l.167) and 'ID:' only when spoVisibleUserId exists (l.343); commit 7835f63c.",
+  "summary": "After 'Set Target' on the commission report the list did not reload, and a failed load showed an empty table with only a console error. Target vs lifting % showed 0 where another column showed '-', and a missing id printed 'ID: null'.",
+  "steps": [
+   "Open /field-force/commissions.",
+   "Set a target for an SPO and save.",
+   "Check the Target vs Lifting % column without reloading."
+  ],
+  "expected": "Table refreshes with the new target; failures are shown.",
+  "actual": "fixed: reload after save, error message, '-' for null.",
+  "where": "src/features/field-force/commissions/components/commission-list-view.tsx",
+  "tests": [],
+  "verify": "Save a target: the percentage changes without a page reload.",
+  "owner": "Frontend, field-force",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:2": {
+  "status": "fixed",
+  "note": "open-items-filters.tsx l.46 showFiscalYear={mode === 'range'}; open-items-report-view.tsx l.49 sends startDate AS_OF_FROM ('2000-01-01', types.ts l.2); 'All years' clears dates (commit 8b2f4970).",
+  "summary": "On Open Invoices and Open Bills (as-of reports) a fiscal-year picker was shown. Choosing a year limited the start date so unpaid invoices from earlier years vanished and receivables looked smaller than the ledger. 'All years' only cleared the year id, not the dates.",
+  "steps": [
+   "Open Reports > Open Invoices, as-of today.",
+   "Choose a fiscal year, then 'All years'.",
+   "Compare with an invoice dated last year that is unpaid."
+  ],
+  "expected": "As-of mode has no year picker and includes old unpaid invoices; All years clears the dates.",
+  "actual": "fixed: picker hidden in as-of mode; start date fixed at 2000-01-01.",
+  "where": "src/features/reports/open-items/components/open-items-filters.tsx; open-items-report-view.tsx; reports/shared/components/engine-report-filters.tsx",
+  "tests": [],
+  "verify": "Open Invoices as-of today shows an invoice dated last year; request body startDate 2000-01-01.",
+  "owner": "Frontend, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:23": {
+  "status": "fixed",
+  "note": "upload-ims-drawer.tsx l.440 calls router.refresh() on success; no setTimeout left in the file (commit bff0b784).",
+  "summary": "After uploading an IMS report the drawer closed only after 1.5 s, the lists kept old counts and the Upload button was still clickable, so a second click posted the report again.",
+  "steps": [
+   "Open /field-force/ase/customer-ims-report, upload IMS for a customer, click Upload twice quickly."
+  ],
+  "expected": "Drawer closes at once, list refreshes, no second post.",
+  "actual": "fixed: closes immediately and refreshes the route.",
+  "where": "src/features/field-force/ase-customer-ims-report/components/upload-ims-drawer.tsx",
+  "tests": [],
+  "verify": "Upload: the customer moves from Pending to Uploaded and only one POST is sent.",
+  "owner": "Frontend, field-force",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:28": {
+  "status": "fixed",
+  "note": "erp-api/field-force/area-dashboard/index.ts l.46-52 uses getGeneralSetting().timeZone with todayIn (commit 7835f63c). Calendar-year/month assumption is unchanged.",
+  "summary": "The ASE home picked its default month from the server clock (UTC), so on the 1st of a month between midnight and 06:00 Dhaka time it showed last month.",
+  "steps": [
+   "Open /field-force/ase/home shortly after midnight Dhaka on the 1st (server in UTC)."
+  ],
+  "expected": "Current month in the company time zone.",
+  "actual": "fixed: uses the company time zone.",
+  "where": "src/erp-api/field-force/area-dashboard/index.ts",
+  "tests": [],
+  "verify": "Unit test: at 2026-12-31T19:00Z the period is January 2027 (period 1). No such test exists yet.",
+  "owner": "Frontend, field-force",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:29": {
+  "status": "in-progress",
+  "note": "Dead report views and erp-api/reports-preview are deleted, coverage-planning page returns notFound() (app/(erp)/field-force/coverage-planning/page.tsx l.8; commits 7835f63c, ce6b649d). Missing: the feature folder src/features/field-force/coverage-planning (mock-data.ts) is still in the tree, and the hub cleanup (disabled favorite, keyboard hint, disabled New buttons, memo, TradeOfferMockItem rename) was not done per FIX-LOG.",
+  "summary": "The reports area carried about 2,400 lines of unused report views, a fixture file and a coverage-planning page that showed invented data to anyone who typed its URL. Most of this is deleted and the URL now returns 404; leftover mock data and some dead hub controls remain.",
+  "steps": [
+   "Open /field-force/coverage-planning: it returns 404.",
+   "Look in src/features/field-force/coverage-planning for mock-data.ts: still present."
+  ],
+  "expected": "No unused views, no mock data in the tree, hub shows only working controls.",
+  "actual": "Mostly fixed; mock-data.ts and the dead hub controls remain.",
+  "where": "src/features/field-force/coverage-planning/*; src/features/reports/accounts/components/report-catalog-view.tsx",
+  "tests": [],
+  "verify": "grep finds no references to the deleted views; coverage-planning folder removed or decided; hub has no disabled buttons.",
+  "owner": "Frontend, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:3": {
+  "status": "fixed",
+  "note": "ase-home-quick-stats.tsx l.35-45: the big number is formatBDT(collected) under label t('collected'), pending is its own line (commit 7835f63c).",
+  "summary": "The ASE home tile labelled COLLECTED showed the pending (outstanding) amount as its main figure, so field staff read the wrong money as collected.",
+  "steps": [
+   "Open /field-force/ase/home with collected 100 and pending 40 for the period."
+  ],
+  "expected": "COLLECTED shows 100 and pending is a separate line.",
+  "actual": "fixed.",
+  "where": "src/features/field-force/ase-home/ase-home-quick-stats.tsx",
+  "tests": [],
+  "verify": "Backend collectedAmount 100 / pendingCollectionAmount 40 shows 100 under COLLECTED.",
+  "owner": "Frontend, field-force",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:30": {
+  "status": "fixed",
+  "note": "The Getting Started CSS block, SETUP_STEP_ROUTES, FEATURE_GUIDES and TUTORIALS_PREVIEW_COUNT are gone (grep in dashboard-config.ts and dashboard.module.css returns 0, commit 6eada062). Leftover only: dashboard.gettingStarted* message keys in src/messages/dashboard.",
+  "summary": "The dashboard code held about 500 lines of unused Getting Started styles and an unused guide table whose link to period closing would have been a 404.",
+  "steps": [
+   "Open /dashboard in light and dark theme."
+  ],
+  "expected": "No dead Getting Started code.",
+  "actual": "fixed; only unused message keys remain.",
+  "where": "src/features/dashboard/dashboard-config.ts; src/features/dashboard/dashboard.module.css; src/messages/dashboard/*.json",
+  "tests": [],
+  "verify": "grep gettingStarted in src/features finds no code; build passes.",
+  "owner": "Frontend, dashboard",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "vqa:recon-detail-bn": {
+  "note": "Both sides look done: backend ReconciliationDetailRowDTO.labelCode and ReconciliationDetailService (~l.243, 252) send a stable code with a separate date, and reconciliation-detail-view.tsx l.88-93 translates it with bankingBudgeting.rowLabels.<code>. Needs a Bangla run to prove; REP-07-05 covers English only.",
+  "summary": "Reconciliation Detail row labels like 'Reconciled' and 'Total as of <date>' used to be English only, so Bengali users saw English. The backend now sends a labelCode and the date as its own field and the frontend translates it.",
+  "steps": [
+   "Switch the app to Bangla.",
+   "Open Reports > Banking > Reconciliation Detail for a bank account and month (GET /api/accounting/reports/reconciliation-detail).",
+   "Read the section and figure labels and the fiscal period label."
+  ],
+  "expected": "All fixed labels in Bangla.",
+  "actual": "By code: translated through labelCode. Not verified in a Bangla browser run; the fiscal period label comes from the backend and may stay English.",
+  "where": "src/features/reports/banking-budgeting/components/reconciliation-detail-view.tsx l.85-93; backend ReconciliationDetailRowDTO, ReconciliationDetailService; messages bankingBudgeting.rowLabels",
+  "tests": [
+   "REP-07-05"
+  ],
+  "verify": "Bangla UI: every labelCode row shows Bangla text; check the 'fiscal period' summary label too. GET the endpoint and confirm labelCode and labelDate are present on worded rows.",
+  "owner": "Both, reports/banking",
+  "ref": "frontend release_beta_1.0.0@05aecf15 / backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "be-req:reports:engine-accounting-book": {
+  "note": "feature not implemented: the engine report generators under modules/sales/report have no accounting book parameter (grep for accountingBook/bookId there finds nothing).",
+  "summary": "The designs for Open Bills, Open Invoices, A/P and A/R Aging and both payment histories show an Accounting Book select, but the engine report API (POST /api/reports/{reportKey}) takes no book filter, so the select cannot do anything.",
+  "steps": [
+   "POST /api/reports/OPEN_INVOICES (or any engine key) with a body that includes an accounting book id.",
+   "Compare the result with and without the field."
+  ],
+  "expected": "Results restricted to the chosen accounting book.",
+  "actual": "The field is ignored (or rejected); there is no book filter.",
+  "where": "backend shared/report ReportService and the per-report request classes; frontend report filters (no select built)",
+  "verify": "Backend adds the filter; then send the same report for two books and expect different rows.",
+  "owner": "Backend, reports",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "rv-be:reports:1": {
+  "note": "code looks fixed (CommissionIncentiveConfigDomainService.validateMilestones ~l.153 now adds achievementPercent.stripTrailingZeros() to the set); needs API/test proof.",
+  "summary": "Two commission milestones at 100 and 100.00 used to be accepted as different, so the report showed the same tier twice and paid the incentive in both columns. Today the duplicate check normalises the scale.",
+  "steps": [
+   "PUT /api/sales/commission-incentive-config with two milestones, achievementPercent 100 and 100.00 (any incentiveAmount)."
+  ],
+  "expected": "400 'Duplicate milestone at 100.00% of target.'",
+  "actual": "By code: 400. Not run.",
+  "where": "backend CommissionIncentiveConfigDomainService.validateMilestones",
+  "verify": "Run the PUT above on deployment/dev: expect HTTP 400 with the duplicate message; the config is unchanged.",
+  "owner": "Backend, commission",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "rv-be:reports:12": {
+  "note": "not fixed in code: CustomerAgingQueryRepository.findInvoices l.46 still filters i.docDate BETWEEN :startDate AND :endDate; waits on a business answer (as-of rule).",
+  "summary": "A/R and A/P aging use BETWEEN startDate AND endDate, so an aging run from 1 Jan as of 31 Dec drops unpaid invoices dated before 1 Jan and its total can differ from the dashboard Receivables card. The frontend works around it by sending start 2000-01-01.",
+  "steps": [
+   "Post an unpaid invoice dated last year.",
+   "POST /api/reports/CUSTOMER_AGING with startDate = start of this year and endDate = today.",
+   "Compare with GET /api/dashboard/receivables-aging."
+  ],
+  "expected": "Aging as of endDate includes every unpaid document dated up to endDate.",
+  "actual": "Documents before startDate are dropped.",
+  "where": "backend CustomerAgingQueryRepository.findInvoices, VendorAgingQueryRepository, ReportDateRange vs ReportPeriod",
+  "verify": "After the fix: the unpaid old invoice appears in the buckets with startDate this year.",
+  "owner": "Backend, reports (needs owner decision)",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "rv-be:reports:13": {
+  "status": "still-bug",
+  "note": "visible in code: BalanceSheetExportDataSource.requiredPermission() ~l.74 returns only 'accounting.report.view', and ReportDataSource has no any-of permission set (grep finds none in ReportDataSource/ExportController), while AccountingReportController accepts the finer report.financial.* permissions.",
+  "summary": "A user who holds only the Balance Sheet view permission can open the report but gets 403 when exporting it, because the export checks the broader accounting.report.view.",
+  "steps": [
+   "Create a user with only report.financial.balance-sheet.view.",
+   "GET the balance sheet report: 200.",
+   "POST /api/export/jobs for the BalanceSheet export type: 403."
+  ],
+  "expected": "Export accepts the same permissions as the report endpoint.",
+  "actual": "403 on export.",
+  "where": "backend BalanceSheetExportDataSource, ProfitAndLossExportDataSource, TrialBalanceExportDataSource, GeneralLedgerTreeExportDataSource, ExportController",
+  "verify": "The same limited user can export; a user with neither permission still gets 403.",
+  "owner": "Backend, reports/export",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "rv-be:reports:15": {
+  "note": "Part fixed: PartyNameResolver now goes through partyDirectoryLookup (NOT_SUPPORTED, WARN log, commit f2d36c379). Still open: YearEndCarryForwardService line 126 returns 'The <module> module could not be read: ' + e.getMessage() to the user.",
+  "summary": "A failing vendor or customer name lookup used to be hidden silently, and the year-end carry-forward check puts raw exception text into its response. The lookup part is fixed; the raw message is still returned.",
+  "steps": [
+   "Make a module read fail during the year-end carry-forward check (for example a failing open-item read).",
+   "Call the year-end carry-forward preview endpoint and read unavailableReason."
+  ],
+  "expected": "A fixed text such as 'could not be read; see server log'.",
+  "actual": "unavailableReason contains e.getMessage().",
+  "where": "backend ACC/yearendclosing/service/YearEndCarryForwardService line 126; ACC/report/service/PartyNameResolver",
+  "verify": "Force the read to fail: response has no exception text.",
+  "owner": "Backend, accounting/reports",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "rv-be:reports:2": {
+  "status": "still-bug",
+  "note": "visible in code: OpenSalesOrderReportGenerator line 87 uses order.getExchangeRate() when not null, so a rate of 0 or negative is used as is; SalesByCustomerSummaryCalculator and SalesByRepSummaryCalculator apply the rule rate > 0 else 1. BDT-only, so the rate is normally 1.",
+  "summary": "In the Open Sales Order report an order with exchange rate 0 shows amountInTk 0 and lowers the total, while the customer and rep summaries count it at full value, so the reports disagree.",
+  "steps": [
+   "Create a sales order with exchangeRate 0 (data fix in the DB, the UI uses 1 in BDT-only mode).",
+   "POST /api/reports/OPEN_SALES_ORDER and compare amountInTk with POST /api/reports/SALES_BY_CUSTOMER_SUMMARY."
+  ],
+  "expected": "Rate <= 0 treated as 1 everywhere.",
+  "actual": "Open Sales Order shows 0 for that order.",
+  "where": "backend modules/sales/report/OpenSalesOrderReportGenerator.toRow (line 87)",
+  "verify": "An order with rate 0 contributes its full amount in the open order report.",
+  "owner": "Backend, sales reports",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "rv-be:reports:3": {
+  "status": "still-bug",
+  "note": "visible in code: TerritorySalesQueryService.buildSpecification ~l.161-165 default branch only excludes CANCELLED when status is null, so DRAFT and REJECTED orders are counted; the postingPeriod/docDate coalesce is at l.156-159.",
+  "summary": "Territory Sales counts draft and rejected orders as sales and dues, so its totals do not match the Sales by Rep report for the same period.",
+  "steps": [
+   "Create a DRAFT sales order in a territory for this month.",
+   "GET /api/sales/area-dashboard/territory-sales without a status filter.",
+   "Compare the territory total with POST /api/reports/SALES_BY_REP."
+  ],
+  "expected": "DRAFT, REJECTED and CANCELLED are excluded by default.",
+  "actual": "Only CANCELLED is excluded.",
+  "where": "backend modules/sales/performance/service/TerritorySalesQueryService.buildSpecification",
+  "verify": "The draft order disappears from the unfiltered result and totals match Sales by Rep.",
+  "owner": "Backend, sales performance",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "rv-be:reports:4": {
+  "status": "still-bug",
+  "note": "visible in code: CommissionReportQueryService l.656 unlinkedSpoCount = spos.size() - linkedSpos.size() counts assignments, not people; l.147-148 and 247-248 compute liftingVsImsPercent = CommissionCalculator.achievementPercent(lifting, imsValue) = IMS x 100 / lifting, while the column says 'Lifting VS IMS' (formula intent needs an owner answer).",
+  "summary": "Payroll sees an inflated 'unlinked SPO' count when an SPO changed territory mid month (two assignments for one person). The 'Lifting VS IMS %' column is calculated as IMS divided by lifting, which may be the opposite of what the heading says.",
+  "steps": [
+   "Move an SPO to another territory mid month.",
+   "GET /api/sales/commission-report for that month and read unlinkedSpoCount.",
+   "Compare liftingVsImsPercent with lifting / IMS."
+  ],
+  "expected": "Distinct SPO users counted once; percent matches the heading.",
+  "actual": "Count 2 for one person; percent = IMS/lifting.",
+  "where": "backend CommissionReportQueryService.getHrmsLinkedSpoCommissions (l.656), l.147 and 247; CommissionCalculator.achievementPercent",
+  "verify": "One SPO with two assignments counts as 1; owner confirms the formula and the header or arguments are changed.",
+  "owner": "Backend, commission (decision on formula)",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:14": {
+  "status": "fixed",
+  "note": "erp-api/field-force/analytics/index.ts returns toFieldForceFailure on drill-down failure (l.72, 188); the analysis view clears figures (commit 7835f63c, FIX-LOG).",
+  "summary": "When a sales-analysis drill-down failed, the previous area's figures stayed on screen under the new breadcrumb, so users saw numbers that did not belong to the selected area.",
+  "steps": [
+   "Open /field-force/analysis, drill into a region.",
+   "Block the analytics request and drill into another area."
+  ],
+  "expected": "Old figures are cleared and an error is shown.",
+  "actual": "fixed.",
+  "where": "src/erp-api/field-force/analytics/index.ts; src/features/field-force/analysis/components/analysis-view.tsx",
+  "tests": [],
+  "verify": "Fail a drill-down: old figures disappear.",
+  "owner": "Frontend, field-force",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:15": {
+  "status": "fixed",
+  "note": "features/reports/accounting-reports/lookups.ts l.26, 40, 59-76, 104 sets booksFailed/accountsFailed and returns them; the report shows a warning.",
+  "summary": "When the book or account picker data failed to load, the pickers were empty with no message, which looks like 'there are no accounts'.",
+  "steps": [
+   "Open Reports > Ledger or Banking reports.",
+   "Make the accounting books or accounts call fail."
+  ],
+  "expected": "A warning that the lookup failed.",
+  "actual": "fixed: failure flags returned and shown.",
+  "where": "src/features/reports/accounting-reports/lookups.ts",
+  "tests": [],
+  "verify": "Fail the books call: a warning shows in the report shell.",
+  "owner": "Frontend, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:19": {
+  "status": "fixed",
+  "note": "collections-data-table.tsx l.255 calls router.refresh() after a successful review (commit 7835f63c).",
+  "summary": "After rejecting a collection, the summary cards 'Awaiting approval' and 'Rejected' kept their old counts.",
+  "steps": [
+   "Open the collections list, reject one collection, look at the cards."
+  ],
+  "expected": "Cards update.",
+  "actual": "fixed: router.refresh after review.",
+  "where": "src/features/field-force/collections/components/collections-data-table.tsx",
+  "tests": [],
+  "verify": "Reject one: cards change without reload.",
+  "owner": "Frontend, field-force",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:21": {
+  "status": "fixed",
+  "note": "reports/shared/components/report-party-select.tsx keeps the picked option and passes selectedOption to useInfiniteSelect (l.45); used by open items and purchase report frame (commit 8b2f4970). Caveat from FIX-LOG: while the search box has text the name still depends on the hook.",
+  "summary": "In report filters, after searching and picking a customer or vendor the select could show the raw id (for example '42') instead of the name.",
+  "steps": [
+   "Open Reports > Open Bills, search for a vendor beyond page 1 and pick it."
+  ],
+  "expected": "The vendor name stays visible.",
+  "actual": "fixed for the shared party select.",
+  "where": "src/features/reports/shared/components/report-party-select.tsx",
+  "tests": [],
+  "verify": "Pick a vendor from a later page: the name stays.",
+  "owner": "Frontend, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:22": {
+  "status": "fixed",
+  "note": "ar-register-report-view.tsx l.140-142 and open-items-report-view.tsx l.178 add the customer line and currencyFilter to the export spec; aging-summary-report-view.tsx l.238 does too (commit 8b2f4970). Purchase/sales/payment exports were not re-checked.",
+  "summary": "A filtered export (for example one customer) carried no line saying which customer or currency was chosen, so the printed file could not be traced back to its filter.",
+  "steps": [
+   "Open Reports > A/R Register, pick a customer, export to Excel or PDF."
+  ],
+  "expected": "The file lists the customer and currency.",
+  "actual": "fixed for A/R register, open items and aging.",
+  "where": "src/features/reports/ar-register/components/ar-register-report-view.tsx; open-items-report-view.tsx",
+  "tests": [
+   "REP-03-04"
+  ],
+  "verify": "Export with a customer chosen: file header has the customer line.",
+  "owner": "Frontend, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:26": {
+  "status": "in-progress",
+  "note": "Page/size are now parsed and clamped by parsePageParams (features/field-force/shared/parse-page.ts, size max 100, test pnpm test:field-force). Missing: collections-data-table.tsx l.209-228 still puts amount, customerId and chequeNumber into the URL when opening the deposit form (the form lives in the sales module).",
+  "summary": "Page and size came straight from the URL, so ?size=100000 asked the backend for 100k rows and ?size=abc sent NaN. Also the collection approval passes amounts in editable URL parameters to the deposit form. The paging part is fixed; the URL amounts remain.",
+  "steps": [
+   "Open /field-force/ase/customer?size=100000 (now clamped to 100).",
+   "Approve a collection: the deposit form URL carries amount, customerId and chequeNumber."
+  ],
+  "expected": "Only collectionId in the URL, the rest loaded server-side.",
+  "actual": "Paging fixed; amounts still in the URL.",
+  "where": "src/features/field-force/shared/parse-page.ts; src/features/field-force/collections/components/collections-data-table.tsx l.209-228",
+  "tests": [],
+  "verify": "Edit the amount in the URL: the deposit form must not trust it (use only collectionId).",
+  "owner": "Frontend, field-force",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:31": {
+  "status": "fixed",
+  "note": "collection-customer-selector.tsx no longer exists in src/features/field-force/ase-collection/components (commit 6eada062); the type was moved to ase-collection/types.ts. RecordCollectionQuickAction stays: it is used by ase-home quick actions.",
+  "summary": "An unused 306-line customer selector component sat in the ASE collection feature.",
+  "steps": [
+   "Search the repo for collection-customer-selector.tsx."
+  ],
+  "expected": "File removed.",
+  "actual": "fixed: deleted.",
+  "where": "src/features/field-force/ase-collection/components/",
+  "tests": [],
+  "verify": "Build passes and the file is absent.",
+  "owner": "Frontend, field-force",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:4": {
+  "status": "decision",
+  "note": "Unchanged in code: sales-engine-views.tsx and purchase-engine-views.tsx still sum quantity per item, category and total as the backend returns it; only the snapshot export total was removed. Waiting for a backend answer whether quantity is in a base unit.",
+  "summary": "Report totals add quantities of items that may be in different units (pieces, kg, cartons). If the backend does not convert to a base unit the total is meaningless.",
+  "steps": [
+   "Open Reports > Sales by Item Summary with items in two different units.",
+   "Read the category quantity total."
+  ],
+  "expected": "A meaningful total or none.",
+  "actual": "A plain sum of the backend quantities.",
+  "where": "src/features/reports/sales-orders/components/sales-engine-views.tsx; purchase-orders/components/purchase-engine-views.tsx",
+  "tests": [],
+  "verify": "Backend confirms the unit rule; then drop or split the totals.",
+  "owner": "Both, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:5": {
+  "status": "decision",
+  "note": "Probably moot: BDT only (decided 2026-10-20). Multi-currency branches still exist (ar-register-report-view.tsx l.115 totalsCurrency, payment-history-report-view.tsx l.299-301 reportCurrencies) but with one currency all screens show the same prefix.",
+  "summary": "The same report section showed no symbol, 'BDT' or 'Tk' on different screens. With BDT as the only currency the difference is cosmetic.",
+  "steps": [
+   "Compare Payment History and Trial Balance totals prefix."
+  ],
+  "expected": "One prefix everywhere.",
+  "actual": "Mixed by screen; multi-currency code still present.",
+  "where": "src/features/reports/payment-history/components/payment-history-report-view.tsx; ar-register-report-view.tsx; shared currency helper",
+  "tests": [],
+  "verify": "Same prefix on all report screens in en and bn.",
+  "owner": "Frontend, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "rv-fe:reports:9": {
+  "status": "fixed",
+  "note": "sales-engine-views.tsx l.432-433, 482, 561 and purchase-engine-views.tsx l.255, 310, 404, 473, 772, 955, 1076 translate status through statusLabels/historyStatusText on screen and in exports.",
+  "summary": "Status columns in the sales and purchase engine reports showed the backend's English status words in Bangla, and the history export used different text from the screen.",
+  "steps": [
+   "Switch to Bangla, open Open Sales Orders and PO History, export to Excel."
+  ],
+  "expected": "Screen and export show the same translated status.",
+  "actual": "fixed.",
+  "where": "src/features/reports/sales-orders/components/sales-engine-views.tsx; purchase-orders/components/purchase-engine-views.tsx",
+  "tests": [],
+  "verify": "Bangla export status column equals the screen.",
+  "owner": "Frontend, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "st1111:S40": {
+  "status": "open",
+  "note": "Backend-driven: SalesByItemSummaryQueryRepository sums line quantity and amount per item without trade discount or returns, the frontend only displays it. Same as sales:N6.",
+  "summary": "Sales Order by Item Summary shows gross amounts before trade discount and does not subtract returns or invoice edits, but the heading reads like the amount sold. It disagrees with the customer summary and the receivable, which are net.",
+  "steps": [
+   "Create a sales order with a trade discount and one item.",
+   "Open Reports > Sales Order by Item Summary (POST /api/reports/SALES_BY_ITEM_SUMMARY).",
+   "Compare the item amount with the order total after discount."
+  ],
+  "expected": "Amount net of discount (or a clear label 'gross').",
+  "actual": "Gross amount.",
+  "where": "backend modules/sales/report/SalesByItemSummaryQueryRepository, SalesByItemSummaryReportGenerator; frontend sales-orders report labels",
+  "tests": [],
+  "verify": "Item amount equals order line net of discount, or the column title says gross.",
+  "owner": "Both, sales reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "vqa:bankreg-zero": {
+  "status": "in-progress",
+  "note": "bank-register-view.tsx l.239-258 now shows '-' for a zero deposit/payment (fixed). The 55px row height complaint is not addressed (no row-height change found).",
+  "summary": "The Bank Register printed 0.00 on the unused side of each line and rows were very tall, making the table hard to scan. The zeros are replaced by a dash; row height remains.",
+  "steps": [
+   "Open Reports > Bank Register for an account with deposits and payments."
+  ],
+  "expected": "Dash on the empty side, compact rows.",
+  "actual": "Dash done; row height unchanged.",
+  "where": "src/features/reports/banking-budgeting/components/bank-register-view.tsx",
+  "tests": [
+   "REP-07-01"
+  ],
+  "verify": "Rows show '-' and the table fits more rows per screen.",
+  "owner": "Frontend, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "vqa:bva-range": {
+  "status": "still-bug",
+  "note": "budget-vs-actual-view.tsx l.38-40 currentYearRange() is still the calendar year and is the default at l.60; no fiscal-year lookup in the file. The 'feat/reports-ui-polish' change named in status_evidence is not in release_beta_1.0.0.",
+  "summary": "Budget vs Actual opens on 1 Jan - 31 Dec of the current calendar year. If the company's fiscal year differs (for example July-June) the first view compares the wrong period.",
+  "steps": [
+   "Open Reports > Budget vs Actual (without from/to in the URL)."
+  ],
+  "expected": "Default is the fiscal year of the selected book that contains today.",
+  "actual": "Calendar year.",
+  "where": "src/features/reports/banking-budgeting/components/budget-vs-actual-view.tsx l.38-60",
+  "tests": [
+   "REP-07-04"
+  ],
+  "verify": "With a July-June fiscal year, the default dates are that fiscal year.",
+  "owner": "Frontend, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "vqa:cash-bn-voucher": {
+  "status": "fixed",
+  "note": "cash-statement-view.tsx l.125 and 164-166 use useVoucherTypeLabel(); humanizeEnum is only the fallback when voucherType is missing.",
+  "summary": "In the Cash Statement the voucher type (Cash Receipt, Cash Payment, Contra) stayed English in Bangla.",
+  "steps": [
+   "Switch to Bangla, open Reports > Cash Statement."
+  ],
+  "expected": "Voucher type in Bangla.",
+  "actual": "fixed.",
+  "where": "src/features/reports/banking-budgeting/components/cash-statement-view.tsx",
+  "tests": [],
+  "verify": "Bangla UI: voucher type column is Bangla.",
+  "owner": "Frontend, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "vqa:hub-count": {
+  "status": "fixed",
+  "note": "report-catalog-view.tsx l.267-310 counts only reports the user may open (permittedIds), including the category header and chips.",
+  "summary": "The category header on the reports hub counted all reports while a limited user could open fewer (header said 4, the user saw 2).",
+  "steps": [
+   "Log in as a limited user and open /reports, Banking / Budgeting category."
+  ],
+  "expected": "Header count equals the visible reports.",
+  "actual": "fixed by code reading; not tried with a limited account.",
+  "where": "src/features/reports/accounts/components/report-catalog-view.tsx",
+  "tests": [
+   "REP-04-06"
+  ],
+  "verify": "Limited account: header count equals the number of links.",
+  "owner": "Frontend, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "vqa:recon-bank-select": {
+  "status": "fixed",
+  "note": "reconciliation-detail-view.tsx l.179 className min-w-[28rem] on the bank select.",
+  "summary": "The bank account select on Reconciliation Detail was too narrow and its label was cut off.",
+  "steps": [
+   "Open Reports > Reconciliation Detail."
+  ],
+  "expected": "Full label visible.",
+  "actual": "fixed: select widened.",
+  "where": "src/features/reports/banking-budgeting/components/reconciliation-detail-view.tsx",
+  "tests": [],
+  "verify": "Long bank name is fully visible.",
+  "owner": "Frontend, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13"
+ },
+ "merge:B3": {
+  "note": "code looks fixed (ReconciliationDetailRowDTO.labelCode + labelDate, ReconciliationDetailService ~l.243/252; controller doc at AccountingReportController ~l.418 says worded rows carry labelCode); needs API proof. Same as vqa:recon-detail-bn.",
+  "summary": "Reconciliation Detail used to return display strings such as 'Reconciled' or 'Total as of <date>' with nothing stable to translate. The backend now adds a labelCode so the bilingual client can translate.",
+  "steps": [
+   "GET /api/accounting/reports/reconciliation-detail with a bank account and fiscal period (exact parameters per Swagger)."
+  ],
+  "expected": "Each worded row has labelCode and labelDate.",
+  "actual": "By code: present. Not run.",
+  "where": "backend ReconciliationDetailRowDTO, ReconciliationDetailService, EReconciliationDetailLabel",
+  "verify": "The GET above returns labelCode on every non-TRANSACTION row and the date in its own field.",
+  "owner": "Backend, reports/banking",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "merge:B4": {
+  "status": "decision",
+  "note": "Unchanged: Excel exports still carry the title only as sheet name (ExportJobRunner passes source.title(filters) to excelExportService.toXlsx); the review said 'not a defect'. Needs owner decision.",
+  "summary": "The first row of every Excel export is the header row. The report title only appears as the sheet name, and filters are not listed. PDFs have a title block. This is a wish for a title and filter summary row, not a bug.",
+  "steps": [
+   "Export Trial Balance to Excel (POST /api/export/jobs, EXCEL) and open the file."
+  ],
+  "expected": "Decision: add a title/filter row or keep as is.",
+  "actual": "Header row first, title as sheet name only.",
+  "where": "backend shared/export ExcelExportService.writeXlsx",
+  "tests": [
+   "REP-01-02"
+  ],
+  "verify": "After a decision, the first rows of the file contain the title and filter summary.",
+  "owner": "Backend, export",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "purchase:C-P31": {
+  "status": "decision",
+  "note": "Unchanged: awaiting owner answer; not re-verified in code in this pass.",
+  "summary": "PURCHASE_BY_VENDOR_DETAILS sums bills only. A 100 debit note is neither listed nor netted, so net purchase by vendor is overstated.",
+  "steps": [
+   "Post a vendor bill of 1000 and a debit note of 100 for the same vendor.",
+   "POST /api/reports/PURCHASE_BY_VENDOR_DETAILS for the period."
+  ],
+  "expected": "Debit note listed as a negative row and netted (owner decision).",
+  "actual": "Total 1000.",
+  "where": "backend purchase report PURCHASE_BY_VENDOR_DETAILS generator",
+  "verify": "Total becomes 900 after the decision is implemented.",
+  "owner": "Backend, purchase reports",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "purchase:C-P32": {
+  "status": "decision",
+  "note": "Unchanged: feature not implemented (no purchase return register report key was looked up in this pass beyond the original note); owner decision pending.",
+  "summary": "There is no report listing purchase returns / debit notes; only the list screens exist, so the plan item 'purchase return register' cannot be reported.",
+  "steps": [
+   "POST /api/reports/{key} lists reports; check EReportKeyType for a purchase return register key."
+  ],
+  "expected": "A Purchase Return Register report.",
+  "actual": "No such key (per the source note).",
+  "where": "backend shared/report EReportKeyType",
+  "verify": "New report key appears and lists debit notes with vendor, date and amount.",
+  "owner": "Backend, purchase reports",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "purchase:C-P33": {
+  "status": "decision",
+  "note": "Unchanged: list exports (bill, PO, payment) carrying raw enums, vendor id and ISO dates were not re-verified; waits on who builds the export (D-41).",
+  "summary": "Exporting the bill, purchase order and payment lists gives raw values (NOT_PAID, BANK_TRANSFER), the vendor id instead of the name and ISO dates, while report exports are clean. Exports shown to the client look unfinished.",
+  "steps": [
+   "Open Purchase > Bills, export to Excel.",
+   "Read the status, vendor and date columns."
+  ],
+  "expected": "Labels, vendor name and the user's date format as on screen.",
+  "actual": "Raw enums, vendor id and ISO dates (per the note).",
+  "where": "backend shared/export data sources for purchase lists, or frontend list export specs",
+  "verify": "Export columns equal the screen columns.",
+  "owner": "Both, purchase export",
+  "ref": "frontend release_beta_1.0.0@05aecf15 / backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "purchase:C-P34": {
+  "status": "decision",
+  "note": "Frontend now builds the export: aging-summary-report-view.tsx l.226-262 (buildExport, ReportExportButtons, agingExportSpec). Not browser-tested here, so the original 'click does nothing' is unproven fixed.",
+  "summary": "Clicking Export Excel/PDF on the A/P aging summary did nothing and the page re-posted five times. The view now has an export handler that runs the report and builds the file in the browser.",
+  "steps": [
+   "Open Reports > A/P Aging, click Export Excel and Export PDF."
+  ],
+  "expected": "A file downloads.",
+  "actual": "Handler exists in code; behaviour not tested.",
+  "where": "src/features/reports/open-items/components/aging-summary-report-view.tsx; export-specs",
+  "tests": [],
+  "verify": "Click both buttons: a file with the vendor rows downloads and only one POST /api/reports/VENDOR_AGING is sent.",
+  "owner": "Both, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15 / backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "purchase:C-P35": {
+  "status": "decision",
+  "note": "Frontend part is done for range reports: reports/shared/default-range.ts gives the current month (not fiscal year to date) and exports follow the screen. Owner has not confirmed month versus fiscal-year-to-date (D-45).",
+  "summary": "Report exports follow the screen range, which used to be today to today, so an A/P register or history export taken without changing the range was empty. The default is now the current month, which fixes empty exports but not 'year to date'.",
+  "steps": [
+   "Open Reports > A/P Register, do not change dates, export."
+  ],
+  "expected": "A range that contains history (decision: month or fiscal year to date).",
+  "actual": "Current month.",
+  "where": "src/features/reports/shared/default-range.ts",
+  "tests": [
+   "REP-03-04"
+  ],
+  "verify": "Owner decides; the export contains rows for the agreed default range.",
+  "owner": "Both, reports",
+  "ref": "frontend release_beta_1.0.0@05aecf15 / backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "sales:N6": {
+  "status": "decision",
+  "note": "Same as st1111:S40. SalesByItemSummaryQueryRepository does not subtract trade discount; no owner decision recorded.",
+  "summary": "SALES_BY_ITEM_SUMMARY shows amounts before discount while SALES_BY_CUSTOMER_SUMMARY and the receivable are net of discount, so the reports give different totals for the same orders.",
+  "steps": [
+   "Create a sales order with a trade discount.",
+   "POST /api/reports/SALES_BY_ITEM_SUMMARY and /api/reports/SALES_BY_CUSTOMER_SUMMARY for the period.",
+   "Compare totals."
+  ],
+  "expected": "One agreed basis (net) or clear labels.",
+  "actual": "Item summary gross, customer summary net.",
+  "where": "backend modules/sales/report/SalesByItemSummaryQueryRepository, SalesByItemSummaryReportGenerator",
+  "verify": "Totals match or labels state gross/net.",
+  "owner": "Backend, sales reports",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ },
+ "saleschain:C13": {
+  "status": "decision",
+  "note": "Unchanged: feature request, not implemented; owner decision pending. No sales register, sales return register, discount, collection or customer-ledger-by-SPO report was found in the report catalogue.",
+  "summary": "The client needs Tally-style sales registers: a sales register, a sales return register, a discount report, a collection report and a customer ledger by SPO. These reports do not exist yet.",
+  "steps": [
+   "Look at the sales section of the reports hub and EReportKeyType."
+  ],
+  "expected": "Owner decides which reports are required and signs off.",
+  "actual": "Not implemented.",
+  "where": "backend shared/report EReportKeyType and modules/sales/report",
+  "verify": "Each approved report key returns data via POST /api/reports/{key}.",
+  "owner": "Backend, sales reports",
+  "ref": "backend deployment/dev@b2597ef11",
+  "date": "2026-11-13"
+ }
+}

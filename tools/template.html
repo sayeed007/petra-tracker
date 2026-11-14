@@ -28,6 +28,7 @@ tr.row{cursor:pointer}tr.row:hover{background:color-mix(in srgb,var(--acc) 5%,tr
 .pill{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600;color:#fff;white-space:nowrap}
 .id{font:12px ui-monospace,Consolas,monospace;color:var(--mute)}
 .detail td{background:color-mix(in srgb,var(--bg) 60%,var(--card));font-size:13px}
+.detail pre{margin:0;white-space:pre-wrap;font:inherit}.detail ol{margin:0;padding-left:18px}
 .detail dl{margin:0;display:grid;grid-template-columns:130px 1fr;gap:4px 12px}.detail dt{color:var(--mute)}.detail dd{margin:0}
 @media (max-width:700px){.hide-s{display:none}.detail dl{grid-template-columns:1fr}}
 </style>
@@ -79,7 +80,7 @@ function detail(tr){
  const nx=tr.nextElementSibling;if(nx&&nx.classList.contains("detail")){nx.remove();return}
  const d=DATA[tr.dataset.i],chk=d.checked&&d.checked.date?` (checked ${esc(d.checked.date)} ${esc(d.checked.ref)})`:"";
  const t=document.createElement("tr");t.className="detail";
- t.innerHTML=`<td colspan="6"><dl><dt>ID</dt><dd class="id">${esc(d.id)}</dd><dt>What</dt><dd>${esc(d.summary||d.title)}</dd><dt>Status evidence</dt><dd>${esc(d.status_evidence)}${chk}</dd><dt>Evidence level</dt><dd>${esc(d.evidence_level)}</dd><dt>Found</dt><dd>${esc(d.found)}</dd><dt>Source</dt><dd class="id">${esc(d.source)}</dd>${d.refs.length?`<dt>Refs</dt><dd class="id">${esc(d.refs.join(", "))}</dd>`:""}${d.theme?`<dt>Theme</dt><dd>${esc(d.theme)}</dd>`:""}${d.size?`<dt>Size</dt><dd>${esc(d.size)}</dd>`:""}</dl></td>`;
+ t.innerHTML=`<td colspan="6"><dl><dt>ID</dt><dd class="id">${esc(d.id)}</dd><dt>What</dt><dd><pre>${esc(d.summary||d.title)}</pre></dd>${d.steps&&d.steps.length?`<dt>Steps to reproduce</dt><dd><ol>${d.steps.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></dd>`:""}${d.expected?`<dt>Expected</dt><dd>${esc(d.expected)}</dd>`:""}${d.actual?`<dt>Actual</dt><dd>${esc(d.actual)}</dd>`:""}${d.where?`<dt>Where in code</dt><dd class="id">${esc(d.where)}</dd>`:""}${d.tests&&d.tests.length?`<dt>e2e tests</dt><dd class="id">${esc(d.tests.join(", "))}</dd>`:""}${d.verify?`<dt>How to verify the fix</dt><dd>${esc(d.verify)}</dd>`:""}${d.owner?`<dt>Owner</dt><dd>${esc(d.owner)}</dd>`:""}<dt>Status evidence</dt><dd>${esc(d.status_evidence)}${chk}</dd><dt>Evidence level</dt><dd>${esc(d.evidence_level)}</dd><dt>Found</dt><dd>${esc(d.found)}</dd><dt>Source</dt><dd class="id">${esc(d.source)}</dd>${d.refs.length?`<dt>Refs</dt><dd class="id">${esc(d.refs.join(", "))}</dd>`:""}${d.theme?`<dt>Theme</dt><dd>${esc(d.theme)}</dd>`:""}${d.size?`<dt>Size</dt><dd>${esc(d.size)}</dd>`:""}</dl></td>`;
  tr.after(t)}
 function render(){cards();rows()}
 $("#cards").onclick=e=>{const b=e.target.closest(".mod");if(b){f.module=b.dataset.m;render()}};

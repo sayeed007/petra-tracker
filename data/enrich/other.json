@@ -1,0 +1,716 @@
+{
+ "rv-fe:other:18": {
+  "note": "Fixed: untracked items now get a bin-only dialog (vendor-return-fulfill-view.tsx ~l.435-443, 1148-1165 UntrackedInventoryDetailDialog) and a failed tracking lookup shows an error instead of guessing LOT (l.428-431). Source fe-D17-1.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A vendor return for an item that has no lot or serial tracking could not be fulfilled: the Inventory button only said 'not tracked' and no bin could be chosen, so the line was refused on submit. That blocked the stock-out and the bill credit for such returns.",
+  "steps": [
+   "Open Purchase > Vendor Returns, open an approved return whose item is not lot/serial tracked.",
+   "Click Fulfil, tick the line, click the inventory button on the row.",
+   "Pick a bin and quantity, Save, then Fulfil."
+  ],
+  "expected": "A bin-only dialog opens; one allocation with the bin is created and the return is fulfilled with a stock-out.",
+  "actual": "fixed: for tracking type NONE the UntrackedInventoryDetailDialog opens; a failed tracking lookup shows 'trackingLookupFailed' and stops.",
+  "where": "src/features/purchase/vendor-return/components/vendor-return-fulfill-view.tsx (openInventoryModal, UntrackedInventoryDetailDialog)",
+  "verify": "Fulfil a return of an untracked item with a bin chosen: status becomes Fulfilled. Block the lot-serial tracking request: an error toast shows.",
+  "owner": "Frontend purchase",
+  "status": "fixed",
+  "tests": [
+   "purchase/07-return-and-credit.spec.ts"
+  ]
+ },
+ "st1111:S26": {
+  "note": "By design now: V1__initial_schema.sql l.2652 says SPO 'holds no permissions on purpose' and AuthServiceImpl l.74-88 (commit 122f355f8, #114) refuses login for an account with no active role permissions. Test field users need the Area Sales Executive or Field Force Manager role instead. Not a bug unless the team wants SPO to log in.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The seeded SPO (Sales Promotion Officer) role has zero permissions, so a user who only holds SPO cannot sign in: login answers 'No ERP access: account has no active role permissions'. The backend team now states this is intentional (an SPO is a sales-attribution identity, not an app user). The open question is which role the demo field-officer users should hold.",
+  "steps": [
+   "Sign in as a seeded user whose only role is SPO (for example the seeded ASE One user).",
+   "Observe the login error 'No ERP access: account has no active role permissions'.",
+   "Give the user the Field Force Manager or Area Sales Executive role in Settings > Users & Roles and sign in again."
+  ],
+  "expected": "Field users used for ASE tests can sign in.",
+  "actual": "SPO-only account is refused by design; the seeded test users must be given a role that has permissions (the old Redis permission cache for the user must be cleared after a change).",
+  "where": "backend auth/service/impl/AuthServiceImpl.java (login, erpAccess check); src/main/resources/db/migration/V1__initial_schema.sql ~l.2652 (SPO row)",
+  "verify": "POST /api/auth/login as an SPO-only user: expect the refusal. Then assign the AEC role and repeat: expect a token.",
+  "owner": "Both sales / users",
+  "status": "decision",
+  "severity": "medium"
+ },
+ "rv-fe:other:1": {
+  "note": "Fixed: inventory-panel.tsx keeps every typed line in seenLines (l.125-146), builds the payload from all edits and drops only edits that were in the payload (l.155-182). Source fe-A11-1.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "With more than 50 stock count lines the sheet is paged. Counts typed on page 1 were left out of the payload when Save or Confirm was pressed on page 2, yet were deleted from state, so page 1 boxes came back empty and closing stock/COGS were wrong.",
+  "steps": [
+   "Open Accounting > Period End > Close, the stock count (Inventory) panel for a period with more than 50 items.",
+   "Type counts on page 1, go to page 2, type a count.",
+   "Click Save progress, go back to page 1."
+  ],
+  "expected": "All typed counts are saved and still shown on page 1.",
+  "actual": "fixed: payload built from all seen lines; edits removed only if they were in the payload.",
+  "where": "src/features/accounting/period-end/components/close/inventory-panel.tsx (entry, run)",
+  "verify": "Type counts on pages 1 and 2, Save progress, reload: values on both pages come from the backend.",
+  "owner": "Frontend accounting",
+  "status": "fixed",
+  "severity": "medium"
+ },
+ "rv-fe:other:10": {
+  "note": "Write side fixed: mapChannelPrices now sends only dynamic rows keyed by channel id (erp-api/inventory/items/mapper.ts ~l.985-990). Still left: the read side derives legacy retail/modern/corporate headline prices by English channel name (erp-api/inventory/items/index.ts l.830-835 name.includes('retail')). Source fe-A04-9.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Item selling prices per sales channel were matched to channels by English names, and legacy fields brought deleted prices back on save. A renamed channel could get the wrong price. The save path is fixed; the list/detail headline fields still guess by name.",
+  "steps": [
+   "Rename a sales channel (e.g. 'Retail' to 'Retailers') in Inventory > Sales Channels.",
+   "Open an item that has a price on that channel (Inventory > Items) and look at the headline retail/modern/corporate price.",
+   "Delete all price rows on item edit and Save, then reopen."
+  ],
+  "expected": "Prices always follow the channel id; no price comes back after deleting rows.",
+  "actual": "Save: fixed. Read: legacy headline fields (retail_price, modern_trade_price, corporate_price) still use name.includes.",
+  "where": "src/erp-api/inventory/items/index.ts l.830-835; src/erp-api/inventory/items/mapper.ts l.985-990",
+  "verify": "Rename a channel, open the item list and detail: the prices shown per channel stay correct; remove the legacy fields once nothing reads them.",
+  "owner": "Frontend inventory",
+  "status": "in-progress"
+ },
+ "rv-fe:other:11": {
+  "note": "Fixed: columns.tsx l.188-192 uses t('columns.salesOrderNo'); en.json has it (messages/inventory-warehouse/en.json ~l.1604 'SALES ORDER NO') and bn.json l.1606. Source fe-D03-3.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Two columns of the packing-house list were both titled 'BOOKED FOR' because the Sales Order No column had no message key, and the column chooser listed two identical names.",
+  "steps": [
+   "Open Inventory > Packing House list.",
+   "Look at the column headers and open the customize-columns dialog."
+  ],
+  "expected": "One column reads 'Sales Order No' in English and Bangla.",
+  "actual": "fixed: separate message key in both languages.",
+  "where": "src/features/inventory/packing-house/components/columns.tsx; src/messages/inventory-warehouse/{en,bn}.json",
+  "verify": "Open the list in both languages: headers are distinct.",
+  "owner": "Frontend inventory",
+  "status": "fixed",
+  "tests": [
+   "inventory/14-packing-house-screens.spec.ts"
+  ]
+ },
+ "rv-fe:other:12": {
+  "note": "Fixed: list view derives rows with useMemo from raw rows and channel map (product-distribution-list-view.tsx l.114-137) and treats '' as all (l.138-141, 206). Source fe-D05-9.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The product distribution list loaded twice (first with an empty channel map, so Inventory Type showed '-') and the filter sent an empty channelId in exports.",
+  "steps": [
+   "Open Inventory > Product Distribution (Sample or Gift screen) with the network tab open.",
+   "Watch the list and channel requests, then export."
+  ],
+  "expected": "One list call and one channels call; export carries no empty channelId.",
+  "actual": "fixed: inventory type resolved in a memo; empty filter means all.",
+  "where": "src/features/inventory/product-distribution/components/product-distribution-list-view.tsx",
+  "verify": "Open the screen: one list request; export file has no empty channelId.",
+  "owner": "Frontend inventory",
+  "status": "fixed",
+  "tests": [
+   "inventory/13-distribution-screens.spec.ts"
+  ]
+ },
+ "rv-fe:other:2": {
+  "note": "Fixed: customer-deposit-ledgers.tsx uses AppConfirmAction for both Remove and Change (l.298-325) and inventory-mapping-section.tsx opens a confirm dialog (l.453-487, cleared case l.464). Source fe-D32-3.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Removing a channel's deposit ledger or clearing a petty-cash category mapping changes where money posts, but happened in one click with no warning.",
+  "steps": [
+   "Open Settings > Accounting > Account roles, the Deposit by channel section.",
+   "Click Remove on a channel ledger, or change the ledger.",
+   "In the inventory mapping tab clear a petty-cash category and Save."
+  ],
+  "expected": "A confirm dialog names the impact (future postings use the fallback ledger); Cancel keeps the mapping.",
+  "actual": "fixed: confirm shown for remove, change and clear.",
+  "where": "src/features/**/customer-deposit-ledgers.tsx; src/features/**/inventory-mapping-section.tsx",
+  "verify": "Click Remove: confirm appears; Cancel leaves the mapping.",
+  "owner": "Frontend accounting settings",
+  "status": "fixed",
+  "severity": "medium"
+ },
+ "rv-fe:other:23": {
+  "note": "Fixed: item-receipt/utils.ts openDemandSplits (l.~79-110) scales the prefill to the open quantity and the last channel takes the rounding. Source fe-D08-3.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "On a second partial receipt the channel splits were prefilled with the full purchase order allocation (for example 60 + 40 when only 50 are open), so submit failed with a split mismatch and the user retyped every channel.",
+  "steps": [
+   "Create a PO for 100 split 60/40 across two channels and receive 50.",
+   "Open Purchase > Item Receipt > New from that PO for the remaining 50."
+  ],
+  "expected": "Splits add up to the open quantity and submit works.",
+  "actual": "fixed: splits scaled to open quantity.",
+  "where": "src/features/purchase/item-receipt/utils.ts (openDemandSplits)",
+  "verify": "Receive a 60/40 PO in two partials: second form opens with splits summing to the open quantity.",
+  "owner": "Frontend purchase",
+  "status": "fixed",
+  "severity": "medium"
+ },
+ "rv-fe:other:24": {
+  "note": "Fixed: vendor-return-record-header.tsx l.33-45 computes hasLiveBillCredit from relatedRecords and hides Refund when a non-rejected credit exists. Source fe-D17-3.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "After a bill credit was raised for a fulfilled vendor return, the Refund button still showed and opened an empty credit form; a duplicate was refused only after the form was filled.",
+  "steps": [
+   "Fulfil a vendor return, click Refund to create a bill credit.",
+   "Reopen the vendor return detail."
+  ],
+  "expected": "No active Refund button once a live credit exists.",
+  "actual": "fixed: canRefund false when a non-rejected credit is related.",
+  "where": "src/features/purchase/vendor-return/components/vendor-return-record-header.tsx",
+  "verify": "Open a return that has a credit: no Refund button.",
+  "owner": "Frontend purchase",
+  "status": "fixed",
+  "tests": [
+   "purchase/07-return-and-credit.spec.ts"
+  ],
+  "severity": "medium"
+ },
+ "rv-fe:other:30": {
+  "note": "Mostly fixed: items-table.tsx l.230-238 no longer overwrites the amount when no price is known and form-view l.361-364 blocks save when the availability pre-check fails. Missing: a failed per-row lookup still renders availability as '0' (items-table.tsx l.319-321). Source fe-D04-2.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "On a product distribution row the amount was recomputed as quantity x 0 and saved when the price lookup was slow or failed, and failed availability lookups were shown as '0 available'. The amount and save guard are fixed; the '0' display for a failed lookup remains.",
+  "steps": [
+   "Open Inventory > Product Distribution > edit an existing distribution.",
+   "Block the item-channel-count request (network tab) and look at amount and availability."
+  ],
+  "expected": "Amount unchanged, availability shows '-' with an inline error, Save blocked.",
+  "actual": "Amount kept, Save blocked by pre-check; availability cell shows '0' instead of '-' on failure.",
+  "where": "src/features/inventory/product-distribution/components/product-distribution-form-items-table.tsx l.319-321",
+  "verify": "Edit a distribution with the count request blocked: availability shows '-' not '0'.",
+  "owner": "Frontend inventory",
+  "status": "in-progress",
+  "tests": [
+   "inventory/13-distribution-screens.spec.ts"
+  ],
+  "severity": "medium"
+ },
+ "rv-fe:other:32": {
+  "note": "Fixed: sales-return-authorization-view.tsx l.188-212 requires a real quantity for every ticked line (returnQtyInvalid) and also checks returnableQty. Source fe-D30-6.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Return authorization silently dropped ticked lines that had an empty, negative or non-numeric quantity and still reported success, so the saved return had fewer lines than the operator ticked.",
+  "steps": [
+   "Open a sales order > Authorize return.",
+   "Tick two lines, type -3 on one and 2 on the other, Save."
+  ],
+  "expected": "Save is blocked with a line-specific error.",
+  "actual": "fixed: validation error and stop.",
+  "where": "src/features/sales/**/sales-return-authorization-view.tsx (handleSave)",
+  "verify": "Tick two lines, -3 on one: error shown, nothing saved.",
+  "owner": "Frontend sales",
+  "status": "fixed",
+  "severity": "medium"
+ },
+ "rv-fe:other:33": {
+  "note": "Fixed: app-data-table.tsx l.215-245 ignores clicks from a,button,input,select,textarea,label,[role=checkbox] and key presses whose target is not the row. Source fe-D40-1.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Pressing Enter or Space on a checkbox, input or link inside a clickable table row opened the row page instead of acting on the control.",
+  "steps": [
+   "Open any list with row click (for example Purchase > Item Receipt).",
+   "Tab to a row checkbox and press Space; Tab to a record link and press Enter."
+  ],
+  "expected": "The control acts; no row navigation.",
+  "actual": "fixed.",
+  "where": "src/shared/components/ui/app-data-table.tsx onRow",
+  "verify": "Keyboard test above.",
+  "owner": "Frontend shared",
+  "status": "fixed",
+  "severity": "medium"
+ },
+ "rv-fe:other:4": {
+  "note": "Fixed: the frontend no longer offers DEFAULT_SALES_ACCOUNT_ID / DEFAULT_PURCHASE_ACCOUNT_ID rows (grep of src finds none) and the backend enum has both keys (EAccountingSettingKey.java l.241, 243). Source fe-D49-3.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The settings catalogue once listed two account-default keys that the backend enum might not have, which would give a 400 on save. Today the backend has both and the frontend does not send them.",
+  "steps": [
+   "Open Settings > Accounting > Account defaults and save each row."
+  ],
+  "expected": "No 400 on any row.",
+  "actual": "fixed: no unknown key is offered.",
+  "where": "backend EAccountingSettingKey; frontend settings config.ts",
+  "verify": "Save every default row on deployment/dev: success.",
+  "owner": "Frontend accounting settings",
+  "status": "fixed",
+  "tests": [
+   "accounting/08-account-defaults.spec.ts"
+  ],
+  "severity": "low"
+ },
+ "rv-fe:other:5": {
+  "note": "Fixed: sales-performance-view.tsx l.112-146 clears targetSummary at once on a new SPO and on failure, with a translated error. Source fe-A13-1.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Sales Performance kept the previous SPO's targets and figures on screen when a fetch for the next SPO failed, so numbers of one person showed under another's name and in the export.",
+  "steps": [
+   "Open Field Force > Sales Performance, select SPO A, then select SPO B with the request blocked."
+  ],
+  "expected": "Empty card with an error, never A's numbers.",
+  "actual": "fixed.",
+  "where": "src/features/field-force/sales-performance/components/sales-performance-view.tsx",
+  "verify": "Block the target-summary request and switch SPO.",
+  "owner": "Frontend field force",
+  "status": "fixed",
+  "tests": [
+   "field-force/05-performance.spec.ts"
+  ],
+  "severity": "medium"
+ },
+ "merge:C1": {
+  "note": "Code unchanged and correct: CompleteTaskRequest.java l.19-21 accepts only approved|rejected (case-insensitive). The backend's own docs/WORKFLOW_INTEGRATION.md l.373 already says approved/rejected; the wrong 'APPROVE/REJECT' text is in the frontend-held Exports and Approvals guide copy (_fe-accounting-notes, line 202). Doc fix only; not in the backend checkout.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The Exports and Approvals integration guide tells clients to send decision APPROVE or REJECT when completing a workflow task, but the API only accepts approved or rejected and answers 400 otherwise. A client following the guide would get errors.",
+  "steps": [
+   "POST /api/workflow/tasks/{taskId}/complete with {\"decision\":\"APPROVE\"}."
+  ],
+  "expected": "The guide matches the API (approved/rejected).",
+  "actual": "API answers 400 'decision must be approved or rejected' for APPROVE; guide text still wrong.",
+  "where": "backend shared/workflow/dto/CompleteTaskRequest.java; guide text Exports_and_Approvals_Frontend_Implementation_Guide",
+  "verify": "POST the call with {\"decision\":\"APPROVE\"}: expect 400; with {\"decision\":\"approved\"}: 200. Then correct the guide.",
+  "owner": "Backend workflow (documentation)",
+  "severity": "low"
+ },
+ "pt1110:B16": {
+  "note": "Frontend part still there: login-form.tsx l.78 placeholder 'maya.line@petraproducts.com' looks like a real address. Backend seed: petra-chart.json still seeds the client bank ledgers; not re-counted today. Employee lookup needs HRMS (assign-employee-form.tsx).",
+  "ref": "release_beta_1.0.0@05aecf15 / deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The demo data is noisy: the cash/bank list holds about 17 real-looking client bank ledgers with real-looking numbers, Add User > Assign Existing Employee fails when HRMS is unreachable, and the login box shows a real-looking address as placeholder.",
+  "steps": [
+   "Open the Accounting cash/bank ledger list on a freshly seeded backend.",
+   "Open Settings > Users & Roles > Add User > Assign Existing Employee.",
+   "Open the login page and read the email placeholder."
+  ],
+  "expected": "Neutral placeholder; demo data without real bank numbers; clear message when HRMS is not reachable.",
+  "actual": "Placeholder is real-looking; seeded bank ledgers and HRMS failure as reported earlier (not re-run today).",
+  "where": "src/features/auth/components/login-form.tsx l.78; backend src/main/resources/accounting/seed/petra-chart.json",
+  "verify": "GET /api/accounting/accounts on a fresh seed: count bank ledgers; check login placeholder.",
+  "owner": "Both (shared demo data)",
+  "severity": "low"
+ },
+ "rv-fe:other:13": {
+  "note": "Part fixed: facade reads now throw a stable code (product-distributions/index.ts throwDistributionApiError ~l.56-60). Still left: getProductDistributionRequesters (l.150-160) calls GET /api/admin/users with no paging or filter and accepts only a bare array. Backend returns the full array when page/size are absent (UserAdminController.listErpUsers l.99-111) so it works today; backend also gained a lighter petty-cash requester-options endpoint (commit 122f355f8). Source fe-A07-10.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The Requester dropdown on a product distribution loads every ERP user (with emails) into the browser through the admin users endpoint, and would show an empty list if the backend ever answered with a page envelope.",
+  "steps": [
+   "Open Inventory > Product Distribution > New and open the Requester dropdown with the network tab open."
+  ],
+  "expected": "Requester list from a light, paged lookup that returns id and name only.",
+  "actual": "Full admin user list is fetched, array only.",
+  "where": "src/erp-api/sales/product-distributions/index.ts l.150-160; backend UserAdminController GET /api/admin/users",
+  "verify": "Open the dropdown: request is a light lookup; list includes users beyond the first page.",
+  "owner": "Frontend sales/inventory",
+  "status": "in-progress",
+  "severity": "low"
+ },
+ "rv-fe:other:14": {
+  "note": "Still in code: inventory-item-form-sales-pricing-tab.tsx l.58-85 rebuilds channelPrices from options.salesChannels only, so a price row for a channel not in the options list disappears when the tab mounts. Source fe-D01-10; backend delete behaviour on omitted rows not verified.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "On the item form's Sales pricing tab, a price saved on a channel that is no longer offered (deactivated or removed) is silently dropped from the form, and saving the item sends it without that price.",
+  "steps": [
+   "Give an item a price on a channel, then deactivate that channel in Inventory > Sales Channels.",
+   "Open Inventory > Items > edit the item > Sales pricing tab, Save."
+  ],
+  "expected": "Row kept (read-only) and still sent.",
+  "actual": "Row is removed from the form values on mount.",
+  "where": "src/features/inventory/items/components/inventory-item-form-sales-pricing-tab.tsx l.58-85",
+  "verify": "Edit an item with a price on an inactive channel and Save: the payload still contains the channel price.",
+  "owner": "Frontend inventory",
+  "status": "still-bug",
+  "severity": "low"
+ },
+ "rv-fe:other:15": {
+  "note": "Fixed: inventory-item-sales-pricing-tab.tsx l.74 renders '-' when field.value == null. Source fe-D02-3.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The item details Sales tab showed 'BDT 0' for a channel that has no price, which reads as 'sold for 0'.",
+  "steps": [
+   "Open Inventory > Items > an item with an unpriced channel > Sales tab."
+  ],
+  "expected": "A dash.",
+  "actual": "fixed.",
+  "where": "src/features/inventory/items/components/inventory-item-sales-pricing-tab.tsx",
+  "verify": "Open an item with an unpriced channel.",
+  "owner": "Frontend inventory",
+  "status": "fixed",
+  "tests": [
+   "inventory/06-items-list-detail.spec.ts"
+  ]
+ },
+ "rv-fe:other:16": {
+  "note": "Fixed: stock-receipt-validation.ts l.96-110 reads Excel dates with UTC getters (formatDate(date, utc)). Source fe-D02-10.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Dates read from an uploaded Excel stock receipt were built in UTC but formatted in local time, so on a computer west of UTC expiry and manufacturing dates moved by one day. Bangladesh users were not affected.",
+  "steps": [
+   "Import a stock receipt Excel with a date cell on a machine set to America/New_York."
+  ],
+  "expected": "Same date as in Asia/Dhaka.",
+  "actual": "fixed.",
+  "where": "src/features/inventory/items/stock-receipt-validation.ts",
+  "verify": "Run the validator with TZ=America/New_York on serial 45000.",
+  "owner": "Frontend inventory",
+  "status": "fixed"
+ },
+ "rv-fe:other:17": {
+  "note": "Fixed: constants.ts l.40-44 getPettyCashBudgetPeriods() builds periods at call time (next month, this, two before); modal has budgetSetup.noCategory (petty-cash-budget-setup-modal.tsx l.251) and keeps loadedCarryMonths (l.193). Source fe-D04-6.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The petty cash Budget Setup modal froze its period list when the module loaded, could not set next month's budget, and showed a wrong message or changed the carry-forward months from 2 to 1.",
+  "steps": [
+   "Open Inventory > Petty Cash > Budget Setup; select next month; untick all categories; open a period with carry-forward 2 and Save."
+  ],
+  "expected": "Next month selectable, clear message, 2 stays 2.",
+  "actual": "fixed.",
+  "where": "src/features/inventory/petty-cash/constants.ts; components/petty-cash-budget-setup-modal.tsx",
+  "verify": "Steps above.",
+  "owner": "Frontend inventory",
+  "status": "fixed",
+  "tests": [
+   "inventory/15-petty-cash-screens.spec.ts"
+  ]
+ },
+ "rv-fe:other:19": {
+  "note": "Fixed: damaged modal onSave (item-receipt-damaged-inventory-modal.tsx l.399-415) catches a failed ancestry lookup, shows saveFailed and does not save. Source fe-D08-4.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The damaged-lots modal saved a lot without zone and shelf when the location lookup failed, and a rejected save left an unhandled error with nothing shown.",
+  "steps": [
+   "Open an item receipt, add damaged lots, block the location request, Save."
+  ],
+  "expected": "An error message; nothing saved without zone/shelf.",
+  "actual": "fixed.",
+  "where": "src/features/purchase/item-receipt/components/item-receipt-damaged-inventory-modal.tsx",
+  "verify": "Block the location GET and Save.",
+  "owner": "Frontend purchase",
+  "status": "fixed"
+ },
+ "rv-fe:other:20": {
+  "note": "Fixed: no console.log remains in purchase-order-inventory-detail-modal.tsx (grep). Source fe-D12-6.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A console.log(rows) printed all lot numbers and location ids on every render of the PO inventory modal.",
+  "steps": [
+   "Open a PO inventory modal with the console open and type."
+  ],
+  "expected": "Console is quiet.",
+  "actual": "fixed.",
+  "where": "src/features/purchase/**/purchase-order-inventory-detail-modal.tsx",
+  "verify": "grep console.log in the file: none.",
+  "owner": "Frontend purchase",
+  "status": "fixed"
+ },
+ "rv-fe:other:21": {
+  "note": "Still in code: purchase-order-inventory-detail-modal.tsx l.283 defaultPackSize = packSizeOptions[0].value (first pack) and handleSave (l.503-545) checks only lot, bin, quantity and total, never expiry >= manufacturing date or duplicate lot/serial. Source fe-D12-10.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "In the purchase order inventory modal the first pack size (for example Carton 1x20) becomes the default for a line, so 25 units show as 1.25 packs; and Save accepts an expiry date before the manufacturing date and duplicate lot or serial numbers.",
+  "steps": [
+   "Open a PO whose item has several pack sizes > inventory details modal.",
+   "Enter expiry earlier than manufacturing date, or the same serial on two rows, Save."
+  ],
+  "expected": "Default is the line's pack (or base unit); bad dates or duplicates block Save.",
+  "actual": "Defaults to the first pack; no date or duplicate checks.",
+  "where": "src/features/purchase/**/purchase-order-inventory-detail-modal.tsx l.283, l.503-545",
+  "verify": "Repeat the steps: Save is blocked with a message.",
+  "owner": "Frontend purchase",
+  "status": "still-bug",
+  "severity": "low"
+ },
+ "rv-fe:other:22": {
+  "note": "Fixed: purchase-order-record-actions.tsx l.101-103 counts only PARTIALLY_BILLED/FULLY_BILLED as billed. Source fe-D13-4.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "'Authorize return' showed for orders with no billing status because 'undefined is not NOT_BILLED'.",
+  "steps": [
+   "Open a draft purchase order without a billing status."
+  ],
+  "expected": "No Authorize return button.",
+  "actual": "fixed.",
+  "where": "src/features/purchase/**/purchase-order-record-actions.tsx",
+  "verify": "Open a draft PO.",
+  "owner": "Frontend purchase",
+  "status": "fixed"
+ },
+ "rv-fe:other:25": {
+  "note": "Fixed: purchase/item-receipt/constants.ts now has PENDING in both the tone map and the label map (l.13-28). Source fe-D47-4.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Item-receipt status maps disagreed with each other so a pending receipt showed a raw word.",
+  "steps": [
+   "Open Purchase > Item Receipt list with a pending receipt."
+  ],
+  "expected": "Translated label and tone.",
+  "actual": "fixed.",
+  "where": "src/features/purchase/item-receipt/constants.ts",
+  "verify": "List shows the 'Pending approval' badge.",
+  "owner": "Frontend purchase",
+  "status": "fixed"
+ },
+ "rv-fe:other:26": {
+  "note": "Still in code: purchase-engine-views.tsx l.292, 449 pass only the currency filter to the export; payment-history-report-view.tsx l.143 passes filters: []; sales-engine-views.tsx l.42 only currency. The vendor/customer picked on screen is not in the file (physical-inventory and accounting reports do it correctly). Source fe-D21-2.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A report filtered by one vendor or customer exports to PDF or Excel without saying which vendor or customer, so the file cannot be understood alone.",
+  "steps": [
+   "Open Reports > Purchase Orders (or Payment History), choose one vendor.",
+   "Export to Excel/PDF and read the header block."
+  ],
+  "expected": "The file lists the selected vendor/customer/category/fiscal year.",
+  "actual": "Only title, period and currency.",
+  "where": "src/features/reports/purchase-orders/components/purchase-engine-views.tsx; payment-history/components/payment-history-report-view.tsx; sales-orders/components/sales-engine-views.tsx",
+  "verify": "Filter by vendor, export: header contains the vendor name.",
+  "owner": "Frontend reports",
+  "status": "still-bug",
+  "severity": "low"
+ },
+ "rv-fe:other:27": {
+  "note": "Fixed: purchase-engine-views.tsx l.68 uses buildVendorDetailHref; sales-engine-views.tsx l.31, 458 use buildCustomerDetailHref and SALES_ORDER_PATH. Source fe-D21-5.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Report views had hard-coded detail URLs that would silently 404 after a route rename.",
+  "steps": [
+   "grep for '/purchase/vendor/' in those views."
+  ],
+  "expected": "Links built from route helpers.",
+  "actual": "fixed.",
+  "where": "src/features/reports/**-engine-views.tsx",
+  "verify": "grep finds no literal path.",
+  "owner": "Frontend reports",
+  "status": "fixed"
+ },
+ "rv-fe:other:28": {
+  "note": "Fixed: sales-report-parts.tsx l.195-225 CategoryFilterSelect keeps loadFailed and has .catch. Source fe-D21-6.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The category filter on sales reports swallowed a failed load and opened an empty select with no message.",
+  "steps": [
+   "Open Reports > Sales Orders, block the item-categories request."
+  ],
+  "expected": "A message shows.",
+  "actual": "fixed.",
+  "where": "src/features/reports/sales-orders/components/sales-report-parts.tsx",
+  "verify": "Block the request.",
+  "owner": "Frontend reports",
+  "status": "fixed"
+ },
+ "rv-fe:other:29": {
+  "note": "Fixed: return-receive-items-table.tsx l.72-77 gatePassed input is disabled/readOnly with a comment. Source fe-D23-5. (Contact/Email tabs still exist at return-receive-create-view.tsx l.186-195, not re-checked for empty content.)",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The 'Gate passed' cell in the return receive table could be edited but the value was never sent.",
+  "steps": [
+   "Open Sales > Credit Memo > Return Receive > create."
+  ],
+  "expected": "Gate passed is read-only.",
+  "actual": "fixed.",
+  "where": "src/features/sales/**/return-receive-items-table.tsx",
+  "verify": "Try typing in the cell.",
+  "owner": "Frontend sales",
+  "status": "fixed"
+ },
+ "rv-fe:other:3": {
+  "note": "Fixed: match-step.tsx fetches the statement in its own effect keyed on [reconciliationId, refreshKey] (l.135-154) while the workspace effect (l.105-131) depends on filter and search. Source fe-A08-5.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The bank reconciliation Match step re-read the whole statement with every filter click though it cannot change.",
+  "steps": [
+   "Open a bank reconciliation Match step, click ALL/UNMATCHED with the network tab open."
+  ],
+  "expected": "One request per click.",
+  "actual": "fixed.",
+  "where": "src/features/accounting/**/match-step.tsx",
+  "verify": "Network tab check.",
+  "owner": "Frontend accounting",
+  "status": "fixed",
+  "severity": "low"
+ },
+ "rv-fe:other:31": {
+  "note": "Still in code: erp-api/sales/delivery-orders/index.ts l.1097 `Item #${...}`, l.1293, l.1362 `Address ${n}`, l.1391 `Sales Order #${id}`; erp-api/sales/ims-reports/index.ts l.251, 266 'Failed to download template'; upload-ims-drawer.tsx l.395-399 English literals. Source fe-A06-5.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Some facade fallbacks and error texts are English strings, so Bangla users see 'Item #5', 'Sales Order #3' or 'Failed to download template'.",
+  "steps": [
+   "Switch to Bangla, open a delivery order with unnamed items; in Field Force > IMS upload a template download that fails."
+  ],
+  "expected": "Localized text from message files.",
+  "actual": "English strings.",
+  "where": "src/erp-api/sales/delivery-orders/index.ts; src/erp-api/sales/ims-reports/index.ts; src/features/field-force/ase-customer-ims-report/components/upload-ims-drawer.tsx",
+  "verify": "Bangla UI shows no English fallback.",
+  "owner": "Frontend sales",
+  "status": "still-bug",
+  "severity": "low"
+ },
+ "rv-fe:other:34": {
+  "note": "Partly open: app-rich-text-editor.tsx l.230-234 still runs the command on onMouseDown with onClick cancelled and no role=toolbar; the composer has role=toolbar (app-rich-text-composer.tsx l.463) but its buttons also run on mouse down (l.134-137). Keyboard Enter/Space does nothing. Source fe-D42-4.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The rich-text toolbar buttons (bold, lists and so on) act only on mouse down, so a keyboard user pressing Enter or Space gets nothing.",
+  "steps": [
+   "Open Settings > email template editor, Tab to Bold, press Enter."
+  ],
+  "expected": "The selection becomes bold.",
+  "actual": "Nothing happens.",
+  "where": "src/shared/components/ui/app-rich-text-editor.tsx; app-rich-text-composer.tsx",
+  "verify": "Keyboard test above.",
+  "owner": "Frontend shared",
+  "status": "still-bug",
+  "severity": "low"
+ },
+ "rv-fe:other:6": {
+  "note": "Fixed: sales-target-modal.tsx l.140-143 skips the empty-search effect on first open. Source fe-A13-7.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The sales target modal loaded its first page twice on open.",
+  "steps": [
+   "Open Field Force > Sales Performance > set target modal with the network tab open."
+  ],
+  "expected": "One request.",
+  "actual": "fixed.",
+  "where": "src/features/field-force/sales-performance/components/sales-target-modal.tsx",
+  "verify": "Network tab.",
+  "owner": "Frontend field force",
+  "status": "fixed"
+ },
+ "rv-fe:other:7": {
+  "note": "Fixed: territory-sales-table.tsx l.66, 87 render plain text for null ids; demand-details-view.tsx l.312, 358, 567 guard customerId != null. Source fe-A13-9.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Links were built from possibly missing ids and led to /undefined 404 pages.",
+  "steps": [
+   "Open a territory sales row with no outlet id."
+  ],
+  "expected": "Plain text.",
+  "actual": "fixed.",
+  "where": "src/features/field-force/**",
+  "verify": "Open rows with null ids.",
+  "owner": "Frontend field force",
+  "status": "fixed"
+ },
+ "rv-fe:other:8": {
+  "note": "Half fixed: error handling added (use-sales-geography-cascade.ts has treeError/retry, used at sales-performance-view.tsx l.63). Still left: allowAll defaults to false (hook l.56, auto-select l.145-160), so with no URL params the first wing/region/area/SPO is selected and shown as the default. Needs a decision (all vs own territory). Source fe-D44-7.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Opening Sales Performance without parameters automatically selects the first SPO and shows that person's numbers as if they were the default.",
+  "steps": [
+   "Open Field Force > Sales Performance with no query string."
+  ],
+  "expected": "No person preselected (all, or the user's own territory).",
+  "actual": "First SPO selected.",
+  "where": "src/shared/hooks/use-sales-geography-cascade.ts l.56, l.145-160",
+  "verify": "Open the page: no SPO preselected.",
+  "owner": "Frontend field force",
+  "status": "in-progress",
+  "severity": "low"
+ },
+ "rv-fe:other:9": {
+  "note": "Still in code: erp-api/inventory/items/mapper.ts l.502-527 defaultPriceLevels() creates '10% Discount' and '5% Discount' for every new item (called l.613); gate-pass facade still maps verifiedAt (erp-api/gate-pass/index.ts l.294) for the Released step; English fallbacks in sales facades (see rv-fe:other:31). Source fe-A04-11.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Facades return English text and invented dropdown values: new items get two price levels nobody asked for, and Bangla users see English in places like the gate-pass timeline.",
+  "steps": [
+   "Switch to Bangla and open a gate pass timeline.",
+   "Create a new item and open its Sales pricing tab."
+  ],
+  "expected": "Codes translated in components; no invented price levels.",
+  "actual": "Invented price levels and English strings remain.",
+  "where": "src/erp-api/inventory/items/mapper.ts l.502-527, 613; src/erp-api/gate-pass/index.ts",
+  "verify": "New item has no price levels; Bangla shows no English.",
+  "owner": "Frontend inventory",
+  "status": "still-bug",
+  "severity": "low"
+ },
+ "vqa:guide-export": {
+  "note": "Not found in guide text: messages/guide/en.json mentions export only as 'use the available export action for the intended filtered scope' (e.g. l.1378, 2236); no sentence explains whole result vs current page. Doc gap still open.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The in-app guide for reports and export does not tell users whether an export contains the whole filtered result or only the page they are looking at.",
+  "steps": [
+   "Open Guide > Reports, read the export section."
+  ],
+  "expected": "A sentence naming what an export contains.",
+  "actual": "Missing.",
+  "where": "src/messages/guide/{en,bn}.json (reports module)",
+  "verify": "The guide reports page states the export scope.",
+  "owner": "Frontend guide",
+  "severity": "low"
+ },
+ "vqa:guide-frames": {
+  "note": "not checked: needs a browser full-page screenshot. Code: guide-blocks.tsx l.220 uses next/image with default lazy loading, which matches the earlier guess that off-screen frames stay blank in a full-page capture; probably a capture artefact, not a user bug.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "In the Fixed Assets register guide the per-tab screenshot frames looked blank in a full-page screenshot.",
+  "steps": [
+   "Open Guide > Fixed Assets > Register, take a full-page screenshot."
+  ],
+  "expected": "Images visible.",
+  "actual": "Blank frames in a full-page capture only.",
+  "where": "src/features/guide/components/guide-blocks.tsx l.220",
+  "verify": "Scroll the page: images load; or set loading='eager' for guide images.",
+  "owner": "Frontend guide",
+  "severity": "low"
+ },
+ "vqa:guide-nav-bn": {
+  "note": "Still in code: messages/guide/bn.json module titles 'Dashboard', 'Purchase' and 'Fixed Assets' are English (the other modules are Bangla).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "In the Bangla guide navigation, three module names (Dashboard, Purchase, Fixed Assets) are still written in English.",
+  "steps": [
+   "Switch to Bangla, open the Guide, read the module list."
+  ],
+  "expected": "All module names in Bangla (or consistently English).",
+  "actual": "Three names English.",
+  "where": "src/messages/guide/bn.json modules.dashboard / purchase / fixedAssets title",
+  "verify": "Check the nav in Bangla.",
+  "owner": "Frontend guide",
+  "status": "still-bug",
+  "severity": "low"
+ },
+ "merge:A1": {
+  "note": "Code looks fixed: no reference to assignRoleToPlatformAdmin remains anywhere in src (grep); WorkflowSeederRbacSupport has no such method and the six seeders no longer call it; deployment/dev contains both feature/accounting bb54acf8 and release_0.0.9 8170575a. Needs build proof.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "After merging the accounting branch into release, six new workflow seeders called a method that release had deleted, so the build failed. The method and the calls are gone from the code today.",
+  "steps": [
+   "Check out deployment/dev, run the Maven build."
+  ],
+  "expected": "The build succeeds.",
+  "actual": "Code looks fixed, no build run today.",
+  "where": "backend shared/workflow/init/{BankReconciliation,ContraEntry,ManualJournal,OpeningBalanceEntry,PaymentEntry,ReceiptEntry}WorkflowSeeder.java; WorkflowSeederRbacSupport.java",
+  "verify": "Run `mvn -q package -DskipTests` in erp-backend: expect success.",
+  "owner": "Backend workflow seeders",
+  "severity": "high"
+ },
+ "merge:A4": {
+  "note": "Obsolete by git: both bb54acf8 (feature/accounting) and release_0.0.9 8170575a are ancestors of deployment/dev b2597ef11, so the merge happened. Keep status for the owner to close; needs confirmation that the suite was rerun (newer module runs exist in the findings files).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The accounting branch was a week behind release and the note asked for release to be merged in first and the suite rerun. Today both lines are already inside deployment/dev.",
+  "steps": [
+   "git merge-base --is-ancestor bb54acf8 b2597ef11, and the same for 8170575a."
+  ],
+  "expected": "Branches merged and suite rerun.",
+  "actual": "Both are ancestors of deployment/dev.",
+  "where": "backend git history",
+  "verify": "Run the accounting e2e suite against deployment/dev.",
+  "owner": "Backend release management",
+  "severity": "low"
+ },
+ "merge:D3": {
+  "note": "Still a decision: after #102 the platform admin holds no approver roles (WorkflowSeederRbacSupport comment l.17-23) and commit 122f355f8 seeded business roles (Warehouse Manager, Purchase Manager, Accounts & Finance, Sales Coordinator, Field Force Manager) as approvers, but no seeded dev user is assigned to them in code I could find. The platform admin can still complete any role-assigned task through the API.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "After the platform admin stopped being an approver, nobody in the dev data can approve through the UI, which breaks demos and end-to-end runs that approve documents. Someone must decide which dev account holds the approver roles.",
+  "steps": [
+   "Create a document needing approval, sign in as the platform admin, open the approvals inbox: it is empty."
+  ],
+  "expected": "A named dev user holds the approver roles and sees tasks.",
+  "actual": "Approvals through the UI need a manually role-assigned user.",
+  "where": "backend shared/workflow/init/WorkflowSeederRbacSupport.java; commit 122f355f8",
+  "verify": "Sign in as the chosen dev approver: the inbox lists the pending task; POST /api/workflow/tasks/{id}/complete {\"decision\":\"approved\"} succeeds.",
+  "owner": "Backend workflow"
+ }
+}

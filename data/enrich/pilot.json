@@ -1,0 +1,1007 @@
+{
+ "bank:A-96b": {
+  "note": "code looks fixed (BankReconciliationAdjustmentService.datedInsideTheMonth ~l.173-182 refuses a postingDate outside the reconciled month with 400; start() needs an OPEN period); needs API/test proof. The refusal is a 400 'outside <month>', not the 409 naming CLOSED the note asked for.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "When a bank reconciliation line is explained with an adjusting entry (bank fee, interest), the date of that entry used to be accepted even if it fell in an already closed month, and only failed later when the approver approved it. Today the backend refuses any date outside the month being reconciled, which also covers closed months.",
+  "steps": [
+   "Close January 2025 (Period Closing screen or POST /api/accounting/fiscal-periods/{id}/close).",
+   "Start a February 2025 reconciliation for a bank account (POST /api/accounting/bank-reconciliations?bankAccountId=..&fiscalPeriodId=..), add a statement line.",
+   "POST /api/accounting/bank-reconciliation/statement-lines/{lineId}/propose-adjustment with {\"otherAccountId\":<expense account>,\"postingDate\":\"2025-01-20\"}."
+  ],
+  "expected": "Refused at once (4xx) so the maker learns it immediately.",
+  "actual": "Before: 2xx and the decision was stored. Now (by code): 400 'an adjusting entry dated ... is outside <month>'. Not yet proven on a running backend.",
+  "where": "backend BankReconciliationAdjustmentService.datedInsideTheMonth (accounting/bankreconciliation/service)",
+  "verify": "Run step 3 on deployment/dev: expect HTTP 400 (or 409) and no row stored (GET the line, no adjustment). Also try a date inside February: expect 2xx.",
+  "owner": "Backend, banking"
+ },
+ "bank:A-96c": {
+  "status": "still-bug",
+  "note": "still visible in code: BankReconciliationSessionService.finalise (~l.325-350) only checks statement.isReconciled(), never whether the period is still OPEN; with approval workflow it returns PENDING_APPROVAL and the posting is only tried at approve() (~l.390). Without workflow postAll() rolls the whole finalize back, so only the approval-workflow path is affected.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A bank reconciliation can be sent for approval even though its adjusting entries can no longer be posted because the month was closed or locked after the draft was started. The checker then gets a 409 on approval and the month sits in 'pending' until it is rejected back. The maker should be told when pressing Finalize.",
+  "steps": [
+   "Have an active approval workflow for BANK_RECONCILIATION.",
+   "Start a January reconciliation with a bank-fee adjusting entry dated inside January, fully matched.",
+   "Close January (period close).",
+   "POST /api/accounting/bank-reconciliations/{id}/finalize.",
+   "Approve the workflow task: POST /api/workflow/tasks/{taskId}/complete {\"decision\":\"APPROVED\"}."
+  ],
+  "expected": "Step 4 refuses with 409 naming the period status (CLOSED/LOCKED).",
+  "actual": "Step 4 returns 200 PENDING_APPROVAL; step 5 returns 409 CLOSED and nothing is posted.",
+  "where": "backend BankReconciliationSessionService.finalise, routeThroughApprovalIfNeeded, approve",
+  "verify": "Repeat steps 1-4 on deployment/dev; after the fix step 4 must answer 409 and the status must stay DRAFT.",
+  "owner": "Backend, banking"
+ },
+ "bank:A-97c": {
+  "status": "still-bug",
+  "note": "visible in code: BankCashCloseRecordService.position (~l.108-117) sets reconciled = no unmatched statement lines and no unmatched ledger lines; it never looks at the reconciliation status (DRAFT / PENDING_APPROVAL / FINALIZED).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The Period Closing 'Bank & Cash' card says a bank account is reconciled as soon as all its lines are matched, even if the monthly reconciliation is still a draft or waiting for approval. The month-position list says 'needs attention' for the same account, so the two screens disagree.",
+  "steps": [
+   "Fully match City bank January, set the closing balance, leave the reconciliation as DRAFT (repeat after finalize, PENDING_APPROVAL).",
+   "GET /api/accounting/period-close/{periodId}/summary and read bankCash.accounts[City].reconciled.",
+   "GET /api/accounting/bank-reconciliations/periods/{periodId}/positions and compare."
+  ],
+  "expected": "reconciled is false until the month is FINALIZED, consistent with positions.",
+  "actual": "reconciled is true in both states while positions says NEEDS_ATTENTION.",
+  "where": "backend periodclosing/bankcash/service/BankCashCloseRecordService.position",
+  "verify": "Repeat steps 1-3: bankCash.accounts[City].reconciled must be false for DRAFT and PENDING_APPROVAL and true only after approval.",
+  "owner": "Backend, banking / closing"
+ },
+ "bank:UI-36c": {
+  "note": "code looks consistent now: BankReconciliationHistoryExportDataSource honours a 'status' filter (cad80f442) and the frontend list tab (reconciliation-list-tab.tsx l.62 getReconciliationHistory, no status; erp-api/accounting/bank-reconciliations/index.ts ~l.93 listBankReconciliations) and its export (bank-cash-view.tsx l.59, no filters for this tab) both ask for all statuses, so list and file match. Needs API proof; backend default (no status) still returns DRAFT rows.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The Excel/PDF export of the Bank & Cash Reconciliation tab used to contain DRAFT months (with an empty date) that the on-screen list did not show. After the frontend change the list shows drafts too, so both agree again.",
+  "steps": [
+   "Have one FINALIZED, one PENDING_APPROVAL and one DRAFT reconciliation.",
+   "Open Accounting > Bank & Cash > Reconciliation tab and count the rows.",
+   "Export (Excel) and count the data rows."
+  ],
+  "expected": "Same rows in the list and in the file.",
+  "actual": "By code both include all statuses. Not run.",
+  "where": "frontend src/features/accounting/bank-cash/components/bank-cash-view.tsx:59, reconciliation-list-tab.tsx:62; backend bankreconciliation/export/BankReconciliationHistoryExportDataSource.fetchRows",
+  "verify": "GET /api/export/... for report type bank-reconciliations with and without status=FINALIZED; compare row count to GET /api/accounting/bank-reconciliations (list).",
+  "owner": "Both, banking"
+ },
+ "bank:UI-36d": {
+  "status": "still-bug",
+  "note": "visible in code: BankReconciliationHistoryExportDataSource.fetchRows puts reconciliation.getStatus() (the raw enum) and BigDecimal figures straight into the row (l.~118-124); no label mapping or number format. Whether the shared writer formats numbers was not checked.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The reconciliation export prints internal codes (FINALIZED, PENDING_APPROVAL, DRAFT) and raw numbers such as -99515.2, while the screen shows 'Finalized', 'Awaiting approval' and two decimals. People who sign these figures see something different in the file.",
+  "steps": [
+   "Have reconciliations in the three statuses.",
+   "Bank & Cash > Reconciliation > Export Excel.",
+   "Read the Status and Difference columns."
+  ],
+  "expected": "Same labels as the screen and amounts with 2 decimals.",
+  "actual": "Status shows the enum name; amounts unformatted.",
+  "where": "backend BankReconciliationHistoryExportDataSource.fetchRows (row.put(\"status\", ...))",
+  "verify": "Export again and check the Status cell is a readable label and the Difference cell has 2 decimals.",
+  "owner": "Backend, banking"
+ },
+ "merge:B5": {
+  "note": "code side done: the export reads bankAccountId through ReportExportSupport.optionalLong (400 on a bad value, cad80f442). The remaining part is a documentation fix in the Exports guide, which is not in the code repos checked here.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The bank-reconciliations export accepts an optional bankAccountId filter that the Exports frontend guide table does not list. The frontend added it from the code. Only the guide needs the extra row.",
+  "expected": "The guide lists bankAccountId (and the status filter) for report type bank-reconciliations.",
+  "actual": "Guide missing the row; code supports both filters.",
+  "where": "backend BankReconciliationHistoryExportDataSource.fetchRows; guide: Exports_and_Approvals_Frontend_Implementation_Guide (not in the code repo)",
+  "verify": "Open the guide table for bank-reconciliations and confirm bankAccountId and status are listed.",
+  "owner": "Backend, banking (documentation)"
+ },
+ "vqa:bankcash-history": {
+  "status": "fixed",
+  "note": "frontend list now reads history without a status filter (src/features/accounting/bank-cash/components/reconciliation-list-tab.tsx:62 calls getReconciliationHistory({page,size}); erp-api/accounting/bank-reconciliations/index.ts ~l.90-104 only filters when a status is passed), so a DRAFT month is listed and the 'nothing started' empty text only shows for an empty list (l.181).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The Bank & Cash Reconciliation list used to say no reconciliation was started although a Draft existed, because it only asked for finalized/pending months. It now asks for every status.",
+  "steps": [
+   "Start a reconciliation for any month and leave it as Draft.",
+   "Open Accounting > Bank & Cash > Reconciliation tab."
+  ],
+  "expected": "The Draft month is listed.",
+  "actual": "fixed: the list requests all statuses.",
+  "where": "frontend src/features/accounting/bank-cash/components/reconciliation-list-tab.tsx, src/erp-api/accounting/bank-reconciliations/index.ts",
+  "verify": "Start a draft, reload the tab, see the draft row with status Draft.",
+  "owner": "Frontend, banking"
+ },
+ "bank:A-111": {
+  "status": "still-bug",
+  "note": "still visible in code: BankReconciliationDomainService.match (~l.427-433) reads findById then 'already matched' then writes, with no lock or version column, so two parallel calls can both pass the check.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "If two users match the same statement line to different ledger lines at the same moment, both get 200 and the second silently overwrites the first. The first user believes their match was saved. Data integrity is not lost (a ledger line is unique) but the message is wrong.",
+  "steps": [
+   "Open two sessions on the same draft reconciliation with one unmatched statement line.",
+   "At the same time call PUT /api/accounting/bank-reconciliation/statement-lines/{id}/match?journalLineId=A and ...?journalLineId=B."
+  ],
+  "expected": "One 200 and one 409.",
+  "actual": "Both 200; the second wins.",
+  "where": "backend BankReconciliationDomainService.match",
+  "verify": "Fire both PUT calls in parallel (two curl processes): exactly one must be 409.",
+  "owner": "Backend, banking"
+ },
+ "bank:A-68": {
+  "status": "still-bug",
+  "note": "visible in code: BankStatementImportService.isDuplicate (~l.364-367) returns false when the reference is blank ('A line with no reference cannot be checked, so it is never treated as a duplicate', l.360).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Uploading the same bank statement file twice imports every line that has no reference number a second time, so the month's statement total doubles. Lines with a reference are correctly skipped as duplicates.",
+  "steps": [
+   "Start a reconciliation.",
+   "POST /api/accounting/bank-reconciliations/{id}/imports (multipart) with a CSV whose Reference column is empty, then confirm (POST .../imports/{importId}/confirm).",
+   "Upload and confirm the same file again."
+  ],
+  "expected": "Second upload reports the lines as duplicates, or warns about a repeated file.",
+  "actual": "Second confirm imports every blank-reference line again.",
+  "where": "backend BankStatementImportService.isDuplicate / confirm",
+  "verify": "Repeat steps; the line count after the second confirm must stay the same.",
+  "owner": "Backend, banking"
+ },
+ "bank:A-71": {
+  "status": "still-bug",
+  "note": "visible in code: StatementColumnMapping has only debitColumn and creditColumn; isComplete() needs one of them; StatementRowMapper (~l.103-117) reads debit and credit separately and errors 'no amount'. No signed-amount or Dr/Cr marker column.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Many banks export one signed 'Amount' column. The import cannot map it: only separate money-out and money-in columns are supported, so mappingComplete stays false and the user cannot continue.",
+  "steps": [
+   "Start a reconciliation and upload a CSV with columns Date, Narration, Amount (negative for withdrawals).",
+   "Look at the mapping preview (mappingComplete)."
+  ],
+  "expected": "A single signed Amount column (or Amount plus Dr/Cr column) can be mapped.",
+  "actual": "Only debit/credit columns exist; mappingComplete stays false.",
+  "where": "backend bankreconciliation/importing/StatementColumnMapping, StatementRowMapper; frontend map-step.tsx would need a new option",
+  "verify": "Upload the signed-amount file and see mappingComplete true with correct directions.",
+  "owner": "Both, banking (backend first)"
+ },
+ "budgets:B8": {
+  "status": "still-bug",
+  "note": "visible in code: TaskService.completeTask (shared/workflow/application/TaskService.java ~l.372) does 'if status == COMPLETED return;' and the controller still answers 200 'Task completed' (WorkflowTaskController l.69). Same as journals A-82/86.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Completing a workflow task that is already finished answers success again instead of an error. Nothing changes in the data, but a double click or a replay looks like a second approval to the caller.",
+  "steps": [
+   "Approve a budget approval task: POST /api/workflow/tasks/{taskId}/complete {\"decision\":\"APPROVED\"}.",
+   "Send the same request again."
+  ],
+  "expected": "Second call refused (409 already completed).",
+  "actual": "Second call 200 'Task completed'.",
+  "where": "backend shared/workflow/application/TaskService.completeTask; WorkflowTaskController.completeTask",
+  "verify": "Call complete twice; the second answer must be 409.",
+  "owner": "Backend, budgets / workflow"
+ },
+ "budgets:B9": {
+  "note": "partly fixed in code: BudgetDomainService (~l.383-390) resolves the primary book when accountingBookId is omitted. Not addressed in code: export job with only fromDate (BudgetExportDataSource reads no fromDate), 1e15 echo, create needing no view right (BudgetController POST has only accounting.budget.create).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Four small gaps between what the budget API documents and what it does: omitted book id (now fixed), an export request with only a from-date is accepted, a very large amount is echoed in rounded form, and creating a budget needs no 'view' right although every other budget call does.",
+  "steps": [
+   "POST /api/accounting/budgets without accountingBookId.",
+   "POST /api/export/jobs for accounting-budget-vs-actual with only fromDate.",
+   "Create a budget line with amount 999999999999999.9999 and read the response.",
+   "Call POST /api/accounting/budgets as a user with create right but no view right."
+  ],
+  "expected": "Documentation and behaviour agree (primary book used; filters validated; amount echoed exactly; view right consistent).",
+  "actual": "Part 1 fixed by code; parts 2-4 unchanged by code.",
+  "where": "backend BudgetDomainService, BudgetController (POST), BudgetExportDataSource, BudgetLineDTO",
+  "verify": "Run the four calls on deployment/dev and compare with the documented behaviour.",
+  "owner": "Backend, budgets"
+ },
+ "vqa:budget-total-col": {
+  "status": "fixed",
+  "note": "fixed in frontend: TOTAL column is sticky to the right in the grid (src/features/accounting/budgets/components/budget-grid-view.tsx:329) and in the detail view (budget-detail-view.tsx:192,209,112).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "In the monthly budget grid the TOTAL column used to be off screen and needed horizontal scrolling. It now stays pinned to the right edge.",
+  "steps": [
+   "Open Accounting > Budgets, open a budget with 12 monthly columns on a normal-width window.",
+   "Scroll the grid sideways."
+  ],
+  "expected": "TOTAL stays visible.",
+  "actual": "fixed: TOTAL column is sticky-right.",
+  "where": "frontend src/features/accounting/budgets/components/budget-grid-view.tsx, budget-detail-view.tsx",
+  "verify": "Open the budget grid and scroll; the TOTAL column does not move.",
+  "owner": "Frontend, budgets"
+ },
+ "closing:B-03": {
+  "note": "still visible in code: StockOnHandReader.positionsAsOf (periodclosing/stockcount/service, ~l.124-140) removes movements by ledger booking timestamp (sumUndamagedOnHandQtyByItemIdsBefore with cutoff = asOf+1 day), not by document date; there is still no document-date column. Unit cost is the item's live cost (costOf(item)).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The Period Closing stock-count sheet is built from when stock movements were booked, not their document date. For late or back-dated entries the sheet shows the wrong quantities, or nothing at all (0 lines for every 2025 month in the test data), so the month cannot be counted correctly.",
+  "steps": [
+   "Enter stock documents dated in an earlier month today (back-dated, e.g. 120 documents of 2025 entered now).",
+   "GET /api/accounting/period-close/{periodId}/stock-count for that earlier month."
+  ],
+  "expected": "Quantities as at the period end, taken from the document date.",
+  "actual": "notReadyReason 'No item has a stock balance', totalLineCount 0 (retest of 2026-10-29).",
+  "where": "backend StockOnHandReader.positionsAsOf; inventory balance facade sumUndamagedOnHandQtyByItemIdsBefore",
+  "verify": "Back-date a receipt, then GET the stock-count of its month: the item must appear with the right quantity.",
+  "owner": "Backend, closing / inventory"
+ },
+ "closing:4b": {
+  "note": "code looks fixed: PeriodCloseReadinessGuard.requireReady (periodclosing/service, commit 1c30e29a9) refuses the Sales, Purchases and General Ledger close while OutboxRepository.countUndeliveredBusinessEvents() > 0 or invoices/bills are 'not posted' (409). Needs API/test proof.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A month used to be closable while a posting for a document created in that month was still waiting in the background queue. The posting then failed ('period closed') and the document never reached the ledger. A readiness guard now refuses the close while undelivered posting events exist.",
+  "steps": [
+   "Create a sales invoice in an open month.",
+   "Immediately close that month's Sales check / General Ledger task: POST /api/accounting/period-close/{periodId}/tasks/SALES_RECEIVABLES/close (and GENERAL_LEDGER)."
+  ],
+  "expected": "Close refused (409) until the posting finishes.",
+  "actual": "Before: month closes, posting row FAILED. By code now: 409 'N posting(s) are still on their way to the books'.",
+  "where": "backend periodclosing/service/PeriodCloseReadinessGuard.requireReady",
+  "verify": "Stop the posting consumer (or close right after creating a document) and call the close task: expect 409; after the queue drains expect success.",
+  "owner": "Backend, closing"
+ },
+ "closing:B-27f": {
+  "note": "code looks fixed: PeriodCloseReadinessGuard.requirePurchaseSettled / requireSalesSettled refuse while pendingApprovalCount > 0 ('vendor bill(s) or payment(s) dated in it are still waiting for approval') for Purchases, Sales and General Ledger close (commit 1c30e29a9). Needs API proof; the Purchases & Payables card warning was not checked.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A month could be closed while a vendor bill dated in it was still waiting for approval, leaving the bill impossible to approve later. The close now checks for pending documents.",
+  "steps": [
+   "Create a vendor bill dated 25 Feb and leave it PENDING_APPROVAL.",
+   "Run the Purchases & Payables close for February, then the General Ledger close."
+  ],
+  "expected": "Close refused until the bill is approved or rejected.",
+  "actual": "Before: February closed 7/7. By code now: 409 'cannot be closed: N vendor bill(s) ... waiting for approval'.",
+  "where": "backend periodclosing/service/PeriodCloseReadinessGuard; PurchaseCloseFacts.pendingApprovalCount",
+  "verify": "Repeat steps; expect 409 naming the pending bill count.",
+  "owner": "Backend, closing / purchase"
+ },
+ "sales:B14": {
+  "note": "code looks fixed: ItemReturnPutawayService.receive delegates to ItemReceiveDomainService.create, which calls postingPeriodGuard.requireOpen(receiptDate or today) and requireOpen(postingPeriod) (ItemReceiveDomainService ~l.157-158). Needs API proof.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Receiving returned goods dated in a closed month used to succeed and move stock in that closed month, while every other document refused. The receive path now calls the same open-period guard.",
+  "steps": [
+   "Approve a sales item return, close the month of the receive date.",
+   "POST /api/sales/item-returns/{id}/receive with receiveDate in the closed month and one putaway line."
+  ],
+  "expected": "409 'the period ... is CLOSED and no longer accepts documents dated ...' and no stock movement.",
+  "actual": "Before: 200 and a stock-ledger row. By code now: refused.",
+  "where": "backend sales/document/itemreceive/service/ItemReceiveDomainService.create; itemreturn/service/ItemReturnPutawayService.receive",
+  "verify": "Call the endpoint with a closed-month receiveDate: expect 409 and an unchanged stock ledger.",
+  "owner": "Backend, sales / closing"
+ },
+ "closing:B-19": {
+  "note": "plausibly still open: FiscalPeriodDomainService.reopen (~l.338-361) only flips the period status to OPEN and does not touch the close-task rows, so the checklist keeps its CLOSED tasks. Not run, so unverified.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "After a closed month is reopened the Period Closing checklist can still read 7/7 closed, the cost-of-goods entry stays posted and the VAT return stays filed. To close again, someone has to delete and re-post the General Ledger close task by hand.",
+  "steps": [
+   "Close a month 7/7.",
+   "POST /api/accounting/fiscal-periods/{id}/reopen.",
+   "GET /api/accounting/period-close/{periodId}/summary (or the checklist)."
+  ],
+  "expected": "Checklist shows the General Ledger task open again, or a clear 'reopened' state.",
+  "actual": "Per the original test: still 7/7 CLOSED.",
+  "where": "backend fiscal/service/FiscalPeriodDomainService.reopen; periodclosing/service/PeriodCloseTaskService",
+  "verify": "Reopen a closed month and read the checklist.",
+  "owner": "Backend, closing"
+ },
+ "closing:C-13": {
+  "status": "still-bug",
+  "note": "visible in code: FiscalYearDomainService ~l.417 builds the text as \"a \" + year.getStatus() + \" financial year cannot be reopened\", so it reads 'a OPEN financial year cannot be reopened'.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Cosmetic: the refusal for reopening a financial year that is already open reads 'a OPEN financial year cannot be reopened' (wrong article, upper-case status).",
+  "steps": [
+   "POST /api/accounting/fiscal-years/{id}/reopen on a year that is OPEN."
+  ],
+  "expected": "Readable sentence, e.g. 'this financial year is already open'.",
+  "actual": "'a OPEN financial year cannot be reopened'.",
+  "where": "backend fiscal/service/FiscalYearDomainService (reopen, ~l.417)",
+  "verify": "Call reopen on an open year and read the message.",
+  "owner": "Backend, closing",
+  "severity": "low"
+ },
+ "purchase:C-P23": {
+  "note": "code confirms the cause: StockOnHandReader values every row at costOf(item), the item's live cost, and its own comment says 'the item module keeps no cost history to go back to' (~l.116-121). The business decision (D-14, 2026-11-01: backend to value at the period-end average) is not implemented here.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Period Close values the counted closing stock at today's weighted average cost, not the average as at the period end. Example: January stock should be 1,031.25 (average 6.875 at 31 Jan) but the sheet shows 804.885, so cost of goods sold for months closed after later purchases is wrong. Only right when each month is closed before the next purchase.",
+  "steps": [
+   "Purchase item A: 60 at 5 in January, 100 at 8 in February (average moves).",
+   "Close January: GET /api/accounting/period-close/{id}/stock-count and read the value."
+  ],
+  "expected": "Closing stock valued at the average cost as at 31 Jan.",
+  "actual": "Valued at the live average cost.",
+  "where": "backend periodclosing/stockcount/service/StockOnHandReader.costOf",
+  "verify": "After the change repeat the example; January value must be 1,031.25.",
+  "owner": "Backend, closing / inventory",
+  "severity": "medium"
+ },
+ "purchase:C-P30": {
+  "note": "unchanged: purchase documents dated in a closed month are only refused at approval/posting (e.g. ItemReceiptStockPostingService l.67/82, PurchasePostingPublisher l.36 call requireOpen); creation is not checked. Remains a decision (D-28, backend decides).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A request, order, receipt or bill dated in a closed month can be created and only refused later at approval with a clear 409, nothing posts. The user finds out late. The decision is whether to also refuse at creation.",
+  "steps": [
+   "Close a month.",
+   "Create a purchase bill (or receipt) dated in that month.",
+   "Submit/approve it."
+  ],
+  "expected": "Refused when creating (or at least warned).",
+  "actual": "Created; 409 only at approval.",
+  "where": "backend purchase/* create services; PostingPeriodGuard",
+  "verify": "Create a bill dated in a closed month and see the answer.",
+  "owner": "Backend, purchase / closing"
+ },
+ "rv-fe:reports:27": {
+  "status": "fixed",
+  "note": "fixed in frontend: src/features/dashboard/load-dashboard.ts:44-52 now reads the current month inside the parallel batch (only the two list widgets wait for it), so there is no serial call before the Promise.all. The part about each widget reload re-reading settings (erp-api/dashboard/widgets.ts ~l.642) was not re-checked.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The dashboard used to wait for the 'current month' lookup before starting its ten widget requests, slowing the first paint. The month lookup now runs beside the other requests.",
+  "steps": [
+   "Open the dashboard with the browser network panel."
+  ],
+  "expected": "No serial request before the parallel widget calls.",
+  "actual": "fixed for the first load.",
+  "where": "frontend src/features/dashboard/load-dashboard.ts, src/erp-api/dashboard/widgets.ts",
+  "verify": "Reload the dashboard and check the waterfall in the network panel.",
+  "owner": "Frontend, dashboard"
+ },
+ "dash:income-expense": {
+  "status": "still-bug",
+  "note": "still visible in code: LedgerIncomeExpenseService.CLOSING_TYPES = EFinanceDocumentType.isClosingEntry (l.56) and EFinanceDocumentType.isClosingEntry() = PERIOD_CLOSING || YEAR_END_CLOSING (shared/enums l.152-154), so the monthly COGS entry is excluded like the year-end close.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The dashboard income/expense and top-expenses widgets leave out the month-close journal that turns purchases into cost of goods sold. In books using periodic stock valuation the dashboard shows gross purchases as the expense (7,150 vs 2,950 in the Profit & Loss) and understates profit by the stock increase. The frontend only displays what the endpoints return.",
+  "steps": [
+   "Periodic book: post purchases and sales, close a month (inventory step posts the COGS entry).",
+   "GET /api/dashboard/income-expense?fromDate=<month start>&toDate=<month end>.",
+   "GET /api/accounting/reports/profit-and-loss with the same dates and compare expense."
+  ],
+  "expected": "Dashboard expense equals Profit & Loss expense (COGS, not purchases).",
+  "actual": "Dashboard shows purchases; difference equals the stock change.",
+  "where": "backend modules/accounting/report/service/LedgerIncomeExpenseService (CLOSING_TYPES); shared/enums/EFinanceDocumentType.isClosingEntry",
+  "verify": "After excluding only YEAR_END_CLOSING, the two calls above must agree.",
+  "owner": "Backend, dashboard / accounting",
+  "severity": "medium"
+ },
+ "rv-fe:reports:7": {
+  "status": "fixed",
+  "note": "fixed in frontend: normalizeDraft calls findCommissionConfigConflicts (commission-config-conflicts.ts, tested by commission-config-conflicts.test.ts) and shows 'overlap' / 'duplicate' errors (src/features/settings/sales/components/commission-incentive-config-panel.tsx ~l.484-485, 658-662); the server action src/features/settings/sales/actions.ts:204 checks it too.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "In Settings > Sales > Commission, extra-lifting slabs that overlap (0-1000 and 500-2000) or two milestones with the same percent used to be accepted and saved, so the preview could differ from what is paid. They are now rejected with an error on the offending row.",
+  "steps": [
+   "Open Settings > Sales > Commission.",
+   "Add slabs 0-1000 and 500-2000, or two milestones with the same percent.",
+   "Save."
+  ],
+  "expected": "Validation error on the second row.",
+  "actual": "fixed: overlap and duplicate errors are shown.",
+  "where": "frontend src/features/settings/sales/components/commission-incentive-config-panel.tsx; src/features/settings/sales/commission-config-conflicts.ts",
+  "verify": "Enter overlapping slabs and press Save: field error, nothing saved.",
+  "owner": "Frontend, field-force / settings"
+ },
+ "rv-fe:reports:8": {
+  "status": "in-progress",
+  "note": "tone fixed, button rule partly open: REJECTED/CANCELLED now get the danger tone (ase-customer/components/details/customer-collections-tab.tsx:35, customer-demands-tab.tsx:49, ase-collection/components/activity-tab.tsx:81) and delivery-details-view.tsx:19,257 hides Acknowledge for CANCELLED/REJECTED; but Acknowledge is still shown for every other non-delivered stage (e.g. PENDING), the allowed stages were never confirmed with the backend.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Rejected collections and demands used to show the amber 'pending' badge, and 'Acknowledge Delivery' was offered at any stage. Rejected and cancelled items are now shown as such and no longer offer Acknowledge, but the button is still offered for stages like PENDING.",
+  "steps": [
+   "Open a customer's Collections tab with a REJECTED collection.",
+   "Open a CANCELLED delivery detail."
+  ],
+  "expected": "Rejected shows a red badge; cancelled has no Acknowledge; Acknowledge only at stages the backend allows.",
+  "actual": "Badge and cancelled button fixed; allowed-stage rule still unconfirmed.",
+  "where": "frontend src/features/field-force/ase-customer/delivery-details-view.tsx, components/details/*.tsx",
+  "verify": "Check a PENDING delivery: decide with backend whether Acknowledge should be offered.",
+  "owner": "Frontend, field-force"
+ },
+ "rv-fe:reports:16": {
+  "status": "in-progress",
+  "note": "partly fixed: erp-api/sales/performance/index.ts:41 now uses encodeURIComponent(managerId) and returns {ok:false} on error (chart shows an error state, ase-home-charts.tsx:196). Still open: fiscalYear/periodNo default to the calendar year and calendar month (index.ts:30-31, ase-home-charts.tsx:55) and managerId still comes from the browser.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The Manager target-vs-achievement chart now encodes the manager id and shows an error instead of an empty chart, but it still assumes the calendar year and month equal the company's fiscal year and period.",
+  "steps": [
+   "Open the ASE home page as a manager.",
+   "Check the request /api/sales/performance/managers/{id}/target-vs-achievement?fiscalYear=..&periodNo=.."
+  ],
+  "expected": "Fiscal year and period number come from the fiscal calendar (July-start companies differ).",
+  "actual": "Calendar year and month are sent.",
+  "where": "frontend src/erp-api/sales/performance/index.ts, src/features/field-force/ase-home/ase-home-charts.tsx",
+  "verify": "Compare periodNo with the fiscal period of today on a non-calendar fiscal year.",
+  "owner": "Frontend, field-force"
+ },
+ "rv-fe:reports:20": {
+  "status": "still-bug",
+  "note": "partly fixed: the file drop is disabled while the draft loads (upload-ims-drawer.tsx:498 disabled includes isLoadingDraft). Still open: customer picker uses pageSize 500 (upload-ims-drawer.tsx:221); record-collection-modal.tsx:199 is already 50.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "In the IMS upload drawer a CSV chosen while the draft is still loading used to be overwritten by the draft. That is now blocked. The customer dropdown still loads up to 500 customers per open.",
+  "steps": [
+   "Open the IMS upload drawer.",
+   "Open the Customer dropdown and watch the request size."
+  ],
+  "expected": "Page size around 20-50.",
+  "actual": "pageSize 500.",
+  "where": "frontend src/features/field-force/ase-customer-ims-report/components/upload-ims-drawer.tsx:221",
+  "verify": "Open the dropdown: request has size<=50.",
+  "owner": "Frontend, field-force"
+ },
+ "rv-fe:reports:32": {
+  "status": "still-bug",
+  "note": "still visible: normalizeGeoParam is defined separately in commissions/commission-list-view.tsx:38, ims/ims-overview-tab.tsx:27, spo-directory/spo-directory-view.tsx:30, territory-sales/territory-sales-view.tsx:17; getItemImageUrl in ims/ims-overview-table.tsx:28 and ims-review-modal.tsx:28; 7 echarts.init setups remain.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The same helper code (geography filter parsing, item image URL, chart setup, colours) is copied into several field-force and dashboard files, so a fix has to be repeated in each copy. A maintainability issue, not a user-visible bug.",
+  "expected": "One shared helper per concern.",
+  "actual": "Four copies of normalizeGeoParam, two of getItemImageUrl, seven chart setups.",
+  "where": "frontend src/features/field-force/** (files listed in note)",
+  "verify": "After refactor: grep shows one definition of normalizeGeoParam and getItemImageUrl.",
+  "owner": "Frontend, field-force"
+ },
+ "rv-fe:reports:33": {
+  "status": "in-progress",
+  "note": "mostly fixed: ase-create-demand/types.ts now has unitPrice/totalValue z.number().min(0) (l.34-35) and bankDepositDate regex /^\\d{4}-\\d{2}-\\d{2}$/ (l.86). depositSlip is still z.array(z.any()).min(1) (l.76), so attachment objects are untyped.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The create-demand form validation used to accept negative prices and any date text. Prices and the deposit date are now validated; the deposit slip attachment is still typed as 'any'.",
+  "steps": [
+   "Open Field Force > create demand, go to the payment step.",
+   "Submit without a slip or with an odd date."
+  ],
+  "expected": "Typed attachment and format checks.",
+  "actual": "Prices and date fixed; slip element type still any.",
+  "where": "frontend src/features/field-force/ase-create-demand/types.ts:76",
+  "verify": "Submit without a slip: field error shown.",
+  "owner": "Frontend, field-force"
+ },
+ "rv-fe:reports:34": {
+  "status": "in-progress",
+  "note": "partly addressed: tests now exist for analysis/utils.test.ts, dashboard/dashboard-logic.test.ts, settings/sales/commission-config-conflicts.test.ts, commission-number.test.ts, shared/parse-page.test.ts. Still no test for use-trade-discount.ts or the erp-api/field-force, erp-api/dashboard, erp-api/reports-engine layers.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Money-related logic in field-force and dashboard had no unit tests. Some now exist (commission validation, dashboard logic, analysis helpers), but trade-discount maths and the API layers are still untested.",
+  "expected": "Unit tests for dashboardCacheKey, use-trade-discount.ts, analysis utils, commission validation.",
+  "actual": "Partly covered.",
+  "where": "frontend src/features/field-force, src/features/dashboard, src/erp-api/field-force",
+  "verify": "pnpm test runs the new files; add a use-trade-discount test.",
+  "owner": "Frontend, field-force"
+ },
+ "rv-fe:reports:6": {
+  "status": "fixed",
+  "note": "fixed in frontend: src/features/settings/sales/components/commission-incentive-config-panel.tsx ~l.160-170 refuses '1,5' and '0x10' (isPlainNumberText, tested in commission-number.test.ts) and ~l.195-205 maps server errors from the sent-row index back to the draft row so a blank row above does not shift the error.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "In the commission settings a typed '1,5' used to be saved as 15 and server errors landed on the wrong row when a blank row was above an invalid one. Both are fixed.",
+  "steps": [
+   "Settings > Sales > Commission: type 1,5 in a percent field.",
+   "Leave a blank row above an invalid row and Save."
+  ],
+  "expected": "'1,5' refused; error on the invalid row.",
+  "actual": "fixed.",
+  "where": "frontend src/features/settings/sales/components/commission-incentive-config-panel.tsx; commission-number.test.ts",
+  "verify": "Type 1,5: error shown. Blank row above invalid row: error on the invalid row.",
+  "owner": "Frontend, field-force / settings"
+ },
+ "saleschain:FP2-1": {
+  "status": "fixed",
+  "note": "fixed in frontend: commissions/components/commission-list-view.tsx uses t('table.openingStock') (messages/field-force/bn.json:628 'প্রারম্ভিক স্টক {month}') and 'milestoneIncentive' (bn.json:629), numbers via AppNumber (l.361-418), and milestone columns come only from the loaded report (l.431 'none until loaded: no placeholder columns').",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The Bengali Field Force > Commissions page used to show English headers built in code, Latin digits and temporary 80/100/120/150 milestone columns that then jumped. Headers now come from translations, amounts use the shared number component and no placeholder columns are drawn.",
+  "steps": [
+   "Switch the language to Bengali.",
+   "Open /field-force/commissions."
+  ],
+  "expected": "Bengali headers and digits; no layout jump.",
+  "actual": "fixed by code; not visually re-checked.",
+  "where": "frontend src/features/field-force/commissions/components/commission-list-view.tsx; src/messages/field-force/bn.json",
+  "verify": "Open the page in Bengali and confirm headers, digits and stable columns.",
+  "owner": "Frontend, field-force"
+ },
+ "saleschain:FD-P3-8": {
+  "status": "fixed",
+  "note": "fixed in frontend: settings message now says 'Only the highest milestone reached applies; milestones do not add up.' (src/messages/settings/en.json:276, bn.json:276, used by commission-incentive-config-panel.tsx:334).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The commission settings used to say milestones stack, but the backend pays only the highest milestone reached. The text now says so in English and Bengali.",
+  "steps": [
+   "Settings > Sales > Commission, read the milestone info line."
+  ],
+  "expected": "Text matches backend rule.",
+  "actual": "fixed.",
+  "where": "frontend src/messages/settings/en.json:276, bn.json:276",
+  "verify": "Read the info line in both languages.",
+  "owner": "Frontend, field-force / settings"
+ },
+ "saleschain:P2-2": {
+  "status": "still-bug",
+  "note": "visible in code: SalesGeographyRbacScopeConstants is referenced only by SalesGeographyRbacSyncService (which writes scopes); the only narrowing is the opt-in myTerritory flag on CustomerController (l.101,128). Remains a decision (D-27, backend decides).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Territory scopes are written for managers but no query reads them. A user with sales view rights sees all customers and territories; only the optional myTerritory=true filter narrows the list. An area sales executive can read other reps' figures.",
+  "steps": [
+   "Log in as an ASE with only sales view rights.",
+   "GET /api/sales/customers (no myTerritory) and compare with the ASE's own territory."
+  ],
+  "expected": "Results limited to the ASE's territory by default.",
+  "actual": "All customers returned unless myTerritory=true.",
+  "where": "backend sales/geography/service/SalesGeographyRbacSyncService, SalesGeographyRbacScopeConstants; sales/business_partner/customer/controller/CustomerController",
+  "verify": "Call as the ASE; expect only own-territory customers.",
+  "owner": "Backend, field-force / sales"
+ },
+ "saleschain:SC-10": {
+  "status": "still-bug",
+  "note": "visible in code: update runs SalesGeographyManagerDomainService.reassignOnGeographyUpdate (~l.73-99); with no active manager it calls createActiveManager with a null userId and SalesGeographyManager.userId is nullable=false (model l.42), giving the 409 'Required field is missing: user id'. Same as e2e27:6. Known-bug e2e test FF-SET-06 (field-force/10-settings-tree.spec.ts) encodes it.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A region, area or territory created without an assigned manager cannot be renamed: the update answers 409 'user id required' even though only the name changed.",
+  "steps": [
+   "POST /api/sales/geographies with a name and tierLevel and no userId (201).",
+   "PUT /api/sales/geographies/{id} with a new name."
+  ],
+  "expected": "200 and the new name.",
+  "actual": "409 'Required field is missing: user id'.",
+  "where": "backend SalesGeographyManagerDomainService.reassignOnGeographyUpdate/createActiveManager; SalesGeographyManager.userId",
+  "tests": [
+   "FF-SET-06 (test.fail, e2e/tests/field-force/10-settings-tree.spec.ts, not re-run in this pass)"
+  ],
+  "verify": "Rename a node that has no manager: expect 200.",
+  "owner": "Backend, field-force / sales"
+ },
+ "saleschain:SC-11": {
+  "note": "decision, not a code defect: demand creation sets salesRep only from a given salesRepId and otherwise null (SalesDemandDomainService ~l.914-926); no default from the customer's SPO. No follow-up decision found.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Orders entered by the office have no sales rep, so territory reports list them as 'Unassigned'. The open question is whether the system should default the rep to the customer's assigned SPO.",
+  "steps": [
+   "Create a sales demand/order in the back office without salesRepId.",
+   "Open the territory sales report."
+  ],
+  "expected": "Decision needed.",
+  "actual": "Order shown under 'Unassigned'.",
+  "where": "backend sales/document/demand/service/SalesDemandDomainService (~l.910-926)",
+  "verify": "After the decision: create an office order and see the rep or the agreed fallback.",
+  "owner": "Backend + business decision, sales"
+ },
+ "saleschain:SC-9": {
+  "status": "still-bug",
+  "note": "visible in code: SalesGeographyDomainService.updateFields (~l.168-172) copies only name and attributes; parentId from the request is ignored, and validateUpdate does not reject it.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Trying to move a territory under a different parent returns 200 but nothing changes. Users think the move was saved.",
+  "steps": [
+   "PUT /api/sales/geographies/{id} with a different parentId (same tier rules)."
+  ],
+  "expected": "Either the parent changes or the request is refused with 400/409.",
+  "actual": "200, parentId unchanged.",
+  "where": "backend SalesGeographyDomainService.updateFields / validateUpdate",
+  "verify": "PUT a new parentId then GET the node: parent changed or clear error.",
+  "owner": "Backend, field-force / sales"
+ },
+ "e2e27:6": {
+  "status": "still-bug",
+  "note": "same as saleschain:SC-10 (see its note): reassignOnGeographyUpdate creates a manager with null userId when none exists. Known-bug test FF-SET-06.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Renaming a Field Force region, area or territory that has no assigned user fails with 409 'Required field is missing: user id', so such nodes can never be renamed.",
+  "steps": [
+   "Create a wing with a user; create a region under it with no user (tree screen does this).",
+   "PUT /api/sales/geographies/{regionId} with a new name."
+  ],
+  "expected": "200 and the new name.",
+  "actual": "409 'Required field is missing: user id'.",
+  "where": "backend SalesGeographyManagerDomainService.reassignOnGeographyUpdate",
+  "tests": [
+   "FF-SET-06 (test.fail)"
+  ],
+  "verify": "Rename the region: expect 200.",
+  "owner": "Backend, field-force"
+ },
+ "saleschain:C11": {
+  "note": "decision still open (D-09, recommended one active territory per SPO). Code already moves in that direction: SalesGeographyManagerDomainService.retireOtherSpoAssignments (~l.171-187) retires the user's other SPO assignments when they are assigned to a new territory.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Can one SPO cover two territories, or two SPOs share one? The system used to accept the same user on two territories with one report row. Code now retires the older SPO assignment when the same user is given another territory; the client still has to confirm the rule.",
+  "steps": [
+   "Assign the same SPO user to two territories via POST/PUT /api/sales/geographies."
+  ],
+  "expected": "Client decision recorded.",
+  "actual": "Second assignment retires the first (by code).",
+  "where": "backend SalesGeographyManagerDomainService.retireOtherSpoAssignments",
+  "verify": "Assign one SPO to two territories and read GET /api/sales/geographies/{id}/managers.",
+  "owner": "Business decision + backend, field-force"
+ },
+ "saleschain:C12": {
+  "note": "decision still open (D-09, recommended prorate by days); no proration seen in code checked here (not searched in depth).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A salesperson who joins on the 20th of the month gets the full monthly target. The question for the client is whether the target should be prorated by days worked.",
+  "expected": "Client decision (recommendation: prorate by days).",
+  "actual": "Full target for a mid-month joiner (per source note).",
+  "where": "backend sales/target, sales/commission (not inspected)",
+  "verify": "After the decision: set a joiner's start date and read the target.",
+  "owner": "Business decision + backend, field-force"
+ },
+ "saleschain:P2-3": {
+  "note": "decisions of 2026-11-01: D-01/02/03/08 keep as is; D-04, D-05, D-07 backend to change. CommissionCalculator was not re-read, so 'not checked: whether D-04/05/07 changes are in code'.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The commission calculation differs from what the business user described: lifting counts money applied to invoices, milestones do not stack, percentages are rounded to 2 decimals, a target of 0 still pays extra lifting, returns never reduce lifting. Part were confirmed as intended, part were assigned to the backend.",
+  "expected": "Calculation follows the agreed D-01..D-08 decisions.",
+  "actual": "See summary.",
+  "where": "backend sales/commission/**/CommissionCalculator",
+  "verify": "Run the commission calculation for a month with a return, a target of 0 and a fractional achievement and compare with the decision list in DECISIONS-FOR-MEETING-2026-11-01.md.",
+  "owner": "Backend + business decision, field-force / commission"
+ },
+ "assets:A-07": {
+  "status": "still-bug",
+  "note": "visible in code: AssetTypeDomainService validation (~l.262-270) calls requirePostingAccount(..., null) for accumulated and expense accounts (no account-type check) and has no 'must differ from asset account' rule; only requireSameBook.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "An asset type can be saved with the accumulated-depreciation account equal to the asset account, or with a bank account as the depreciation expense account. The wrong setup is only found when the first asset of that type is created.",
+  "steps": [
+   "POST /api/accounting/asset-types with accumulatedDepreciationAccountId = assetAccountId.",
+   "POST with depreciationExpenseAccountId = a bank account."
+  ],
+  "expected": "400 naming the account (must differ; expense must be an expense account).",
+  "actual": "Both accepted (200).",
+  "where": "backend assettype/service/AssetTypeDomainService (~l.262-270)",
+  "verify": "Repeat both POSTs: expect 400.",
+  "owner": "Backend, fixed-assets"
+ },
+ "assets:A-71": {
+  "status": "still-bug",
+  "note": "visible in code: FixedAssetDomainService.dispose (~l.1194-1310) checks proceeds >= 0 only; there is no rule tying WRITE_OFF to zero proceeds.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A write-off disposal is accepted with proceeds of 500, although a write-off by definition brings nothing in. The books then show money received for a write-off.",
+  "steps": [
+   "POST /api/accounting/fixed-assets/{id}/dispose with disposalMethod WRITE_OFF and disposalProceeds 500."
+  ],
+  "expected": "400 'proceeds must be nil for a write-off'.",
+  "actual": "200 and the journal posts.",
+  "where": "backend fixedasset/service/FixedAssetDomainService.dispose; EFixedAssetDisposalMethod",
+  "verify": "POST as in step 1: expect 400.",
+  "owner": "Backend, fixed-assets"
+ },
+ "assets:A-72": {
+  "status": "still-bug",
+  "note": "visible in code: FixedAssetDisposalRequestDTO.disposalMethod has no @NotNull (dto ~l.33-34) and dispose() never checks it (l.1194-1230).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A disposal without a disposal method is accepted and the register then shows no method for that row. The screen always sends one, so this only affects API users and imports.",
+  "steps": [
+   "POST /api/accounting/fixed-assets/{id}/dispose with disposalDate, disposalProceeds, receivingAccountId and no disposalMethod."
+  ],
+  "expected": "400 'disposal method is required'.",
+  "actual": "200; register shows an empty method.",
+  "where": "backend fixedasset/dto/FixedAssetDisposalRequestDTO, FixedAssetDomainService.dispose",
+  "verify": "POST without the method: expect 400.",
+  "owner": "Backend, fixed-assets"
+ },
+ "assets:A-83": {
+  "status": "still-bug",
+  "note": "visible in code: JournalEntryDomainService.hasItsOwnCorrection (~l.1617-1630) lists purchase and sales document types only; FIXED_ASSET_ACQUISITION / FIXED_ASSET_DISPOSAL are not in it, so reverse() goes through.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The generic 'reverse journal entry' can reverse the journal of a fixed-asset purchase or disposal. The register still shows the asset (or still shows it disposed) while the ledger no longer has the cost, so register and ledger disagree.",
+  "steps": [
+   "Register a fixed asset and note the acquisition journal id.",
+   "POST /api/accounting/journal-entries/{id}/reverse."
+  ],
+  "expected": "409 'reverse the source document instead'.",
+  "actual": "201 and a reversal is posted.",
+  "where": "backend journal/service/JournalEntryDomainService.hasItsOwnCorrection / reverse",
+  "verify": "Reverse an asset acquisition journal: expect 409; the asset and ledger remain in agreement.",
+  "owner": "Backend, fixed-assets / journals"
+ },
+ "assets:A-02": {
+  "status": "still-bug",
+  "note": "visible in code: AssetTypeRepository.existsByTypeCode and FixedAssetRepository.existsByAssetCode are exact-match; the domain services do no trim() (grep).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Type codes and asset codes are compared exactly, so 'at-x1' and ' AT-X1 ' are accepted next to 'AT-X1' and the space is stored. Duplicates that look identical on screen get past the duplicate check.",
+  "steps": [
+   "POST /api/accounting/asset-types with typeCode AT-X1, then ' AT-X1 ' and 'at-x1'."
+  ],
+  "expected": "Codes trimmed and compared case-insensitively (or documented as case-sensitive).",
+  "actual": "All three accepted.",
+  "where": "backend assettype/repository/AssetTypeRepository, fixedasset/repository/FixedAssetRepository",
+  "verify": "Repeat POSTs: second and third refused as duplicates.",
+  "owner": "Backend, fixed-assets"
+ },
+ "assets:A-22": {
+  "note": "partly fixed: @Size limits on code/name fields and a clearer journal overflow message exist (d9bcb10bb, b97e2ba30, e9a75ca2b notes); FixedAssetRequestDTO has @Size(max=50) on the code. Whether cost 0.00004 (rounds to 0) and proceeds 1e30 now give a field-naming 400 was not checked.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Out-of-range or rounded-to-zero values (cost 0.00004, a 51-character type code, proceeds 1e30) used to answer a generic 'data conflict' 409 with no field named. Code length is now validated; the amount cases are unverified.",
+  "steps": [
+   "POST /api/accounting/fixed-assets with acquisitionCost 0.00004.",
+   "POST /api/accounting/asset-types with a 51-character typeCode.",
+   "POST .../dispose with disposalProceeds 1e30."
+  ],
+  "expected": "400 naming the field.",
+  "actual": "Originally 409 generic text.",
+  "where": "backend fixedasset/dto/FixedAssetRequestDTO, assettype dto, FixedAssetDomainService",
+  "verify": "Run the three calls and read the message.",
+  "owner": "Backend, fixed-assets"
+ },
+ "assets:A-25": {
+  "note": "partly fixed: unknown vendor is refused (acquisition journal validates partyId, requirePartyExists). Still open: no upper cap on an asset's usefulLifeMonths (FixedAssetDomainService ~l.1407 only checks > 0), while the asset type caps at MAX_USEFUL_LIFE_MONTHS (AssetTypeDomainService).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "An asset can be created with a useful life of 100,000 months although the type caps it at 1,200. The unknown-vendor part is fixed.",
+  "steps": [
+   "POST /api/accounting/fixed-assets with usefulLifeMonths 100000."
+  ],
+  "expected": "400 'useful life cannot exceed 1200 months'.",
+  "actual": "201.",
+  "where": "backend fixedasset/service/FixedAssetDomainService (~l.1407)",
+  "verify": "POST with 100000: expect 400.",
+  "owner": "Backend, fixed-assets"
+ },
+ "assets:A-37b": {
+  "note": "code looks fixed: DepreciationScheduleService (~l.164) sets forecastRemaining = depreciableBase - accumulated (zero only when disposed or non-depreciating). Needs API proof.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The depreciation schedule of an asset with forecast months showed forecastRemaining 0. The code now computes the remaining depreciable amount.",
+  "steps": [
+   "Register an asset of 2,400 over 24 months, post 3 months.",
+   "GET /api/accounting/fixed-assets/{id}/depreciation-schedule."
+  ],
+  "expected": "forecastRemaining 2,100.",
+  "actual": "Originally 0; by code now base minus accumulated.",
+  "where": "backend fixedasset/service/DepreciationScheduleService",
+  "verify": "Call step 2 and read forecastRemaining: must be 2,100.",
+  "owner": "Backend, fixed-assets"
+ },
+ "assets:A-58": {
+  "note": "code looks fixed: DepreciationCalculator.isFinalCharge (~l.159-175) forces the last window inside the life to take the remainder, so a quarterly asset with a 4-month life should finish. Needs API proof.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A quarterly-depreciation asset whose life is not a multiple of 3 months used to stop after 750 of 1,000 and stay ACTIVE with NBV 250 forever. The calculator now has a final-charge rule for the last window.",
+  "steps": [
+   "Register 1,000 over 4 months, frequency QUARTERLY, from January.",
+   "Post depreciation for January, then April."
+  ],
+  "expected": "After the last window the asset is FULLY_DEPRECIATED with NBV 0.",
+  "actual": "Originally 750 charged, NBV 250 forever.",
+  "where": "backend fixedasset/service/DepreciationCalculator.isFinalCharge",
+  "verify": "Post the two runs and GET the asset: status FULLY_DEPRECIATED, NBV 0.",
+  "owner": "Backend, fixed-assets"
+ },
+ "closing:A-08": {
+  "status": "still-bug",
+  "note": "no change seen: DepreciationPreviewService has no 'post earlier month first' warning (grep); posting out of order is refused by DepreciationSequenceGuard (409), so only the preview text is misleading.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The depreciation preview of a later month, with earlier months still unposted, shows the catch-up charge (e.g. 1,225 for December) instead of telling the user to post the earlier months first. It cannot be posted out of order, so it only misleads.",
+  "steps": [
+   "Open Depreciation for December with January-November unposted.",
+   "GET the preview endpoint for that period."
+  ],
+  "expected": "Preview says 'post month k first' instead of a number.",
+  "actual": "Shows the catch-up amount.",
+  "where": "backend fixedasset/service/DepreciationPreviewService; DepreciationSequenceGuard",
+  "verify": "Preview a later period: message or blocked flag instead of a charge.",
+  "owner": "Backend, fixed-assets"
+ },
+ "vqa:fa-form-fields": {
+  "status": "in-progress",
+  "note": "mostly fixed: fixed-asset-form-view.tsx:512-521 now has Serial, Location and Custodian; Cost centre (l.523-528) is hidden by COST_CENTERS_ENABLED=false (a product flag).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The Add Asset form lacked the Location, Custodian and Cost centre fields the API accepts. Serial, Location and Custodian were added; Cost centre stays hidden while the cost-centre feature is switched off.",
+  "steps": [
+   "Accounting > Fixed Assets > Add asset.",
+   "Look for Serial, Location, Custodian, Cost centre."
+  ],
+  "expected": "All four fields (Cost centre when enabled).",
+  "actual": "Three shown; Cost centre hidden by flag.",
+  "where": "frontend src/features/accounting/fixed-assets/components/fixed-asset-form-view.tsx; src/features/accounting/chart-of-accounts/config.ts (COST_CENTERS_ENABLED)",
+  "verify": "Open the form; enable the flag to see the fourth field.",
+  "owner": "Frontend, fixed-assets"
+ },
+ "vqa:fa-depr-labels": {
+  "status": "fixed",
+  "note": "fixed in frontend: depreciation-view.tsx:324-345 shows a posted heading (run.postedTitle) and 'Last run' is shown only when !posted (l.360).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "After depreciation is posted the screen used to keep the heading 'Journal entry this run will raise' and a 'Last run' line for the previous month. The heading is reworded for posted runs and 'Last run' is hidden.",
+  "steps": [
+   "Accounting > Fixed Assets > Depreciation, pick a posted month."
+  ],
+  "expected": "Posted wording; no previous-month 'Last run'.",
+  "actual": "fixed.",
+  "where": "frontend src/features/accounting/fixed-assets/components/depreciation-view.tsx",
+  "verify": "Open a posted month and read the heading.",
+  "owner": "Frontend, fixed-assets"
+ },
+ "vqa:fa-dispose-zero": {
+  "status": "fixed",
+  "note": "fixed in frontend: asset-dispose-drawer.tsx ~l.198 has a comment and guard so '-0' prints as 0.00 (also Math.abs at l.218).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The Dispose dialog showed '-0.00' for an asset with no depreciation. The value is now normalised.",
+  "steps": [
+   "Dispose an asset with nil accumulated depreciation, read the preview."
+  ],
+  "expected": "0.00.",
+  "actual": "fixed.",
+  "where": "frontend src/features/accounting/fixed-assets/components/asset-dispose-drawer.tsx",
+  "verify": "Open the dispose drawer for an undepreciated asset.",
+  "owner": "Frontend, fixed-assets"
+ },
+ "vqa:fa-raw-enums": {
+  "status": "still-bug",
+  "note": "backend text confirmed in code: FixedAssetDomainService timeline details use asset.getDepreciationMethod().name() (~l.969) and 'Last posted ' + date, and putIntoServiceEvent (~l.908-922) adds asset.getLocation() (the current location, not the original). The frontend prints event.details as sent (fixed-asset-detail-view.tsx ~l.415).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The asset timeline shows backend sentences with raw values such as STRAIGHT_LINE and ISO dates, and the 'Put into service' event shows the asset's current location, so after a transfer it names the new place instead of the original one.",
+  "steps": [
+   "Open Accounting > Fixed Assets > an asset > Timeline (GET /api/accounting/fixed-assets/{id}/timeline).",
+   "Transfer the asset to another location and reload the timeline."
+  ],
+  "expected": "Readable method name and formatted date; original location on 'Put into service'.",
+  "actual": "Raw enum name and ISO date; current location.",
+  "where": "backend fixedasset/service/FixedAssetDomainService (putIntoServiceEvent, depreciation event ~l.960-970); frontend src/features/accounting/fixed-assets/components/fixed-asset-detail-view.tsx",
+  "verify": "After fix: timeline text shows 'Straight line' and the original location.",
+  "owner": "Backend (frontend could map kinds), fixed-assets"
+ },
+ "vqa:fa-transfer-hint": {
+  "status": "fixed",
+  "note": "fixed in frontend: asset-transfer-modal.tsx:89 hint has mb-4 and fixed-assets.css:35 adds spacing under the current-value hint.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "In the Transfer dialog the hint text touched the next field label. Spacing was added.",
+  "steps": [
+   "Open an asset > Transfer."
+  ],
+  "expected": "Visible gap between hint and next label.",
+  "actual": "fixed.",
+  "where": "frontend src/features/accounting/fixed-assets/components/asset-transfer-modal.tsx, fixed-assets.css",
+  "verify": "Open the transfer dialog.",
+  "owner": "Frontend, fixed-assets"
+ },
+ "assets:UI-02": {
+  "status": "in-progress",
+  "note": "partly fixed: asset type list has search (asset-type-list-view.tsx:41,75,152) and delete (l.46,88-99, permission-guarded). Not added: column sorting on both lists and search on the asset register list (fixed-asset-list-view.tsx has no search/sorter).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The asset type list now has search and delete. Column sorting and a search box on the fixed-asset register are still missing.",
+  "steps": [
+   "Open Accounting > Asset Types, then Fixed Assets register.",
+   "Look for a search box and clickable column headers."
+  ],
+  "expected": "Search and sort on both lists, delete on types.",
+  "actual": "Types: search + delete. Register: neither; no sorting on either.",
+  "where": "frontend src/features/accounting/asset-types/components/asset-type-list-view.tsx; src/features/accounting/fixed-assets/components/fixed-asset-list-view.tsx",
+  "verify": "Open the register and try to search/sort.",
+  "owner": "Frontend, fixed-assets"
+ },
+ "assets:UI-08": {
+  "status": "fixed",
+  "note": "fixed in frontend: asset-type-form-modal.tsx:183 maps the duplicate code answer to the field error validation.codeExists.",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Creating an asset type with an existing code used to show the backend's raw English sentence. It now shows a translated field error on the Type code field.",
+  "steps": [
+   "Create an asset type, then create another with the same code."
+  ],
+  "expected": "Translated 'code already exists' on the field.",
+  "actual": "fixed.",
+  "where": "frontend src/features/accounting/asset-types/components/asset-type-form-modal.tsx:183",
+  "verify": "Repeat the steps in Bengali too.",
+  "owner": "Frontend, fixed-assets"
+ },
+ "assets:UI-10": {
+  "status": "fixed",
+  "note": "fixed in frontend: asset-type schema/config support NONE (asset-types/config.ts:18 isNotDepreciated, schema.ts:38 skips life/accounts for NONE, mappers.ts:97 omits them and mappers.test.ts:36 covers it).",
+  "ref": "release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The asset type form could not create a non-depreciable type (land) because the method list had no 'None'. NONE is now offered, and life, salvage and depreciation accounts are skipped for it.",
+  "steps": [
+   "Accounting > Asset Types > Add; choose method None."
+  ],
+  "expected": "Form saves without life or depreciation accounts.",
+  "actual": "fixed.",
+  "where": "frontend src/features/accounting/asset-types/{config.ts,schema.ts,mappers.ts}",
+  "verify": "Create a Land type with method None.",
+  "owner": "Frontend, fixed-assets"
+ },
+ "closing:A-07": {
+  "note": "code looks fixed: FixedAssetDomainService.rejectDepreciationChangesOnceFullyDepreciated (~l.222-245) refuses a change of useful life, method, frequency, convention, start, salvage value and annual rate for a FULLY_DEPRECIATED asset (409). Needs API proof.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A fully depreciated asset could have its salvage value or life changed, making the register show nonsense (140% depreciated). The code now rejects those changes.",
+  "steps": [
+   "Fully depreciate an asset.",
+   "PUT /api/accounting/fixed-assets/{id} with a different salvageValue or usefulLifeMonths."
+  ],
+  "expected": "409 naming the field.",
+  "actual": "Originally accepted.",
+  "where": "backend fixedasset/service/FixedAssetDomainService.rejectDepreciationChangesOnceFullyDepreciated",
+  "verify": "PUT a changed salvage value: expect 409; a changed name: 200.",
+  "owner": "Backend, fixed-assets"
+ },
+ "closing:A-12": {
+  "note": "not checked in depth: DepreciationCalculator/FixedAssetDepreciationService contain no disposal-month logic (grep 'dispos' returns nothing), so a DISPOSED asset is presumably skipped for its disposal month; whether the full-month convention should charge it was not verified.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "With the full-month convention, the month in which an asset is disposed gets no depreciation charge for that asset, although the asset was in use part of the month. The rule needs confirming with the accountants.",
+  "steps": [
+   "Dispose an asset mid-month with convention FULL_MONTH.",
+   "Run depreciation for the disposal month."
+  ],
+  "expected": "Depreciation for the disposal month charged (or an agreed rule).",
+  "actual": "No charge for the disposed asset.",
+  "where": "backend fixedasset/service/DepreciationCalculator, FixedAssetDepreciationService",
+  "verify": "Dispose on e.g. 15 March and check the March run lines.",
+  "owner": "Backend, fixed-assets (+ accounting decision)"
+ },
+ "merge:D2": {
+  "note": "decision: no Depreciation Method master exists in code (method is the EDepreciationMethod enum: STRAIGHT_LINE, REDUCING_BALANCE, NONE) and the frontend has no Method tab (e2e FAS-03-02, e2e/tests/fixed-assets/COVERAGE.md). Waiting for the backend to confirm it is final.",
+  "ref": "frontend release_beta_1.0.0@05aecf15, backend deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The Fixed Asset guide says the Depreciation Method master was deliberately not built (method is a fixed list of values). The frontend removed its Method tab accordingly. The backend team only needs to confirm this is final.",
+  "expected": "Confirmation recorded.",
+  "actual": "Enum only; no master.",
+  "where": "backend fixedasset EDepreciationMethod; frontend src/features/accounting/fixed-assets",
+  "tests": [
+   "FAS-03-02"
+  ],
+  "verify": "Ask the backend team; close the item when answered.",
+  "owner": "Backend + business decision, fixed-assets"
+ },
+ "be-req:payables:payment-history-line-ids": {
+  "status": "still-bug",
+  "note": "confirmed in code: PayablePaymentHistoryReportResponse.Line has only type, date, docNumber, account, amount, balanceAfter (l.92-104); ReceivablePaymentHistoryReportResponse.Line the same. DocumentBlock carries documentType/documentId but lines do not, and there is no first line for the bill/invoice itself.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "In the A/P and A/R payment history reports each settlement line has no document id or type, so the frontend cannot make the document number a link. The design also lists the bill or invoice itself as the first line, but the backend sends only the settlements.",
+  "steps": [
+   "POST /api/reports/AP_PAYMENT_HISTORY_BY_BILL (or AR_PAYMENT_HISTORY_BY_INVOICE) with a date window.",
+   "Inspect documents[].lines[]."
+  ],
+  "expected": "Each line has documentId and documentType (BILL_PAYMENT, BILL_CREDIT, VENDOR_PREPAYMENT, PROFORMA_APPLICATION, RECEIPT, ...); first line is the bill or invoice.",
+  "actual": "Lines have type, date, docNumber, account, amount, balanceAfter only.",
+  "where": "backend shared/report/dto/PayablePaymentHistoryReportResponse.Line, ReceivablePaymentHistoryReportResponse.Line; purchase/report/PayablePaymentHistoryReportGenerator; sales/report/ReceivablePaymentHistoryReportGenerator",
+  "verify": "Call the report and see documentId/documentType on every line and the opening bill line.",
+  "owner": "Backend (new fields), then Frontend link, payables / receivables"
+ },
+ "be-req:payables:register-per-bill": {
+  "status": "still-bug",
+  "note": "confirmed in code: ACCOUNTS_PAYABLE_REGISTER appears only in shared/report/EReportKeyType.java:45; no ReportGenerator uses it (the receivable side has ReceivableRegisterReportGenerator).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The Accounts Payable Register report type exists in the list but nothing generates it, so the Payables screen cannot show one row per bill (date, number, vendor, type, account, due date, billed, paid, balance). The accounting AP summary only answers per vendor, so those columns stay blank.",
+  "steps": [
+   "POST /api/reports/ACCOUNTS_PAYABLE_REGISTER with a date window."
+  ],
+  "expected": "One row per bill like ACCOUNTS_RECEIVABLE_REGISTER does per invoice.",
+  "actual": "No generator behind the key.",
+  "where": "backend shared/report/EReportKeyType.ACCOUNTS_PAYABLE_REGISTER; model after sales/report/ReceivableRegisterReportGenerator",
+  "verify": "POST the report and receive rows per bill.",
+  "owner": "Backend, payables"
+ },
+ "be-req:receivables:customer-profitability-generator": {
+  "status": "still-bug",
+  "note": "confirmed in code: CUSTOMER_PROFITABILITY_SUMMARY appears only in shared/report/EReportKeyType.java:41; no ReportGenerator names it.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The Customer Profitability Summary report is listed but has no generator, so the report endpoint has nothing behind it. Until it exists the hub page shows a 'not connected' notice.",
+  "steps": [
+   "POST /api/reports/CUSTOMER_PROFITABILITY_SUMMARY with a date window."
+  ],
+  "expected": "Customer, total cost, total revenue and total profit for the window, with as-of date and accounting book.",
+  "actual": "No generator.",
+  "where": "backend shared/report/EReportKeyType.CUSTOMER_PROFITABILITY_SUMMARY",
+  "verify": "POST the report and see per-customer totals.",
+  "owner": "Backend, receivables"
+ }
+}

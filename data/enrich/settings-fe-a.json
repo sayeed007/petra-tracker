@@ -1,0 +1,633 @@
+{
+ "rv-fe:settings-platform:29": {
+  "note": "Delete now opens AppConfirmAction naming the node with child and customer counts (org-tree-node.tsx:423-443); the trash icon replaced the X.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The red X next to a Field Force org node (wing, region, area, territory) used to delete it at once with no warning, although children and customer assignments go with it.",
+  "steps": [
+   "Open Settings > Field Force (/settings/field-force).",
+   "Click the delete icon on a wing that has children."
+  ],
+  "expected": "A confirm dialog names the node and the number of children and customers; Cancel keeps it.",
+  "actual": "fixed: confirm dialog with impact text, delete runs only on confirm.",
+  "where": "src/features/settings/field-force/components/org-tree-node.tsx:423-443",
+  "verify": "Delete a wing with children: dialog shows counts; Cancel leaves it. E2E SET-06-01 deletes through the dialog.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-06-01"
+  ]
+ },
+ "rv-fe:settings-platform:49": {
+  "note": "api-client.ts:170-171 computes debug once and builds the request body only when on; response log reads are gated at :236 and :257. The only res.clone() outside debug is on the error path (:217-220).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Every backend call used to clone and parse the whole response for the debug logger even when logging was off, roughly doubling CPU and memory per server-side call.",
+  "steps": [
+   "Run the frontend with debug API logging off.",
+   "Load a long list screen (for example /settings/users-and-roles) and watch server time."
+  ],
+  "expected": "No clone or parse of the success response when logging is off.",
+  "actual": "fixed: success path no longer clones when debug is off.",
+  "where": "src/erp-api/api-client.ts:170-171,236,257",
+  "verify": "Unit test with a spy on Response.clone on a 200 call with debug off: zero calls.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed"
+ },
+ "rv-fe:settings-platform:1": {
+  "note": "commission-incentive-config-panel.tsx:439 canSave = canEdit && !loadError; inputs and Save use disabled={!canSave}; removing rows asks AppConfirmAction with row counts (:713-714,:940-950).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "If the commission config failed to load, the panel showed an empty config and Save would overwrite the live milestone and slab rules (commission payouts depend on it).",
+  "steps": [
+   "Block GET of the commission config in devtools.",
+   "Open Settings > Sales > commission tab.",
+   "Try to type a row and Save.",
+   "Separately delete all rows of a loaded config and Save."
+  ],
+  "expected": "Load failure disables Save and shows a retry; saving fewer rows than before asks for confirmation.",
+  "actual": "fixed: Save disabled on loadError; confirm dialog on row removal.",
+  "where": "src/features/settings/sales/components/commission-incentive-config-panel.tsx:439,695-714,940-950",
+  "verify": "Fail the config GET: Save disabled. Delete all rows: confirm appears.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-07-03"
+  ]
+ },
+ "rv-fe:settings-platform:11": {
+  "note": "new-role-form-view.tsx:67,146,186 keeps the loaded role type and sends existingRoleType on update; BUSINESS at :211 is the create path only.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Editing a SYSTEM or TEMPLATE role used to silently turn it into a BUSINESS role, changing its assignment scope rules.",
+  "steps": [
+   "Open Settings > Users and Roles > Roles.",
+   "Edit a SYSTEM role, tick one permission, Save.",
+   "Reopen the role."
+  ],
+  "expected": "Role type is unchanged.",
+  "actual": "fixed: update sends the role's own type.",
+  "where": "src/features/settings/users-and-roles/components/new-role-form-view.tsx:67,146,186",
+  "verify": "PATCH /api/rbac/roles/{code} payload carries the original roleType.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-02-01"
+  ]
+ },
+ "rv-fe:settings-platform:12": {
+  "note": "edit-user-modal.tsx:78-82 still sends scopeIds: [] and globalAccess: true on every role change; assign-employee-form.tsx:45-46 and invite-employee-form.tsx:75-76 do the same; the user DTO has no scope data.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Changing only the role of a user in the Edit User dialog sends global access with an empty scope, which may replace a geography-scoped assignment with a global one without any warning (backend replace behaviour was marked suspect; confirm).",
+  "steps": [
+   "Open Settings > Users and Roles > Users.",
+   "Edit a user who has a scoped assignment, change only the role, Save.",
+   "Read the user's assignment (GET /api/admin/users/{id})."
+  ],
+  "expected": "The user's scope and global flag stay as they were, or the screen warns before widening.",
+  "actual": "Request is PUT /api/admin/users/{id}/roles with {roleCode, scopeIds: [], globalAccess: true}.",
+  "where": "src/features/settings/users-and-roles/components/edit-user-modal.tsx:78-82; assign-employee-form.tsx:42-47; invite-employee-form.tsx:68-77; erp-api/settings/users-and-roles/index.ts:315-327",
+  "verify": "Change the role of a scoped user; the scope is still there afterwards. Needs a decision on who manages scoped users.",
+  "owner": "Both settings-platform (frontend sends it; backend replace semantics to confirm)",
+  "status": "still-bug",
+  "tests": [
+   "SET-02-05"
+  ]
+ },
+ "rv-fe:settings-platform:13": {
+  "note": "mergeUpdateAttributes deletes a backend key when the screen sent that attribute empty (warehouses/index.ts:300-309).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Emptying City, Address, Temperature, Floor area and similar warehouse attributes used to keep the old stored value while the save reported success.",
+  "steps": [
+   "Open Settings > Warehouse, select a warehouse.",
+   "Clear Address and save.",
+   "Reload."
+  ],
+  "expected": "Address stays empty.",
+  "actual": "fixed: an empty field removes the key from the merged attributes.",
+  "where": "src/erp-api/settings/warehouses/index.ts:292-315",
+  "verify": "Clear Address, save, reload: empty.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-04-02"
+  ]
+ },
+ "rv-fe:settings-platform:14": {
+  "note": "buildUpdateForm/mapUpdateFormToInput (warehouse/form-helpers.ts:110-160) send storagePurpose (effective value when locked) and the normalized restriction flags (inherited OR own) for every non-warehouse node on any save. Backend effect not confirmed.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Renaming a shelf under a quarantine zone writes the inherited purpose and flags as the shelf's own settings, so it stays quarantined even after the parent is changed back.",
+  "steps": [
+   "Open Settings > Warehouse.",
+   "Under a zone with purpose QUARANTINE, rename a shelf or bin and Save.",
+   "GET /api/inventory/locations/{id} and look at the own storagePurpose and flags."
+  ],
+  "expected": "A pure rename leaves the node's own purpose NONE and own flags unchanged.",
+  "actual": "Update sends the inherited purpose and flags as explicit values.",
+  "where": "src/features/settings/warehouse/form-helpers.ts:110-160; src/erp-api/settings/warehouses/mapper.ts:198-215",
+  "verify": "After the fix, rename a shelf under a quarantine zone and GET it: own purpose still NONE.",
+  "owner": "Frontend settings-platform",
+  "status": "still-bug",
+  "tests": [
+   "SET-04-02"
+  ]
+ },
+ "rv-fe:settings-platform:17": {
+  "note": "Busy guards, keep-typed-name on failed edit are in (org-tree-node.tsx:104,146,253-266; updateOrgNode omits managerType when no person is set, field-force/index.ts:468-473). Missing: clearing an assigned manager sends nothing, so the backend may keep the manager while the UI says updated; SET-06-02 is still a test.fail known bug for renaming a node without assignee (may now pass).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Adding or editing a Field Force node could create duplicates on double Enter, lose the typed name on a failed edit, or silently keep a manager the user cleared.",
+  "steps": [
+   "Open /settings/field-force, add a wing and press Enter twice quickly.",
+   "Edit a node that has a manager, clear the manager, Save, reload."
+  ],
+  "expected": "One node is created; a cleared manager is really cleared.",
+  "actual": "Double submit and failed-edit loss fixed; manager clear still unconfirmed.",
+  "where": "src/features/settings/field-force/components/org-tree-node.tsx; src/erp-api/settings/field-force/index.ts:461-486",
+  "verify": "Clear a manager, reload: no manager. Re-run SET-06-02 and drop test.fail if it now passes.",
+  "owner": "Frontend settings-platform",
+  "status": "in-progress",
+  "tests": [
+   "SET-06-01",
+   "SET-06-02"
+  ]
+ },
+ "rv-fe:settings-platform:18": {
+  "note": "assertPermission is active on every action in users-and-roles/index.ts (e.g. :130,:306,:320,:348,:368,:444,:489); path parts go through userPathId and encodeURIComponent (:26,:445,:490).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The users-and-roles server actions had their permission checks commented out and role codes went unencoded into backend URLs, so any caller could hit them or alter the backend path.",
+  "steps": [
+   "Call a users-and-roles action as a user without USER_ACCOUNT_VIEW.",
+   "Pass roleCode 'x/../admin'."
+  ],
+  "expected": "Refused by permission; the code is encoded.",
+  "actual": "fixed: checks restored, ids validated and encoded.",
+  "where": "src/erp-api/settings/users-and-roles/index.ts",
+  "verify": "Call as a user without the permission: refused.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-02-07"
+  ]
+ },
+ "rv-fe:settings-platform:19": {
+  "note": "Fixed: permission getters now use checkPermission (shared/permissions/settings.ts:20-60), ship-items route denies without SALES_DELIVERY_ORDER_SHIP, menu entries for users, inventory, workflow, sales settings carry requiredPermission. Missing: settings/field-force/page.tsx, settings/system/page.tsx and settings/inventory/page.tsx have no route check, and menu entries 'company' (system), 'warehouse' and 'field-force-settings' have no requiredPermission (app-menu.config.tsx:555-585).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Any signed-in user can still open the Field Force tree, system settings and inventory settings by URL and see the Field Force, Warehouse and System menu entries.",
+  "steps": [
+   "Sign in as a user without field-force or system permission.",
+   "Open /settings/field-force and /settings/system by URL."
+  ],
+  "expected": "Menu hides the entry and the URL shows the no-access page.",
+  "actual": "Pages render; only backend refusals stop writes.",
+  "where": "src/app/(erp)/settings/field-force/page.tsx; src/app/(erp)/settings/system/page.tsx; src/app/(erp)/settings/inventory/page.tsx; src/shared/components/app-layout/app-menu.config.tsx:555-585",
+  "verify": "As a restricted user, open /settings/field-force: no-access page. Needs a decision on which permission codes guard these.",
+  "owner": "Frontend settings-platform",
+  "status": "in-progress",
+  "tests": [
+   "SET-01-02",
+   "SET-01-03"
+  ]
+ },
+ "rv-fe:settings-platform:2": {
+  "note": "company-profile-tab.tsx:57 loadState loading/error/ready; error state rendered at :262 instead of the form.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A failed company profile load used to show a blank form whose Save sent every field as null and wiped address, tax id and logo (used on every report and invoice).",
+  "steps": [
+   "Block GET /api/companies/{id}.",
+   "Open Settings > System > Company profile."
+  ],
+  "expected": "An error with retry and no Save.",
+  "actual": "fixed: form only renders when ready.",
+  "where": "src/features/settings/system/components/company-profile-tab.tsx:57,262-267",
+  "verify": "Block the GET: error shown, no Save.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-08-01"
+  ]
+ },
+ "rv-fe:settings-platform:21": {
+  "note": "login-form.tsx:19-22 default values are empty strings.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The login page used to open with a username and the default dev password pre-filled, so a click on Sign in logged in.",
+  "steps": [
+   "Open /login in a production build."
+  ],
+  "expected": "Empty username and password.",
+  "actual": "fixed.",
+  "where": "src/features/auth/components/login-form.tsx:19-22",
+  "verify": "Open the login page: both fields empty.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-01-01"
+  ]
+ },
+ "rv-fe:settings-platform:22": {
+  "note": "app-layout.tsx:87-97 fails closed: until access loaded (or on failure) only entries needing no permission are shown. Missing: no 'could not load permissions' message or retry (no retry code in access-provider.tsx or app-layout.tsx).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Before access data arrives, or after it failed, the sidebar used to show every module. It is now limited to ungated entries, but a failed access call leaves a nearly empty menu with no explanation or retry.",
+  "steps": [
+   "Block /api/auth/me/access.",
+   "Sign in as a non-super-admin and open any page."
+  ],
+  "expected": "Menu shows a retry row; never all modules.",
+  "actual": "Fail-closed menu, no retry row.",
+  "where": "src/shared/components/app-layout/app-layout.tsx:87-97; src/providers/access-provider.tsx",
+  "verify": "Block the access call: retry row visible; after retry the menu loads.",
+  "owner": "Frontend settings-platform",
+  "status": "in-progress",
+  "severity": "low"
+ },
+ "rv-fe:settings-platform:25": {
+  "note": "Fixed: all three proxies call applySafeContentHeaders (shared/utils/safe-response-headers.ts) which allow-lists inline types and forces attachment plus CSP sandbox for others. Missing: /api/files still uses a deny-list (only paths starting with api/ blocked, files/route.ts:38-39) and profile picture upload accepts any image/* including SVG (features/account/profile/actions.ts:132).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Uploaded HTML or SVG could run as an active page on the ERP origin. Serving is now safe; the remaining gaps are the open path rule in /api/files (other backend paths fetched with the user's token) and SVG accepted as profile picture.",
+  "steps": [
+   "Request /api/files?path=actuator/health as a logged-in user.",
+   "Upload an SVG as profile picture."
+  ],
+  "expected": "Only allow-listed prefixes are proxied; SVG is rejected.",
+  "actual": "Other backend paths are fetched; SVG accepted.",
+  "where": "src/app/api/files/route.ts:38-39; src/features/account/profile/actions.ts:132; src/shared/utils/safe-response-headers.ts",
+  "verify": "Path outside /erp-img/ and /api/media/ returns 400; SVG upload returns PROFILE_PICTURE_INVALID_TYPE.",
+  "owner": "Frontend settings-platform",
+  "status": "in-progress"
+ },
+ "rv-fe:settings-platform:27": {
+  "note": "doLogin (erp-api/auth/login.ts:9-24) posts /api/public/auth/login itself, then signIn('credentials') runs authorize (auth.ts:76-86) which posts the same login again.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "One click on Sign in sends the same credentials to the backend twice (bcrypt twice, double latency, would double any lockout counter).",
+  "steps": [
+   "Open /login with the network panel (or backend access log) visible.",
+   "Sign in with valid credentials."
+  ],
+  "expected": "One POST /api/public/auth/login per sign in.",
+  "actual": "Two POSTs.",
+  "where": "src/erp-api/auth/login.ts:9-24; src/auth.ts:76-86",
+  "verify": "Sign in and count POST /api/public/auth/login: exactly one.",
+  "owner": "Frontend settings-platform",
+  "status": "still-bug",
+  "tests": [
+   "SET-01-01"
+  ]
+ },
+ "rv-fe:settings-platform:3": {
+  "note": "new-role-form-view.tsx:65,668,723: loadFailed flag renders an error and hides the form and Save.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "If the role or permission matrix failed to load, the role edit page showed an empty editable form; one tick then replaced the whole permission set.",
+  "steps": [
+   "Fail GET /api/rbac/permission-matrix and open a role for editing."
+  ],
+  "expected": "Error with no Save.",
+  "actual": "fixed.",
+  "where": "src/features/settings/users-and-roles/components/new-role-form-view.tsx:65,668,723",
+  "verify": "Fail the matrix call: error shown, no Save.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-02-01"
+  ]
+ },
+ "rv-fe:settings-platform:30": {
+  "note": "workflow-rules-table.tsx:218-267 switch inside AccessGuard WORKFLOW_DEFINITION_EDIT with confirm and togglingId; new/page.tsx:22-33 requires EDIT when ?edit is present; workflow-rule-form-view.tsx:509 useSubmitGuard on Save.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A user with only create rights could open the edit URL of a rule, the switch deactivated an approval rule in one click, and double click on Save created two definitions.",
+  "steps": [
+   "As a view-only user open /settings/workflow-automation.",
+   "Open /settings/workflow-automation/new?edit=<id> as create-only user."
+  ],
+  "expected": "No switch or pencil for view-only; edit URL refused; one rule per save.",
+  "actual": "fixed.",
+  "where": "src/features/settings/workflow-automation/components/workflow-rules-table.tsx:218-267; src/app/(erp)/settings/workflow-automation/new/page.tsx:22-33",
+  "verify": "View-only user cannot toggle; double click Save and finish: one rule.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-01-03",
+   "SET-03-02"
+  ]
+ },
+ "rv-fe:settings-platform:31": {
+  "note": "delete-node-modal.tsx:15-35 counts descendants, shows deleteImpact and requires typing the node code when descendants exist.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Deleting a warehouse or zone silently deleted every descendant location not used by documents.",
+  "steps": [
+   "Settings > Warehouse, delete a zone that has bins."
+  ],
+  "expected": "Dialog states the count and asks for the code.",
+  "actual": "fixed.",
+  "where": "src/features/settings/warehouse/components/delete-node-modal.tsx:15-35",
+  "verify": "Delete a zone with bins: count shown, code required.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-04-02"
+  ]
+ },
+ "rv-fe:settings-platform:32": {
+  "note": "Item category, brand, manufacturer and business type deactivation now use AppConfirmAction and per-row togglingId (e.g. item-category-section.tsx:42,126,246-284; business-type-root.tsx:283). Missing: pricing scheme pause/activate switch (pricing-scheme-detail-page.tsx:196-198) has no confirm, only a pending guard.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Switching a master record off used to happen on one click with no warning. Done for the inventory master data; pausing a pricing scheme still changes order discounts immediately.",
+  "steps": [
+   "Settings > Sales > open a pricing scheme.",
+   "Flip the status switch from active to paused."
+  ],
+  "expected": "A confirmation naming the effect.",
+  "actual": "Item master: confirm shown. Pricing scheme: immediate.",
+  "where": "src/features/settings/sales/components/pricing-scheme-detail-page.tsx:196-198; src/features/settings/inventory/components/item-master/*",
+  "verify": "Pause a scheme: a confirm appears.",
+  "owner": "Frontend settings-platform",
+  "status": "in-progress",
+  "tests": [
+   "SET-10-02",
+   "SET-10-01"
+  ],
+  "severity": "low"
+ },
+ "rv-fe:settings-platform:33": {
+  "note": "All six sections use useSubmitGuard and loading={isSubmitting} on the submit button (e.g. brands-section.tsx:238,371; business-type-root.tsx:205,321).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The create/edit modals of brand, category, manufacturer, item type, carrier and business type could be submitted twice, creating duplicates.",
+  "steps": [
+   "Open the Create modal, double click Save."
+  ],
+  "expected": "One record.",
+  "actual": "fixed.",
+  "where": "src/features/settings/inventory/components/item-master/*-section.tsx; business-type-root.tsx",
+  "verify": "Double click Save: one record.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-05-01",
+   "SET-05-02",
+   "SET-05-03"
+  ]
+ },
+ "rv-fe:settings-platform:34": {
+  "note": "workflow-rule-root.tsx:36-46 loads size = min(totalElements, 500) so all rules reach the client pager.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The rules list used the backend total but only the first backend page of rows, so later pages were empty.",
+  "steps": [
+   "Create more rules than one backend page, open the list, go to page 2."
+  ],
+  "expected": "All rules reachable.",
+  "actual": "fixed (capped at 500 rules).",
+  "where": "src/features/settings/workflow-automation/components/workflow-rule-root.tsx:36-46",
+  "verify": "Open the list with more than one page: every rule listed.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-03-01"
+  ]
+ },
+ "rv-fe:settings-platform:35": {
+  "note": "fetchAllPeople pages through getERPUsers size 100 up to 20 pages (field-force/index.ts:322-336).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The head-person picker of Field Force only had the first page of users.",
+  "steps": [
+   "Have more than 100 users, open /settings/field-force and add a head to a node."
+  ],
+  "expected": "The last user is selectable.",
+  "actual": "fixed.",
+  "where": "src/erp-api/settings/field-force/index.ts:322-336",
+  "verify": "With 30+ users, pick the last user.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed"
+ },
+ "rv-fe:settings-platform:36": {
+  "note": "series-preview.ts formatSeriesNumber handles prefix, fiscal-year token, padding and suffix (unit tests series-preview.test.ts); column relabelled 'Next Number' (messages/settings/en.json:1042); e2e SET-08-05 checks it moves.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The number series screen previewed 'BRV00001' while the backend generates 'BRV/26-27/00001', and the seed was shown as the live counter.",
+  "steps": [
+   "Settings > System > Transaction series, compare the preview with the next real document number."
+  ],
+  "expected": "Preview equals next number.",
+  "actual": "fixed.",
+  "where": "src/features/settings/system/series-preview.ts; transaction-series-section.tsx:29-37",
+  "verify": "Create a document and compare its number.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-08-05"
+  ]
+ },
+ "rv-fe:settings-platform:37": {
+  "note": "config.ts:396-407 sets PETTY_CASH and PETTY_CASH_EXPENSE to requirement OPTIONAL. Note: e2e SET-09-04 says they show as required on screen, presumably when the backend completeness lists them; worth confirming it is not a hard-coded asterisk.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Companies without petty cash used to be told to fill two account roles that the backend treats as optional.",
+  "steps": [
+   "Settings > Accounting > Account defaults, look at the Petty cash rows on a company with no petty cash."
+  ],
+  "expected": "No asterisk until the backend reports them missing.",
+  "actual": "fixed in the catalogue.",
+  "where": "src/features/settings/accounting/config.ts:396-407",
+  "verify": "Rows have no asterisk until completeness lists them.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-09-04"
+  ]
+ },
+ "rv-fe:settings-platform:40": {
+  "note": "workflow-rule-form-schema.ts:42-57 requires at least one stage and one approver per stage (.min(1)); workflow-rule-form-view.tsx:461 sends slaHours undefined for the last stage.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A workflow rule with only a name could be published ACTIVE with no stage or a stage with no approver, and a stale SLA was sent for the last stage.",
+  "steps": [
+   "Settings > Workflow automation > New rule, give name and module only, Save and finish."
+  ],
+  "expected": "Field errors, nothing saved.",
+  "actual": "fixed.",
+  "where": "src/features/settings/workflow-automation/workflow-rule-form-schema.ts:42-57; components/workflow-rule-form-view.tsx:461",
+  "verify": "Save and finish with no stage shows field errors.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-03-02"
+  ]
+ },
+ "rv-fe:settings-platform:41": {
+  "note": "commission-config-conflicts.ts rejects duplicate milestone achievement percents and overlapping slabs (sorted by fromAmount, error on the later row); unit test commission-config-conflicts.test.ts. The preview text dropping invalid rows was not re-checked.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The commission config accepted overlapping slabs and repeated achievement percentages; each row was only checked alone.",
+  "steps": [
+   "Settings > Sales > commission: add slabs 0-1000 and 500-2000, Save."
+  ],
+  "expected": "Refused with an error on the second row.",
+  "actual": "fixed.",
+  "where": "src/features/settings/sales/commission-config-conflicts.ts; components/commission-incentive-config-panel.tsx:484-485",
+  "verify": "Slabs 0-1000 and 500-2000 are refused.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-07-03"
+  ]
+ },
+ "rv-fe:settings-platform:44": {
+  "note": "resolveApiError is fixed (shared/utils/error-handling.ts:6-16 uses safeBackendBusinessMessage). Still raw: app/api/notifications/_utils.ts:19-22 returns error.message, shared/components/category-select.tsx:59 and shared/hooks/use-sales-geography-cascade.ts:95-98 show error.message with English fallbacks, features/account/profile/actions.ts:42 forwards error.message.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Some screens still show the raw 'API fetch failed with status ...' text in English (profile password change, selects, notification route) instead of a translated message.",
+  "steps": [
+   "Force a 500 on the item category list and open a screen with the category select.",
+   "Change password with a wrong current password on My Profile."
+  ],
+  "expected": "A translated generic message.",
+  "actual": "Raw error text can appear.",
+  "where": "src/app/api/notifications/_utils.ts:19-22; src/shared/components/category-select.tsx:59; src/shared/hooks/use-sales-geography-cascade.ts:95; src/features/account/profile/actions.ts:38-44",
+  "verify": "Force a 500 on each: a translated message, never 'API fetch failed'.",
+  "owner": "Frontend settings-platform",
+  "status": "still-bug",
+  "tests": [
+   "SET-01-08"
+  ]
+ },
+ "rv-fe:settings-platform:45": {
+  "note": "settings/inventory/index.ts is still 'use server' with 24 `throw new Error(String(error))` blocks and revalidatePath inside the facade (index.ts:26-172 onward); no permission check or server-only.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The inventory settings facade throws raw error strings, so duplicate-name or in-use reasons are never shown, and its functions are public server actions with no permission check.",
+  "steps": [
+   "Settings > Inventory > Brands, create a brand with an existing name."
+  ],
+  "expected": "The backend reason (duplicate name) shows.",
+  "actual": "Generic failure; functions callable directly.",
+  "where": "src/erp-api/settings/inventory/index.ts",
+  "verify": "Create a duplicate brand: reason shown. Calling deleteItemType without the permission is refused.",
+  "owner": "Frontend settings-platform",
+  "status": "still-bug",
+  "tests": [
+   "SET-05-02"
+  ]
+ },
+ "rv-fe:settings-platform:5": {
+  "note": "Fixed: tree load failure sets loadError (field-force/index.ts:308-355). Missing: toActionError still returns raw error.message (:519-521), deleteOrgNode and the other primitives are exported from the 'use server' file (:443-500), the tree loads with expand=true (:311), and the customer-assignment modal still swallows a failed channel lookup into an empty list (customer-assignment-modal.tsx:93-95).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A failed geography read used to render an empty tree. That is fixed; business refusals still reach users as raw text, any client can call the exported delete primitive, and a failed customer-channel lookup reads as 'no customers'.",
+  "steps": [
+   "Fail GET /api/sales/geographies/by-tier.",
+   "Delete a territory that still has customers."
+  ],
+  "expected": "Error with retry; backend reason shown translated.",
+  "actual": "Error state fixed; raw text, exported primitives and silent lookup failure remain.",
+  "where": "src/erp-api/settings/field-force/index.ts:308-355,443-580; src/features/settings/field-force/components/customer-assignment-modal.tsx:93-95",
+  "verify": "Territory with customers delete: translated backend reason; grep shows primitives not exported.",
+  "owner": "Frontend settings-platform",
+  "status": "in-progress",
+  "tests": [
+   "SET-06-01",
+   "SET-06-03"
+  ]
+ },
+ "rv-fe:settings-platform:50": {
+  "note": "api-client.ts:187 signal defaults to AbortSignal.timeout(60_000); resolveBackendUrl (:134-149) refuses an absolute URL on another origin. The session is still read via auth() and getBackendAccessToken() (minor).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "A hung backend request held a render, and an absolute URL could receive the user's bearer token.",
+  "steps": [
+   "Call apiClient('http://example.test/x') in a server action."
+  ],
+  "expected": "Rejected; stalled calls fail after 60 s.",
+  "actual": "fixed.",
+  "where": "src/erp-api/api-client.ts:134-149,187",
+  "verify": "Absolute foreign URL throws 'Refusing to send the access token...'.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed"
+ },
+ "rv-fe:settings-platform:8": {
+  "note": "item-type-section.tsx:57,134 and shipping-carrier-section.tsx:65,149 await loadItemTypes/loadCarriers after save.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "New or edited item types and shipping carriers did not appear after saving, so users saved again and created duplicates.",
+  "steps": [
+   "Settings > Inventory, create a shipping carrier."
+  ],
+  "expected": "It appears at once.",
+  "actual": "fixed.",
+  "where": "src/features/settings/inventory/components/item-master/item-type-section.tsx:134; shipping-carrier-section.tsx:149",
+  "verify": "Create then edit a carrier: list updates.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-05-03"
+  ]
+ },
+ "rv-fe:settings-platform:9": {
+  "note": "business-type-root.tsx:40,75-152,187-195 uses AppMessage for load, fetch, save and toggle success and failure.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The Business Type screen gave no feedback on load failure, failed save or failed toggle.",
+  "steps": [
+   "Block the business type PUT and save."
+  ],
+  "expected": "Clear error message; switch reverts with a message.",
+  "actual": "fixed.",
+  "where": "src/features/settings/inventory/components/business-type-root.tsx",
+  "verify": "Block the PUT: an error shows.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-10-01"
+  ]
+ },
+ "rv-fe:settings-platform:10": {
+  "note": "edit-user-modal.tsx:43-61 loads roles only when open and contextHolder is rendered in the component (:99).",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "The users tab fetched all roles on every visit and the failure toast went to a holder that was not mounted.",
+  "steps": [
+   "Fail GET /api/rbac/roles, open Edit user."
+  ],
+  "expected": "An error is shown when the dialog opens.",
+  "actual": "fixed.",
+  "where": "src/features/settings/users-and-roles/components/edit-user-modal.tsx:43-61,99",
+  "verify": "Fail the roles call: error toast on opening.",
+  "owner": "Frontend settings-platform",
+  "status": "fixed",
+  "tests": [
+   "SET-02-05"
+  ],
+  "severity": "low"
+ },
+ "rv-fe:settings-platform:15": {
+  "note": "levels and capacityUnits are whole-number validated (warehouse/schemas.ts:161,163). Floor area is still free text (localizedOptionalString at :156), so -500 is accepted.",
+  "ref": "frontend release_beta_1.0.0@05aecf15",
+  "date": "2026-11-13",
+  "summary": "Warehouse numeric fields used to accept 2.5 levels and negative floor area. Levels and capacity now reject decimals; floor area is still unchecked.",
+  "steps": [
+   "Settings > Warehouse > create warehouse, enter -500 in Floor area, Save."
+  ],
+  "expected": "Field error.",
+  "actual": "Saved.",
+  "where": "src/features/settings/warehouse/schemas.ts:156,161,163",
+  "verify": "Enter -500 in floor area: field error.",
+  "owner": "Frontend settings-platform",
+  "status": "in-progress",
+  "tests": [
+   "SET-04-01"
+  ]
+ }
+}

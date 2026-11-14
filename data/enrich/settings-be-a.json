@@ -1,0 +1,526 @@
+{
+ "rv-be:settings-platform:1": {
+  "note": "code looks fixed for writes (Company, CurrencyExchangeConfig, GeneralSetting, TransactionSeriesConfig controllers carry @RequiresPermission(\"settings.system.manage\") on POST/PUT/DELETE); GETs stay open on purpose; needs API/test proof.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The company, exchange-rate, general-setting and number-series settings used to let any logged-in user (even a field-force user) delete a company or change document numbering. Today every write endpoint requires the settings.system.manage permission; read endpoints still only need a login, which the screens need for formatting.",
+  "steps": [
+   "Log in as a user without settings.system.manage.",
+   "DELETE /api/companies/1.",
+   "PUT /api/transaction-series-config/{id} with a valid body."
+  ],
+  "expected": "403 on every write for a user without the permission; GET /api/companies and GET /api/general-setting still work.",
+  "actual": "By code the writes are guarded. Not proven on a running backend.",
+  "where": "backend com.nsl.erp.organization.controller.{CompanyController, CurrencyExchangeConfigController, GeneralSettingController, TransactionSeriesConfigController}",
+  "verify": "As a no-grant user: DELETE /api/companies/1 and PUT /api/transaction-series-config/1 (valid body) expect 403; as admin expect 2xx/404; GET /api/general-setting as no-grant user expect 200.",
+  "owner": "Backend, settings/platform"
+ },
+ "rv-be:settings-platform:2": {
+  "note": "partly fixed: WorkflowInstanceController start/signal/cancel/GET now need workflow.definition.edit/view (~l.33-72), but there is still no ownership check: WorkflowEngine.cancel (~l.276) never validates the actor and its payload map with the reason is unused; GET /{instanceId} still returns the raw entity.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Anyone holding the workflow-definition edit permission (an admin-type permission, not an approval permission) can cancel or signal any running approval, not only the starter. The cancel reason is dropped and the GET returns the internal entity.",
+  "steps": [
+   "As user B with workflow.definition.edit (not the starter), POST /api/workflow/instances/{id}/cancel on user A's running instance.",
+   "GET /api/workflow/instances/{id} and read the body."
+  ],
+  "expected": "Cancel only by the starter or an admin; GET returns a small DTO; cancel reason stored.",
+  "actual": "Cancel succeeds for any holder of the edit permission; GET returns the raw WorkflowInstance entity.",
+  "where": "backend shared/workflow/controller/WorkflowInstanceController.java; shared/workflow/application/WorkflowEngine.cancel/signal",
+  "verify": "Instance started by A, B (edit permission only) calls cancel: today 200, expected 403.",
+  "owner": "Backend, settings/platform"
+ },
+ "rv-be:settings-platform:3": {
+  "note": "still visible in code: MediaController has no @RequiresPermission on GET /api/media/{id}, /download, /preview, DELETE and POST /upload; generateToken (~l.47) stores a global token whose value is the token itself and publicPreview (~l.101) only checks that the token exists, not that it belongs to the id.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Attachment ids are sequential numbers. Any logged-in user can read or delete any attachment (invoices, bank documents, photos) by counting ids, and one token from /api/media/generate-token opens the public preview of every id for an hour.",
+  "steps": [
+   "As any logged-in user: GET /api/media/1/download, then 2, 3 ...",
+   "DELETE /api/media/{id} for a file you did not upload.",
+   "GET /api/media/generate-token, then GET /api/public/media/{anyId}/preview?token=<token> without a login."
+  ],
+  "expected": "403 for files the user may not see; DELETE refused unless the user may edit the owning document; a token valid only for the id it was issued for.",
+  "actual": "All of them succeed.",
+  "where": "backend shared/controller/MediaController.java (generateToken, publicPreview, delete); shared/service/AttachmentHandler.java",
+  "verify": "Upload as user A; as user B GET /api/media/{id}/download expect 403; token issued for id 1 on /api/public/media/2/preview expect 401.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:4": {
+  "note": "still visible in code: AuditTrailController has 'TODO: authorize' in every GET (~l.89, 113, 162, 285) and no permission check; size is not capped. The URL-injection part looks fixed: entityType/entityId now go in a JSON body (search(), ~l.304-330), not in the URL path. e2e AUD-01 only reads a history, it does not test access.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Any logged-in user can read the full history (old and new values) of any document of any type, such as customers, bills and journals. The page size is also uncapped.",
+  "steps": [
+   "As a user with no sales or accounting permission: GET /api/audit-trail/SalesDemand/{id}.",
+   "GET /api/audit-trail/PurchaseOrder/{id}?size=5000."
+  ],
+  "expected": "403 unless the caller may view that entity type; size clamped (for example 1..100).",
+  "actual": "200 with the history; size passed through.",
+  "where": "backend shared/auditclient/AuditTrailController.java (timeline, timelineForCompany, lifecycle, partner timeline)",
+  "verify": "As a no-grant user GET /api/audit-trail/SalesDemand/1 expect 403 (today 200); size=5000 returns at most the cap.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug",
+  "tests": [
+   "AUD-01-01 (reads a history only, no access test)"
+  ]
+ },
+ "rv-be:settings-platform:41": {
+  "note": "still visible in code: UserAdminService.activeRoleCodes (~l.540) does userRoleAssignmentRepository.findAll() then filters, same pattern ~l.506-533; queryErpUsers (~l.387) starts with userRepository.findAll(); the batch helper UserProfileEnricher.hrmsLinkedUserIds exists but the list path still calls enrichSummary per user (~l.407).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The user-admin screens (Settings > Users and the HRMS employees to provision dialog) load whole tables for every row. With hundreds of users each page opens hundreds of queries and the screen gets slow.",
+  "steps": [
+   "Open Settings > Users (GET /api/admin/users) with a few hundred users.",
+   "Open the provision-from-HRMS dialog.",
+   "Watch SQL statements or response time."
+  ],
+  "expected": "A page of users costs a handful of queries (batched role and link lookups, real paging).",
+  "actual": "One full-table scan per user plus a link query per user.",
+  "where": "backend auth/admin/UserAdminService (activeRoleCodes, listHrmsEmployeeCandidates, queryErpUsers); auth/profile/UserProfileEnricher",
+  "verify": "With 200 seeded users count SQL statements for one page of GET /api/admin/users: expect under 10.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:42": {
+  "note": "still visible in code: WorkflowSetupQueryService.resolveEntityDisplayName (~l.174-182) still calls conditionCatalogService.getModule(entityType) (which resolves every dropdown option) although the option-free resolveModuleDisplayName exists (WorkflowConditionCatalogService ~l.51).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The workflow rules list, the rule detail and the condition catalog load all customers and locations repeatedly for every row only to print a module name. The rules page gets slower as data grows.",
+  "steps": [
+   "Open Settings > Workflow rules (GET /api/workflow/definitions/setup?size=20) with 20+ rules for sales modules.",
+   "Watch the SQL log for customer and location selects."
+  ],
+  "expected": "No customer or location selects for the list; each option provider called at most once per request.",
+  "actual": "Customer and location tables are read per row and per field.",
+  "where": "backend shared/workflow/application/WorkflowSetupQueryService.resolveEntityDisplayName; shared/workflow/catalog/WorkflowConditionCatalogService.getModule/toDto",
+  "verify": "With SQL logging GET /api/workflow/definitions/setup?size=20 shows zero customer or location selects after the fix.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:5": {
+  "note": "still visible in code: DomainService.resolveSpecificationPath (~l.1058-1076) walks any dotted path with path.get(part) and has no deny-list; ExportRequestDTO.specFilters (l.72) feeds the same path. No test covers it.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The generic list filter and the export filter accept any field path, including relations to the User table. A caller can learn whether a password hash starts with given letters (filter like gateOfficer.password), one probe at a time.",
+  "steps": [
+   "As a user who can list gate passes: POST the gate-pass filter endpoint with [{\"field\":\"gateOfficer.password\",\"valueLike\":\"$2a%\"}].",
+   "Or POST /api/exports for a purchase list with the same specFilters."
+  ],
+  "expected": "400 'Unknown filter field' for any password, token or secret path and for any User field other than id, userId, firstName, lastName.",
+  "actual": "The filter runs and returns rows only when the hash matches.",
+  "where": "backend shared/service/DomainService.resolveSpecificationPath; shared/export/ExportRequestDTO.specFilters",
+  "verify": "POST the gate-pass filter with gateOfficer.password valueLike: expect 400 (today 200).",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:6": {
+  "note": "still visible in code: NativeProfilePictureStorage.store (~l.26-44) only requires a '.' in the file name and keeps the client's extension; no allow-list, no image check; files are served publicly under /erp-img/**.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A user can upload an .html or .svg file as a profile picture. It is then readable by anyone without login on the API address, so a script can run in the API origin (stored XSS) and the server becomes a free file host.",
+  "steps": [
+   "Log in and upload a profile picture (AccountController updateProfilePicture) with a file named me.html or me.svg.",
+   "Open the returned /erp-img/... path in a private window."
+  ],
+  "expected": "Only png, jpg, jpeg, webp, gif that decode as images are accepted; others get 400; nosniff header.",
+  "actual": "Any extension is stored and served.",
+  "where": "backend auth/profile/NativeProfilePictureStorage.store; config/ErpAssetsWebConfig",
+  "verify": "Upload me.html expect 400; a real png expect 200.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "saleschain:P3-B3": {
+  "note": "still visible in code: TransactionSeriesConfigServiceImpl.update (~l.43-56) copies nextSequence, sequenceLength and prefix with no validation and no lower-bound check; the request DTO has no constraints and the controller no @Valid; update also takes no row lock (generateNextId does). The note's second point (POST /bulk is 405) was not rechecked.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "In Settings > Transaction number series an admin can set the next number below numbers already used, so the next document gets a number that already exists. Zero or negative length, empty prefix and negative sequence are also accepted and later break number generation for that document type.",
+  "steps": [
+   "Create a sales demand so SD-000001 exists.",
+   "PUT /api/transaction-series-config/{id} for SALES_DEMAND with nextSequence 1.",
+   "Create another demand."
+  ],
+  "expected": "400 when nextSequence is at or below the highest issued number, when sequenceLength < 1, the prefix is empty or the sequence < 1.",
+  "actual": "Accepted; the next document is SD-000001 again (duplicate).",
+  "where": "backend organization/service/TransactionSeriesConfigServiceImpl.update; organization/dto/TransactionSeriesConfigRequestDTO; TransactionSeriesConfigController",
+  "verify": "PUT with nextSequence 1 after documents exist expect 400; sequenceLength 0 or -3 expect 400. Same cause as rv-be:settings-platform:22.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug",
+  "tests": [
+   "SET-08-05 (valid case only)"
+  ],
+  "severity": "high"
+ },
+ "purchase:B-P7": {
+  "note": "partly fixed (backend, needs API proof): configure now rejects empty steps for a non-draft (GenericWorkflowCompiler.validate ~l.345) and validates condition field, operator and missing value (WorkflowConditionCatalogService.validateRules ~l.180-215). Still no check of unknown approver role code, SLA 0 or priority < 1; a negative SLA is silently dropped (~l.216-219).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The approval-rule screen could save rules that can never work: an unknown approver role leaves every document of that type waiting for ever. Part of this is now blocked (no steps, bad condition field or operator); role, SLA and priority values are still not checked.",
+  "steps": [
+   "POST /api/workflow/definitions/configure for PurchaseOrder with a step whose approver role code does not exist.",
+   "Repeat with slaHours 0 and with priority 0 or -1."
+  ],
+  "expected": "400 with a readable message for each meaningless value.",
+  "actual": "By code, unknown role, SLA 0 and priority <= 0 are still accepted.",
+  "where": "backend shared/workflow/utils/GenericWorkflowCompiler.validate/buildApprovalOnlyGraph; WorkflowDefinitionController.configure; WorkflowConditionCatalogService.validateRules",
+  "verify": "POST configure with steps [] (non-draft) expect 400; with an unknown role code expect 400 (today 200 by code); with a condition on an unknown field expect 400.",
+  "owner": "Backend, settings/platform",
+  "tests": [
+   "SET-03-03 (same priority twice only)"
+  ]
+ },
+ "rv-be:settings-platform:10": {
+  "note": "feature not implemented: WorkflowInstance has no startedBy and TaskAuthorizationService does not compare the actor with the submitter; the source marks the rule as needing a product decision first.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A user who submits a document and also holds the approver role of its stage can approve their own document (payment, budget, manual journal). In small teams this defeats the approval control.",
+  "steps": [
+   "As a user holding the stage approver role, submit a payment entry.",
+   "Open the pending task and POST /api/workflow/tasks/{taskId}/complete {\"decision\":\"APPROVED\"} as the same user."
+  ],
+  "expected": "Refused with 403 for configured document types (decision needed first).",
+  "actual": "Approved.",
+  "where": "backend shared/workflow/application/TaskAuthorizationService.assertCanComplete; WorkflowEngine.start",
+  "verify": "After the rule is decided: the submitter completing their own task expect 403; another approver expect 200.",
+  "owner": "Backend, settings/platform"
+ },
+ "rv-be:settings-platform:11": {
+  "note": "feature not implemented: AuthServiceImpl.login (~l.62) calls authenticate with no failure counter or lockout; no 429 handling found.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The public login endpoint accepts unlimited password guesses. Each attempt costs server CPU for password hashing, so a flood is also a cheap way to slow the system.",
+  "steps": [
+   "POST /api/public/auth/login with a wrong password 20 times in a row for one user."
+  ],
+  "expected": "429 after about 5 failures in 15 minutes per user and per address.",
+  "actual": "Every attempt is processed and answered normally.",
+  "where": "backend auth/service/impl/AuthServiceImpl.login; auth/controller/AuthController",
+  "verify": "Six wrong passwords then the right one expect 429; it works again after the lock time.",
+  "owner": "Backend, settings/platform",
+  "tests": [
+   "SET-01-01 (single wrong password only)"
+  ]
+ },
+ "rv-be:settings-platform:12": {
+  "note": "still visible in code: AuthTokenFilter SENSITIVE_FIELDS = List.of(\"password\") (l.39) and the redaction regex (l.167-172) matches the key 'password' directly followed by a colon, so a key 'passwordHash' (POST /api/internal/identity/sync) is not masked; shouldLogPayload (l.150) logs any JSON body.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "When HRMS syncs an employee, the request body with the password hash is written to the application log. Anyone who can read the logs sees the hashes.",
+  "steps": [
+   "POST /api/internal/identity/sync with a JSON body containing passwordHash (internal key required).",
+   "Read the application log for the request line."
+  ],
+  "expected": "Hash masked, or the body not logged for /api/internal/** and /api/public/auth/**.",
+  "actual": "The hash is logged unchanged (key 'passwordHash' not matched).",
+  "where": "backend config/security/AuthTokenFilter.java (SENSITIVE_FIELDS, redactSensitive, shouldLogPayload)",
+  "verify": "After a sync request grep the log for the hash prefix: it must be absent.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:13": {
+  "note": "still visible in code: UserAdminService.sendNativeUserWelcomeEmailIfPossible (~l.595-620) renders the generated password into the mail body and publishes it as EmailRequestedEvent; EmailRequestedListener passes event.getBody() unchanged; no must-change-password flag exists. Whether the body is persisted in the email log was not read.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "When an admin creates a user with 'send email', the plain initial password travels through the message queue and is likely stored in the email log. Anyone with access to the queue or log can read it.",
+  "steps": [
+   "Settings > Users > new native user with Send email on (POST /api/admin/users/native with sendEmail true).",
+   "Read the email log (GET /api/email-communications) or the queue message."
+  ],
+  "expected": "Password not kept in logs; user forced to change it at first login or given a set-password link.",
+  "actual": "The body with the password is queued and sent as is.",
+  "where": "backend auth/admin/UserAdminService.sendNativeUserWelcomeEmailIfPossible; shared/events/email/EmailRequestedListener",
+  "verify": "Create a user with sendEmail true; the stored email record must not contain the generated password.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug",
+  "tests": [
+   "SET-02-04 (invite and first sign-in work)"
+  ]
+ },
+ "rv-be:settings-platform:21": {
+  "note": "still visible in code: ChangePasswordRequestDTO.newPassword has only @NotBlank (l.14-18), so a one-character password is accepted; the organization controllers (except Company) have no @Valid on @RequestBody; WorkflowInstanceController.start has none.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Account and organization forms can save values the screens never would: one-character passwords, empty prefixes or zero padding in document numbers.",
+  "steps": [
+   "PUT the change-password endpoint of AccountController with newPassword \"a\".",
+   "POST /api/transaction-series-config with sequenceLength 0."
+  ],
+  "expected": "400 with field errors; password minimum 8 and maximum 72.",
+  "actual": "Accepted.",
+  "where": "backend auth/dto/ChangePasswordRequestDTO; organization/controller/*; organization/dto/*",
+  "verify": "Change password to one character expect 400.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:22": {
+  "note": "still visible in code: TransactionSeriesConfigRequestDTO has no constraints; update copies transactionType and nextSequence (TransactionSeriesConfigServiceImpl ~l.45-52); CurrencyExchangeConfigMapper l.16 still does config.setId(request.getId()), so POST with an existing id overwrites that row; no @Valid on these controllers. Same cause as saleschain:P3-B3.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Number-series and exchange-rate settings accept values that break numbering (length 0 or negative gives a server error for every new document of that type), let the counter be set back, and let a client choose the id of a row.",
+  "steps": [
+   "PUT /api/transaction-series-config/{id} with sequenceLength 0.",
+   "POST /api/currency-exchange-config with an existing \"id\" in the body."
+  ],
+  "expected": "400 for invalid values; id and transactionType ignored on update; counter never lowered.",
+  "actual": "Accepted; the existing exchange-rate row is overwritten.",
+  "where": "backend organization/dto/TransactionSeriesConfigRequestDTO, CurrencyExchangeConfigRequestDTO; organization/mapper/CurrencyExchangeConfigMapper.toEntity; TransactionSeriesConfigServiceImpl.update",
+  "verify": "PUT sequenceLength 0 expect 400; POST currency config with an existing id expect a new row and the old row unchanged.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:23": {
+  "note": "still visible in code: IdentitySyncRequestDTO.active is a primitive boolean (l.38), so a payload without 'active' becomes false.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "An HRMS employee sync that omits the 'active' field deactivates the user (update) or creates a locked account (create).",
+  "steps": [
+   "POST /api/internal/identity/sync with eventType UPDATE and no 'active' field for an active user."
+  ],
+  "expected": "A missing 'active' keeps the current flag (update) or is refused (create).",
+  "actual": "The user becomes inactive.",
+  "where": "backend auth/dto/IdentitySyncRequestDTO.active; auth/service/impl/IdentityUpsertServiceImpl; auth/hrms/HrmsIdentitySnapshotClient.booleanValue",
+  "verify": "UPDATE without active: the user stays active.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:24": {
+  "note": "still visible in code: CompanyServiceImpl.update (~l.43) does existingCompany.setLogo(companyDetails.getLogo()) with no null check; CompanyMapper only sets the logo when logoAttachmentId is given (l.35).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Editing a company (for example a phone number) without re-sending the logo removes the logo, so printed reports lose it.",
+  "steps": [
+   "Settings > Company: create a company with a logo.",
+   "PUT /api/companies/{id} (multipart) with only the company part, no logo.",
+   "GET /api/companies/{id}."
+  ],
+  "expected": "The logo stays.",
+  "actual": "logo is null.",
+  "where": "backend organization/service/CompanyServiceImpl.update; organization/mapper/CompanyMapper",
+  "verify": "PUT without a logo, then GET: logo still present.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:25": {
+  "note": "still visible in code: the bulk upsert in CurrencyExchangeConfigServiceImpl (~l.52-53) compares only targetCurrency and exchangeRate with equals, so an effectiveDate or isActive change is dropped.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A bulk save of exchange rates that changes only the effective date or the active flag is silently ignored while the API still answers success.",
+  "steps": [
+   "POST /api/currency-exchange-config/bulk with an existing id, same rate, isActive flipped to false.",
+   "GET the row."
+  ],
+  "expected": "The stored row becomes inactive; the rate is compared with compareTo.",
+  "actual": "Row unchanged, 201 with the old values.",
+  "where": "backend organization/service/CurrencyExchangeConfigServiceImpl (bulk method)",
+  "verify": "Bulk call with only isActive changed: GET shows the new value.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:26": {
+  "note": "still visible in code: WorkflowDefinitionService.toggleStatus (~l.100-113) flips INACTIVE to ACTIVE without calling validateActiveSetup (only WorkflowDefinitionController.configure ~l.288 does). e2e SET-03-03 covers the configure path only.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Switching an old approval rule back on can leave two active rules with the same priority for the same document type. Every document of that type then fails to submit with 'Multiple workflows match with the same priority'.",
+  "steps": [
+   "Rule A priority 100 inactive; rule B priority 100, same module, active.",
+   "Toggle A on (the workflow definition toggle-status endpoint)."
+  ],
+  "expected": "409 Conflict; A stays inactive.",
+  "actual": "Both active with equal priority.",
+  "where": "backend shared/workflow/utils/WorkflowDefinitionService.toggleStatus; WorkflowDefinitionMatcher.select",
+  "verify": "Toggle A: expect 409.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug",
+  "tests": [
+   "SET-03-03 (configure path only)"
+  ]
+ },
+ "rv-be:settings-platform:29": {
+  "note": "still visible in code: ConsumedDomainEvent has an assigned String id with no Persistable or @Version (entity l.22-37) and tryClaim uses saveAndFlush (~l.30), which merges and returns true on a redelivery; no ON CONFLICT insert. Not proven on a running system.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "When the broker delivers the same event twice, the 'already processed' check does not detect it, so emails, notifications or workflow starts can run twice.",
+  "steps": [
+   "Publish the same domain event id twice to the email queue (or restart a consumer so a message is redelivered).",
+   "Count the emails sent."
+  ],
+  "expected": "The second delivery is skipped.",
+  "actual": "By code the second delivery runs the logic again.",
+  "where": "backend shared/events/consumption/DomainEventIdempotencyService.tryClaim; ConsumedDomainEvent",
+  "verify": "Integration test: tryClaim(\"email\",\"e1\") twice in separate transactions returns true then false (today true, true).",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:33": {
+  "note": "still visible in code: RestTemplateConfig.restTemplate returns builder.build() with no timeouts (l.17); no hikari or timeout properties in application*.properties (only a redis timeout in dev).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "A hung HRMS, audit or notification service blocks a request thread for ever and holds a database connection; ten such requests stop the whole API.",
+  "steps": [
+   "Make the HRMS URL unreachable or slow; open the provision-from-HRMS dialog.",
+   "Repeat ten times."
+  ],
+  "expected": "Calls fail within a few seconds; pool size and connection timeout are configured.",
+  "actual": "Calls wait with no limit.",
+  "where": "backend config/RestTemplateConfig.java; src/main/resources/application*.properties",
+  "verify": "GET /actuator/metrics/hikaricp.connections.max shows the configured size; a 20 s delayed HRMS stub fails after about 15 s.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:34": {
+  "note": "still visible in code: AccountServiceImpl.changePassword and updateProfilePicture are @Transactional (~l.73-110) and call hrmsIdentityClient.pushPasswordHashToHrms / uploadProfilePicture inside; UserAdminService.provisionFromHrms (~l.150, @Transactional) fetches the HRMS snapshot inside.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Remote HRMS calls run while a database transaction and its locks are held. If HRMS accepts the new password hash but ERP then rolls back, the two systems disagree.",
+  "steps": [
+   "Change a HRMS-linked user's password (account change-password endpoint) while HRMS is down or slow."
+  ],
+  "expected": "The ERP change is committed first; the HRMS push runs after commit with a retry.",
+  "actual": "HRMS call inside the transaction; a failure rolls back or leaves the systems out of sync.",
+  "where": "backend auth/service/impl/AccountServiceImpl.changePassword/updateProfilePicture; auth/admin/UserAdminService.provisionFromHrms",
+  "verify": "Stub HRMS to fail: the ERP password is still changed and a retry is queued.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:35": {
+  "note": "still visible in code: AdminBootstrapHrmsLinker.linkIfConfigured is plain @Transactional (l.25) with the whole body in try/catch (l.47), so a failure inside the shared transaction is swallowed and the outer seeder commit fails. Only when an hrmsEmployeeId is configured.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "If linking the bootstrap admin to HRMS fails (for example a user-id conflict), the swallowed error marks the shared transaction rollback-only and start-up aborts, also losing the new admin.",
+  "steps": [
+   "Configure the platform admin hrms-employee-id to an employee whose user id conflicts.",
+   "Start the backend."
+  ],
+  "expected": "The app boots, the admin exists, a warning is logged.",
+  "actual": "By code, start-up fails with UnexpectedRollbackException.",
+  "where": "backend bootstrap/AdminBootstrapHrmsLinker.linkIfConfigured; AdminBootstrapSeeder.run",
+  "verify": "Start with a conflicting hrms employee id: the app boots and logs a warning.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:36": {
+  "note": "still visible in code: RequiresPermissionAspect.enforce (~l.42-48) loops over anyOf calling permissionChecker.hasPermission per code; AuthorizationEvaluatorImpl records a DENIED row for every miss (~l.112) through AuthorizationAuditServiceImpl REQUIRES_NEW (l.26).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "For endpoints that accept one of several permissions, every failed alternative writes a DENIED audit row in a second transaction, even though the request then succeeds. The audit table fills with false denials and each request holds an extra connection.",
+  "steps": [
+   "As a user who has only user.account.view call GET /api/rbac/roles (anyOf includes rbac.role.view).",
+   "Count rows in authorization_audit_log."
+  ],
+  "expected": "One decision per request; a DENIED row only when nothing matched.",
+  "actual": "A DENIED row for the first alternative, then success.",
+  "where": "backend rbac/security/RequiresPermissionAspect.enforce; rbac/service/impl/AuthorizationEvaluatorImpl; AuthorizationAuditServiceImpl",
+  "verify": "Audit row count unchanged after an allowed anyOf call; exactly one DENIED row when none matches.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:37": {
+  "note": "still visible in code: OutboxProcessor.processOutbox is @Transactional and publishes inside the loop (~l.31-58), marks PUBLISHED without publisher confirms (no confirm or mandatory property found), and OutboxRepository only purges AUDIT_EVENT rows (l.53-58).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Messages are sent to the broker while a database transaction is open; a lost or unroutable message is still marked PUBLISHED and never retried (accounting posting, notifications); published rows are never deleted so the table grows for ever.",
+  "steps": [
+   "Stop the broker, or bind no queue to a routing key, and let the outbox publish.",
+   "Check outbox_events.status."
+  ],
+  "expected": "The row stays PENDING with next_retry_at when not confirmed; old PUBLISHED rows are purged.",
+  "actual": "The row is marked PUBLISHED.",
+  "where": "backend shared/events/outbox/OutboxProcessor; RabbitOutboxMessageTransport; OutboxRepository",
+  "verify": "Publish to an unbound routing key: the row must not become PUBLISHED; after the cleanup job the count of PUBLISHED rows drops.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:38": {
+  "note": "still visible in code: WorkflowDocumentSummaryService.refresh is plain @Transactional (l.44-48) with catch (RuntimeException) that only logs a warning (~l.70), called from the engine's transaction.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "If the document summary query fails (for example after a field rename) the approval inbox shows a blank document number, date and amount, and a persistence error may mark the whole approval step rollback-only.",
+  "steps": [
+   "In a dev build rename a property used by WorkflowDocumentSpec and submit a document for approval."
+  ],
+  "expected": "The refresh runs in its own transaction; a test runs every spec.",
+  "actual": "The error is swallowed in the shared transaction.",
+  "where": "backend shared/workflow/summary/WorkflowDocumentSummaryService.refresh",
+  "verify": "A test iterating every WorkflowEntityType spec passes; renaming a property makes it fail.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:43": {
+  "note": "still visible in schema: V1__initial_schema.sql (the only migration) has just the partial unique index uq_active_workflow (status RUNNING) on workflow_instance and idx_workflow_task_pending_assignee (status PENDING) on workflow_task; no index serves the all-status approval-history lookup or the completed and cancelled inbox tabs.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "The approval history tab and the completed-items inbox scan whole tables, which grow for ever, so they get slower over time.",
+  "steps": [
+   "Open a document's approval history on a database with many instances.",
+   "EXPLAIN SELECT ... FROM workflow_instance WHERE entity_type=.. AND entity_id=.. ORDER BY started_at."
+  ],
+  "expected": "Index scan on (entity_type, entity_id, started_at) and on (assignee_type, assignee_id, status, created_at).",
+  "actual": "Sequential scan for non-running rows.",
+  "where": "backend src/main/resources/db/migration/V1__initial_schema.sql; WorkflowInstanceRepository; WorkflowTaskRepository",
+  "verify": "EXPLAIN on a database copy shows the new indexes in use.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:44": {
+  "note": "still visible in code: WorkflowSlaEscalationScheduler.escalateOverdueApprovals (~l.30) loads every overdue task with findByStatusAndDueAtBefore (no paging); no partial index on due_at; no lock between nodes (no ShedLock or advisory lock found).",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Every minute the SLA job loads all overdue approvals into memory; with several backend nodes each node escalates the same tasks and a task that always fails is retried and logged every minute.",
+  "steps": [
+   "Create many approval tasks with a past due date.",
+   "Watch the job log with two backend instances on one database."
+  ],
+  "expected": "Paged query, supporting index, one node at a time.",
+  "actual": "Unbounded load on every node.",
+  "where": "backend shared/workflow/scheduler/WorkflowSlaEscalationScheduler; WorkflowTaskRepository.findByStatusAndDueAtBefore",
+  "verify": "Two instances log 'SLA escalate' once per stage; EXPLAIN uses the new partial index.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:45": {
+  "note": "still visible in code: TaskApproverDetailsService resolves names one by one (findByCode l.228, findByUserId l.161 and l.233) per task.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Opening a document with a large approval stage costs one name lookup per approver (plus one per 'acted by'). Large stages make the document page slow.",
+  "steps": [
+   "Open a document whose stage has 40 approvers (EVERYONE_MUST_APPROVE)."
+  ],
+  "expected": "Two batched lookups for all names.",
+  "actual": "About two selects per approver.",
+  "where": "backend shared/workflow/application/TaskApproverDetailsService",
+  "verify": "With SQL logging the name lookups are 2 in total.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:46": {
+  "note": "still visible in code: TaskService.inOwnTransaction uses REQUIRES_NEW (l.69-71) and is called while the outer read-only transaction is open (l.84, 176, 229), so one inbox call needs two pooled connections.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "Each inbox call holds one database connection and opens another per entity type. Under load with a small pool the inbox requests wait for each other and stall; deleted documents add extra queries.",
+  "steps": [
+   "Set a pool of 2 connections and call GET /api/workflow/tasks/inbox five times in parallel."
+  ],
+  "expected": "All requests return; no extra single-row loads for rows the batch did not return.",
+  "actual": "By code the requests queue and time out.",
+  "where": "backend shared/workflow/application/TaskService (inOwnTransaction, listInboxForCurrentUser, resolvePendingData)",
+  "verify": "Pool size 2 and 5 parallel inbox calls: all return.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ },
+ "rv-be:settings-platform:50": {
+  "note": "partly fixed, still open: ExcelExportService now uses SXSSFWorkbook (streaming), but ExportController.export (~l.65-90) still loads every row with source.fetchRows and builds the whole file in a byte[] with no row cap and no 413 or 429 handling.",
+  "ref": "deployment/dev@b2597ef11",
+  "date": "2026-11-13",
+  "summary": "An immediate (synchronous) export of a very large ledger loads all rows and the file into memory in one request thread; two at once can run the server out of memory.",
+  "steps": [
+   "POST /api/exports with a report type that has hundreds of thousands of rows and no page or size."
+  ],
+  "expected": "413 above a row limit, telling the user to use the background export.",
+  "actual": "All rows are loaded and the file is built in memory.",
+  "where": "backend shared/export/controller/ExportController.export; shared/export/excel/ExcelExportService",
+  "verify": "A request above the limit returns 413; one under it completes.",
+  "owner": "Backend, settings/platform",
+  "status": "still-bug"
+ }
+}
