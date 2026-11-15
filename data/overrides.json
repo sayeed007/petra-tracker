@@ -1464,10 +1464,9 @@
   "date": "2026-11-09"
  },
  "rv-fe:inventory:49": {
-  "status": "still-bug",
-  "note": "Picking fixtures gone, but adjustments/constants.ts:20 hard-coded accounts, form-view:114 and mappers.ts:88,193 default account",
-  "ref": "a03704c99",
-  "date": "2026-11-09"
+  "status": "wontfix",
+  "note": "Closed: the backend will provide an Adjustment Account dropdown API. The made-up account list is already gone from the form and detail page; a default account number is still sent until that API exists (adjustment-form-view.tsx:112, mappers.ts:184 on improvement/inventory-module). Owner decision 2026-11-15 (inventory and field-force developer answers).",
+  "date": "2026-11-15"
  },
  "rv-fe:sales:13": {
   "status": "fixed",
@@ -3019,11 +3018,10 @@
   "module": "field-force"
  },
  "rv-fe:reports:7": {
-  "status": "open",
-  "note": "moved from reports to field-force 2026-11-10 for that module's developer",
-  "ref": "",
-  "date": "2026-11-10",
-  "module": "field-force"
+  "module": "field-force",
+  "status": "wontfix",
+  "note": "Closed: ignore. Owner decision 2026-11-15 (inventory and field-force developer answers).",
+  "date": "2026-11-15"
  },
  "rv-fe:reports:8": {
   "status": "open",
@@ -3186,6 +3184,31 @@
   "status": "fixed",
   "note": "The purchase order seed now carries the preferred quotation's payment term (orders/index.ts billingTerms) and sends paymentTermId; the bill takes it from its source and shows the due date derived from it. In merge request feature/purchase-complete (not merged into release_beta_1.0.0 yet); read in code, typecheck, lint and unit tests clean, not run in a browser.",
   "ref": "3beb3808",
+  "date": "2026-11-15"
+ },
+ "st1111:S16": {
+  "status": "wontfix",
+  "note": "Closed: bins are offered by their Storage Purpose and NONE bins stay hidden, as intended. Note: no screen sets a bin's purpose, it comes from the data. Owner decision 2026-11-15 (inventory and field-force developer answers).",
+  "date": "2026-11-15"
+ },
+ "st1111:S9": {
+  "status": "wontfix",
+  "note": "Closed: ignored for now. Workaround stays: a channel-to-channel stock transfer, or a purchase receipt. Owner decision 2026-11-15 (inventory and field-force developer answers).",
+  "date": "2026-11-15"
+ },
+ "st1111:S8": {
+  "status": "wontfix",
+  "note": "Closed: the item list says No data for a channel without stock, for now. Owner decision 2026-11-15 (inventory and field-force developer answers).",
+  "date": "2026-11-15"
+ },
+ "pt1110:B9": {
+  "status": "wontfix",
+  "note": "Closed: the current behavior is correct (pack size on both tabs, one channel price required). Owner decision 2026-11-15 (inventory and field-force developer answers).",
+  "date": "2026-11-15"
+ },
+ "e2e:inventory:closed-routes-decision": {
+  "status": "wontfix",
+  "note": "Closed: Transfer Order and Courier Status are not needed now, so they stay closed (404). Their old tracker items and the 16 skipped e2e cases can be removed. Owner decision 2026-11-15 (inventory and field-force developer answers).",
   "date": "2026-11-15"
  }
 }

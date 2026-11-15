@@ -6354,8 +6354,8 @@
   "severity": "medium",
   "title": "Commission slabs overlapping or duplicate",
   "summary": "In Settings > Sales > Commission, extra-lifting slabs that overlap (0-1000 and 500-2000) or two milestones with the same percent used to be accepted and saved, so the preview could differ from what is paid. They are now rejected with an error on the offending row.",
-  "status": "open",
-  "status_evidence": "moved from reports to field-force 2026-11-10 for that module's developer",
+  "status": "wontfix",
+  "status_evidence": "Closed: ignore. Owner decision 2026-11-15 (inventory and field-force developer answers).",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/05-reports-dashboard.md",
@@ -6366,8 +6366,8 @@
   "theme": "Theme 1. Wrong money, filters that cut data",
   "set": "review-fe",
   "checked": {
-   "ref": "",
-   "date": "2026-11-10"
+   "ref": "release_beta_1.0.0@05aecf15",
+   "date": "2026-11-15"
   },
   "steps": [
    "Open Settings > Sales > Commission.",
@@ -8497,8 +8497,8 @@
   "severity": "medium",
   "title": "Item create: pack size typed twice, channel price required, Save fails without pointing to the other tab",
   "summary": "Creating an item needs the pack size entered twice (Purchasing/Inventory tab and Sales/Pricing tab) and at least one channel price. Earlier, Save failed without saying which tab was wrong; the form now switches to the failing tab, but the double entry remains.",
-  "status": "in-progress",
-  "status_evidence": "Part fixed: inventory-item-form-page.tsx:465-482 onInvalidSubmit now jumps to the tab with the failing pack size or channel price. Still open: pack size is a required field on both tabs (inventory-item-form-schema.ts:124-140) and one channel price is required (:162-174).",
+  "status": "wontfix",
+  "status_evidence": "Closed: the current behavior is correct (pack size on both tabs, one channel price required). Owner decision 2026-11-15 (inventory and field-force developer answers).",
   "evidence_level": "verified",
   "found": "2026-11-10",
   "source": "TEST-OBSERVATIONS-2026-11-10.md B9",
@@ -8508,7 +8508,7 @@
   "set": "purchase-test-2026-11-10",
   "checked": {
    "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "date": "2026-11-15"
   },
   "steps": [
    "Inventory > Items > New.",
@@ -10019,8 +10019,8 @@
   "severity": "medium",
   "title": "T10-a Fake demo data on live routes (picking, adjustment accounts)",
   "summary": "The adjustment form offers made-up account numbers ('6000245612 Expense') and defaults one, and on edit gives one to a record that had none. The old fake pick list is already removed.",
-  "status": "still-bug",
-  "status_evidence": "Picking fixtures gone, but adjustments/constants.ts:20 hard-coded accounts, form-view:114 and mappers.ts:88,193 default account",
+  "status": "wontfix",
+  "status_evidence": "Closed: the backend will provide an Adjustment Account dropdown API. The made-up account list is already gone from the form and detail page; a default account number is still sent until that API exists (adjustment-form-view.tsx:112, mappers.ts:184 on improvement/inventory-module). Owner decision 2026-11-15 (inventory and field-force developer answers).",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -10032,8 +10032,8 @@
   "theme": "Theme 10: Hardcoded text, fake or dead code, tidy-ups",
   "set": "review-fe",
   "checked": {
-   "ref": "a03704c99",
-   "date": "2026-11-09"
+   "ref": "frontend release_beta_1.0.0@05aecf15",
+   "date": "2026-11-15"
   },
   "steps": [
    "Inventory > Adjustment > New: open the Adjustment Account dropdown.",
@@ -10122,8 +10122,8 @@
   "severity": "medium",
   "title": "Return Receive bin list is empty: bins with storage purpose NONE cannot be chosen",
   "summary": "In Sales Return > Receive, the bin list is empty because the dialog only offers bins whose storage purpose matches (Returns, Standard ...), and seeded bins have purpose NONE. The tester had to set the purpose in the database. Users have no screen to set a purpose either.",
-  "status": "open",
-  "status_evidence": "Still open: the Return Receive dialog still filters bins by storage purpose (sales-return-receive-view.tsx:162,273 binStoragePurpose, erp-api/sales/item-receives/index.ts:119-130). A bin with purpose NONE never appears. Whether seeded data should carry a purpose is a data question.",
+  "status": "wontfix",
+  "status_evidence": "Closed: bins are offered by their Storage Purpose and NONE bins stay hidden, as intended. Note: no screen sets a bin's purpose, it comes from the data. Owner decision 2026-11-15 (inventory and field-force developer answers).",
   "evidence_level": "verified",
   "found": "2026-11-11",
   "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S16",
@@ -10133,7 +10133,7 @@
   "set": "sales-test-2026-11-11",
   "checked": {
    "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "date": "2026-11-15"
   },
   "steps": [
    "Sales > Sales Return > an approved return > Receive.",
@@ -10152,8 +10152,8 @@
   "severity": "medium",
   "title": "Only Modern Trade has stock; other channels show \"No data\" with no explanation",
   "summary": "On the sales demand form, the item dropdown says 'No data' for channels other than Modern Trade, because stock is held per sales channel and only purchase allocation puts stock there. Nothing tells the user why, so it looks broken.",
-  "status": "open",
-  "status_evidence": "Still open (no explanation text found in features/sales/sales-demand/components/sales-demand-form-item-row.tsx; the item select shows the default empty state). Stock is allocated per channel in the backend, so channels without allocation have no items.",
+  "status": "wontfix",
+  "status_evidence": "Closed: the item list says No data for a channel without stock, for now. Owner decision 2026-11-15 (inventory and field-force developer answers).",
   "evidence_level": "verified",
   "found": "2026-11-11",
   "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S8",
@@ -10163,7 +10163,7 @@
   "set": "sales-test-2026-11-11",
   "checked": {
    "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "date": "2026-11-15"
   },
   "steps": [
    "Sales > Demand > New, choose an Other Corporate or Retail customer.",
@@ -10182,8 +10182,8 @@
   "severity": "medium",
   "title": "No way to add channel stock from the UI except a purchase receipt (adjustments are write-offs only)",
   "summary": "The only way to add stock from the UI is a purchase receipt, because Inventory Adjustment only offers write-off types. Testing channels other than Modern Trade needs a full purchase cycle or a channel-to-channel stock transfer.",
-  "status": "open",
-  "status_evidence": "Still open: adjustment types are write-offs only (adjustments/constants.ts:34-40 DAMAGED, STOLEN, EXPIRED, ASSET, OTHER). Stock Transfer between channels works as a workaround (noted in the source).",
+  "status": "wontfix",
+  "status_evidence": "Closed: ignored for now. Workaround stays: a channel-to-channel stock transfer, or a purchase receipt. Owner decision 2026-11-15 (inventory and field-force developer answers).",
   "evidence_level": "verified",
   "found": "2026-11-11",
   "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S9",
@@ -10193,7 +10193,7 @@
   "set": "sales-test-2026-11-11",
   "checked": {
    "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "date": "2026-11-15"
   },
   "steps": [
    "Inventory > Adjustment > New: open the Adjustment Type dropdown.",
@@ -10224,13 +10224,13 @@
   ],
   "verify": "After the decision: tracker items for these screens closed as wontfix, or a backend contract exists.",
   "owner": "Frontend inventory",
-  "status": "decision",
-  "status_evidence": "Closed on purpose, decision still needed: /transfer-order and /courier-status call notFound() (page.tsx comments) and their feature and erp-api folders are deleted; 16 e2e cases are skipped, two 404 cases added (INV-11-11, INV-12-06). Suggested decision: keep closed until a real backend API exists, then delete the skipped cases and the matching tracker items.",
+  "status": "wontfix",
+  "status_evidence": "Closed: Transfer Order and Courier Status are not needed now, so they stay closed (404). Their old tracker items and the 16 skipped e2e cases can be removed. Owner decision 2026-11-15 (inventory and field-force developer answers).",
   "evidence_level": "verified",
   "found": "2026-11-13",
   "checked": {
    "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "date": "2026-11-15"
   },
   "refs": [
    "e2e/tests/inventory/11-transfer-order.spec.ts",
