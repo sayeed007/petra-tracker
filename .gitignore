@@ -1,2 +1,11 @@
 preview.png
 export/
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+drizzle/meta/_journal.json.tmp
