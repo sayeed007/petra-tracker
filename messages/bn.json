@@ -95,7 +95,8 @@
     "decision_pending": "অপেক্ষায়",
     "decision_approved": "অনুমোদিত",
     "decision_rejected": "বাতিল",
-    "decision_superseded": "প্রতিস্থাপিত"
+    "decision_superseded": "প্রতিস্থাপিত",
+    "currentStatus": "স্ট্যাটাস"
   },
   "developers": {
     "eyebrow": "অ্যাডমিন",

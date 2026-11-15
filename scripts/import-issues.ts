@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { getDb, closeDb } from "@/lib/db";
+import { getDb, closeDb } from "@/lib/db/mongo";
 import type { CommentDocument, IssueDocument } from "@/lib/db/types";
 import { planSourceSync } from "@/lib/issues/domain";
 

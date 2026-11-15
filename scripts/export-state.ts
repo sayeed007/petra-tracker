@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { getDb, closeDb } from "@/lib/db";
+import { getDb, closeDb } from "@/lib/db/mongo";
 import type { CommentDocument, IssueDocument, UserDocument } from "@/lib/db/types";
 
 /**

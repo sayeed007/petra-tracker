@@ -95,7 +95,8 @@
     "decision_pending": "waiting",
     "decision_approved": "approved",
     "decision_rejected": "rejected",
-    "decision_superseded": "replaced"
+    "decision_superseded": "replaced",
+    "currentStatus": "Status"
   },
   "developers": {
     "eyebrow": "ADMINISTRATION",

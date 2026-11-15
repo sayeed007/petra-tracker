@@ -6,6 +6,15 @@ import { ISSUE_STATUSES } from "@/lib/issues/domain";
 import { getIssueDetail, listActiveDevelopers } from "@/lib/issues/data";
 import { updateIssue, assignIssue, decideRequest } from "../actions";
 
+/** Issue ids hold colons ("rv-fe:accounting:31"); the route parameter can still arrive percent-encoded. */
+function safeDecode(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 function detailText(value: unknown): string {
   if (typeof value === "string") return value;
   if (Array.isArray(value)) return value.map(String).join("\n");
@@ -19,7 +28,8 @@ export default async function IssueDetailPage({
   params: Promise<{ locale: string; issueId: string }>;
   searchParams: Promise<{ updated?: string; requested?: string; decided?: string; assigned?: string; conflict?: string; error?: string; assignment?: string }>;
 }>) {
-  const { locale, issueId } = await params;
+  const { locale, issueId: rawIssueId } = await params;
+  const issueId = safeDecode(rawIssueId);
   const query = await searchParams;
   const user = await requireUser(locale);
   const [issue, t, statusT, developerList] = await Promise.all([
@@ -61,7 +71,7 @@ export default async function IssueDetailPage({
         <section className="panel" aria-labelledby="issue-details-title">
           <h2 id="issue-details-title">{t("details")}</h2>
           <dl className="detail-list">
-            <dt>{t("status")}</dt><dd><span className={`tag tag-${issue.status}`}>{statusT(issue.status)}</span></dd>
+            <dt>{t("currentStatus")}</dt><dd><span className={`tag tag-${issue.status}`}>{statusT(issue.status)}</span></dd>
             <dt>{t("assignedTo")}</dt><dd>{issue.assigneeName || t("unassigned")}</dd>
             <dt>{t("side")}</dt><dd>{sideT(issue.side as "frontend" | "backend" | "both")}</dd>
             <dt>{t("severity")}</dt><dd>{severityT(issue.severity as "high" | "medium" | "low" | "unrated")}</dd>

@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { getDb, closeDb } from "@/lib/db";
+import { getDb, closeDb } from "@/lib/db/mongo";
 import type { UserDocument } from "@/lib/db/types";
 
 async function main() {
