@@ -5,14 +5,14 @@ import { requireUser } from "@/lib/auth/user";
 import { SelectAll } from "@/components/select-all";
 import { ISSUE_STATUSES } from "@/lib/issues/domain";
 import { listActiveDevelopers, listIssues } from "@/lib/issues/data";
-import { assignIssues } from "./actions";
+import { assignIssues, importCatalogue } from "./actions";
 
 export default async function IssuesPage({
   params,
   searchParams,
 }: Readonly<{
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ page?: string; status?: string; module?: string; q?: string; denied?: string; missing?: string; bulk?: string; count?: string; review?: string }>;
+  searchParams: Promise<{ page?: string; status?: string; module?: string; q?: string; denied?: string; missing?: string; bulk?: string; count?: string; review?: string; import?: string; added?: string; moved?: string; kept?: string }>;
 }>) {
   const { locale } = await params;
   const query = await searchParams;
@@ -56,6 +56,8 @@ export default async function IssuesPage({
       </div>
       {query.denied && <p className="notice" role="alert">{t("denied")}</p>}
       {query.missing && <p className="notice" role="alert">{t("missing")}</p>}
+      {query.import === "done" && <p className="notice" role="status">{t("importDone", { added: Number(query.added) || 0, moved: Number(query.moved) || 0, kept: Number(query.kept) || 0 })}</p>}
+      {query.import === "failed" && <p className="notice" role="alert">{t("importFailed")}</p>}
       {query.bulk === "done" && <p className="notice" role="status">{t("bulkDone", { count: Number(query.count) || 0 })}</p>}
       {query.bulk === "none" && <p className="notice" role="alert">{t("bulkNone")}</p>}
       {query.bulk === "invalid" && <p className="notice" role="alert">{t("bulkInvalid")}</p>}
@@ -64,6 +66,12 @@ export default async function IssuesPage({
         <div className="stat">{t("openCount", { count: result.open })}</div>
         {isAdmin && <div className="stat"><Link href="/issues?review=1">{t("awaitingReview", { count: result.awaiting })}</Link></div>}
       </div>
+      {isAdmin && (
+        <form action={importCatalogue.bind(null, locale)} className="filters">
+          <button className="button" type="submit">{t("importCatalogue")}</button>
+          <span className="muted">{t("importHint")}</span>
+        </form>
+      )}
       <form className="filters" method="get" action={`/${locale}/issues`}>
         <input name="q" type="search" placeholder={t("search")} defaultValue={query.q ?? ""} aria-label={t("search")} />
         <select name="status" defaultValue={query.status ?? ""} aria-label={t("status")}>

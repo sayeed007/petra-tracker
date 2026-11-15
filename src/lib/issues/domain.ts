@@ -85,3 +85,12 @@ export function parseBulkAssign(input: { ids: unknown[]; assigneeId: unknown }) 
   if (ids.length === 0 || ids.length > MAX_BULK_ASSIGN) return null;
   return { ids, assigneeId: String(input.assigneeId ?? "") };
 }
+
+/**
+ * The very first administrator: when no administrator exists yet, the GitHub account whose primary email is
+ * BOOTSTRAP_ADMIN_EMAIL becomes one on its first sign-in. Nobody else is ever created this way.
+ */
+export function isBootstrapAdmin(input: { email: string; bootstrapEmail?: string | null; adminCount: number }) {
+  const wanted = input.bootstrapEmail?.trim().toLowerCase();
+  return Boolean(wanted) && input.adminCount === 0 && input.email.trim().toLowerCase() === wanted;
+}

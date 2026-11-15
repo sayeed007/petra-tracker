@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { MAX_BULK_ASSIGN, canManageIssue, decisionSchema, parseBulkAssign, parseIssueUpdate, planSourceSync } from "../src/lib/issues/domain";
+import { MAX_BULK_ASSIGN, canManageIssue, decisionSchema, isBootstrapAdmin, parseBulkAssign, parseIssueUpdate, planSourceSync } from "../src/lib/issues/domain";
 
 describe("canManageIssue", () => {
   it("lets an admin manage every issue", () => {
@@ -75,5 +75,21 @@ describe("decisionSchema", () => {
   });
   it("refuses anything but approve or reject", () => {
     assert.equal(decisionSchema.safeParse({ decision: "maybe", note: "x" }).success, false);
+  });
+});
+
+describe("isBootstrapAdmin", () => {
+  it("makes the configured account the first administrator", () => {
+    assert.equal(isBootstrapAdmin({ email: "Me@Example.com", bootstrapEmail: "me@example.com", adminCount: 0 }), true);
+  });
+  it("never creates anyone else", () => {
+    assert.equal(isBootstrapAdmin({ email: "other@example.com", bootstrapEmail: "me@example.com", adminCount: 0 }), false);
+  });
+  it("stops once an administrator exists", () => {
+    assert.equal(isBootstrapAdmin({ email: "me@example.com", bootstrapEmail: "me@example.com", adminCount: 1 }), false);
+  });
+  it("does nothing when no bootstrap email is configured", () => {
+    assert.equal(isBootstrapAdmin({ email: "me@example.com", bootstrapEmail: undefined, adminCount: 0 }), false);
+    assert.equal(isBootstrapAdmin({ email: "me@example.com", bootstrapEmail: "  ", adminCount: 0 }), false);
   });
 });

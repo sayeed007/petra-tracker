@@ -43,7 +43,11 @@
     "assignSelected": "Assign ticked issues",
     "selectAll": "Select all issues on this page",
     "awaitingReview": "{count} waiting for review",
-    "pendingTag": "Requested: {status}"
+    "pendingTag": "Requested: {status}",
+    "importCatalogue": "Import catalogue",
+    "importHint": "Loads the issues of this release into the portal; safe to repeat.",
+    "importDone": "Catalogue imported: {added} new, {moved} moved by the code check, {kept} kept as set by a person.",
+    "importFailed": "The catalogue could not be imported. Check the database settings."
   },
   "issue": {
     "back": "Back to issues",

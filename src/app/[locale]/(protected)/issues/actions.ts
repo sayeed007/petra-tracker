@@ -1,10 +1,13 @@
 "use server";
 
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { ObjectId, type Filter } from "mongodb";
 import { redirect } from "next/navigation";
 import { canManageIssue, decisionSchema, parseBulkAssign, parseIssueUpdate, developerSchema } from "@/lib/issues/domain";
 import { getDb, getMongoClient } from "@/lib/db";
 import { requireAdmin, requireUser } from "@/lib/auth/user";
+import { importCatalogue as runCatalogueImport, type SourceIssue } from "@/lib/issues/import";
 import type { CommentDocument, IssueDocument, UserDocument } from "@/lib/db/types";
 
 function safeLocale(locale: string) {
@@ -256,4 +259,18 @@ export async function setDeveloperActive(locale: string, developerId: string, fo
     { $set: { active } },
   );
   redirect(`/${language}/developers?updated=1`);
+}
+
+/** Reads the catalogue bundled with this deployment (data/items.json) into the database; safe to repeat. */
+export async function importCatalogue(locale: string) {
+  const language = safeLocale(locale);
+  await requireAdmin(language);
+  let counts;
+  try {
+    const items = JSON.parse(await readFile(path.join(process.cwd(), "data", "items.json"), "utf8")) as SourceIssue[];
+    counts = await runCatalogueImport(await getDb(), items);
+  } catch {
+    redirect(`/${language}/issues?import=failed`);
+  }
+  redirect(`/${language}/issues?import=done&added=${counts.added}&moved=${counts.applied}&kept=${counts.kept}`);
 }
