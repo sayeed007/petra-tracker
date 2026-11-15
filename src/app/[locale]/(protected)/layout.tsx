@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requireUser } from "@/lib/auth/user";
@@ -17,8 +18,11 @@ export default async function ProtectedLayout({
     <div className="shell">
       <header className="topbar">
         <Link href="/issues" className="brand">
-          <strong>{app("name")}</strong>
-          <span>{user.role === "admin" ? t("admin") : user.name}</span>
+          <Image src="/brand/petra-tracker-logo.svg" alt="" width={34} height={34} unoptimized priority />
+          <div>
+            <strong>{app("name")}</strong>
+            <span>{user.role === "admin" ? t("admin") : user.name}</span>
+          </div>
         </Link>
         <nav className="navlinks" aria-label={t("mainNavigation")}>
           <Link href="/issues">{t("issues")}</Link>

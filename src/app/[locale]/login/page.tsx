@@ -1,4 +1,5 @@
 import { Button } from "antd";
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { currentUser } from "@/lib/auth/user";
@@ -20,7 +21,7 @@ export default async function LoginPage({
 
   return (
     <main className="login-card">
-      <div className="login-mark" aria-hidden="true">P</div>
+      <Image className="login-logo" src="/brand/petra-tracker-logo.svg" alt="" width={56} height={56} unoptimized priority />
       <p className="eyebrow">{app("name")}</p>
       <h1>{t("title")}</h1>
       <p className="page-description">{t("description")}</p>
