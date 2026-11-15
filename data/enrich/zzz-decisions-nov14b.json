@@ -129,5 +129,13 @@
  },
  "rv-fe:accounting:44": {
   "note": "Backend request: be-req:accounting:approval-queue-mine-filter."
+ },
+ "pt1110:B2": {
+  "module": "purchase",
+  "status": "still-bug",
+  "severity": "medium",
+  "note": "Owner 2026-11-15: this is a purchase bug and belongs to the purchase module; the responsible purchase developer handles it (accounting to be consulted). Decided behaviour: the voucher must carry the posting (bill) date, not the first day of the month. Cause on both sides: frontend vendor-bill-generation-view.tsx:668 sends postingPeriodStartDate = period.start, backend PurchasePostingFactsBuilder.java:101 uses it as the voucher date. Either side can fix it; the cleaner fix is the backend using the bill date when it falls inside the open period.",
+  "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
  }
 }

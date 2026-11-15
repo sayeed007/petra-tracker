@@ -650,38 +650,6 @@
   "owner": "Backend platform (workflow), affects accounting approvals"
  },
  {
-  "id": "pt1110:B2",
-  "module": "accounting",
-  "side": "both",
-  "severity": "medium",
-  "title": "Purchase voucher posted on the period start (1 Nov) instead of the bill date (10 Nov)",
-  "summary": "A purchase vendor bill dated 10 Nov is posted into the ledger on 1 Nov, the first day of its period, because the frontend sends the period start as the posting date and the backend uses it as the voucher date. Date-range reports (day book, ledgers) therefore show the purchase nine days early.",
-  "status": "still-bug",
-  "status_evidence": "Frontend vendor-bill-generation-view.tsx l.668 still sends postingPeriodStartDate: period.start; backend PurchasePostingFactsBuilder l.101 posts the PURCHASE_VENDOR_BILL on orToday(bill.getPostingPeriodStartDate()). Either side can fix it.",
-  "evidence_level": "verified",
-  "found": "2026-11-10",
-  "source": "TEST-OBSERVATIONS-2026-11-10.md B2",
-  "refs": [],
-  "size": "",
-  "theme": "Accounting segment (accounting developer)",
-  "set": "purchase-test-2026-11-10",
-  "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15; backend deployment/dev@b2597ef11",
-   "date": "2026-11-13"
-  },
-  "steps": [
-   "Purchase > Vendor Bills > Generate, bill date 10 Nov, period November.",
-   "Approve and wait for posting.",
-   "Accounting > Journals: look at the posting date of the PURV voucher (VB-000001)."
-  ],
-  "expected": "Voucher date equals the bill date (10 Nov) inside the open period.",
-  "actual": "Voucher dated 1 Nov.",
-  "where": "frontend src/features/purchase/vendor-bill/components/vendor-bill-generation-view.tsx:668-669; backend modules/purchase/posting/PurchasePostingFactsBuilder.java:101",
-  "tests": [],
-  "verify": "Generate a bill dated 10 Nov; GET /api/accounting/journal-entries/by-document?documentType=PURCHASE_VENDOR_BILL&documentId={id} must show postingDate 2026-11-10.",
-  "owner": "Both purchase and accounting"
- },
- {
   "id": "pt1110:B7",
   "module": "accounting",
   "side": "both",
@@ -13668,6 +13636,38 @@
   "theme": "",
   "source": "e2e-refresh-2026-11",
   "set": "e2e-refresh-2026-11"
+ },
+ {
+  "id": "pt1110:B2",
+  "module": "purchase",
+  "side": "both",
+  "severity": "medium",
+  "title": "Purchase voucher posted on the period start (1 Nov) instead of the bill date (10 Nov)",
+  "summary": "A purchase vendor bill dated 10 Nov is posted into the ledger on 1 Nov, the first day of its period, because the frontend sends the period start as the posting date and the backend uses it as the voucher date. Date-range reports (day book, ledgers) therefore show the purchase nine days early.",
+  "status": "still-bug",
+  "status_evidence": "Owner 2026-11-15: this is a purchase bug and belongs to the purchase module; the responsible purchase developer handles it (accounting to be consulted). Decided behaviour: the voucher must carry the posting (bill) date, not the first day of the month. Cause on both sides: frontend vendor-bill-generation-view.tsx:668 sends postingPeriodStartDate = period.start, backend PurchasePostingFactsBuilder.java:101 uses it as the voucher date. Either side can fix it; the cleaner fix is the backend using the bill date when it falls inside the open period.",
+  "evidence_level": "verified",
+  "found": "2026-11-10",
+  "source": "TEST-OBSERVATIONS-2026-11-10.md B2",
+  "refs": [],
+  "size": "",
+  "theme": "Accounting segment (accounting developer)",
+  "set": "purchase-test-2026-11-10",
+  "checked": {
+   "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
+  },
+  "steps": [
+   "Purchase > Vendor Bills > Generate, bill date 10 Nov, period November.",
+   "Approve and wait for posting.",
+   "Accounting > Journals: look at the posting date of the PURV voucher (VB-000001)."
+  ],
+  "expected": "Voucher date equals the bill date (10 Nov) inside the open period.",
+  "actual": "Voucher dated 1 Nov.",
+  "where": "frontend src/features/purchase/vendor-bill/components/vendor-bill-generation-view.tsx:668-669; backend modules/purchase/posting/PurchasePostingFactsBuilder.java:101",
+  "tests": [],
+  "verify": "Generate a bill dated 10 Nov; GET /api/accounting/journal-entries/by-document?documentType=PURCHASE_VENDOR_BILL&documentId={id} must show postingDate 2026-11-10.",
+  "owner": "Both purchase and accounting"
  },
  {
   "id": "pt1110:B3",
