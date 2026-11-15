@@ -1085,12 +1085,6 @@
   "ref": "321870e96",
   "date": "2026-11-09"
  },
- "rv-be:inventory:15": {
-  "status": "still-bug",
-  "note": "PettyCashRequestController.java:51 no @Valid; PettyCashRequestDTO amount (l.26) has no constraints",
-  "ref": "321870e96",
-  "date": "2026-11-09"
- },
  "rv-be:inventory:16": {
   "status": "still-bug",
   "note": "InventoryAdjustmentDomainService.resolveAndSetRequester:330 still honours dto.getRequesterId()",
@@ -1464,10 +1458,9 @@
   "date": "2026-11-09"
  },
  "rv-fe:inventory:49": {
-  "status": "still-bug",
-  "note": "Picking fixtures gone, but adjustments/constants.ts:20 hard-coded accounts, form-view:114 and mappers.ts:88,193 default account",
-  "ref": "a03704c99",
-  "date": "2026-11-09"
+  "status": "wontfix",
+  "note": "Closed: the backend will provide an Adjustment Account dropdown API. The made-up account list is already gone from the form and detail page; a default account number is still sent until that API exists (adjustment-form-view.tsx:112, mappers.ts:184 on improvement/inventory-module). Owner decision 2026-11-15 (inventory and field-force developer answers).",
+  "date": "2026-11-15"
  },
  "rv-fe:sales:13": {
   "status": "fixed",
@@ -2028,10 +2021,10 @@
   "date": "2026-11-09"
  },
  "rv-fe:purchase:10.2": {
-  "status": "still-bug",
-  "note": "Bill-credit open bills and PO/PR vendor selects are fixed, but lc-master/new/page.tsx:43 and [id]/edit/page.tsx:41 still load filterVendors size 100 and pass them to the form; fallback only runs when list is empty. | Repro: LC Master new or edit with more than 100 vendors: open Vendor dropdown; the 101st+ vendor is missing.",
-  "ref": "a03704c99",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "LC master new and edit now load every vendor page (filterAllVendors), and the bill payment prepayments are paged, both with a page cap that fails loudly instead of truncating. The bill-credit open bills fix is from the earlier commit. In merge request feature/purchase-complete (not merged into release_beta_1.0.0 yet); read in code, typecheck, lint and unit tests clean, not run in a browser.",
+  "ref": "acfec4a1",
+  "date": "2026-11-15"
  },
  "rv-fe:purchase:2.7": {
   "status": "fixed",
@@ -3019,18 +3012,16 @@
   "module": "field-force"
  },
  "rv-fe:reports:7": {
-  "status": "open",
-  "note": "moved from reports to field-force 2026-11-10 for that module's developer",
-  "ref": "",
-  "date": "2026-11-10",
-  "module": "field-force"
+  "module": "field-force",
+  "status": "wontfix",
+  "note": "Closed: ignore. Owner decision 2026-11-15 (inventory and field-force developer answers).",
+  "date": "2026-11-15"
  },
  "rv-fe:reports:8": {
-  "status": "open",
-  "note": "moved from reports to field-force 2026-11-10 for that module's developer",
-  "ref": "",
-  "date": "2026-11-10",
-  "module": "field-force"
+  "module": "field-force",
+  "status": "still-bug",
+  "note": "Reproduced in the UI on 2026-11-15 (local stack, release_beta_1.0.0 code). The ASE delivery page (/field-force/ase/customer/{id}/delivery/{id}) offers Acknowledge Delivery at every stage except DELIVERED, FULFILLED, CANCELLED and REJECTED, but the backend accepts it only at IN_TRANSIT: at PICKED it shows 'Pending' with the button, at PACKED the same, at SHIPPED it shows 'In Transit' with the button; pressing it gets 400 'Delivery order IF-000001 is not in an expected stage for this action: PICKED' (or SHIPPED) and the page does not change. The opposite mistake: a new delivery order in stage FULFILLED (created, nothing picked) shows 'Delivered' with no button, because delivery-details-view.tsx:17 counts FULFILLED as delivered; in the backend FULFILLED is the first stage (EFulfillmentStage). Fix: offer the button only at IN_TRANSIT, show FULFILLED/PICKED/PACKED/SHIPPED as pending. Normal ASE users reach only IN_TRANSIT and DELIVERED deliveries from the lists (the backend lists shipped deliveries only); the other stages open by direct address. The earlier REJECTED/CANCELLED part is already fixed. Repro: create demand, approve, order, delivery order; pick, pack, ship; open the page after each step. Developer could not reproduce it (owner note 2026-11-15).",
+  "date": "2026-11-15"
  },
  "rv-fe:reports:16": {
   "status": "open",
@@ -3169,5 +3160,48 @@
   "note": "Branch fix/accounting-fe-review-items; sort logic in voucher-sort.ts with 5 unit tests; typecheck and lint, not browser-tested.",
   "ref": "",
   "date": "2026-11-11"
+ },
+ "e2e:purchase:lc-master-payment-term": {
+  "status": "fixed",
+  "note": "The LC master form now has a required Payment term (a new master opens on Due on Receipt) and sends billing.paymentTermId; a deactivated term is named (Inactive) and refused before save. Matches the backend CreateLcMasterRequestDTO. In merge request feature/purchase-complete (not merged into release_beta_1.0.0 yet); read in code, typecheck, lint and unit tests clean, not run in a browser.",
+  "ref": "5866e944",
+  "date": "2026-11-15"
+ },
+ "e2e:purchase:vendor-bill-payment-term": {
+  "status": "fixed",
+  "note": "Vendor bill generate and edit send billing.paymentTermId: a new bill takes its purchase order's or proforma's term, and the picker shows when there is none or the known one is inactive. Matches CreateVendorBillRequestDTO. PUR-01-01 and PUR-05-05 (test.fail) should now pass: re-run them and drop the marker. In merge request feature/purchase-complete (not merged into release_beta_1.0.0 yet); read in code, typecheck, lint and unit tests clean, not run in a browser.",
+  "ref": "5866e944",
+  "date": "2026-11-15"
+ },
+ "pt1110:B3": {
+  "status": "fixed",
+  "note": "The purchase order seed now carries the preferred quotation's payment term (orders/index.ts billingTerms) and sends paymentTermId; the bill takes it from its source and shows the due date derived from it. In merge request feature/purchase-complete (not merged into release_beta_1.0.0 yet); read in code, typecheck, lint and unit tests clean, not run in a browser.",
+  "ref": "3beb3808",
+  "date": "2026-11-15"
+ },
+ "st1111:S16": {
+  "status": "wontfix",
+  "note": "Closed: bins are offered by their Storage Purpose and NONE bins stay hidden, as intended. Note: no screen sets a bin's purpose, it comes from the data. Owner decision 2026-11-15 (inventory and field-force developer answers).",
+  "date": "2026-11-15"
+ },
+ "st1111:S9": {
+  "status": "wontfix",
+  "note": "Closed: ignored for now. Workaround stays: a channel-to-channel stock transfer, or a purchase receipt. Owner decision 2026-11-15 (inventory and field-force developer answers).",
+  "date": "2026-11-15"
+ },
+ "st1111:S8": {
+  "status": "wontfix",
+  "note": "Closed: the item list says No data for a channel without stock, for now. Owner decision 2026-11-15 (inventory and field-force developer answers).",
+  "date": "2026-11-15"
+ },
+ "pt1110:B9": {
+  "status": "wontfix",
+  "note": "Closed: the current behavior is correct (pack size on both tabs, one channel price required). Owner decision 2026-11-15 (inventory and field-force developer answers).",
+  "date": "2026-11-15"
+ },
+ "e2e:inventory:closed-routes-decision": {
+  "status": "wontfix",
+  "note": "Closed: Transfer Order and Courier Status are not needed now, so they stay closed (404). Their old tracker items and the 16 skipped e2e cases can be removed. Owner decision 2026-11-15 (inventory and field-force developer answers).",
+  "date": "2026-11-15"
  }
 }
