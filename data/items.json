@@ -13238,13 +13238,13 @@
   ],
   "verify": "After the fix, save the LC master and expect 2xx; POST /api/purchase/lc-master with billing.paymentTermId set returns 2xx.",
   "owner": "Frontend purchase (LC master)",
-  "status": "still-bug",
-  "status_evidence": "Still bug: lc-master-form-view.tsx:212,941 has a Due Date only; no billing.paymentTermId is sent. Backend refuses via PaymentTermLookup.require ('Payment term is required', LcMasterMapper.toBillingEntity). PUR-11-05 is a test.fail case.",
+  "status": "fixed",
+  "status_evidence": "The LC master form now has a required Payment term (a new master opens on Due on Receipt) and sends billing.paymentTermId; a deactivated term is named (Inactive) and refused before save. Matches the backend CreateLcMasterRequestDTO. In merge request feature/purchase-complete (not merged into release_beta_1.0.0 yet); read in code, typecheck, lint and unit tests clean, not run in a browser.",
   "evidence_level": "verified",
   "found": "2026-11-13",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "5866e944",
+   "date": "2026-11-15"
   },
   "refs": [
    "e2e/tests/purchase/11-new-behaviour.spec.ts"
@@ -13275,13 +13275,13 @@
   ],
   "verify": "Generate Bill from a received PO returns success and the bill shows the chosen payment term; API: POST bill with billing.paymentTermId returns 2xx.",
   "owner": "Frontend purchase (vendor bill)",
-  "status": "still-bug",
-  "status_evidence": "Still bug: vendor-bill-generation-view.tsx:667 sends dueDate only, no paymentTermId; the LC bill view does send it (vendor-bill-lc-generation-view.tsx:271). Backend requires it (PaymentTermLookup.require, VendorBillMapper). PUR-01-01 and PUR-05-05 are test.fail.",
+  "status": "fixed",
+  "status_evidence": "Vendor bill generate and edit send billing.paymentTermId: a new bill takes its purchase order's or proforma's term, and the picker shows when there is none or the known one is inactive. Matches CreateVendorBillRequestDTO. PUR-01-01 and PUR-05-05 (test.fail) should now pass: re-run them and drop the marker. In merge request feature/purchase-complete (not merged into release_beta_1.0.0 yet); read in code, typecheck, lint and unit tests clean, not run in a browser.",
   "evidence_level": "verified",
   "found": "2026-11-13",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "5866e944",
+   "date": "2026-11-15"
   },
   "refs": [
    "e2e/tests/purchase/01-bill-to-payment.spec.ts",
@@ -13676,8 +13676,8 @@
   "severity": "medium",
   "title": "Quotation payment term (Net 30) not carried to the PO; bill due date defaults to the bill date",
   "summary": "A quotation with payment term 'Net 30' is chosen as preferred, but the purchase order created from it shows Payment Terms '-'. The term then does not reach the bill, so the due date falls on the bill date and the bill looks overdue at once.",
-  "status": "still-bug",
-  "status_evidence": "The quotation payment term is not used when building the PO seed: erp-api/purchase/orders/index.ts:1182 seeds billingTerms '' and the preferredQuotation block (l.1160-1247) never reads its paymentTermId. Backend VendorBillMapper.toDTO now derives the bill due date from bill date + payment term, so the 'due date = bill date' half follows once the term reaches the bill.",
+  "status": "fixed",
+  "status_evidence": "The purchase order seed now carries the preferred quotation's payment term (orders/index.ts billingTerms) and sends paymentTermId; the bill takes it from its source and shows the due date derived from it. In merge request feature/purchase-complete (not merged into release_beta_1.0.0 yet); read in code, typecheck, lint and unit tests clean, not run in a browser.",
   "evidence_level": "verified",
   "found": "2026-11-10",
   "source": "TEST-OBSERVATIONS-2026-11-10.md B3",
@@ -13686,8 +13686,8 @@
   "theme": "Purchase segment",
   "set": "purchase-test-2026-11-10",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "3beb3808",
+   "date": "2026-11-15"
   },
   "steps": [
    "Purchase > Purchase Requisition: create a requisition whose quotation has payment term Net 30, approve and select the vendor.",
@@ -15028,8 +15028,8 @@
   "severity": "medium",
   "title": "Lists cut at 100 rows, including bill-credit open bills and vendor selects",
   "summary": "Some selects load only the first 100 rows. With more than 100 vendors the 101st never appears in the LC master vendor select.",
-  "status": "still-bug",
-  "status_evidence": "Bill-credit open bills and PO/PR vendor selects are fixed, but lc-master/new/page.tsx:43 and [id]/edit/page.tsx:41 still load filterVendors size 100 and pass them to the form; fallback only runs when list is empty. | Repro: LC Master new or edit with more than 100 vendors: open Vendor dropdown; the 101st+ vendor is missing.",
+  "status": "fixed",
+  "status_evidence": "LC master new and edit now load every vendor page (filterAllVendors), and the bill payment prepayments are paged, both with a page cap that fails loudly instead of truncating. The bill-credit open bills fix is from the earlier commit. In merge request feature/purchase-complete (not merged into release_beta_1.0.0 yet); read in code, typecheck, lint and unit tests clean, not run in a browser.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -15041,8 +15041,8 @@
   "theme": "Theme 10. Request volume (Common: F-C11)",
   "set": "review-fe",
   "checked": {
-   "ref": "a03704c99",
-   "date": "2026-11-09"
+   "ref": "acfec4a1",
+   "date": "2026-11-15"
   },
   "steps": [
    "Have more than 100 vendors.",

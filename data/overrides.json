@@ -2028,10 +2028,10 @@
   "date": "2026-11-09"
  },
  "rv-fe:purchase:10.2": {
-  "status": "still-bug",
-  "note": "Bill-credit open bills and PO/PR vendor selects are fixed, but lc-master/new/page.tsx:43 and [id]/edit/page.tsx:41 still load filterVendors size 100 and pass them to the form; fallback only runs when list is empty. | Repro: LC Master new or edit with more than 100 vendors: open Vendor dropdown; the 101st+ vendor is missing.",
-  "ref": "a03704c99",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "LC master new and edit now load every vendor page (filterAllVendors), and the bill payment prepayments are paged, both with a page cap that fails loudly instead of truncating. The bill-credit open bills fix is from the earlier commit. In merge request feature/purchase-complete (not merged into release_beta_1.0.0 yet); read in code, typecheck, lint and unit tests clean, not run in a browser.",
+  "ref": "acfec4a1",
+  "date": "2026-11-15"
  },
  "rv-fe:purchase:2.7": {
   "status": "fixed",
@@ -3169,5 +3169,23 @@
   "note": "Branch fix/accounting-fe-review-items; sort logic in voucher-sort.ts with 5 unit tests; typecheck and lint, not browser-tested.",
   "ref": "",
   "date": "2026-11-11"
+ },
+ "e2e:purchase:lc-master-payment-term": {
+  "status": "fixed",
+  "note": "The LC master form now has a required Payment term (a new master opens on Due on Receipt) and sends billing.paymentTermId; a deactivated term is named (Inactive) and refused before save. Matches the backend CreateLcMasterRequestDTO. In merge request feature/purchase-complete (not merged into release_beta_1.0.0 yet); read in code, typecheck, lint and unit tests clean, not run in a browser.",
+  "ref": "5866e944",
+  "date": "2026-11-15"
+ },
+ "e2e:purchase:vendor-bill-payment-term": {
+  "status": "fixed",
+  "note": "Vendor bill generate and edit send billing.paymentTermId: a new bill takes its purchase order's or proforma's term, and the picker shows when there is none or the known one is inactive. Matches CreateVendorBillRequestDTO. PUR-01-01 and PUR-05-05 (test.fail) should now pass: re-run them and drop the marker. In merge request feature/purchase-complete (not merged into release_beta_1.0.0 yet); read in code, typecheck, lint and unit tests clean, not run in a browser.",
+  "ref": "5866e944",
+  "date": "2026-11-15"
+ },
+ "pt1110:B3": {
+  "status": "fixed",
+  "note": "The purchase order seed now carries the preferred quotation's payment term (orders/index.ts billingTerms) and sends paymentTermId; the bill takes it from its source and shows the due date derived from it. In merge request feature/purchase-complete (not merged into release_beta_1.0.0 yet); read in code, typecheck, lint and unit tests clean, not run in a browser.",
+  "ref": "3beb3808",
+  "date": "2026-11-15"
  }
 }
