@@ -26922,6 +26922,41 @@
   "owner": "Frontend settings-platform"
  },
  {
+  "id": "be-req:settings-platform:drill-down-permissions",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Page-level and action-level (drill-down) permission assignment is needed before routes and menus can be guarded",
+  "summary": "Settings pages (Field Force tree, System settings, Inventory settings) open by URL for any signed-in user and their menu entries show for everyone, because the role editor cannot assign permission per page and per action with enough detail for the frontend to guard routes. The frontend guard waits for drill-down permission assignment in settings and backend support for it.",
+  "steps": [
+   "Sign in as a user whose role has no settings permission.",
+   "Open /settings/system, /settings/inventory or /settings/field-force by address.",
+   "The pages render; only the backend refuses writes."
+  ],
+  "expected": "A user without the page permission cannot open the route and does not see the menu entry.",
+  "actual": "The pages render for any signed-in user.",
+  "where": "Backend: permission catalogue and role editor support for per-page / per-action permissions. Frontend: src/app/(erp)/settings/*/page.tsx and src/shared/components/app-layout/app-menu.config.tsx (guards to be added once the keys exist).",
+  "tests": [],
+  "verify": "A role without the key gets 403 on the page data and no menu entry; the frontend route guard uses the same key.",
+  "owner": "Backend (settings-platform)",
+  "status": "open",
+  "status_evidence": "Owner decision 2026-11-15: needs drill-down permission assignment in settings and proper backend support; related frontend items rv-fe:settings-platform:19 and saleschain:FD-P3-4.",
+  "evidence_level": "verified",
+  "found": "2026-11-15",
+  "checked": {
+   "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
+  },
+  "refs": [
+   "rv-fe:settings-platform:19",
+   "saleschain:FD-P3-4"
+  ],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-g",
+  "set": "e2e-refresh-2026-11-g"
+ },
+ {
   "id": "e2e:platform:permission-lookup-stalls-401",
   "module": "settings-platform",
   "side": "backend",
@@ -27964,8 +27999,8 @@
   "severity": "medium",
   "title": "Role change widens scope to global",
   "summary": "Changing only the role of a user in the Edit User dialog sends global access with an empty scope, which may replace a geography-scoped assignment with a global one without any warning (backend replace behaviour was marked suspect; confirm).",
-  "status": "still-bug",
-  "status_evidence": "edit-user-modal.tsx:78-82 still sends scopeIds: [] and globalAccess: true on every role change; assign-employee-form.tsx:45-46 and invite-employee-form.tsx:75-76 do the same; the user DTO has no scope data.",
+  "status": "wontfix",
+  "status_evidence": "Owner decision 2026-11-15: works as expected. A user assigned an admin role gets full access by design; choosing the right role is the administrator's responsibility.",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -27976,8 +28011,8 @@
   "theme": "Theme 2. Writes that change more than the user asked for",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Open Settings > Users and Roles > Users.",
@@ -28037,7 +28072,7 @@
   "title": "Child location rename writes inherited purpose and flags",
   "summary": "Renaming a shelf under a quarantine zone writes the inherited purpose and flags as the shelf's own settings, so it stays quarantined even after the parent is changed back.",
   "status": "still-bug",
-  "status_evidence": "buildUpdateForm/mapUpdateFormToInput (warehouse/form-helpers.ts:110-160) send storagePurpose (effective value when locked) and the normalized restriction flags (inherited OR own) for every non-warehouse node on any save. Backend effect not confirmed.",
+  "status_evidence": "Open for discussion (owner 2026-11-15). Scope checked in src/features/settings/warehouse/form-helpers.ts: mapUpdateFormToInput sends storagePurpose and the three restriction flags (taken from the inherited values) for every node that is not the warehouse itself, so a rename of a zone, aisle, rack, shelf or bin writes the inherited purpose and flags as its own. It is not only shelves. Not changed.",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -28048,8 +28083,8 @@
   "theme": "Theme 2. Writes that change more than the user asked for",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Open Settings > Warehouse.",
@@ -28144,8 +28179,8 @@
   "severity": "medium",
   "title": "Settings routes and menus have no permission check",
   "summary": "Any signed-in user can still open the Field Force tree, system settings and inventory settings by URL and see the Field Force, Warehouse and System menu entries.",
-  "status": "in-progress",
-  "status_evidence": "Fixed: permission getters now use checkPermission (shared/permissions/settings.ts:20-60), ship-items route denies without SALES_DELIVERY_ORDER_SHIP, menu entries for users, inventory, workflow, sales settings carry requiredPermission. Missing: settings/field-force/page.tsx, settings/system/page.tsx and settings/inventory/page.tsx have no route check, and menu entries 'company' (system), 'warehouse' and 'field-force-settings' have no requiredPermission (app-menu.config.tsx:555-585).",
+  "status": "decision",
+  "status_evidence": "Owner 2026-11-15: route and menu permission needs drill-down permission assignment in settings (per page and per action) and proper backend support first. Waiting for the backend; no frontend guard until then.",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -28158,8 +28193,8 @@
   "theme": "Theme 3. Permission and access holes",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Sign in as a user without field-force or system permission.",
@@ -28252,7 +28287,7 @@
   "title": "File proxies forward uploaded content types",
   "summary": "Uploaded HTML or SVG could run as an active page on the ERP origin. Serving is now safe; the remaining gaps are the open path rule in /api/files (other backend paths fetched with the user's token) and SVG accepted as profile picture.",
   "status": "in-progress",
-  "status_evidence": "Fixed: all three proxies call applySafeContentHeaders (shared/utils/safe-response-headers.ts) which allow-lists inline types and forces attachment plus CSP sandbox for others. Missing: /api/files still uses a deny-list (only paths starting with api/ blocked, files/route.ts:38-39) and profile picture upload accepts any image/* including SVG (features/account/profile/actions.ts:132).",
+  "status_evidence": "Open for discussion (owner 2026-11-15). Findings: (1) SVG: applySafeContentHeaders serves any type outside the inline-safe list (png, jpeg, webp, gif, avif, bmp, pdf, audio, video) as application/octet-stream with Content-Disposition attachment and a CSP sandbox, so an SVG profile picture is never drawn and never runs; the upload check (account/profile/actions.ts) only requires an image/* type. Allowing SVG upload therefore has no effect except a picture that does not show; rejecting it at upload is a one-line change. (2) Path rule: /api/files fetches any backend path that does not start with api/ using the signed-in user's token, on the fixed ERP backend host only (no cross-host). HRM-sourced users: the proxy cannot reach an HRM host; images that live on the HRM backend need their own proxy or a direct URL. Not changed.",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -28263,8 +28298,8 @@
   "theme": "Theme 3. Permission and access holes",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Request /api/files?path=actuator/health as a logged-in user.",
@@ -29900,8 +29935,8 @@
   "severity": "low",
   "title": "Access state stale; scoped permission treated as full",
   "summary": "The menu and button permissions are read once at sign-in, so a role change made by an admin only reaches a user after a page reload. Separately, a user who holds a permission only for one warehouse or territory passes every server-side check for that permission code in Next.js (the backend still enforces the scope).",
-  "status": "still-bug",
-  "status_evidence": "Still in code: providers/access-provider.tsx keeps lastFetchedAt (l.38,170) but nothing reads it and there is no refetch on focus; shared/access/assert-permission.ts checkPermission (~l.53-57) returns true for any entry with globalAccess || scopes.length > 0.",
+  "status": "wontfix",
+  "status_evidence": "Owner decision 2026-11-15: a role change reaches the user after a page refresh; no live observer is wanted because role changes are rare. The scoped-permission remark is closed with it.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -29912,8 +29947,8 @@
   "theme": "Theme 3. Permission and access holes",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Sign in as user A in one browser.",
@@ -30215,8 +30250,8 @@
   "severity": "low",
   "title": "Hard-coded lookups",
   "summary": "Fixed lookup lists in code do not match real data. A manufacturer in another country can only be picked if it was already stored, and customer-type colour dots depend on the exact channel name.",
-  "status": "in-progress",
-  "status_evidence": "Country half fixed: manufacturer-section.tsx l.57-63 appends the current country to the options so 'Japan' is not blank. Not fixed: features/settings/inventory/constants.ts still has only five countries and field-force/constants.ts CUSTOMER_DOT_COLOR (l.36-41) still keys colours by channel name, so a renamed channel gets a grey dot.",
+  "status": "wontfix",
+  "status_evidence": "Owner decision 2026-11-15: leave the fixed lookup lists (countries, customer-type colours) as they are for now.",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -30227,8 +30262,8 @@
   "theme": "Theme 5. Wrong or incomplete data shown",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Settings > Inventory > Item master > Manufacturer > Add: open the Country list.",
@@ -30511,8 +30546,8 @@
   "severity": "low",
   "title": "Dead settings/system code and placeholder sections",
   "summary": "The System settings screen contains four placeholder sections (reminder, customer portal, PDF template, feature toggles) and unused schemas/constants that users cannot use.",
-  "status": "open",
-  "status_evidence": "Not changed, stays open and waits for the product decision named in the plan (keep the four disabled sections visible?). general-preference-tab.tsx l.63-68 still wires EnableFeatureSection, ReminderSection, CustomerPortalSection (and PDF template) as 'under development'.",
+  "status": "wontfix",
+  "status_evidence": "Owner decision 2026-11-15: the placeholder sections are already disabled in the UI; leave them.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -30523,8 +30558,8 @@
   "theme": "Theme 9. Dead code, fake code, tidy-ups",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Open Settings > System > General preference and click those four entries."
@@ -31064,8 +31099,8 @@
   "severity": "unrated",
   "title": "Sidebar and Settings > Sales/System not permission-filtered (FD-P3-4/5)",
   "summary": "A view-only user used to see every module in the sidebar and could open Settings > Sales (with a New button) and Settings > System (13 inputs). The sidebar and Sales settings are now gated; System settings still opens for any signed-in user.",
-  "status": "in-progress",
-  "status_evidence": "Sidebar fixed: app-layout.tsx l.90-101 filters the menu by permission and fails closed; app-menu.config.tsx gives Settings > Sales, Users, Workflow, Accounting a requiredPermission. Still open: the Settings > System entry (app-menu.config.tsx l.555-559) has no requiredPermission and system-settings-root.tsx has no permission check; Settings > Sales root checks permissions.canAccess (sales-settings-root.tsx l.65), so FD-P3-5 is fixed for Sales only.",
+  "status": "decision",
+  "status_evidence": "Owner 2026-11-15: same as rv-fe:settings-platform:19, waiting for drill-down permissions and backend support.",
   "evidence_level": "likely",
   "found": "2026-10-31",
   "source": "backend-saleschain-bugs-2026-10-31.md FD-P3-4",
@@ -31076,8 +31111,8 @@
   "theme": "",
   "set": "notes-B",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Sign in as a user with only view rights on sales.",

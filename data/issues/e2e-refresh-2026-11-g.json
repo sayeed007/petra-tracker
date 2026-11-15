@@ -1,0 +1,33 @@
+[
+ {
+  "id": "be-req:settings-platform:drill-down-permissions",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Page-level and action-level (drill-down) permission assignment is needed before routes and menus can be guarded",
+  "summary": "Settings pages (Field Force tree, System settings, Inventory settings) open by URL for any signed-in user and their menu entries show for everyone, because the role editor cannot assign permission per page and per action with enough detail for the frontend to guard routes. The frontend guard waits for drill-down permission assignment in settings and backend support for it.",
+  "steps": [
+   "Sign in as a user whose role has no settings permission.",
+   "Open /settings/system, /settings/inventory or /settings/field-force by address.",
+   "The pages render; only the backend refuses writes."
+  ],
+  "expected": "A user without the page permission cannot open the route and does not see the menu entry.",
+  "actual": "The pages render for any signed-in user.",
+  "where": "Backend: permission catalogue and role editor support for per-page / per-action permissions. Frontend: src/app/(erp)/settings/*/page.tsx and src/shared/components/app-layout/app-menu.config.tsx (guards to be added once the keys exist).",
+  "tests": [],
+  "verify": "A role without the key gets 403 on the page data and no menu entry; the frontend route guard uses the same key.",
+  "owner": "Backend (settings-platform)",
+  "status": "open",
+  "status_evidence": "Owner decision 2026-11-15: needs drill-down permission assignment in settings and proper backend support; related frontend items rv-fe:settings-platform:19 and saleschain:FD-P3-4.",
+  "evidence_level": "verified",
+  "found": "2026-11-15",
+  "checked": {
+   "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
+  },
+  "refs": [
+   "rv-fe:settings-platform:19",
+   "saleschain:FD-P3-4"
+  ]
+ }
+]

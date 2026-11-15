@@ -1,0 +1,50 @@
+{
+ "rv-fe:settings-platform:12": {
+  "status": "wontfix",
+  "note": "Owner decision 2026-11-15: works as expected. A user assigned an admin role gets full access by design; choosing the right role is the administrator's responsibility.",
+  "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:23": {
+  "status": "wontfix",
+  "note": "Owner decision 2026-11-15: a role change reaches the user after a page refresh; no live observer is wanted because role changes are rare. The scoped-permission remark is closed with it.",
+  "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:43": {
+  "status": "wontfix",
+  "note": "Owner decision 2026-11-15: leave the fixed lookup lists (countries, customer-type colours) as they are for now.",
+  "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:56": {
+  "status": "wontfix",
+  "note": "Owner decision 2026-11-15: the placeholder sections are already disabled in the UI; leave them.",
+  "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:19": {
+  "status": "decision",
+  "note": "Owner 2026-11-15: route and menu permission needs drill-down permission assignment in settings (per page and per action) and proper backend support first. Waiting for the backend; no frontend guard until then.",
+  "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "saleschain:FD-P3-4": {
+  "status": "decision",
+  "note": "Owner 2026-11-15: same as rv-fe:settings-platform:19, waiting for drill-down permissions and backend support.",
+  "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:14": {
+  "status": "still-bug",
+  "note": "Open for discussion (owner 2026-11-15). Scope checked in src/features/settings/warehouse/form-helpers.ts: mapUpdateFormToInput sends storagePurpose and the three restriction flags (taken from the inherited values) for every node that is not the warehouse itself, so a rename of a zone, aisle, rack, shelf or bin writes the inherited purpose and flags as its own. It is not only shelves. Not changed.",
+  "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:25": {
+  "status": "in-progress",
+  "note": "Open for discussion (owner 2026-11-15). Findings: (1) SVG: applySafeContentHeaders serves any type outside the inline-safe list (png, jpeg, webp, gif, avif, bmp, pdf, audio, video) as application/octet-stream with Content-Disposition attachment and a CSP sandbox, so an SVG profile picture is never drawn and never runs; the upload check (account/profile/actions.ts) only requires an image/* type. Allowing SVG upload therefore has no effect except a picture that does not show; rejecting it at upload is a one-line change. (2) Path rule: /api/files fetches any backend path that does not start with api/ using the signed-in user's token, on the fixed ERP backend host only (no cross-host). HRM-sourced users: the proxy cannot reach an HRM host; images that live on the HRM backend need their own proxy or a direct URL. Not changed.",
+  "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ }
+}
