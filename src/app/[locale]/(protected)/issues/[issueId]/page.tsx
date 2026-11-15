@@ -4,7 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { requireUser } from "@/lib/auth/user";
 import { ISSUE_STATUSES } from "@/lib/issues/domain";
 import { getIssueDetail, listActiveDevelopers } from "@/lib/issues/data";
-import { updateIssue, assignIssue } from "../actions";
+import { updateIssue, assignIssue, decideRequest } from "../actions";
 
 function detailText(value: unknown): string {
   if (typeof value === "string") return value;
@@ -17,7 +17,7 @@ export default async function IssueDetailPage({
   searchParams,
 }: Readonly<{
   params: Promise<{ locale: string; issueId: string }>;
-  searchParams: Promise<{ updated?: string; assigned?: string; conflict?: string; error?: string; assignment?: string }>;
+  searchParams: Promise<{ updated?: string; requested?: string; decided?: string; assigned?: string; conflict?: string; error?: string; assignment?: string }>;
 }>) {
   const { locale, issueId } = await params;
   const query = await searchParams;
@@ -40,7 +40,7 @@ export default async function IssueDetailPage({
   const expected = detailText(details.expected);
   const actual = detailText(details.actual);
   const verify = detailText(details.verify);
-  const showNote = query.updated || query.assigned || query.conflict || query.error || query.assignment;
+  const showNote = query.updated || query.requested || query.decided || query.assigned || query.conflict || query.error || query.assignment;
 
   return (
     <>
@@ -54,7 +54,7 @@ export default async function IssueDetailPage({
       </div>
 
       {showNote && <p className="notice" role="status">
-        {query.updated ? t("updated") : query.assigned ? t("assigned") : query.conflict ? t("conflict") : query.assignment ? t("assignmentInvalid") : t("invalid")}
+        {query.updated ? t("updated") : query.requested ? t("requested") : query.decided === "approved" ? t("decidedApproved") : query.decided === "rejected" ? t("decidedRejected") : query.assigned ? t("assigned") : query.conflict ? t("conflict") : query.assignment ? t("assignmentInvalid") : query.error === "reason" ? t("reasonNeeded") : query.error === "rejectReason" ? t("rejectReasonNeeded") : t("invalid")}
       </p>}
 
       <div className="detail-grid">
@@ -92,12 +92,29 @@ export default async function IssueDetailPage({
               </form>
             </section>
           )}
+          {issue.pendingRequest && user.role === "admin" && (
+            <section className="panel" aria-labelledby="pending-title">
+              <h2 id="pending-title">{t("pendingTitle")}</h2>
+              <p>{t("pendingBy", { name: issue.pendingRequest.by, status: statusT(issue.pendingRequest.status) })}</p>
+              <form action={decideRequest.bind(null, locale, issue.externalId)}>
+                <div className="field">
+                  <label htmlFor="decision-note">{t("decisionNote")}</label>
+                  <textarea id="decision-note" name="note" maxLength={4000} placeholder={t("decisionNotePlaceholder")} />
+                </div>
+                <button className="button button-primary" type="submit" name="decision" value="approve">{t("approve")}</button>{" "}
+                <button className="button button-danger" type="submit" name="decision" value="reject">{t("reject")}</button>
+              </form>
+            </section>
+          )}
+          {issue.pendingRequest && user.role !== "admin" && (
+            <p className="notice" role="status">{t("yourRequestWaiting", { status: statusT(issue.pendingRequest.status) })}</p>
+          )}
           <section className="panel">
             <h2>{t("addComment")}</h2>
-            <p className="muted">{t("closureNote")}</p>
+            <p className="muted">{user.role === "admin" ? t("closureNote") : t("requestHint")}</p>
             <form action={updateIssue.bind(null, locale, issue.externalId)}>
               <div className="field">
-                <label htmlFor="status">{t("status")}</label>
+                <label htmlFor="status">{user.role === "admin" ? t("status") : t("proposeStatus")}</label>
                 <select id="status" name="status" defaultValue="">
                   <option value="">{t("keepStatus")} · {statusT(issue.status)}</option>
                   {ISSUE_STATUSES.map((status) => <option key={status} value={status}>{statusT(status)}</option>)}
@@ -120,12 +137,16 @@ export default async function IssueDetailPage({
             {issue.comments.map((comment, index) => (
               <article className="activity" key={`${comment.createdAt.toISOString()}-${index}`}>
                 <div className="activity-head">
-                  <strong>{comment.author}</strong>
+                  <strong>{comment.system ? t("systemNote") : comment.author}</strong>
                   <time dateTime={comment.createdAt.toISOString()}>{dateFormat.format(comment.createdAt)}</time>
                 </div>
                 {comment.statusTo && <span className="tag" style={{ marginTop: 8 }}>
                   {statusT(comment.statusFrom!)} → {statusT(comment.statusTo)}
                 </span>}
+                {comment.request && comment.requestedStatus && <span className="tag" style={{ marginTop: 8 }}>
+                  {t("requestedTag")}: {statusT(comment.statusFrom ?? issue.status)} → {statusT(comment.requestedStatus)} · {t(`decision_${comment.decision ?? "pending"}`)}
+                </span>}
+                {comment.request && comment.decisionNote && <p className="muted">{comment.decisionNote}</p>}
                 <p className="activity-body">{comment.body}</p>
               </article>
             ))}

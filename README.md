@@ -6,9 +6,11 @@ Private, bilingual issue tracker for the Petra frontend and backend teams. It im
 
 - An administrator adds developers by their GitHub account's primary email, assigns issues, and can deactivate access.
 - Only active, pre-added GitHub accounts can sign in. There is no public signup.
-- Administrators can view and assign every issue. Developers can see and update only issues assigned to them.
-- Every posted update requires a comment. A status change is recorded alongside that comment. When choosing `Won't fix`, explain the business rule or why the work will not proceed.
-- Existing IDs, evidence, owner notes, and statuses are retained from `data/items.json` during import. Re-imports refresh source details without overwriting live status or assignments.
+- Administrators can view and assign every issue (one by one, or tick several rows of the list and assign them together, up to 200). Each assignment leaves a system note in the issue's activity.
+- Developers see only the issues assigned to them and can comment on them. **A status chosen by a developer is only a request**: the issue keeps its status until an administrator approves it on the issue page (a rejection needs a reason). A comment without a status needs no approval. An administrator's own status change is final and closes any waiting request.
+- The administrator's list shows how many requests are waiting for review (`Awaiting review`) and marks the rows with a pending request.
+- Every posted update requires a comment. When asking for or choosing `Won't fix`, explain the business rule or why the work will not proceed (at least 20 characters).
+- Existing IDs, evidence, owner notes, and statuses are retained from `data/items.json` during import. Re-imports refresh source details without overwriting live status or assignments. When the code check (`data/items.json`) later moves an issue's status, a re-import applies the move only to issues nobody changed in the portal (with a system note); where a person already set the status, it is kept and the note says what the code check now says. `npm run db:export-state` writes the portal's work (statuses, requests, owners, last comments) to `data/portal-state.json` so the code check can see it.
 
 ## Local setup
 
@@ -34,6 +36,10 @@ The first app connection creates the required MongoDB indexes. The database user
 Set the GitHub OAuth callback URL to `https://<your-domain>/api/auth/callback/github`. For an Atlas cluster not provisioned through Vercel, allow the Vercel deployment to connect in Atlas Network Access.
 
 Run the one-time admin bootstrap and catalogue import from a trusted local checkout with the production environment variables. Both scripts are safe to re-run; the import adds missing issues and refreshes source descriptions without resetting comments, assignment, or status.
+
+## Checks
+
+`npm test` (domain rules), `npm run typecheck`, `npm run lint`, `npm run build`. The data layer needs a MongoDB replica set (Atlas), so the portal flows are tried against a real database, not in these tests.
 
 ## Commands
 

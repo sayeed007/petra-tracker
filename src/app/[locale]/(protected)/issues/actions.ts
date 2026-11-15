@@ -2,7 +2,7 @@
 
 import { ObjectId, type Filter } from "mongodb";
 import { redirect } from "next/navigation";
-import { canManageIssue, parseIssueUpdate, developerSchema } from "@/lib/issues/domain";
+import { canManageIssue, decisionSchema, parseBulkAssign, parseIssueUpdate, developerSchema } from "@/lib/issues/domain";
 import { getDb, getMongoClient } from "@/lib/db";
 import { requireAdmin, requireUser } from "@/lib/auth/user";
 import type { CommentDocument, IssueDocument, UserDocument } from "@/lib/db/types";
@@ -11,6 +11,12 @@ function safeLocale(locale: string) {
   return locale === "bn" ? "bn" : "en";
 }
 
+/**
+ * A comment, with or without a status.
+ *  - Administrator: the status chosen here is final (any waiting developer request is closed as superseded).
+ *  - Developer (assigned issues only): a status here is only a REQUEST. The issue keeps its status until an
+ *    administrator approves it (decideRequest); a comment without a status needs no approval.
+ */
 export async function updateIssue(locale: string, externalId: string, formData: FormData) {
   const language = safeLocale(locale);
   const user = await requireUser(language);
@@ -18,68 +24,198 @@ export async function updateIssue(locale: string, externalId: string, formData: 
     status: formData.get("status"),
     comment: formData.get("comment"),
   });
-  if (!update.success) redirect(`/${language}/issues/${encodeURIComponent(externalId)}?error=invalid`);
+  if (!update.success) {
+    const reason = update.error.issues.some((issue) => issue.message === "wontfix-reason");
+    redirect(`/${language}/issues/${encodeURIComponent(externalId)}?error=${reason ? "reason" : "invalid"}`);
+  }
   const parsed = update.data;
   const database = await getDb();
   const client = await getMongoClient();
   const issues = database.collection<IssueDocument>("issues");
   const comments = database.collection<CommentDocument>("comments");
+  const actorId = new ObjectId(user.id);
   const outcome = await client.withSession(async (session) =>
     session.withTransaction(async () => {
       const issue = await issues.findOne({ externalId }, { session });
       if (!issue) return "missing" as const;
       if (!canManageIssue(user, issue.assigneeId?.toHexString() ?? null)) return "denied" as const;
 
-      const changed = parsed.status !== undefined && parsed.status !== issue.status;
+      const now = new Date();
+      const wantsChange = parsed.status !== undefined && parsed.status !== issue.status;
       const filter: Filter<IssueDocument> = { _id: issue._id, status: issue.status };
-      if (user.role === "developer") filter.assigneeId = new ObjectId(user.id);
+      if (user.role === "developer") filter.assigneeId = actorId;
+
+      // An earlier request that is still waiting is closed whenever the situation moves on.
+      const closePending = async (note: string) => {
+        if (!issue.pendingRequest) return;
+        await comments.updateOne(
+          { _id: issue.pendingRequest.commentId },
+          { $set: { decision: "superseded", decidedBy: actorId, decidedAt: now, decisionNote: note } },
+          { session },
+        );
+      };
+
+      if (user.role === "admin" || !wantsChange) {
+        const changed = user.role === "admin" && wantsChange;
+        const result = await issues.updateOne(filter, {
+          $set: { ...(changed ? { status: parsed.status, pendingRequest: null } : {}), updatedAt: now },
+        }, { session });
+        if (!result.matchedCount) return "conflict" as const;
+        if (changed) await closePending("Superseded by the administrator's own status change.");
+        await comments.insertOne({
+          issueId: issue._id,
+          authorId: actorId,
+          kind: "user",
+          body: parsed.comment,
+          statusFrom: changed ? issue.status : null,
+          statusTo: changed ? parsed.status! : null,
+          createdAt: now,
+        } as CommentDocument, { session });
+        return "saved" as const;
+      }
+
+      // A developer asks for a status: record the request, leave the status alone.
+      await closePending("Replaced by a newer request.");
+      const request = await comments.insertOne({
+        issueId: issue._id,
+        authorId: actorId,
+        kind: "request",
+        body: parsed.comment,
+        requestedStatus: parsed.status!,
+        decision: "pending",
+        statusFrom: issue.status,
+        statusTo: null,
+        createdAt: now,
+      } as CommentDocument, { session });
       const result = await issues.updateOne(filter, {
-        $set: { ...(changed ? { status: parsed.status } : {}), updatedAt: new Date() },
+        $set: { pendingRequest: { commentId: request.insertedId, status: parsed.status!, by: actorId, at: now }, updatedAt: now },
       }, { session });
       if (!result.matchedCount) return "conflict" as const;
-
-      await comments.insertOne({
-        issueId: issue._id,
-        authorId: new ObjectId(user.id),
-        body: parsed.comment,
-        statusFrom: changed ? issue.status : null,
-        statusTo: changed ? parsed.status! : null,
-        createdAt: new Date(),
-      } as CommentDocument, { session });
-      return "saved" as const;
+      return "requested" as const;
     }),
   );
 
   if (outcome === "denied") redirect(`/${language}/issues?denied=1`);
   if (outcome === "missing") redirect(`/${language}/issues?missing=1`);
   if (outcome === "conflict") redirect(`/${language}/issues/${encodeURIComponent(externalId)}?conflict=1`);
-  redirect(`/${language}/issues/${encodeURIComponent(externalId)}?updated=1`);
+  redirect(`/${language}/issues/${encodeURIComponent(externalId)}?${outcome === "requested" ? "requested" : "updated"}=1`);
+}
+
+/** The administrator's decision on a developer's status request: approve (the status changes) or reject (with a reason). */
+export async function decideRequest(locale: string, externalId: string, formData: FormData) {
+  const language = safeLocale(locale);
+  const admin = await requireAdmin(language);
+  const parsed = decisionSchema.safeParse({ decision: formData.get("decision"), note: formData.get("note") ?? "" });
+  if (!parsed.success) redirect(`/${language}/issues/${encodeURIComponent(externalId)}?error=${parsed.error.issues.some((issue) => issue.message === "reject-reason") ? "rejectReason" : "invalid"}`);
+  const { decision, note } = parsed.data;
+  const database = await getDb();
+  const client = await getMongoClient();
+  const issues = database.collection<IssueDocument>("issues");
+  const comments = database.collection<CommentDocument>("comments");
+  const adminId = new ObjectId(admin.id);
+  const outcome = await client.withSession(async (session) =>
+    session.withTransaction(async () => {
+      const issue = await issues.findOne({ externalId }, { session });
+      if (!issue) return "missing" as const;
+      const pending = issue.pendingRequest;
+      if (!pending) return "nopending" as const;
+
+      const now = new Date();
+      const approved = decision === "approve";
+      const result = await issues.updateOne(
+        { _id: issue._id, status: issue.status, "pendingRequest.commentId": pending.commentId },
+        { $set: { ...(approved ? { status: pending.status } : {}), pendingRequest: null, updatedAt: now } },
+        { session },
+      );
+      if (!result.matchedCount) return "conflict" as const;
+      await comments.updateOne(
+        { _id: pending.commentId },
+        { $set: { decision: approved ? "approved" : "rejected", decidedBy: adminId, decidedAt: now, decisionNote: note || null } },
+        { session },
+      );
+      await comments.insertOne({
+        issueId: issue._id,
+        authorId: adminId,
+        kind: "system",
+        body: approved
+          ? `${admin.name} approved the request: "${issue.status}" → "${pending.status}".${note ? ` ${note}` : ""}`
+          : `${admin.name} rejected the request for "${pending.status}": ${note}`,
+        statusFrom: approved ? issue.status : null,
+        statusTo: approved ? pending.status : null,
+        createdAt: now,
+      } as CommentDocument, { session });
+      return "done" as const;
+    }),
+  );
+
+  if (outcome === "missing") redirect(`/${language}/issues?missing=1`);
+  if (outcome === "nopending" || outcome === "conflict") redirect(`/${language}/issues/${encodeURIComponent(externalId)}?conflict=1`);
+  redirect(`/${language}/issues/${encodeURIComponent(externalId)}?decided=${decision === "approve" ? "approved" : "rejected"}`);
+}
+
+/** The active developer behind an assignee id from a form, null for "unassigned", undefined for an invalid choice. */
+async function resolveAssignee(rawId: string) {
+  if (!rawId) return null;
+  if (!ObjectId.isValid(rawId)) return undefined;
+  const database = await getDb();
+  const developer = await database.collection<UserDocument>("users").findOne({
+    _id: new ObjectId(rawId),
+    role: "developer",
+    active: true,
+  });
+  return developer ?? undefined;
 }
 
 export async function assignIssue(locale: string, externalId: string, formData: FormData) {
   const language = safeLocale(locale);
-  await requireAdmin(language);
-  const rawId = String(formData.get("assigneeId") ?? "");
-  let assigneeId: ObjectId | null = null;
-  if (rawId) {
-    if (!ObjectId.isValid(rawId)) redirect(`/${language}/issues/${encodeURIComponent(externalId)}?assignment=invalid`);
-    assigneeId = new ObjectId(rawId);
-    const database = await getDb();
-    const developer = await database.collection<UserDocument>("users").findOne({
-      _id: assigneeId,
-      role: "developer",
-      active: true,
-    });
-    if (!developer) redirect(`/${language}/issues/${encodeURIComponent(externalId)}?assignment=invalid`);
-  }
+  const admin = await requireAdmin(language);
+  const developer = await resolveAssignee(String(formData.get("assigneeId") ?? ""));
+  if (developer === undefined) redirect(`/${language}/issues/${encodeURIComponent(externalId)}?assignment=invalid`);
 
   const database = await getDb();
-  const result = await database.collection<IssueDocument>("issues").updateOne(
-    { externalId },
-    { $set: { assigneeId, updatedAt: new Date() } },
-  );
-  if (!result.matchedCount) redirect(`/${language}/issues?missing=1`);
+  const issues = database.collection<IssueDocument>("issues");
+  const issue = await issues.findOne({ externalId }, { projection: { _id: 1, assigneeId: 1 } });
+  if (!issue) redirect(`/${language}/issues?missing=1`);
+  const now = new Date();
+  await issues.updateOne({ _id: issue._id }, { $set: { assigneeId: developer?._id ?? null, updatedAt: now } });
+  await database.collection<CommentDocument>("comments").insertOne({
+    issueId: issue._id,
+    authorId: new ObjectId(admin.id),
+    kind: "system",
+    body: developer ? `${admin.name} assigned this issue to ${developer.name}.` : `${admin.name} removed the assignee.`,
+    statusFrom: null,
+    statusTo: null,
+    createdAt: now,
+  } as CommentDocument);
   redirect(`/${language}/issues/${encodeURIComponent(externalId)}?assigned=1`);
+}
+
+/** Assigns the ticked issues of the list (at most MAX_BULK_ASSIGN) to one developer, or clears their assignee. */
+export async function assignIssues(locale: string, formData: FormData) {
+  const language = safeLocale(locale);
+  const admin = await requireAdmin(language);
+  const parsed = parseBulkAssign({ ids: formData.getAll("ids"), assigneeId: formData.get("assigneeId") });
+  if (!parsed) redirect(`/${language}/issues?bulk=none`);
+  const developer = await resolveAssignee(parsed.assigneeId);
+  if (developer === undefined) redirect(`/${language}/issues?bulk=invalid`);
+
+  const database = await getDb();
+  const issues = database.collection<IssueDocument>("issues");
+  const rows = await issues.find({ externalId: { $in: parsed.ids } }).project<Pick<IssueDocument, "_id">>({ _id: 1 }).toArray();
+  const now = new Date();
+  if (rows.length) {
+    await issues.updateMany({ _id: { $in: rows.map((row) => row._id) } }, { $set: { assigneeId: developer?._id ?? null, updatedAt: now } });
+    await database.collection<CommentDocument>("comments").insertMany(rows.map((row) => ({
+      issueId: row._id,
+      authorId: new ObjectId(admin.id),
+      kind: "system",
+      body: developer ? `${admin.name} assigned this issue to ${developer.name}.` : `${admin.name} removed the assignee.`,
+      statusFrom: null,
+      statusTo: null,
+      createdAt: now,
+    }) as CommentDocument));
+  }
+  redirect(`/${language}/issues?bulk=done&count=${rows.length}`);
 }
 
 export async function createDeveloper(locale: string, formData: FormData) {

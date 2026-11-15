@@ -15,6 +15,8 @@ export type IssueListRow = {
   status: IssueStatus;
   assigneeId: string | null;
   assigneeName: string | null;
+  /** The status a developer has asked for and an administrator has not yet decided. */
+  pendingStatus: IssueStatus | null;
   updatedAt: Date;
 };
 
@@ -24,6 +26,8 @@ export async function listIssues(input: {
   status?: string;
   module?: string;
   q?: string;
+  /** Administrators only: just the issues with a waiting status request. */
+  review?: boolean;
 }) {
   const database = await getDb();
   const collection = database.collection<IssueDocument>("issues");
@@ -34,6 +38,7 @@ export async function listIssues(input: {
     filter.status = input.status as IssueStatus;
   }
   if (input.module) filter.module = input.module;
+  if (input.review && input.user.role === "admin") filter.pendingRequest = { $type: "object" };
   const query = input.q?.trim().slice(0, 100);
   if (query) {
     const safe = new RegExp(regexEscape(query), "i");
@@ -41,6 +46,9 @@ export async function listIssues(input: {
   }
 
   const total = await collection.countDocuments(filter);
+  const awaiting = input.user.role === "admin"
+    ? await collection.countDocuments({ pendingRequest: { $type: "object" } })
+    : 0;
   const openFilter = { ...filter };
   delete openFilter.status;
   const open = await collection.countDocuments({
@@ -71,9 +79,11 @@ export async function listIssues(input: {
       status: issue.status,
       assigneeId: issue.assigneeId?.toHexString() ?? null,
       assigneeName: issue.assigneeId ? names.get(issue.assigneeId.toHexString()) ?? null : null,
+      pendingStatus: issue.pendingRequest?.status ?? null,
       updatedAt: issue.updatedAt,
     })),
     total,
+    awaiting,
     open,
     pages,
     page,
@@ -115,9 +125,17 @@ export async function getIssueDetail(input: {
     assigneeName: assignee?.name ?? "",
     details: issue.details,
     updatedAt: issue.updatedAt,
+    pendingRequest: issue.pendingRequest
+      ? { status: issue.pendingRequest.status, by: names.get(issue.pendingRequest.by.toHexString()) ?? "", at: issue.pendingRequest.at }
+      : null,
     comments: comments.map((comment) => ({
+      request: comment.kind === "request",
+      requestedStatus: comment.requestedStatus ?? null,
+      decision: comment.decision ?? null,
+      decisionNote: comment.decisionNote ?? null,
       body: comment.body,
-      author: comment.authorId ? names.get(comment.authorId.toHexString()) ?? "Former developer" : "Former developer",
+      system: comment.kind === "system" || !comment.authorId,
+      author: comment.authorId ? names.get(comment.authorId.toHexString()) ?? "Former developer" : "",
       createdAt: comment.createdAt,
       statusFrom: comment.statusFrom,
       statusTo: comment.statusTo,
