@@ -1,0 +1,32 @@
+{
+ "pt1110:B2": {
+  "status": "still-bug",
+  "note": "Seen again 2026-11-15 on deployment/dev: the bill of 15 Nov posted PURV/26-27/000001 on 2026-11-01, the payment BPV on 2026-11-15. Owner decision: the voucher must carry the posting date; the Purchase developer handles it.",
+  "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+  "date": "2026-11-15"
+ },
+ "st1111:S2": {
+  "status": "decision",
+  "note": "Seen again 2026-11-15: invoice INV-000001 (800.00) shows VAT 13.64% = 109.15 on the invoice and order, the journal books Output VAT 103.63 (and sales 696.37). Do not show the two side by side.",
+  "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+  "date": "2026-11-15"
+ },
+ "rv-be:inventory:15": {
+  "status": "still-bug",
+  "note": "Seen 2026-11-15: a petty cash expense of 750 posted (Dr 6105, Cr 111002 Petty Cash) while the petty cash ledger held 0, so the balance went negative; no check against the float.",
+  "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+  "date": "2026-11-15"
+ },
+ "pt1110:B10": {
+  "status": "open",
+  "note": "Seen again 2026-11-15 on the merged backend: Auto Generate Number fills only the serial/lot box; Bin sits off the right edge of the dialog (see demo:purchase:item-receipt-bin-dialog-hard-to-use).",
+  "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+  "date": "2026-11-15"
+ },
+ "pt1110:B1": {
+  "status": "still-bug",
+  "note": "On 2026-11-15 the admin saw Approve and Reject on a pending requisition whose Receive By was the default field-force user, so approval by the platform admin works; the default user is still a field-force employee.",
+  "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+  "date": "2026-11-15"
+ }
+}

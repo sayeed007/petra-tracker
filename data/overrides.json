@@ -1085,12 +1085,6 @@
   "ref": "321870e96",
   "date": "2026-11-09"
  },
- "rv-be:inventory:15": {
-  "status": "still-bug",
-  "note": "PettyCashRequestController.java:51 no @Valid; PettyCashRequestDTO amount (l.26) has no constraints",
-  "ref": "321870e96",
-  "date": "2026-11-09"
- },
  "rv-be:inventory:16": {
   "status": "still-bug",
   "note": "InventoryAdjustmentDomainService.resolveAndSetRequester:330 still honours dto.getRequesterId()",

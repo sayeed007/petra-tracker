@@ -261,7 +261,7 @@
   "title": "VAT shown is not the VAT posted",
   "summary": "Sales document screens show one combined 'VAT 15.8% = 25.28' for a Modern Trade line, but the books get Output VAT 24.00 (15%) and the remaining 1.28 is AIT (advance income tax, 0.8%), which stays inside Sales revenue because no AIT account is mapped. So the VAT a user sees is not the VAT posted.",
   "status": "decision",
-  "status_evidence": "Owner decision 2026-11-14: on hold, needs a team discussion (VAT shown vs VAT and AIT posted).",
+  "status_evidence": "Seen again 2026-11-15: invoice INV-000001 (800.00) shows VAT 13.64% = 109.15 on the invoice and order, the journal books Output VAT 103.63 (and sales 696.37). Do not show the two side by side.",
   "evidence_level": "verified",
   "found": "2026-11-11",
   "source": "SALES-TEST-OBSERVATIONS-2026-11-11.md S2",
@@ -270,8 +270,8 @@
   "theme": "Accounting segment (accounting developer)",
   "set": "sales-test-2026-11-11",
   "checked": {
-   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
-   "date": "2026-11-14"
+   "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+   "date": "2026-11-15"
   },
   "steps": [
    "Create a Modern Trade sales demand with a 160.00 line and carry it to an invoice.",
@@ -314,6 +314,37 @@
   "tests": [],
   "verify": "GET /api/accounting/reports/voucher-register?... and check that each row has accountId and accountName.",
   "owner": "Backend accounting (reports); frontend then links the column"
+ },
+ {
+  "id": "demo:accounting:output-vat-and-input-vat-share-account-1161",
+  "module": "accounting",
+  "side": "both",
+  "severity": "medium",
+  "title": "Output VAT and Input VAT now both post to 1161 VAT Current Account, which sits under the asset group 1160 VAT Accounts: output VAT shows as a credit inside Assets",
+  "summary": "On backend deployment/dev the seeded account settings map OUTPUT_VAT_ACCOUNT_ID and INPUT_VAT_ACCOUNT_ID to the same ledger, 1161 VAT Current Account (1160 group, current assets); the earlier chart had 2135 Output VAT (liability) and 1162 Input VAT. A Modern Trade invoice of 800.00 posted Dr 1130 Sundry Debtors 800.00 / Cr 4114 Sales 696.37 / Cr 1161 VAT Current Account 103.63, so the Trial Balance shows 1160 VAT Accounts with a credit balance under Assets and the Balance Sheet nets VAT inside assets. Decide whether one net VAT current account is intended (then the VAT return and the Balance Sheet presentation must say so) or whether output VAT belongs in a liability ledger.",
+  "steps": [
+   "Post a sales invoice with VAT on the demo stack.",
+   "Open Reports > Trial Balance (November 2026) and expand 1160."
+  ],
+  "expected": "Output VAT in a liability ledger, or an explicit decision that VAT is one net current account.",
+  "actual": "Credit balance 103.63 under Assets, 1160 VAT Accounts.",
+  "where": "Backend seeded account settings (OUTPUT_VAT_ACCOUNT_ID, INPUT_VAT_ACCOUNT_ID = 1161); Balance Sheet and VAT return presentation.",
+  "tests": [],
+  "verify": "Owner decision; if split, map OUTPUT_VAT to a liability ledger and re-run the sales posting test.",
+  "owner": "Accounting (decision)",
+  "status": "decision",
+  "status_evidence": "Seen 2026-11-15 in the journal SV/26-27/000001 and the Trial Balance of the demo stack.",
+  "evidence_level": "verified",
+  "found": "2026-11-15",
+  "checked": {
+   "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+   "date": "2026-11-15"
+  },
+  "refs": [],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-i",
+  "set": "e2e-refresh-2026-11-i"
  },
  {
   "id": "e2e:accounting:party-statement-wrong-account",
@@ -6209,6 +6240,37 @@
   "owner": "Backend, dashboard / accounting"
  },
  {
+  "id": "demo:dashboard:income-expense-card-shows-loss-under-periodic",
+  "module": "dashboard",
+  "side": "both",
+  "severity": "medium",
+  "title": "Dashboard 'Income and Expense' shows a large loss after one purchase and one sale: under Periodic valuation the purchase is an expense and no cost of goods sold is booked until the period end",
+  "summary": "After buying 4,800 of goods (paid), selling 800 and writing off 25, the card reads Total Income 696.37, Total Expenses 5,550.00, Net -4,853.63, although stock worth 4,275 is on hand. This is correct for the Periodic method (no COGS before the period-end stock count) but it reads as a loss to a client. The Profit and Loss report behaves the same way.",
+  "steps": [
+   "Run the demo story (purchase 4,800, sale 800) on the demo stack.",
+   "Open the Dashboard, Income and Expense."
+  ],
+  "expected": "A note on the card (or the report) that cost of goods sold is booked at the period end, or the card shows gross sales and purchases separately.",
+  "actual": "Net -4,853.63 with no explanation.",
+  "where": "src/features/dashboard (Income and Expense widget); Reports > Profit and Loss.",
+  "tests": [],
+  "verify": "Add an info line 'Periodic valuation: cost of goods sold is booked at the period end' under the card and the report.",
+  "owner": "Accounting / Dashboard (decision)",
+  "status": "decision",
+  "status_evidence": "Seen 2026-11-15 on the demo stack; the demo guide tells the presenter not to open this card.",
+  "evidence_level": "verified",
+  "found": "2026-11-15",
+  "checked": {
+   "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+   "date": "2026-11-15"
+  },
+  "refs": [],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-i",
+  "set": "e2e-refresh-2026-11-i"
+ },
+ {
   "id": "e2e:dashboard:ap-card-vs-aging-report",
   "module": "dashboard",
   "side": "backend",
@@ -7957,7 +8019,7 @@
   "title": "Petty cash create/update: no amount, date or ownership validation",
   "summary": "A petty cash request can be saved with a negative or empty amount, an expense date outside the budget period, and any requester the caller names. A negative amount raises the available budget and on approval books a negative accounting entry. It also lets one user file requests in another user's name.",
   "status": "still-bug",
-  "status_evidence": "PettyCashRequestController.java:51 no @Valid; PettyCashRequestDTO amount (l.26) has no constraints",
+  "status_evidence": "Seen 2026-11-15: a petty cash expense of 750 posted (Dr 6105, Cr 111002 Petty Cash) while the petty cash ledger held 0, so the balance went negative; no check against the float.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "BACKEND-BY-MODULE/04-inventory.md",
@@ -7968,8 +8030,8 @@
   "theme": "Common C-7: security items from this module",
   "set": "review-be",
   "checked": {
-   "ref": "321870e96",
-   "date": "2026-11-09"
+   "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+   "date": "2026-11-15"
   },
   "steps": [
    "Open the Petty Cash request form (Inventory > Petty Cash), or call the API directly.",
@@ -10206,6 +10268,39 @@
   "owner": "Both inventory"
  },
  {
+  "id": "demo:purchase:item-receipt-bin-dialog-hard-to-use",
+  "module": "inventory",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Item Receipt > Inventory Details dialog: the Bin box is off the right edge of the dialog and showed no options when opened",
+  "summary": "The dialog is a table (Serial/Lot, Unit, Pack size, Zone, Shelf, Bin*, Mfg date, Expiry, Qty*) wider than the dialog, so Bin is only reachable by scrolling right. When the Bin box was opened by a script it listed no options (zone and shelf were empty). Needs a manual check by a person: whether Bin needs a Zone and Shelf first, and whether the dialog should be wider. See also pt1110:B10 (Auto Generate Number does not fill the lot).",
+  "steps": [
+   "Open /purchase/item-receipt/new?purchaseOrder=<id>.",
+   "Under Accepted Qty press Inventory Details > Click here; press Auto Generate Number; open Bin."
+  ],
+  "expected": "Bin options are offered and the dialog shows all columns.",
+  "actual": "Bin sits behind a horizontal scroll; no options appeared in the scripted run.",
+  "where": "src/features/purchase/item-receipt (inventory details dialog)",
+  "tests": [],
+  "verify": "Open the dialog as a user on a 1366 px screen; if Bin has no options without Zone and Shelf, say so on the field.",
+  "owner": "Purchase / Inventory",
+  "status": "open",
+  "status_evidence": "Seen 2026-11-15 with a browser script; not confirmed by hand.",
+  "evidence_level": "observed",
+  "found": "2026-11-15",
+  "checked": {
+   "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+   "date": "2026-11-15"
+  },
+  "refs": [
+   "pt1110:B10"
+  ],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-i",
+  "set": "e2e-refresh-2026-11-i"
+ },
+ {
   "id": "e2e:inventory:closed-routes-decision",
   "module": "inventory",
   "side": "frontend",
@@ -10285,7 +10380,7 @@
   "title": "Item receipt: 'Auto Generate Number' does not fill the lot; zone and shelf boxes empty",
   "summary": "In the item receipt's Inventory details dialog the tester found 'Auto Generate Number' did not fill the lot field and the Zone and Shelf boxes were empty. By code the button opens a small dialog and generates rows after confirmation; the empty location boxes match a warehouse without zones.",
   "status": "open",
-  "status_evidence": "Not reproduced from code: purchase-order-inventory-detail-modal.tsx:592-630 handleAutoGenerate fills rows from the Auto Generate Number modal (prefix, digits, start, qty) and keeps the first row's zone, shelf and bin; it only works after the modal is confirmed. Empty zone and shelf boxes follow from no zones being configured in the test data.",
+  "status_evidence": "Seen again 2026-11-15 on the merged backend: Auto Generate Number fills only the serial/lot box; Bin sits off the right edge of the dialog (see demo:purchase:item-receipt-bin-dialog-hard-to-use).",
   "evidence_level": "verified",
   "found": "2026-11-10",
   "source": "TEST-OBSERVATIONS-2026-11-10.md B10",
@@ -10294,8 +10389,8 @@
   "theme": "Inventory segment",
   "set": "purchase-test-2026-11-10",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+   "date": "2026-11-15"
   },
   "steps": [
    "Purchase > Item Receipt > receive a stock item > Inventory details.",
@@ -11878,6 +11973,36 @@
   "owner": "Frontend purchase"
  },
  {
+  "id": "demo:docs:cheat-sheet-click-paths-not-walked",
+  "module": "other",
+  "side": "both",
+  "severity": "medium",
+  "title": "Client demo cheat sheet: the button-by-button UI path was not clicked through for PR to PO, item receipt save, demand verify and approve, shipping, receipt, adjustment and petty cash",
+  "summary": "The 2026-11-16 demo guide (petra-demo-accounting/demo-guide) was verified through the API (the whole story posts the expected journals) and by loading every screen (36 routes, no error), and the vendor bill was generated through the real screen. The other forms were opened and their fields read, but their Save and Approve buttons were not pressed in a browser. Each page of the guide ends with a table saying so.",
+  "steps": [
+   "Run the guide once by hand on a freshly reset demo stack (bash reset.sh)."
+  ],
+  "expected": "Every warning row of the guide becomes a tick.",
+  "actual": "Open until walked.",
+  "where": "petra-demo-accounting/demo-guide/*.md",
+  "tests": [],
+  "verify": "Walk the guide before the meeting and fix wording.",
+  "owner": "Demo owner",
+  "status": "open",
+  "status_evidence": "Recorded 2026-11-15.",
+  "evidence_level": "observed",
+  "found": "2026-11-15",
+  "checked": {
+   "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+   "date": "2026-11-15"
+  },
+  "refs": [],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-i",
+  "set": "e2e-refresh-2026-11-i"
+ },
+ {
   "id": "e2e:platform:connection-pool-starvation",
   "module": "other",
   "side": "backend",
@@ -12311,6 +12436,39 @@
   "where": "backend auth/service/impl/AuthServiceImpl.java (login, erpAccess check); src/main/resources/db/migration/V1__initial_schema.sql ~l.2652 (SPO row)",
   "verify": "POST /api/auth/login as an SPO-only user: expect the refusal. Then assign the AEC role and repeat: expect a token.",
   "owner": "Both sales / users"
+ },
+ {
+  "id": "demo:e2e:stack-reset-needs-docker-hub",
+  "module": "other",
+  "side": "both",
+  "severity": "low",
+  "title": "pnpm e2e:reset always rebuilds the images, so it fails offline or when Docker Hub times out, even though every image is cached",
+  "summary": "stack.mjs runs 'docker compose up -d --build'. The build resolves base image metadata on docker.io; with Docker Hub unreachable the reset failed five times in a row on 2026-11-15 and left the stack down. A reset without --build brought the same stack up in about two minutes from the cached images.",
+  "steps": [
+   "Make docker.io unreachable (or hit a TLS handshake timeout).",
+   "Run pnpm e2e:reset."
+  ],
+  "expected": "A reset that reuses the cached images (a no-build option).",
+  "actual": "Five failed attempts and a stopped stack.",
+  "where": "e2e/stack/stack.mjs (compose up -d --build)",
+  "tests": [],
+  "verify": "Add E2E_NO_BUILD=1 (drop --build); document it in e2e/README.md.",
+  "owner": "Test maintainer",
+  "status": "open",
+  "status_evidence": "Seen 2026-11-15; workaround used: a copy of stack.mjs without --build.",
+  "evidence_level": "observed",
+  "found": "2026-11-15",
+  "checked": {
+   "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+   "date": "2026-11-15"
+  },
+  "refs": [
+   "e2e/stack/stack.mjs"
+  ],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-i",
+  "set": "e2e-refresh-2026-11-i"
  },
  {
   "id": "merge:A4",
@@ -13220,6 +13378,39 @@
   "owner": "Backend, payables"
  },
  {
+  "id": "demo:release:frontend-needs-channel-allocations-endpoint",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "high",
+  "title": "Merged frontend calls GET /api/purchase/item-receipts/channel-allocations, which the backend release branches do not have: the Item Receipt form cannot load",
+  "summary": "The frontend head of release_beta_1.0.0 (5849b720, merged 2026-11-15) reads the channel allocation suggestion from /api/purchase/item-receipts/channel-allocations. Only the backend branch improvement/release-beta-1.0.0 (commit f98c51dfa and 27 more, the Purchase developer's #116 work) has it; deployment/dev (aebf83e25) and release_beta_1.0.0 (522bfdb8e) do not. Against those backends the request is read as GET item-receipts/{id} and answers 400 (type mismatch), so the form shows 'The channel allocation could not be loaded, so this receipt cannot be shown or saved safely'. The two backend branches merge without conflicts (checked with git merge-tree and built locally). The servers deployed on 2026-11-15 (:3000 and :3001, frontend 5849b720) have the same problem unless their backend (45082, 45080) carries those commits.",
+  "steps": [
+   "Run the frontend 5849b720 against backend deployment/dev aebf83e25.",
+   "Approve a purchase order, open it and press Receive (/purchase/item-receipt/new?purchaseOrder=<id>)."
+  ],
+  "expected": "The receipt form opens with the suggested channel split.",
+  "actual": "'Could not load this data. The channel allocation could not be loaded...' with a Try again button; the backend logs 'Type mismatch at [/api/purchase/item-receipts/channel-allocations]: parameter id, value channel-allocations'.",
+  "where": "Backend: branch merge (improvement/release-beta-1.0.0 into deployment/dev and release_beta_1.0.0). Frontend: src/erp-api/purchase/item-receipts/index.ts:479.",
+  "tests": [],
+  "verify": "After the merge, open the same form: the six channel columns show Suggested and Received; save a receipt. The demo stack (petra-demo-accounting, image petra-backend-merged) already runs the merge.",
+  "owner": "Backend (merge) / Purchase",
+  "status": "open",
+  "status_evidence": "Seen 2026-11-15 on a local stack running deployment/dev; fixed on the same stack after merging the improvement branch locally. Backend team informed by the owner.",
+  "evidence_level": "verified",
+  "found": "2026-11-15",
+  "checked": {
+   "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+   "date": "2026-11-15"
+  },
+  "refs": [
+   "src/erp-api/purchase/item-receipts/index.ts"
+  ],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-i",
+  "set": "e2e-refresh-2026-11-i"
+ },
+ {
   "id": "e2e:purchase:lc-master-payment-term",
   "module": "purchase",
   "side": "frontend",
@@ -13334,7 +13525,7 @@
   "title": "Purchase requisition stuck: Receive By defaults to a user with no Purchase access; admin cannot approve",
   "summary": "A new purchase requisition pre-selects the first employee in the list as 'Receive By'. That user may have no Purchase access, and the requester approval is assigned to them, so the requisition sits in 'Pending Requester Approval' and even the platform admin gets no Approve button.",
   "status": "still-bug",
-  "status_evidence": "Frontend half still there: app/(erp)/purchase/purchase-requisition/new/page.tsx:122 sets receiveBy to options.receivers[0]. Backend half (admin missing from the Receive By list, approval assigned to that user) not checked here.",
+  "status_evidence": "On 2026-11-15 the admin saw Approve and Reject on a pending requisition whose Receive By was the default field-force user, so approval by the platform admin works; the default user is still a field-force employee.",
   "evidence_level": "verified",
   "found": "2026-11-10",
   "source": "TEST-OBSERVATIONS-2026-11-10.md B1",
@@ -13343,8 +13534,8 @@
   "theme": "Purchase segment",
   "set": "purchase-test-2026-11-10",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+   "date": "2026-11-15"
   },
   "steps": [
    "Log in as a user who can create requisitions and open Purchase > Purchase Requisition > New.",
@@ -13645,7 +13836,7 @@
   "title": "Purchase voucher posted on the period start (1 Nov) instead of the bill date (10 Nov)",
   "summary": "A purchase vendor bill dated 10 Nov is posted into the ledger on 1 Nov, the first day of its period, because the frontend sends the period start as the posting date and the backend uses it as the voucher date. Date-range reports (day book, ledgers) therefore show the purchase nine days early.",
   "status": "still-bug",
-  "status_evidence": "Owner 2026-11-15: this is a purchase bug and belongs to the purchase module; the responsible purchase developer handles it (accounting to be consulted). Decided behaviour: the voucher must carry the posting (bill) date, not the first day of the month. Cause on both sides: frontend vendor-bill-generation-view.tsx:668 sends postingPeriodStartDate = period.start, backend PurchasePostingFactsBuilder.java:101 uses it as the voucher date. Either side can fix it; the cleaner fix is the backend using the bill date when it falls inside the open period.",
+  "status_evidence": "Seen again 2026-11-15 on deployment/dev: the bill of 15 Nov posted PURV/26-27/000001 on 2026-11-01, the payment BPV on 2026-11-15. Owner decision: the voucher must carry the posting date; the Purchase developer handles it.",
   "evidence_level": "verified",
   "found": "2026-11-10",
   "source": "TEST-OBSERVATIONS-2026-11-10.md B2",
@@ -13654,7 +13845,7 @@
   "theme": "Accounting segment (accounting developer)",
   "set": "purchase-test-2026-11-10",
   "checked": {
-   "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
+   "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
    "date": "2026-11-15"
   },
   "steps": [
@@ -15652,6 +15843,74 @@
   "where": "src/features/purchase/vendor-return/components/vendor-return-fulfill-view.tsx:934-937",
   "verify": "Fulfil form has no placeholder tab and no hard-coded English.",
   "owner": "Frontend purchase"
+ },
+ {
+  "id": "demo:e2e:stale-test-fail-bill-payment-term",
+  "module": "purchase",
+  "side": "frontend",
+  "severity": "low",
+  "title": "e2e cases PUR-01-01 and PUR-05-05 still carry test.fail() for the vendor bill payment term, which the screen now sends",
+  "summary": "Both cases were marked as known bugs because the Vendor Bill form sent no billing.paymentTermId. After feature/purchase-complete the form has a Payment Term field and a bill was generated through the real screen on 2026-11-15 (challan, Submit prices, Net 30, Generate Bill). With test.fail() left in, the cases will report 'unexpectedly passed' once the stack has the matching backend. PUR-11-05 (LC master form) is the same for the LC master form.",
+  "steps": [
+   "Merge the backend improvement branch into the e2e backend, reset the e2e stack.",
+   "Run node e2e/run.mjs e2e/tests/purchase/01-bill-to-payment.spec.ts."
+  ],
+  "expected": "The two cases pass without test.fail().",
+  "actual": "They are marked as expected failures.",
+  "where": "e2e/tests/purchase/01-bill-to-payment.spec.ts (PUR-01-01), 05-receipt-and-bill.spec.ts (PUR-05-05), 11-new-behaviour.spec.ts (PUR-11-05).",
+  "tests": [
+   "PUR-01-01",
+   "PUR-05-05",
+   "PUR-11-05"
+  ],
+  "verify": "Remove test.fail() and the BUG comment from the three cases, run the purchase module once on a stack with the merged backend.",
+  "owner": "Test maintainer",
+  "status": "open",
+  "status_evidence": "Bill generated through the screen on 2026-11-15; the e2e run itself could not be made (the e2e stack backend lacks the channel-allocations endpoint and Docker Hub was unreachable).",
+  "evidence_level": "observed",
+  "found": "2026-11-15",
+  "checked": {
+   "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+   "date": "2026-11-15"
+  },
+  "refs": [
+   "e2e/tests/purchase/01-bill-to-payment.spec.ts"
+  ],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-i",
+  "set": "e2e-refresh-2026-11-i"
+ },
+ {
+  "id": "demo:purchase:receipt-without-requisition-split-suggests-zero",
+  "module": "purchase",
+  "side": "frontend",
+  "severity": "low",
+  "title": "Item Receipt suggests 0 for every channel when the purchase requisition carried no per-channel quantities, and nothing says why",
+  "summary": "Since the channel suggestion is derived from the requisition, a requisition created without channel quantities gives 'Suggested: 0 / Received: 0' in all six channel columns, and the user must type every channel quantity. A short hint ('the requisition named no channels') would save a call.",
+  "steps": [
+   "Create a requisition through the API without demandSplits (or with no channel quantities), approve it, turn it into an order.",
+   "Open Receive on the order."
+  ],
+  "expected": "A hint on the table, or an even split offered.",
+  "actual": "Six boxes with Suggested: 0.",
+  "where": "src/features/purchase/item-receipt",
+  "tests": [],
+  "verify": "Show a one-line hint when every suggestion is 0.",
+  "owner": "Purchase (decision)",
+  "status": "decision",
+  "status_evidence": "Seen 2026-11-15 on the merged backend.",
+  "evidence_level": "observed",
+  "found": "2026-11-15",
+  "checked": {
+   "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+   "date": "2026-11-15"
+  },
+  "refs": [],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-i",
+  "set": "e2e-refresh-2026-11-i"
  },
  {
   "id": "e2e:platform:vendor-bill-dev-seeder-crash",
@@ -31900,6 +32159,37 @@
   "where": "src/shared/components/customize-table-column.tsx, src/shared/hooks/use-customized-table-view.ts",
   "verify": "Block the table-view save request and click Save.",
   "owner": "Frontend, shared"
+ },
+ {
+  "id": "demo:shell:notifications-unread-count-401",
+  "module": "shared",
+  "side": "both",
+  "severity": "low",
+  "title": "Every page asks GET /api/notifications/unread-count and gets 401 when the notification service is not running",
+  "summary": "On the local demo stack (no central-notification-service) the platform admin's every page load logs a 401 for /api/notifications/unread-count. The bell then has nothing to show and an error appears in the browser console. Decide whether the frontend should stop polling after a 401 and hide the bell, or the backend should answer 200 with 0.",
+  "steps": [
+   "Open any page as super@admin.com on a stack without the notification service.",
+   "Watch the network log."
+  ],
+  "expected": "No error; the bell shows 0 or hides.",
+  "actual": "401 on every page.",
+  "where": "Frontend notifications poll; backend /api/notifications/unread-count.",
+  "tests": [],
+  "verify": "Stop polling after the first 401 and hide the bell, or return 0.",
+  "owner": "Frontend / Backend",
+  "status": "open",
+  "status_evidence": "Seen 2026-11-15 on the demo stack.",
+  "evidence_level": "observed",
+  "found": "2026-11-15",
+  "checked": {
+   "ref": "release_beta_1.0.0@5849b720 + backend deployment/dev@aebf83e25 + improvement/release-beta-1.0.0@cffe7ad5e (local merge)",
+   "date": "2026-11-15"
+  },
+  "refs": [],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-i",
+  "set": "e2e-refresh-2026-11-i"
  },
  {
   "id": "pt1110:B15",

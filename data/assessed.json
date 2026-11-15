@@ -1,10 +1,10 @@
 {
  "frontend": {
   "branch": "release_beta_1.0.0",
-  "sha": "c72260d0",
-  "head_time": "2026-11-15 06:04 UTC",
-  "assessed": "2026-11-14",
-  "scope": "all modules: code check of every non-fixed item; e2e suites green on this head except the known fresh-stack stock-up race (gate-pass 04, REP-03-02); accounting frontend fixes included"
+  "sha": "5849b720",
+  "head_time": "2026-11-15 20:15 UTC",
+  "assessed": "2026-11-15",
+  "scope": "item statuses assessed against c72260d0 (e2e green there except the known fresh-stack stock-up race); head 5849b720 adds the Purchase and Sales merges of 2026-11-15, which were checked by the demo run (API story and 36 screens), not by a full e2e run"
  },
  "backend": {
   "branch": "deployment/dev",
