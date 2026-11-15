@@ -27011,13 +27011,13 @@
   ],
   "verify": "Change `<=` to `<`; remove test.fail() from SET-07-03.",
   "owner": "Frontend (Settings)",
-  "status": "still-bug",
-  "status_evidence": "SET-07-03 (test.fail) reproduces it on the seeded data, e2e refresh 2026-11-14.",
+  "status": "fixed",
+  "status_evidence": "commission-config-conflicts.ts now uses strict < like the backend's half-open [from, to) rule; the default slabs save. SET-07-03 was test.fail and is a plain passing test now (settings run 2026-11-15).",
   "evidence_level": "verified",
   "found": "2026-11-14",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-14"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "refs": [
    "e2e/tests/settings"
@@ -28107,8 +28107,8 @@
   "severity": "medium",
   "title": "Org-structure add and edit flow",
   "summary": "Adding or editing a Field Force node could create duplicates on double Enter, lose the typed name on a failed edit, or silently keep a manager the user cleared.",
-  "status": "in-progress",
-  "status_evidence": "Busy guards, keep-typed-name on failed edit are in (org-tree-node.tsx:104,146,253-266; updateOrgNode omits managerType when no person is set, field-force/index.ts:468-473). Missing: clearing an assigned manager sends nothing, so the backend may keep the manager while the UI says updated; SET-06-02 is still a test.fail known bug for renaming a node without assignee (may now pass).",
+  "status": "decision",
+  "status_evidence": "Not changed. updateOrgNode sends no managerType or userId when no person is set, and the backend (SalesGeographyManagerDomainService.reassignOnGeographyUpdate) has no clear operation: with a null userId it retires the active manager and creates a new manager row with a null user. Needs a backend 'unassign manager' operation, or the UI stops offering 'clear manager'. Owner to decide.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -28120,8 +28120,8 @@
   "theme": "Theme 2. Writes that change more than the user asked for",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Open /settings/field-force, add a wing and press Enter twice quickly.",
@@ -28318,8 +28318,8 @@
   "severity": "medium",
   "title": "Sign-in does two backend logins",
   "summary": "One click on Sign in sends the same credentials to the backend twice (bcrypt twice, double latency, would double any lockout counter).",
-  "status": "still-bug",
-  "status_evidence": "doLogin (erp-api/auth/login.ts:9-24) posts /api/public/auth/login itself, then signIn('credentials') runs authorize (auth.ts:76-86) which posts the same login again.",
+  "status": "fixed",
+  "status_evidence": "doLogin no longer pre-calls the backend; authorize in src/auth.ts is the only call, so one login per click. The SSO hand-off still redirects. SET-02-04 (invite, sign in, switch off and on) passes.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -28330,8 +28330,8 @@
   "theme": "Theme 3. Permission and access holes",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Open /login with the network panel (or backend access log) visible.",
@@ -28695,8 +28695,8 @@
   "severity": "medium",
   "title": "Raw error text reaches users",
   "summary": "Some screens still show the raw 'API fetch failed with status ...' text in English (profile password change, selects, notification route) instead of a translated message.",
-  "status": "still-bug",
-  "status_evidence": "resolveApiError is fixed (shared/utils/error-handling.ts:6-16 uses safeBackendBusinessMessage). Still raw: app/api/notifications/_utils.ts:19-22 returns error.message, shared/components/category-select.tsx:59 and shared/hooks/use-sales-geography-cascade.ts:95-98 show error.message with English fallbacks, features/account/profile/actions.ts:42 forwards error.message.",
+  "status": "fixed",
+  "status_evidence": "Notifications route returns only a code, category-select and the geography cascade use common.loadFilterFailed, profile actions pass a cleaned business message: no 'API fetch failed' text reaches users.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -28709,8 +28709,8 @@
   "theme": "Theme 6. Raw backend text and error handling",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Force a 500 on the item category list and open a screen with the category select.",
@@ -28732,8 +28732,8 @@
   "severity": "medium",
   "title": "Inventory facade throws raw errors, public actions",
   "summary": "The inventory settings facade throws raw error strings, so duplicate-name or in-use reasons are never shown, and its functions are public server actions with no permission check.",
-  "status": "still-bug",
-  "status_evidence": "settings/inventory/index.ts is still 'use server' with 24 `throw new Error(String(error))` blocks and revalidatePath inside the facade (index.ts:26-172 onward); no permission check or server-only.",
+  "status": "in-progress",
+  "status_evidence": "Error part done: src/erp-api/settings/mutation-error.ts classifies a failure (DUPLICATE, IN_USE, VALIDATION, NOT_FOUND, PERMISSION_DENIED, UNAVAILABLE) and the inventory writes return typed results with translated reasons. The classification is a regex on the backend sentence (heuristic); a backend error code would be better. The exported functions are still public server actions with no permission check: left alone by owner decision.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -28744,8 +28744,8 @@
   "theme": "Theme 6. Raw backend text and error handling",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Settings > Inventory > Brands, create a brand with an existing name."
@@ -28767,7 +28767,7 @@
   "title": "Org-structure tree load failure and customer lookup",
   "summary": "A failed geography read used to render an empty tree. That is fixed; business refusals still reach users as raw text, any client can call the exported delete primitive, and a failed customer-channel lookup reads as 'no customers'.",
   "status": "in-progress",
-  "status_evidence": "Fixed: tree load failure sets loadError (field-force/index.ts:308-355). Missing: toActionError still returns raw error.message (:519-521), deleteOrgNode and the other primitives are exported from the 'use server' file (:443-500), the tree loads with expand=true (:311), and the customer-assignment modal still swallows a failed channel lookup into an empty list (customer-assignment-modal.tsx:93-95).",
+  "status_evidence": "Error part done: field-force actions return { success:false, code } with translated reasons, and a failed customer-channel lookup shows AppLoadError with retry. The exported delete primitive still has no permission check (owner decision: left alone).",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -28779,8 +28779,8 @@
   "theme": "Theme 1. Failed load turns into an editable blank form that overwrites live data",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Fail GET /api/sales/geographies/by-tier.",
@@ -28961,6 +28961,41 @@
   "theme": "",
   "source": "e2e-refresh-2026-11-e",
   "set": "e2e-refresh-2026-11-e"
+ },
+ {
+  "id": "e2e:platform:admin-email-renamed-on-seed",
+  "module": "settings-platform",
+  "side": "both",
+  "severity": "low",
+  "title": "Test stack: the seeded platform admin appeared as admin@admin.com instead of super@admin.com, so the e2e login failed with 401",
+  "summary": "On 2026-11-15, after a PC restart and a no-cache rebuild of the backend image, a freshly reset e2e stack logged 'Provisioned platform admin super@admin.com (1)' but the database held user 1 as admin@admin.com and super@admin.com could not log in (401). admin@admin.com and petra@admin.com logged in with 123456. The cause is not found (no HRMS was running). The e2e scripts now read E2E_USER (stack.mjs and api.ts), so the stack can be used with E2E_USER=admin@admin.com.",
+  "steps": [
+   "Reset the e2e stack (pnpm e2e:reset, full mode).",
+   "POST /api/public/auth/login with super@admin.com / 123456: 401.",
+   "Same call with admin@admin.com / 123456: 200."
+  ],
+  "expected": "The platform admin from application-dev.properties (super@admin.com) can log in.",
+  "actual": "Only admin@admin.com (user id 1) logs in.",
+  "where": "Backend: AdminBootstrapSeeder / AdminBootstrapHrmsLinker (the linker logs 'Linked platform admin ... to HRMS employee 1'). e2e: e2e/stack/stack.mjs, e2e/support/api.ts.",
+  "tests": [],
+  "verify": "After a reset, login with super@admin.com works, or the e2e docs say which email the seed produces.",
+  "owner": "Backend / test stack",
+  "status": "open",
+  "status_evidence": "Seen 2026-11-15 on release_beta_1.0.0 and backend deployment/dev@b2597ef11; worked on 2026-11-14 with the same code.",
+  "evidence_level": "observed",
+  "found": "2026-11-15",
+  "checked": {
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
+  },
+  "refs": [
+   "e2e/stack/stack.mjs",
+   "e2e/support/api.ts"
+  ],
+  "size": "",
+  "theme": "",
+  "source": "e2e-refresh-2026-11-h",
+  "set": "e2e-refresh-2026-11-h"
  },
  {
   "id": "e2e:platform:external-endpoints-slow",
@@ -29797,8 +29832,8 @@
   "severity": "low",
   "title": "Warehouse numeric fields",
   "summary": "Warehouse numeric fields used to accept 2.5 levels and negative floor area. Levels and capacity now reject decimals; floor area is still unchecked.",
-  "status": "in-progress",
-  "status_evidence": "levels and capacityUnits are whole-number validated (warehouse/schemas.ts:161,163). Floor area is still free text (localizedOptionalString at :156), so -500 is accepted.",
+  "status": "fixed",
+  "status_evidence": "localizedFloorArea in warehouse/schemas.ts rejects a negative number. Free text such as '100 sqft' still passes because the field is a string.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -29809,8 +29844,8 @@
   "theme": "Theme 2. Writes that change more than the user asked for",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Settings > Warehouse > create warehouse, enter -500 in Floor area, Save."
@@ -29831,8 +29866,8 @@
   "severity": "low",
   "title": "Properties form stays open after cascade update",
   "summary": "After a warehouse location change needs a 'cascade to children' confirmation and the user confirms, the Properties form stays in edit mode showing the saved values. A second Save then sends a pointless cascading update to the backend. Only affects Settings > Warehouse users who change a location purpose with children.",
-  "status": "still-bug",
-  "status_evidence": "Still in code: warehouse-settings-page.tsx confirmCascadeUpdate (~l.376-392) never clears the panel's edit state; only submitPropertiesEdit in warehouse-detail-panel.tsx (~l.409-415) does, and that path returns false when the cascade dialog was opened.",
+  "status": "fixed",
+  "status_evidence": "After a confirmed cascade update the page bumps cascadeSavedVersion and the Properties panel leaves edit mode.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -29843,8 +29878,8 @@
   "theme": "Theme 2. Writes that change more than the user asked for",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Open Settings > Warehouse and select a location that has child locations.",
@@ -29867,8 +29902,8 @@
   "severity": "low",
   "title": "Item-master and business-type buttons have no permission guard",
   "summary": "A user who may only view inventory settings still sees Create, Edit and active/inactive switches on the Item master and Business type screens. Clicking them ends in a refusal from the server instead of the button simply not being offered.",
-  "status": "still-bug",
-  "status_evidence": "Still in code: no AccessGuard/useHasPermission anywhere under src/features/settings/inventory (grep), so Create/Edit/toggle buttons in brands, category, manufacturer, item type, shipping carrier and business type render for everyone. Same class as fe-A02-9. The facade asserts on the server, so this is a visible-button problem, not a data hole.",
+  "status": "fixed",
+  "status_evidence": "AccessGuard with the existing inventory create/edit permission codes on category, manufacturer, brand, item type, shipping carrier and business type; SALES_SHIPPING_CARRIER_* codes (already used by the backend) added to the frontend list.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -29880,8 +29915,8 @@
   "theme": "Theme 3. Permission and access holes",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Sign in as a user whose role has inventory settings view but no create/edit.",
@@ -29903,8 +29938,8 @@
   "severity": "low",
   "title": "Sidebar unfiltered while access loads or failed",
   "summary": "Before access data arrives, or after it failed, the sidebar used to show every module. It is now limited to ungated entries, but a failed access call leaves a nearly empty menu with no explanation or retry.",
-  "status": "in-progress",
-  "status_evidence": "app-layout.tsx:87-97 fails closed: until access loaded (or on failure) only entries needing no permission are shown. Missing: no 'could not load permissions' message or retry (no retry code in access-provider.tsx or app-layout.tsx).",
+  "status": "fixed",
+  "status_evidence": "The sidebar shows a message and a retry button when the access read fails; it stays fail-closed (useReloadAccess).",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -29915,8 +29950,8 @@
   "theme": "Theme 3. Permission and access holes",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Block /api/auth/me/access.",
@@ -29971,8 +30006,8 @@
   "severity": "low",
   "title": "Permission matrix hides catalog codes",
   "summary": "On the role editor, permission codes that exist in the catalog but are excluded by a matrix row's action list used to be treated as covered and never drawn, so they could not be granted. That is fixed. A smaller leftover: a code that belongs to a child row can appear a second time as its own top-level row.",
-  "status": "in-progress",
-  "status_evidence": "Main part fixed: users-and-roles/utils/index.ts covered-code loop (~l.165-190) now applies the same row.actions filter as computeModuleStats via columnsFor(). Not fixed: orphan rows are only matched against top-level rows (~l.236 targetMod.rows.find), so an orphan equal to a child row key is still added as a duplicate top-level row.",
+  "status": "fixed",
+  "status_evidence": "An orphan permission code of a child row is added to that child's actions instead of a duplicate top-level row (orphan-permissions.test.ts).",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -29983,8 +30018,8 @@
   "theme": "Theme 3. Permission and access holes",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Open Settings > Users & Roles > New role.",
@@ -30038,8 +30073,8 @@
   "severity": "low",
   "title": "Sign-in reports every failure as wrong password; English errors",
   "summary": "When the backend is down or throttling, the sign-in page still says the password is wrong, so users reset passwords for no reason. All login errors are English even in the Bangla UI.",
-  "status": "still-bug",
-  "status_evidence": "Still in code: auth.ts authorize (~l.84-86) throws 'Invalid username or password' for every non-ok response (500, 503, 429 included); erp-api/auth/login.ts (~l.34-36) returns error.cause.err.message or an English string.",
+  "status": "fixed",
+  "status_evidence": "src/erp-api/auth/login-errors.ts: 429 is throttled, 5xx and network errors are unavailable, anything else invalid; translated keys auth.login_errors.*; the wrong-password message is unchanged.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -30051,8 +30086,8 @@
   "theme": "Theme 3. Permission and access holes",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Stop or block the backend API.",
@@ -30074,8 +30109,8 @@
   "severity": "low",
   "title": "Deactivating master records with no warning",
   "summary": "Switching a master record off used to happen on one click with no warning. Done for the inventory master data; pausing a pricing scheme still changes order discounts immediately.",
-  "status": "in-progress",
-  "status_evidence": "Item category, brand, manufacturer and business type deactivation now use AppConfirmAction and per-row togglingId (e.g. item-category-section.tsx:42,126,246-284; business-type-root.tsx:283). Missing: pricing scheme pause/activate switch (pricing-scheme-detail-page.tsx:196-198) has no confirm, only a pending guard.",
+  "status": "fixed",
+  "status_evidence": "Pricing scheme detail asks for confirmation before pausing or activating (AppConfirmAction). SET-10-02 clicks Activate and Pause and passes.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -30086,8 +30121,8 @@
   "theme": "Theme 4. One-click destructive and double-submit actions",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Settings > Sales > open a pricing scheme.",
@@ -30110,8 +30145,8 @@
   "severity": "low",
   "title": "Users list role column",
   "summary": "The Users list used to show only the first role of a user. It now lists all of them. A viewer who can see users but not roles still sees code-derived names instead of the real role names.",
-  "status": "in-progress",
-  "status_evidence": "Partly fixed: users-and-roles-root.tsx l.105 now joins the names of all role codes (formatRoleCode). Remaining: when the viewer has no role-view permission the roles list is empty (l.73 Promise.resolve([])), so title-cased codes like 'Sales Mgr' still show instead of real names.",
+  "status": "fixed",
+  "status_evidence": "When a role is not in the readable list the raw role code is shown, not a title-cased guess.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -30122,8 +30157,8 @@
   "theme": "Theme 5. Wrong or incomplete data shown",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Give a user two roles.",
@@ -30145,8 +30180,8 @@
   "severity": "low",
   "title": "Role code derived from the name",
   "summary": "A new role's code is generated from its name. Bangla names no longer all become ROLE_, but two names that differ only by punctuation still produce the same code and the second save fails with a backend message.",
-  "status": "in-progress",
-  "status_evidence": "Partly fixed per FIX-LOG: schema.ts name max 120; new-role-form-view.tsx l.196-201 adds a unique suffix for names with no Latin letters and cuts to 80 chars. Not fixed: 'Sales Manager' and 'Sales-Manager' still derive the same code; no collision check or field error before sending.",
+  "status": "fixed",
+  "status_evidence": "A 'Role already exists' answer shows the translated roleForm.roleCodeExists message with the code; code generation is unchanged.",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -30157,8 +30192,8 @@
   "theme": "Theme 5. Wrong or incomplete data shown",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "New role named 'Sales Manager', save.",
@@ -30180,8 +30215,8 @@
   "severity": "low",
   "title": "Account roles screen with chart outage",
   "summary": "If the chart of accounts fails to load, the Account roles screen shows empty pickers and the saved accounts by number only. A user can still press Save, which risks overwriting mappings from a screen that could not show them.",
-  "status": "in-progress",
-  "status_evidence": "Partly done: account-roles-section.tsx l.305-308 shows a warning when the chart load fails, and l.262-270 names a stored account that is not in the chart. Still: Save (l.383 disabled={isSaving || changedKeys.length === 0}) is not disabled by accountsError, and the stored account is shown as the bare id.",
+  "status": "fixed",
+  "status_evidence": "Save is disabled while the chart of accounts failed to load; the warning stays.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -30192,8 +30227,8 @@
   "theme": "Theme 1. Failed load turns into an editable blank form that overwrites live data",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Open Settings > Accounting > Account roles with the chart-of-accounts call failing.",
@@ -30282,8 +30317,8 @@
   "severity": "low",
   "title": "Sales settings facade classifies errors three ways",
   "summary": "The sales settings facade handles backend errors in three different ways, one of them by searching error text. A rejected pricing save (e.g. 422) becomes a generic message, and one failing geography call stops the whole pricing form from opening.",
-  "status": "still-bug",
-  "status_evidence": "Still in code: erp-api/settings/sales/index.ts safeSalesPricingErrorCode (~l.1378) matches the message text 'status 403'; getGeographyOptions (l.1159) has no try/catch and is awaited in Promise.all in getSalesPricingFormOptions (l.1181); erp-api/settings/users-and-roles/index.ts l.3 and settings/system/index.ts import from @/features.",
+  "status": "fixed",
+  "status_evidence": "Pricing and commission helpers classify errors by parseBackendApiError status (422 counts as validation) instead of text search; a failing geography call degrades to empty options so the pricing form still loads. The system facade was left alone.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -30294,8 +30329,8 @@
   "theme": "Theme 6. Raw backend text and error handling",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Settings > Sales > Pricing scheme > New.",
@@ -30420,8 +30455,8 @@
   "severity": "low",
   "title": "Root files hardcoded English and literal colour",
   "summary": "Root files used English-only text and a fixed colour that ignored dark mode. Loading and error pages are fixed; the guide page title is still English.",
-  "status": "in-progress",
-  "status_evidence": "Mostly fixed: app/loading.tsx uses getTranslations('common').loadingPage, global-error.tsx has a bilingual pair and bg-background. Still English only: app/(guide)/guide/layout.tsx l.5-8 metadata title 'Guide' / 'Petra ERP Guide'.",
+  "status": "fixed",
+  "status_evidence": "The guide layout title comes from getGuideContent().shell.pageTitle in en and bn.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -30432,8 +30467,8 @@
   "theme": "Theme 8. Locale and layout",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Switch to Bangla.",
@@ -30670,8 +30705,8 @@
   "severity": "low",
   "title": "Sales mapping silent gaps",
   "summary": "On the Sales account mapping screen an override for a channel that was later deactivated is shown as '#12' instead of the name, and if the channel call fails the screen just shows no channels with 'Add override' disabled and no reason.",
-  "status": "still-bug",
-  "status_evidence": "Still in code: sales-mapping-section.tsx l.100 loads getSalesChannels({active:true}); a failed call becomes [] (l.133-137) without a message and l.183 shows `#${id}` for a channel not in that list.",
+  "status": "fixed",
+  "status_evidence": "getSalesChannels takes includeInactive; Sales mapping names inactive channels and offers only active ones for new rows; a failed channel call shows a warning with retry.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -30682,8 +30717,8 @@
   "theme": "Theme 1. Failed load turns into an editable blank form that overwrites live data",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Create a sales channel and an account override for it (Settings > Accounting > Sales mapping).",
@@ -30764,8 +30799,8 @@
   "severity": "low",
   "title": "Logo upload and removal",
   "summary": "Saving the company profile re-downloads and re-uploads the existing logo every time, and sends the same id in two fields.",
-  "status": "still-bug",
-  "status_evidence": "Still in code: company-profile-tab.tsx getLogoBlob (l.28-40) downloads the kept logo from its URL and the save appends it again (l.172-174); both logoId and logoAttachmentId are sent (l.160-161). e2e SET-08-02 covers upload, keep and remove, so remove works; only the re-upload is wasteful.",
+  "status": "fixed",
+  "status_evidence": "An unchanged logo is neither downloaded nor re-uploaded; it is kept by logoAttachmentId and the duplicate logoId field is gone (CompanyRequestDTO only has logoAttachmentId).",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -30776,8 +30811,8 @@
   "theme": "Theme 9. Dead code, fake code, tidy-ups",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Settings > System > Company profile with a logo; change the name and Save; watch the network."
@@ -30829,8 +30864,8 @@
   "severity": "low",
   "title": "Customer deposit ledger inactive channel",
   "summary": "A sales channel deactivated after it got a customer deposit ledger mapping is labelled 'Customer deposit ledger for #12' instead of its name.",
-  "status": "still-bug",
-  "status_evidence": "Still in code: customer-deposit-ledgers.tsx l.85 loads getSalesChannels({active:true}) only and l.225 / l.313 fall back to `#${salesChannelId}`.",
+  "status": "fixed",
+  "status_evidence": "Customer deposit ledgers name inactive channels the same way and the warning has a retry.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -30841,8 +30876,8 @@
   "theme": "Theme 1. Failed load turns into an editable blank form that overwrites live data",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Map a deposit ledger for a channel in Settings > Accounting.",
@@ -31134,8 +31169,8 @@
   "severity": "unrated",
   "title": "Dark theme filter selects white and unreadable",
   "summary": "On list screens in the dark theme the filter select and the page-size select render with a white background and a barely readable placeholder.",
-  "status": "open",
-  "status_evidence": "Not re-checked: it is a visual defect in the dark theme (shared select/filter styling) and cannot be judged from code reading. No dark-mode select assertion in e2e (SET-01-06 only toggles the theme class).",
+  "status": "in-progress",
+  "status_evidence": "The root-cause fix (Select tokens selectorBg and clearBg left to default, antd-provider.tsx and petra-theme.ts, commit e9b4ff63) is already in. Not confirmed visually: check dark mode on the list screens; if a select is still white name the screen.",
   "evidence_level": "likely",
   "found": "2026-10-31",
   "source": "backend-saleschain-bugs-2026-10-31.md FD-P3-7",
@@ -31144,8 +31179,8 @@
   "theme": "",
   "set": "notes-B",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Switch to dark theme.",
@@ -31168,7 +31203,7 @@
   "title": "Untranslated Bengali labels, placeholder landing pages, dead 'New Entry', assignment modal lacks territory (FD-P3-9..12)",
   "summary": "A bundle of small polish defects: English words in the Bangla UI, placeholder landing pages, a dead 'New Entry' button and a customer assignment dialog that did not show the current territory. Landing pages and the territory display are fixed.",
   "status": "in-progress",
-  "status_evidence": "Mostly fixed: landing pages /sales-demand, /field-force, /inventory-warehouse, /settings now call redirectToFirstAccessible (not placeholders); customer-assignment-modal shows modal.currentTerritory (l.214); 'partnerId' is gone from messages/sales-demand/en.json. Not verifiable by code reading: the long list of untranslated Bengali labels, role editor module headings from the backend matrix (FD-P3-10), Gift Distribution 'New Entry' (FD-P3-11; no such button found in features/inventory/product-distribution).",
+  "status_evidence": "Message files compared key by key in en and bn; the Period Closing and Year-End Closing section labels and four guide captions were translated. Hard-coded English inside components cannot be found by comparing keys: a screen-by-screen Bangla pass is still needed.",
   "evidence_level": "likely",
   "found": "2026-10-31",
   "source": "backend-saleschain-bugs-2026-10-31.md FD-P3-9",
@@ -31181,8 +31216,8 @@
   "theme": "",
   "set": "notes-B",
   "checked": {
-   "ref": "release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
   },
   "steps": [
    "Switch to Bangla and open Commissions, Coverage planning, IMS.",

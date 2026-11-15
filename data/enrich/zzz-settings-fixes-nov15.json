@@ -1,0 +1,140 @@
+{
+ "e2e:settings:commission-slabs-overlap": {
+  "status": "fixed",
+  "note": "commission-config-conflicts.ts now uses strict < like the backend's half-open [from, to) rule; the default slabs save. SET-07-03 was test.fail and is a plain passing test now (settings run 2026-11-15).",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:27": {
+  "status": "fixed",
+  "note": "doLogin no longer pre-calls the backend; authorize in src/auth.ts is the only call, so one login per click. The SSO hand-off still redirects. SET-02-04 (invite, sign in, switch off and on) passes.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:28": {
+  "status": "fixed",
+  "note": "src/erp-api/auth/login-errors.ts: 429 is throttled, 5xx and network errors are unavailable, anything else invalid; translated keys auth.login_errors.*; the wrong-password message is unchanged.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:44": {
+  "status": "fixed",
+  "note": "Notifications route returns only a code, category-select and the geography cascade use common.loadFilterFailed, profile actions pass a cleaned business message: no 'API fetch failed' text reaches users.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:45": {
+  "status": "in-progress",
+  "note": "Error part done: src/erp-api/settings/mutation-error.ts classifies a failure (DUPLICATE, IN_USE, VALIDATION, NOT_FOUND, PERMISSION_DENIED, UNAVAILABLE) and the inventory writes return typed results with translated reasons. The classification is a regex on the backend sentence (heuristic); a backend error code would be better. The exported functions are still public server actions with no permission check: left alone by owner decision.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:5": {
+  "status": "in-progress",
+  "note": "Error part done: field-force actions return { success:false, code } with translated reasons, and a failed customer-channel lookup shows AppLoadError with retry. The exported delete primitive still has no permission check (owner decision: left alone).",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:15": {
+  "status": "fixed",
+  "note": "localizedFloorArea in warehouse/schemas.ts rejects a negative number. Free text such as '100 sqft' still passes because the field is a string.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:16": {
+  "status": "fixed",
+  "note": "After a confirmed cascade update the page bumps cascadeSavedVersion and the Properties panel leaves edit mode.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:20": {
+  "status": "fixed",
+  "note": "AccessGuard with the existing inventory create/edit permission codes on category, manufacturer, brand, item type, shipping carrier and business type; SALES_SHIPPING_CARRIER_* codes (already used by the backend) added to the frontend list.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:22": {
+  "status": "fixed",
+  "note": "The sidebar shows a message and a retry button when the access read fails; it stays fail-closed (useReloadAccess).",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:24": {
+  "status": "fixed",
+  "note": "An orphan permission code of a child row is added to that child's actions instead of a duplicate top-level row (orphan-permissions.test.ts).",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:32": {
+  "status": "fixed",
+  "note": "Pricing scheme detail asks for confirmation before pausing or activating (AppConfirmAction). SET-10-02 clicks Activate and Pause and passes.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:38": {
+  "status": "fixed",
+  "note": "When a role is not in the readable list the raw role code is shown, not a title-cased guess.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:39": {
+  "status": "fixed",
+  "note": "A 'Role already exists' answer shows the translated roleForm.roleCodeExists message with the code; code generation is unchanged.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:4": {
+  "status": "fixed",
+  "note": "Save is disabled while the chart of accounts failed to load; the warning stays.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:46": {
+  "status": "fixed",
+  "note": "Pricing and commission helpers classify errors by parseBackendApiError status (422 counts as validation) instead of text search; a failing geography call degrades to empty options so the pricing form still loads. The system facade was left alone.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:52": {
+  "status": "fixed",
+  "note": "The guide layout title comes from getGuideContent().shell.pageTitle in en and bn.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:6": {
+  "status": "fixed",
+  "note": "getSalesChannels takes includeInactive; Sales mapping names inactive channels and offers only active ones for new rows; a failed channel call shows a warning with retry.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:7": {
+  "status": "fixed",
+  "note": "Customer deposit ledgers name inactive channels the same way and the warning has a retry.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:62": {
+  "status": "fixed",
+  "note": "An unchanged logo is neither downloaded nor re-uploaded; it is kept by logoAttachmentId and the duplicate logoId field is gone (CompanyRequestDTO only has logoAttachmentId).",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "rv-fe:settings-platform:17": {
+  "status": "decision",
+  "note": "Not changed. updateOrgNode sends no managerType or userId when no person is set, and the backend (SalesGeographyManagerDomainService.reassignOnGeographyUpdate) has no clear operation: with a null userId it retires the active manager and creates a new manager row with a null user. Needs a backend 'unassign manager' operation, or the UI stops offering 'clear manager'. Owner to decide.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "saleschain:FD-P3-7": {
+  "status": "in-progress",
+  "note": "The root-cause fix (Select tokens selectorBg and clearBg left to default, antd-provider.tsx and petra-theme.ts, commit e9b4ff63) is already in. Not confirmed visually: check dark mode on the list screens; if a select is still white name the screen.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ },
+ "saleschain:FD-P3-9": {
+  "status": "in-progress",
+  "note": "Message files compared key by key in en and bn; the Period Closing and Year-End Closing section labels and four guide captions were translated. Hard-coded English inside components cannot be found by comparing keys: a screen-by-screen Bangla pass is still needed.",
+  "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+  "date": "2026-11-15"
+ }
+}

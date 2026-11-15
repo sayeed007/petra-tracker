@@ -1,0 +1,33 @@
+[
+ {
+  "id": "e2e:platform:admin-email-renamed-on-seed",
+  "module": "settings-platform",
+  "side": "both",
+  "severity": "low",
+  "title": "Test stack: the seeded platform admin appeared as admin@admin.com instead of super@admin.com, so the e2e login failed with 401",
+  "summary": "On 2026-11-15, after a PC restart and a no-cache rebuild of the backend image, a freshly reset e2e stack logged 'Provisioned platform admin super@admin.com (1)' but the database held user 1 as admin@admin.com and super@admin.com could not log in (401). admin@admin.com and petra@admin.com logged in with 123456. The cause is not found (no HRMS was running). The e2e scripts now read E2E_USER (stack.mjs and api.ts), so the stack can be used with E2E_USER=admin@admin.com.",
+  "steps": [
+   "Reset the e2e stack (pnpm e2e:reset, full mode).",
+   "POST /api/public/auth/login with super@admin.com / 123456: 401.",
+   "Same call with admin@admin.com / 123456: 200."
+  ],
+  "expected": "The platform admin from application-dev.properties (super@admin.com) can log in.",
+  "actual": "Only admin@admin.com (user id 1) logs in.",
+  "where": "Backend: AdminBootstrapSeeder / AdminBootstrapHrmsLinker (the linker logs 'Linked platform admin ... to HRMS employee 1'). e2e: e2e/stack/stack.mjs, e2e/support/api.ts.",
+  "tests": [],
+  "verify": "After a reset, login with super@admin.com works, or the e2e docs say which email the seed produces.",
+  "owner": "Backend / test stack",
+  "status": "open",
+  "status_evidence": "Seen 2026-11-15 on release_beta_1.0.0 and backend deployment/dev@b2597ef11; worked on 2026-11-14 with the same code.",
+  "evidence_level": "observed",
+  "found": "2026-11-15",
+  "checked": {
+   "ref": "release_beta_1.0.0@c72260d0, backend deployment/dev@b2597ef11",
+   "date": "2026-11-15"
+  },
+  "refs": [
+   "e2e/stack/stack.mjs",
+   "e2e/support/api.ts"
+  ]
+ }
+]
