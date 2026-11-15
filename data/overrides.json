@@ -3024,11 +3024,10 @@
   "date": "2026-11-15"
  },
  "rv-fe:reports:8": {
-  "status": "open",
-  "note": "moved from reports to field-force 2026-11-10 for that module's developer",
-  "ref": "",
-  "date": "2026-11-10",
-  "module": "field-force"
+  "module": "field-force",
+  "status": "still-bug",
+  "note": "Reproduced in the UI on 2026-11-15 (local stack, release_beta_1.0.0 code). The ASE delivery page (/field-force/ase/customer/{id}/delivery/{id}) offers Acknowledge Delivery at every stage except DELIVERED, FULFILLED, CANCELLED and REJECTED, but the backend accepts it only at IN_TRANSIT: at PICKED it shows 'Pending' with the button, at PACKED the same, at SHIPPED it shows 'In Transit' with the button; pressing it gets 400 'Delivery order IF-000001 is not in an expected stage for this action: PICKED' (or SHIPPED) and the page does not change. The opposite mistake: a new delivery order in stage FULFILLED (created, nothing picked) shows 'Delivered' with no button, because delivery-details-view.tsx:17 counts FULFILLED as delivered; in the backend FULFILLED is the first stage (EFulfillmentStage). Fix: offer the button only at IN_TRANSIT, show FULFILLED/PICKED/PACKED/SHIPPED as pending. Normal ASE users reach only IN_TRANSIT and DELIVERED deliveries from the lists (the backend lists shipped deliveries only); the other stages open by direct address. The earlier REJECTED/CANCELLED part is already fixed. Repro: create demand, approve, order, delivery order; pick, pack, ship; open the page after each step. Developer could not reproduce it (owner note 2026-11-15).",
+  "date": "2026-11-15"
  },
  "rv-fe:reports:16": {
   "status": "open",
