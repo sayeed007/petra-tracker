@@ -6,6 +6,7 @@ import { Flash } from "@/components/flash";
 import { BusyLink, ListBusyArea, RememberListQuery, SubmitButton } from "@/components/list-busy";
 import { ListFilters } from "@/components/list-filters";
 import { Pager } from "@/components/pager";
+import { ReviewRequest } from "@/components/review-request";
 import { SelectAll } from "@/components/select-all";
 import { listActiveDevelopers, listIssues, moduleStats } from "@/lib/issues/data";
 import { listQuery, parsePageSize } from "@/lib/issues/domain";
@@ -135,6 +136,16 @@ export default async function IssuesPage({
                     <td>
                       <StatusChip status={issue.status} label={statusT(issue.status)} />
                       {issue.pendingStatus && <span className="muted" title={t("pendingTag", { status: statusT(issue.pendingStatus) })}> → {statusT(issue.pendingStatus)}?</span>}
+                      {isAdmin && issue.pendingStatus && (
+                        <ReviewRequest
+                          id={issue.externalId}
+                          title={issue.title}
+                          from={statusT(issue.status)}
+                          to={statusT(issue.pendingStatus)}
+                          by={issue.pendingBy}
+                          reason={issue.pendingNote}
+                        />
+                      )}
                     </td>
                     <td>{issue.assigneeName || issueT("unassigned")}</td>
                     <td>{updatedDate.format(issue.updatedAt)}</td>

@@ -118,12 +118,12 @@ export async function updateIssueInline(locale: string, externalId: string, form
   return { result: await applyIssueUpdate(user, externalId, formData) };
 }
 
+export type DecisionResult = "approved" | "rejected" | "rejectReason" | "invalid" | "missing" | "conflict";
+
 /** The administrator's decision on a developer's status request: approve (the status changes) or reject (with a reason). */
-export async function decideRequest(locale: string, externalId: string, formData: FormData) {
-  const language = safeLocale(locale);
-  const admin = await requireAdmin(language);
+async function applyDecision(admin: { id: string; name: string }, externalId: string, formData: FormData): Promise<DecisionResult> {
   const parsed = decisionSchema.safeParse({ decision: formData.get("decision"), note: formData.get("note") ?? "" });
-  if (!parsed.success) redirect(`/${language}/issues/${encodeURIComponent(externalId)}?error=${parsed.error.issues.some((issue) => issue.message === "reject-reason") ? "rejectReason" : "invalid"}`);
+  if (!parsed.success) return parsed.error.issues.some((issue) => issue.message === "reject-reason") ? "rejectReason" : "invalid";
   const { decision, note } = parsed.data;
   const database = await getDb();
   const client = await getMongoClient();
@@ -135,7 +135,7 @@ export async function decideRequest(locale: string, externalId: string, formData
       const issue = await issues.findOne({ externalId }, { session });
       if (!issue) return "missing" as const;
       const pending = issue.pendingRequest;
-      if (!pending) return "nopending" as const;
+      if (!pending) return "conflict" as const;
 
       const now = new Date();
       const approved = decision === "approve";
@@ -161,13 +161,27 @@ export async function decideRequest(locale: string, externalId: string, formData
         statusTo: approved ? pending.status : null,
         createdAt: now,
       } as CommentDocument, { session });
-      return "done" as const;
+      return approved ? "approved" as const : "rejected" as const;
     }),
   );
+  return outcome;
+}
 
-  if (outcome === "missing") redirect(`/${language}/issues?missing=1`);
-  if (outcome === "nopending" || outcome === "conflict") redirect(`/${language}/issues/${encodeURIComponent(externalId)}?conflict=1`);
-  redirect(`/${language}/issues/${encodeURIComponent(externalId)}?decided=${decision === "approve" ? "approved" : "rejected"}`);
+export async function decideRequest(locale: string, externalId: string, formData: FormData) {
+  const language = safeLocale(locale);
+  const admin = await requireAdmin(language);
+  const result = await applyDecision(admin, externalId, formData);
+  const here = `/${language}/issues/${encodeURIComponent(externalId)}`;
+  if (result === "missing") redirect(`/${language}/issues?missing=1`);
+  if (result === "rejectReason" || result === "invalid") redirect(`${here}?error=${result}`);
+  if (result === "conflict") redirect(`${here}?conflict=1`);
+  redirect(`${here}?decided=${result}`);
+}
+
+/** The same decision, answered in place for the review popup in the list (no redirect). */
+export async function decideRequestInline(locale: string, externalId: string, formData: FormData): Promise<{ result: DecisionResult }> {
+  const admin = await requireAdmin(safeLocale(locale));
+  return { result: await applyDecision(admin, externalId, formData) };
 }
 
 /** The active developer behind an assignee id from a form, null for "unassigned", undefined for an invalid choice. */
@@ -177,7 +191,7 @@ async function resolveAssignee(rawId: string) {
   const database = await getDb();
   const developer = await database.collection<UserDocument>("users").findOne({
     _id: new ObjectId(rawId),
-    role: "developer",
+    role: { $in: ["developer", "admin"] },
     active: true,
   });
   return developer ?? undefined;
@@ -273,15 +287,33 @@ export async function createDeveloper(locale: string, formData: FormData) {
 
 export async function setDeveloperActive(locale: string, developerId: string, formData: FormData) {
   const language = safeLocale(locale);
-  await requireAdmin(language);
+  const admin = await requireAdmin(language);
   if (!ObjectId.isValid(developerId)) redirect(`/${language}/developers?error=invalid`);
+  if (developerId === admin.id) redirect(`/${language}/developers?error=self`);
   const active = formData.get("active") === "true";
   const database = await getDb();
+  // other administrators can be switched off too; the one acting stays active, so an administrator always remains
   await database.collection<UserDocument>("users").updateOne(
-    { _id: new ObjectId(developerId), role: "developer" },
+    { _id: new ObjectId(developerId), role: { $in: ["developer", "admin"] }, access: { $ne: "pending" } },
     { $set: { active } },
   );
   redirect(`/${language}/developers?updated=1`);
+}
+
+/** Makes a member an administrator (assign, review requests, manage people) or back to a developer. Never one's own role. */
+export async function setMemberRole(locale: string, memberId: string, formData: FormData) {
+  const language = safeLocale(locale);
+  const admin = await requireAdmin(language);
+  if (!ObjectId.isValid(memberId)) redirect(`/${language}/developers?error=invalid`);
+  if (memberId === admin.id) redirect(`/${language}/developers?error=self`);
+  const role = formData.get("role") === "admin" ? "admin" : "developer";
+  const database = await getDb();
+  const result = await database.collection<UserDocument>("users").updateOne(
+    { _id: new ObjectId(memberId), role: role === "admin" ? "developer" : "admin", access: { $ne: "pending" } },
+    { $set: { role } },
+  );
+  if (!result.matchedCount) redirect(`/${language}/developers?error=invalid`);
+  redirect(`/${language}/developers?role=${role === "admin" ? "promoted" : "demoted"}`);
 }
 
 /** Reads the catalogue bundled with this deployment (data/items.json) into the database; safe to repeat. */

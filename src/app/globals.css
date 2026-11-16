@@ -159,3 +159,14 @@ tr:last-child td { border-bottom: 0; }
 .button-spin { margin-right: 7px; line-height: 0; }
 .button-spin .ant-spin-dot-item { background-color: currentColor; }
 .button:disabled { cursor: progress; opacity: .75; }
+.review-actions { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.button-ok { color: #16834b; }
+.button-ok:hover { border-color: #16834b; color: #16834b; }
+.dark .button-ok, .dark .button-ok:hover { color: #6fd39b; }
+.review-issue { margin: 0 0 8px; }
+.review-reason { margin: 12px 0 16px; border-left: 3px solid var(--accent); padding: 6px 12px; background: color-mix(in srgb, var(--accent) 6%, transparent); border-radius: 0 8px 8px 0; }
+.review-reason p { margin: 4px 0 0; white-space: pre-wrap; }
+.review-reason .muted { font-size: 12px; }
+.review-note-label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; }
+.field-error { margin: 6px 0 0; color: #c0263a; font-size: 12px; }
+.row-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }

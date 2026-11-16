@@ -59,7 +59,14 @@
     "goToPage": "Go to page",
     "go": "Go",
     "firstPage": "First page",
-    "lastPage": "Last page"
+    "lastPage": "Last page",
+    "reviewApproveTitle": "Approve status request",
+    "reviewRejectTitle": "Reject status request",
+    "reviewAsked": "{name} asks to move this from {from} to {to}.",
+    "reviewReason": "Their reason",
+    "reviewNoReason": "No reason given.",
+    "reviewApproveNote": "Note (optional)",
+    "reviewRejectNote": "Why it is rejected (required)"
   },
   "issue": {
     "back": "Back to issues",
@@ -155,7 +162,18 @@
     "approveAccess": "Approve",
     "declineAccess": "Decline",
     "accessApproved": "Access approved. They can sign in now.",
-    "accessDeclined": "Access declined."
+    "accessDeclined": "Access declined.",
+    "role": "Role",
+    "roleAdmin": "Administrator",
+    "roleDeveloper": "Developer",
+    "you": "you",
+    "makeAdmin": "Make administrator",
+    "removeAdmin": "Remove administrator",
+    "makeAdminHint": "Can then assign issues, approve or reject status requests and manage people. Keeps their own assigned issues.",
+    "removeAdminHint": "Back to a developer: sees only the issues assigned to them.",
+    "promoted": "They are now an administrator.",
+    "demoted": "They are now a developer.",
+    "notYourself": "You can't change your own role or access."
   },
   "common": { "adminOnly": "This page is for administrators.", "error": "Something went wrong. Please try again.", "retry": "Try again" },
   "statuses": {

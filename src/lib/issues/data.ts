@@ -16,6 +16,9 @@ export type IssueListRow = {
   assigneeName: string | null;
   /** The status a developer has asked for and an administrator has not yet decided. */
   pendingStatus: IssueStatus | null;
+  /** Who asked for pendingStatus, and the reason they wrote with it. */
+  pendingBy: string | null;
+  pendingNote: string | null;
   updatedAt: Date;
 };
 
@@ -82,11 +85,17 @@ export async function listIssues(input: {
     { $skip: (page - 1) * size },
     { $limit: size },
   ]).toArray();
-  const assigneeIds = rows.flatMap((issue) => issue.assigneeId ? [issue.assigneeId] : []);
-  const developers = assigneeIds.length
-    ? await database.collection<UserDocument>("users").find({ _id: { $in: assigneeIds } }).project({ name: 1 }).toArray()
+  const peopleIds = rows.flatMap((issue) => [issue.assigneeId, issue.pendingRequest?.by].filter((id): id is ObjectId => Boolean(id)));
+  const developers = peopleIds.length
+    ? await database.collection<UserDocument>("users").find({ _id: { $in: peopleIds } }).project({ name: 1 }).toArray()
     : [];
   const names = new Map(developers.map((developer) => [developer._id.toHexString(), developer.name]));
+  // the reason a developer gave with a waiting request, for the review popup in the list
+  const requestIds = rows.flatMap((issue) => issue.pendingRequest ? [issue.pendingRequest.commentId] : []);
+  const requests = requestIds.length
+    ? await database.collection<CommentDocument>("comments").find({ _id: { $in: requestIds } }).project<Pick<CommentDocument, "_id" | "body">>({ body: 1 }).toArray()
+    : [];
+  const reasons = new Map(requests.map((request) => [request._id.toHexString(), request.body]));
   const modules = await collection.distinct("module", input.user.role === "admin" ? {} : { assigneeId: new ObjectId(input.user.id) });
 
   return {
@@ -100,6 +109,8 @@ export async function listIssues(input: {
       assigneeId: issue.assigneeId?.toHexString() ?? null,
       assigneeName: issue.assigneeId ? names.get(issue.assigneeId.toHexString()) ?? null : null,
       pendingStatus: issue.pendingRequest?.status ?? null,
+      pendingBy: issue.pendingRequest ? names.get(issue.pendingRequest.by.toHexString()) ?? null : null,
+      pendingNote: issue.pendingRequest ? reasons.get(issue.pendingRequest.commentId.toHexString()) ?? null : null,
       updatedAt: issue.updatedAt,
     })),
     total,
@@ -166,7 +177,8 @@ export async function getIssueDetail(input: {
 export async function listActiveDevelopers() {
   const database = await getDb();
   const developers = await database.collection<UserDocument>("users")
-    .find({ role: "developer", active: true })
+    // administrators can be given work too (a promoted lead keeps their tasks)
+    .find({ role: { $in: ["developer", "admin"] }, active: true })
     .sort({ name: 1 })
     .toArray();
   return developers.map((developer) => ({
@@ -179,13 +191,14 @@ export async function listActiveDevelopers() {
 export async function listDevelopers() {
   const database = await getDb();
   const developers = await database.collection<UserDocument>("users")
-    .find({ role: "developer", access: { $ne: "pending" } })
+    .find({ role: { $in: ["developer", "admin"] }, access: { $ne: "pending" } })
     .sort({ name: 1 })
     .toArray();
   return developers.map((developer) => ({
     id: developer._id.toHexString(),
     name: developer.name,
     email: developer.email,
+    role: developer.role,
     active: developer.active,
     createdAt: developer.createdAt,
   }));
