@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import { AreaChip, SeverityChip, StatusChip } from "@/components/chips";
+import { Flash } from "@/components/flash";
+import { BackToList, SubmitButton } from "@/components/list-busy";
 import { requireUser } from "@/lib/auth/user";
 import { ISSUE_STATUSES } from "@/lib/issues/domain";
 import { getIssueDetail, listActiveDevelopers } from "@/lib/issues/data";
@@ -55,7 +56,7 @@ export default async function IssueDetailPage({
 
   return (
     <>
-      <Link href="/issues" className="muted">← {t("back")}</Link>
+      <BackToList className="muted">← {t("back")}</BackToList>
       <div className="pagehead" style={{ marginTop: 18 }}>
         <div>
           <p className="eyebrow">{issue.module} · {issue.externalId}</p>
@@ -64,9 +65,11 @@ export default async function IssueDetailPage({
         <StatusChip status={issue.status} label={statusT(issue.status)} />
       </div>
 
-      {showNote && <p className="notice" role="status">
-        {query.updated ? t("updated") : query.requested ? t("requested") : query.decided === "approved" ? t("decidedApproved") : query.decided === "rejected" ? t("decidedRejected") : query.assigned ? t("assigned") : query.conflict ? t("conflict") : query.assignment ? t("assignmentInvalid") : query.error === "reason" ? t("reasonNeeded") : query.error === "rejectReason" ? t("rejectReasonNeeded") : t("invalid")}
-      </p>}
+      {showNote && <Flash
+        kind={query.conflict || query.assignment || query.error ? "error" : "success"}
+        text={query.updated ? t("updated") : query.requested ? t("requested") : query.decided === "approved" ? t("decidedApproved") : query.decided === "rejected" ? t("decidedRejected") : query.assigned ? t("assigned") : query.conflict ? t("conflict") : query.assignment ? t("assignmentInvalid") : query.error === "reason" ? t("reasonNeeded") : query.error === "rejectReason" ? t("rejectReasonNeeded") : t("invalid")}
+        clear={["updated", "requested", "decided", "assigned", "conflict", "error", "assignment"]}
+      />}
 
       <div className="detail-grid">
         <section className="panel" aria-labelledby="issue-details-title">
@@ -99,7 +102,7 @@ export default async function IssueDetailPage({
                     {developerList.map((developer) => <option key={developer.id} value={developer.id}>{developer.name} · {developer.email}</option>)}
                   </select>
                 </div>
-                <button className="button button-primary" type="submit">{t("assign")}</button>
+                <SubmitButton className="button button-primary">{t("assign")}</SubmitButton>
               </form>
             </section>
           )}
@@ -112,8 +115,8 @@ export default async function IssueDetailPage({
                   <label htmlFor="decision-note">{t("decisionNote")}</label>
                   <textarea id="decision-note" name="note" maxLength={4000} placeholder={t("decisionNotePlaceholder")} />
                 </div>
-                <button className="button button-primary" type="submit" name="decision" value="approve">{t("approve")}</button>{" "}
-                <button className="button button-danger" type="submit" name="decision" value="reject">{t("reject")}</button>
+                <SubmitButton className="button button-primary" name="decision" value="approve">{t("approve")}</SubmitButton>{" "}
+                <SubmitButton className="button button-danger" name="decision" value="reject">{t("reject")}</SubmitButton>
               </form>
             </section>
           )}
@@ -135,7 +138,7 @@ export default async function IssueDetailPage({
                 <label htmlFor="comment">{t("comment")}</label>
                 <textarea id="comment" name="comment" required minLength={1} maxLength={4000} placeholder={t("commentPlaceholder")} />
               </div>
-              <button className="button button-primary" type="submit">{t("save")}</button>
+              <SubmitButton className="button button-primary">{t("save")}</SubmitButton>
             </form>
           </section>
         </div>

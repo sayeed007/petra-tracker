@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { ObjectId, type Filter } from "mongodb";
 import { redirect } from "next/navigation";
-import { canManageIssue, decisionSchema, parseBulkAssign, parseIssueUpdate, developerSchema } from "@/lib/issues/domain";
+import { canManageIssue, decisionSchema, parseBulkAssign, parseIssueUpdate, developerSchema, listQuery } from "@/lib/issues/domain";
 import { getDb, getMongoClient } from "@/lib/db";
 import { requireAdmin, requireUser } from "@/lib/auth/user";
 import { importCatalogue as runCatalogueImport, type SourceIssue } from "@/lib/issues/import";
@@ -211,10 +211,13 @@ export async function assignIssue(locale: string, externalId: string, formData: 
 export async function assignIssues(locale: string, formData: FormData) {
   const language = safeLocale(locale);
   const admin = await requireAdmin(language);
+  // back to the same filters, module and page the administrator was on
+  const back = listQuery(String(formData.get("back") ?? ""));
+  const list = (message: string) => `/${language}/issues?${back ? `${back}&` : ""}${message}`;
   const parsed = parseBulkAssign({ ids: formData.getAll("ids"), assigneeId: formData.get("assigneeId") });
-  if (!parsed) redirect(`/${language}/issues?bulk=none`);
+  if (!parsed) redirect(list("bulk=none"));
   const developer = await resolveAssignee(parsed.assigneeId);
-  if (developer === undefined) redirect(`/${language}/issues?bulk=invalid`);
+  if (developer === undefined) redirect(list("bulk=invalid"));
 
   const database = await getDb();
   const issues = database.collection<IssueDocument>("issues");
@@ -232,7 +235,7 @@ export async function assignIssues(locale: string, formData: FormData) {
       createdAt: now,
     }) as CommentDocument));
   }
-  redirect(`/${language}/issues?bulk=done&count=${rows.length}`);
+  redirect(list(`bulk=done&count=${rows.length}`));
 }
 
 export async function createDeveloper(locale: string, formData: FormData) {

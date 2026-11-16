@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useTransition } from "react";
+import { useEffect, useRef } from "react";
+import { Spin } from "antd";
 import { useTranslations } from "next-intl";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { usePathname } from "@/i18n/navigation";
+import { useListNav } from "@/components/list-busy";
 import { ISSUE_STATUSES } from "@/lib/issues/domain";
 
 /** How long typing in the search box may pause before the list reloads (Enter reloads at once). */
@@ -15,9 +17,8 @@ export function ListFilters({ q, status, side, module, size, modules, review, aw
   const t = useTranslations("dashboard");
   const statusT = useTranslations("statuses");
   const sideT = useTranslations("sides");
-  const router = useRouter();
   const pathname = usePathname();
-  const [busy, startTransition] = useTransition();
+  const { busy, navigate } = useListNav();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // the latest values, for a search that fires seconds after the keystroke
   const latest = useRef<Filters>({ q, status, side, module, review });
@@ -36,7 +37,7 @@ export function ListFilters({ q, status, side, module, size, modules, review, aw
     if (merged.review) params.set("review", "1");
     if (size === 20 || size === 100) params.set("size", String(size));
     const query = params.toString();
-    startTransition(() => router.replace(query ? `${pathname}?${query}` : pathname));
+    navigate(query ? `${pathname}?${query}` : pathname, "replace");
   }
 
   return (
@@ -76,6 +77,7 @@ export function ListFilters({ q, status, side, module, size, modules, review, aw
           {t("awaitingReview", { count: awaiting })}
         </button>
       )}
+      {busy && <Spin size="small" className="filters-spin" />}
     </div>
   );
 }

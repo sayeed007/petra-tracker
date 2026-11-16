@@ -1,13 +1,14 @@
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import { requireUser } from "@/lib/auth/user";
 import { AreaChip, SeverityChip, StatusChip } from "@/components/chips";
 import { IssueDrawerHost, OpenIssue } from "@/components/issue-drawer";
+import { Flash } from "@/components/flash";
+import { BusyLink, ListBusyArea, RememberListQuery, SubmitButton } from "@/components/list-busy";
 import { ListFilters } from "@/components/list-filters";
 import { Pager } from "@/components/pager";
 import { SelectAll } from "@/components/select-all";
 import { listActiveDevelopers, listIssues, moduleStats } from "@/lib/issues/data";
-import { parsePageSize } from "@/lib/issues/domain";
+import { listQuery, parsePageSize } from "@/lib/issues/domain";
 import { assignIssues } from "./actions";
 
 type Query = {
@@ -36,7 +37,7 @@ export default async function IssuesPage({
       review: query.review === "1",
     }),
     isAdmin ? listActiveDevelopers() : Promise.resolve([]),
-    moduleStats(user),
+    moduleStats({ user, status: query.status, side: query.side, q: query.q, review: query.review === "1" }),
   ]);
   const t = await getTranslations({ locale, namespace: "dashboard" });
   const issueT = await getTranslations({ locale, namespace: "issue" });
@@ -52,31 +53,37 @@ export default async function IssuesPage({
     const text = next.toString();
     return text ? `/issues?${text}` : "/issues";
   };
+  // every module keeps its card (at 0) when the filters leave it empty, so the selected one never disappears
+  const counted = new Map(stats.map((row) => [row.module, row]));
+  const cards = result.modules.map((module) => counted.get(module) ?? { module, total: 0, open: 0 });
+  // the list as it stands (filters, module, page), for the bulk-assign redirect and the detail page's back link
+  const current = listQuery(new URLSearchParams(Object.entries(query).filter((entry): entry is [string, string] => typeof entry[1] === "string")).toString());
   const totalAll = stats.reduce((sum, row) => sum + row.total, 0);
   const openAll = stats.reduce((sum, row) => sum + row.open, 0);
 
   return (
     <>
-      {query.denied && <p className="notice" role="alert">{t("denied")}</p>}
-      {query.missing && <p className="notice" role="alert">{t("missing")}</p>}
-      {query.import === "done" && <p className="notice" role="status">{t("importDone", { added: Number(query.added) || 0, moved: Number(query.moved) || 0, kept: Number(query.kept) || 0 })}</p>}
-      {query.import === "failed" && <p className="notice" role="alert">{t("importFailed")}</p>}
-      {query.bulk === "done" && <p className="notice" role="status">{t("bulkDone", { count: Number(query.count) || 0 })}</p>}
-      {query.bulk === "none" && <p className="notice" role="alert">{t("bulkNone")}</p>}
-      {query.bulk === "invalid" && <p className="notice" role="alert">{t("bulkInvalid")}</p>}
+      <RememberListQuery query={current} />
+      {query.denied && <Flash kind="error" text={t("denied")} clear={["denied"]} />}
+      {query.missing && <Flash kind="error" text={t("missing")} clear={["missing"]} />}
+      {query.import === "done" && <Flash text={t("importDone", { added: Number(query.added) || 0, moved: Number(query.moved) || 0, kept: Number(query.kept) || 0 })} clear={["import", "added", "moved", "kept"]} />}
+      {query.import === "failed" && <Flash kind="error" text={t("importFailed")} clear={["import"]} />}
+      {query.bulk === "done" && <Flash text={t("bulkDone", { count: Number(query.count) || 0 })} clear={["bulk", "count"]} />}
+      {query.bulk === "none" && <Flash kind="error" text={t("bulkNone")} clear={["bulk"]} />}
+      {query.bulk === "invalid" && <Flash kind="error" text={t("bulkInvalid")} clear={["bulk"]} />}
 
       <section className="modules" aria-label={t("modulesTitle")}>
-        <Link className={`module-card${query.module ? "" : " active"}`} href={hrefFor({ module: undefined, page: undefined })}>
+        <BusyLink className={`module-card${query.module ? "" : " active"}`} href={hrefFor({ module: undefined, page: undefined })}>
           <span className="module-name">{t("allModulesTile")}</span>
           <strong>{totalAll}</strong>
           <em>{t("moduleOpen", { count: openAll })}</em>
-        </Link>
-        {stats.map((row) => (
-          <Link key={row.module} className={`module-card${query.module === row.module ? " active" : ""}`} href={hrefFor({ module: row.module, page: undefined })}>
+        </BusyLink>
+        {cards.map((row) => (
+          <BusyLink key={row.module} className={`module-card${query.module === row.module ? " active" : ""}`} href={hrefFor({ module: row.module, page: undefined })}>
             <span className="module-name">{row.module}</span>
             <strong>{row.total}</strong>
             <em>{t("moduleOpen", { count: row.open })}</em>
-          </Link>
+          </BusyLink>
         ))}
       </section>
 
@@ -94,14 +101,16 @@ export default async function IssuesPage({
 
       {isAdmin && result.issues.length > 0 && (
         <form id="bulk-assign" className="filters" action={assignIssues.bind(null, locale)}>
+          <input type="hidden" name="back" value={current} />
           <select name="assigneeId" defaultValue="" aria-label={t("assignee")}>
             <option value="">{issueT("unassigned")}</option>
             {developers.map((developer) => <option key={developer.id} value={developer.id}>{developer.name}</option>)}
           </select>
-          <button className="button" type="submit">{t("assignSelected")}</button>
+          <SubmitButton>{t("assignSelected")}</SubmitButton>
         </form>
       )}
 
+      <ListBusyArea>
       <Pager page={result.page} pages={result.pages} total={result.total} size={result.size} />
 
       <IssueDrawerHost>
@@ -129,7 +138,7 @@ export default async function IssuesPage({
                     </td>
                     <td>{issue.assigneeName || issueT("unassigned")}</td>
                     <td>{updatedDate.format(issue.updatedAt)}</td>
-                    <td><Link className="button button-sm" href={`/issues/${encodeURIComponent(issue.externalId)}`}>{t("details")}</Link></td>
+                    <td><BusyLink className="button button-sm" href={`/issues/${encodeURIComponent(issue.externalId)}`}>{t("details")}</BusyLink></td>
                   </tr>
                 ))}
               </tbody>
@@ -139,6 +148,7 @@ export default async function IssuesPage({
       </IssueDrawerHost>
 
       <Pager page={result.page} pages={result.pages} total={result.total} size={result.size} />
+      </ListBusyArea>
     </>
   );
 }

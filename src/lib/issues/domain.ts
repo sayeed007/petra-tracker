@@ -117,3 +117,17 @@ export function parsePageSize(value: unknown) {
   const size = Number(value);
   return (PAGE_SIZES as readonly number[]).includes(size) ? size : DEFAULT_PAGE_SIZE;
 }
+
+/** The list's own query keys (filters, page and page size); anything else (one-off messages and the like) is dropped. */
+export const LIST_QUERY_KEYS = ["q", "status", "side", "module", "review", "size", "page"] as const;
+
+/** Keeps only the list's filters from a query string, so a redirect or a back link can return to the same list. */
+export function listQuery(raw: string) {
+  const source = new URLSearchParams(raw.slice(0, 1000));
+  const out = new URLSearchParams();
+  for (const key of LIST_QUERY_KEYS) {
+    const value = source.get(key);
+    if (value) out.set(key, value.slice(0, 100));
+  }
+  return out.toString();
+}

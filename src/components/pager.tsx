@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { usePathname } from "@/i18n/navigation";
+import { useListNav } from "@/components/list-busy";
 import { PAGE_SIZES } from "@/lib/issues/domain";
 
 type Props = { page: number; pages: number; total: number; size: number };
@@ -24,7 +25,7 @@ export function pageWindow(page: number, pages: number): (number | null)[] {
 
 export function Pager({ page, pages, total, size }: Readonly<Props>) {
   const t = useTranslations("dashboard");
-  const router = useRouter();
+  const { navigate } = useListNav();
   const pathname = usePathname();
   const search = useSearchParams();
   const [jump, setJump] = useState("");
@@ -41,7 +42,7 @@ export function Pager({ page, pages, total, size }: Readonly<Props>) {
       else params.set("page", String(next.page));
     }
     const query = params.toString();
-    router.push(query ? `${pathname}?${query}` : pathname);
+    navigate(query ? `${pathname}?${query}` : pathname);
   }
 
   const from = total === 0 ? 0 : (page - 1) * size + 1;

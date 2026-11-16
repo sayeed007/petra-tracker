@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { MAX_BULK_ASSIGN, STATUS_ORDER, ISSUE_STATUSES, parsePageSize, accessOutcome, canManageIssue, decisionSchema, isBootstrapAdmin, parseBulkAssign, parseIssueUpdate, planSourceSync } from "../src/lib/issues/domain";
+import { MAX_BULK_ASSIGN, STATUS_ORDER, ISSUE_STATUSES, parsePageSize, listQuery, accessOutcome, canManageIssue, decisionSchema, isBootstrapAdmin, parseBulkAssign, parseIssueUpdate, planSourceSync } from "../src/lib/issues/domain";
 
 describe("canManageIssue", () => {
   it("lets an admin manage every issue", () => {
@@ -128,5 +128,15 @@ describe("list order and page size", () => {
     assert.equal(parsePageSize(100), 100);
     assert.equal(parsePageSize("7"), 40);
     assert.equal(parsePageSize(undefined), 40);
+  });
+});
+
+describe("listQuery", () => {
+  it("keeps the list's filters, module, page and size", () => {
+    assert.equal(listQuery("status=open&module=Sales&side=backend&q=tax&review=1&size=20&page=3"), "q=tax&status=open&side=backend&module=Sales&review=1&size=20&page=3");
+  });
+  it("drops one-off messages and unknown keys", () => {
+    assert.equal(listQuery("module=Sales&bulk=done&count=4&denied=1&x=y"), "module=Sales");
+    assert.equal(listQuery(""), "");
   });
 });

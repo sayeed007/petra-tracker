@@ -1,9 +1,10 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useTransition } from "react";
-import { Drawer, Spin } from "antd";
+import { App, Drawer, Spin } from "antd";
 import { useLocale, useTranslations } from "next-intl";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { BusyLink } from "@/components/list-busy";
 import { AreaChip, SeverityChip, StatusChip } from "@/components/chips";
 import { updateIssueInline } from "@/app/[locale]/(protected)/issues/actions";
 import { ISSUE_STATUSES, type IssueStatus } from "@/lib/issues/domain";
@@ -60,7 +61,7 @@ function DrawerContent({ id }: Readonly<{ id: string }>) {
   const router = useRouter();
   const [data, setData] = useState<Payload | null>(null);
   const [failed, setFailed] = useState(false);
-  const [note, setNote] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
+  const { message } = App.useApp();
   const [saving, startSaving] = useTransition();
 
   useEffect(() => {
@@ -80,13 +81,11 @@ function DrawerContent({ id }: Readonly<{ id: string }>) {
     startSaving(async () => {
       const { result } = await updateIssueInline(locale, id, body);
       if (result === "saved" || result === "requested") {
-        setNote({ kind: "ok", text: result === "requested" ? t("requested") : t("updated") });
+        message.success(result === "requested" ? t("requested") : t("updated"), 4);
         form.reset();
         fetchIssue(id).then(setData).catch(() => undefined);
         router.refresh();
-      } else if (result === "reason") setNote({ kind: "error", text: t("reasonNeeded") });
-      else if (result === "conflict") setNote({ kind: "error", text: t("conflict") });
-      else setNote({ kind: "error", text: t("invalid") });
+      } else message.error(result === "reason" ? t("reasonNeeded") : result === "conflict" ? t("conflict") : t("invalid"), 5);
     });
   }
 
@@ -134,7 +133,6 @@ function DrawerContent({ id }: Readonly<{ id: string }>) {
       <section className="drawer-update">
         <h3>{t("addComment")}</h3>
         <p className="muted">{role === "admin" ? t("closureNote") : t("requestHint")}</p>
-        {note && <p className={note.kind === "ok" ? "notice notice-ok" : "notice"} role="status">{note.text}</p>}
         <form onSubmit={submit}>
           <div className="field">
             <label htmlFor="drawer-status">{role === "admin" ? t("status") : t("proposeStatus")}</label>
@@ -147,10 +145,10 @@ function DrawerContent({ id }: Readonly<{ id: string }>) {
             <label htmlFor="drawer-comment">{t("comment")}</label>
             <textarea id="drawer-comment" name="comment" required maxLength={4000} placeholder={t("commentPlaceholder")} />
           </div>
-          <button className="button button-primary" type="submit" disabled={saving}>{t("save")}</button>
+          <button className="button button-primary" type="submit" disabled={saving} aria-busy={saving}>{saving && <Spin size="small" className="button-spin" />}{t("save")}</button>
         </form>
       </section>
-      <p style={{ marginTop: 18 }}><Link href={`/issues/${encodeURIComponent(issue.externalId)}`}>{d("openFull")}</Link></p>
+      <p style={{ marginTop: 18 }}><BusyLink href={`/issues/${encodeURIComponent(issue.externalId)}`}>{d("openFull")}</BusyLink></p>
     </div>
   );
 }

@@ -1,4 +1,6 @@
 import { getTranslations } from "next-intl/server";
+import { Flash } from "@/components/flash";
+import { SubmitButton } from "@/components/list-busy";
 import { requireAdmin } from "@/lib/auth/user";
 import { listAccessRequests, listDevelopers } from "@/lib/issues/data";
 import { createDeveloper, decideAccess, setDeveloperActive } from "../issues/actions";
@@ -30,12 +32,10 @@ export default async function DevelopersPage({
           <p className="page-description">{t("description")}</p>
         </div>
       </div>
-      {query.created && <p className="notice" role="status">{t("added")}</p>}
-      {query.updated && <p className="notice" role="status">{t("updated")}</p>}
-      {query.access && <p className="notice" role="status">{query.access === "approved" ? t("accessApproved") : t("accessDeclined")}</p>}
-      {query.error && <p className="notice" role="alert">
-        {query.error === "exists" ? t("alreadyExists") : query.error === "invalid" ? t("invalid") : common("error")}
-      </p>}
+      {query.created && <Flash text={t("added")} clear={["created"]} />}
+      {query.updated && <Flash text={t("updated")} clear={["updated"]} />}
+      {query.access && <Flash text={query.access === "approved" ? t("accessApproved") : t("accessDeclined")} clear={["access"]} />}
+      {query.error && <Flash kind="error" text={query.error === "exists" ? t("alreadyExists") : query.error === "invalid" ? t("invalid") : common("error")} clear={["error"]} />}
       <section className="panel">
         <h2>{t("add")}</h2>
         <form className="form-grid" action={createDeveloper.bind(null, locale)}>
@@ -47,7 +47,7 @@ export default async function DevelopersPage({
             <label htmlFor="email">{t("email")}</label>
             <input id="email" name="email" type="email" required maxLength={320} />
           </div>
-          <button className="button button-primary" type="submit">{t("addButton")}</button>
+          <SubmitButton className="button button-primary">{t("addButton")}</SubmitButton>
         </form>
       </section>
 
@@ -66,8 +66,8 @@ export default async function DevelopersPage({
                     <td>{dateFormat.format(request.requestedAt)}</td>
                     <td>
                       <form action={decideAccess.bind(null, locale, request.id)}>
-                        <button className="button button-primary" type="submit" name="decision" value="approve">{t("approveAccess")}</button>{" "}
-                        <button className="button button-danger" type="submit" name="decision" value="decline">{t("declineAccess")}</button>
+                        <SubmitButton className="button button-primary" name="decision" value="approve">{t("approveAccess")}</SubmitButton>{" "}
+                        <SubmitButton className="button button-danger" name="decision" value="decline">{t("declineAccess")}</SubmitButton>
                       </form>
                     </td>
                   </tr>
@@ -94,9 +94,9 @@ export default async function DevelopersPage({
                     <td>
                       <form action={setDeveloperActive.bind(null, locale, developer.id)}>
                         <input type="hidden" name="active" value={String(!developer.active)} />
-                        <button className={`button ${developer.active ? "button-danger" : ""}`} type="submit">
+                        <SubmitButton className={`button ${developer.active ? "button-danger" : ""}`}>
                           {developer.active ? t("deactivate") : t("activate")}
-                        </button>
+                        </SubmitButton>
                       </form>
                     </td>
                   </tr>
