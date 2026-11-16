@@ -159,7 +159,7 @@ export async function listActiveDevelopers() {
 export async function listDevelopers() {
   const database = await getDb();
   const developers = await database.collection<UserDocument>("users")
-    .find({ role: "developer" })
+    .find({ role: "developer", access: { $ne: "pending" } })
     .sort({ name: 1 })
     .toArray();
   return developers.map((developer) => ({
@@ -169,4 +169,16 @@ export async function listDevelopers() {
     active: developer.active,
     createdAt: developer.createdAt,
   }));
+}
+
+/** Accounts that signed in with GitHub and asked for access; an administrator approves or declines them. */
+export async function listAccessRequests() {
+  const database = await getDb();
+  const rows = await database.collection<UserDocument>("users").find({ role: "developer", access: "pending" }).sort({ requestedAt: 1 }).toArray();
+  return rows.map((row) => ({ id: row._id.toHexString(), name: row.name, email: row.email, requestedAt: row.requestedAt ?? row.createdAt }));
+}
+
+export async function countAccessRequests() {
+  const database = await getDb();
+  return database.collection<UserDocument>("users").countDocuments({ role: "developer", access: "pending" });
 }

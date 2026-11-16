@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { MAX_BULK_ASSIGN, canManageIssue, decisionSchema, isBootstrapAdmin, parseBulkAssign, parseIssueUpdate, planSourceSync } from "../src/lib/issues/domain";
+import { MAX_BULK_ASSIGN, accessOutcome, canManageIssue, decisionSchema, isBootstrapAdmin, parseBulkAssign, parseIssueUpdate, planSourceSync } from "../src/lib/issues/domain";
 
 describe("canManageIssue", () => {
   it("lets an admin manage every issue", () => {
@@ -91,5 +91,25 @@ describe("isBootstrapAdmin", () => {
   it("does nothing when no bootstrap email is configured", () => {
     assert.equal(isBootstrapAdmin({ email: "me@example.com", bootstrapEmail: undefined, adminCount: 0 }), false);
     assert.equal(isBootstrapAdmin({ email: "me@example.com", bootstrapEmail: "  ", adminCount: 0 }), false);
+  });
+});
+
+describe("accessOutcome", () => {
+  it("lets an active account in", () => {
+    assert.equal(accessOutcome({ active: true }), "allow");
+    assert.equal(accessOutcome({ active: true, access: "approved" }), "allow");
+  });
+  it("records a request for an unknown account", () => {
+    assert.equal(accessOutcome(null), "request");
+  });
+  it("makes a pending request wait", () => {
+    assert.equal(accessOutcome({ active: false, access: "pending" }), "waiting");
+  });
+  it("keeps a declined account out", () => {
+    assert.equal(accessOutcome({ active: false, access: "declined" }), "declined");
+  });
+  it("tells a deactivated account it is switched off", () => {
+    assert.equal(accessOutcome({ active: false }), "disabled");
+    assert.equal(accessOutcome({ active: false, access: "approved" }), "disabled");
   });
 });

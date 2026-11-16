@@ -4,7 +4,7 @@
   "theme": { "light": "Switch to light theme", "dark": "Switch to dark theme" },
   "login": {
     "title": "Sign in to Petra Tracker",
-    "description": "Access is limited to developers added by a tracker administrator.",
+    "description": "Sign in with GitHub. New here? Your account asks for access and an administrator decides.",
     "continue": "Continue with GitHub",
     "notAllowed": "This GitHub account has not been added or is inactive. Ask an administrator for access."
   },
@@ -102,6 +102,15 @@
     "decision_superseded": "replaced",
     "currentStatus": "Status"
   },
+  "access": {
+    "waitingTitle": "Your request is with an administrator",
+    "waitingBody": "You signed in with GitHub, and your account has asked for access. An administrator will approve it; then sign in again.",
+    "declinedTitle": "Access was not granted",
+    "declinedBody": "An administrator declined this account. Ask them if you think that is a mistake.",
+    "disabledTitle": "This account is switched off",
+    "disabledBody": "An administrator deactivated this account. Ask them to switch it on.",
+    "back": "Back to sign in"
+  },
   "developers": {
     "eyebrow": "ADMINISTRATION",
     "title": "Developers",
@@ -120,7 +129,15 @@
     "deactivate": "Deactivate",
     "noDevelopers": "No developers added yet.",
     "updated": "Developer access was updated.",
-    "addedDate": "Added"
+    "addedDate": "Added",
+    "requests": "Access requests",
+    "requestsHint": "People who signed in with GitHub and asked for access. Nobody gets in until you approve.",
+    "noRequests": "No access requests.",
+    "requestedDate": "Asked on",
+    "approveAccess": "Approve",
+    "declineAccess": "Decline",
+    "accessApproved": "Access approved. They can sign in now.",
+    "accessDeclined": "Access declined."
   },
   "common": { "adminOnly": "This page is for administrators.", "error": "Something went wrong. Please try again.", "retry": "Try again" },
   "statuses": {

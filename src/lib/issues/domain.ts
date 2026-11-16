@@ -94,3 +94,14 @@ export function isBootstrapAdmin(input: { email: string; bootstrapEmail?: string
   const wanted = input.bootstrapEmail?.trim().toLowerCase();
   return Boolean(wanted) && input.adminCount === 0 && input.email.trim().toLowerCase() === wanted;
 }
+
+/** What a GitHub sign-in of this email leads to. "request" = unknown account: an access request is recorded for an administrator. */
+export type AccessOutcome = "allow" | "request" | "waiting" | "declined" | "disabled";
+
+export function accessOutcome(existing: { active: boolean; access?: string | null } | null): AccessOutcome {
+  if (!existing) return "request";
+  if (existing.active) return "allow";
+  if (existing.access === "pending") return "waiting";
+  if (existing.access === "declined") return "declined";
+  return "disabled";
+}

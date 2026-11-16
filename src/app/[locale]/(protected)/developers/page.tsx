@@ -1,20 +1,21 @@
 import { getTranslations } from "next-intl/server";
 import { requireAdmin } from "@/lib/auth/user";
-import { listDevelopers } from "@/lib/issues/data";
-import { createDeveloper, setDeveloperActive } from "../issues/actions";
+import { listAccessRequests, listDevelopers } from "@/lib/issues/data";
+import { createDeveloper, decideAccess, setDeveloperActive } from "../issues/actions";
 
 export default async function DevelopersPage({
   params,
   searchParams,
 }: Readonly<{
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ error?: string; created?: string; updated?: string }>;
+  searchParams: Promise<{ error?: string; created?: string; updated?: string; access?: string }>;
 }>) {
   const { locale } = await params;
   await requireAdmin(locale);
   const query = await searchParams;
-  const [developers, t] = await Promise.all([
+  const [developers, requests, t] = await Promise.all([
     listDevelopers(),
+    listAccessRequests(),
     getTranslations({ locale, namespace: "developers" }),
   ]);
   const dateFormat = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
@@ -31,6 +32,7 @@ export default async function DevelopersPage({
       </div>
       {query.created && <p className="notice" role="status">{t("added")}</p>}
       {query.updated && <p className="notice" role="status">{t("updated")}</p>}
+      {query.access && <p className="notice" role="status">{query.access === "approved" ? t("accessApproved") : t("accessDeclined")}</p>}
       {query.error && <p className="notice" role="alert">
         {query.error === "exists" ? t("alreadyExists") : query.error === "invalid" ? t("invalid") : common("error")}
       </p>}
@@ -47,6 +49,33 @@ export default async function DevelopersPage({
           </div>
           <button className="button button-primary" type="submit">{t("addButton")}</button>
         </form>
+      </section>
+
+      <section className="panel" style={{ marginTop: 16 }} aria-labelledby="requests-title">
+        <h2 id="requests-title">{t("requests")}</h2>
+        <p className="muted">{t("requestsHint")}</p>
+        {requests.length === 0 ? <p className="empty">{t("noRequests")}</p> : (
+          <div className="tablewrap">
+            <table>
+              <thead><tr><th>{t("name")}</th><th>{t("email")}</th><th>{t("requestedDate")}</th><th /></tr></thead>
+              <tbody>
+                {requests.map((request) => (
+                  <tr key={request.id}>
+                    <td>{request.name}</td>
+                    <td>{request.email}</td>
+                    <td>{dateFormat.format(request.requestedAt)}</td>
+                    <td>
+                      <form action={decideAccess.bind(null, locale, request.id)}>
+                        <button className="button button-primary" type="submit" name="decision" value="approve">{t("approveAccess")}</button>{" "}
+                        <button className="button button-danger" type="submit" name="decision" value="decline">{t("declineAccess")}</button>
+                      </form>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
       <section className="panel" style={{ marginTop: 16 }}>

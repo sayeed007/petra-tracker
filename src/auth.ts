@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 import { getDb } from "@/lib/db";
-import { isBootstrapAdmin } from "@/lib/issues/domain";
+import { accessOutcome, isBootstrapAdmin } from "@/lib/issues/domain";
 import type { UserDocument } from "@/lib/db/types";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -14,22 +14,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const database = await getDb();
       const users = database.collection<UserDocument>("users");
       const email = user.email.toLowerCase();
-      const member = await users.findOne({ email, active: true });
-      if (member) return true;
+      const existing = await users.findOne({ email });
+      if (existing?.active) return true;
 
       // No administrator yet: the configured bootstrap account becomes the first one (never anyone else).
       const adminCount = await users.countDocuments({ role: "admin" });
-      if (!isBootstrapAdmin({ email, bootstrapEmail: process.env.BOOTSTRAP_ADMIN_EMAIL, adminCount })) {
-        console.warn(`[tracker] sign-in refused for ${email}: not an active tracker account`);
-        return false;
+      if (isBootstrapAdmin({ email, bootstrapEmail: process.env.BOOTSTRAP_ADMIN_EMAIL, adminCount })) {
+        await users.updateOne(
+          { email },
+          { $set: { name: process.env.BOOTSTRAP_ADMIN_NAME?.trim() || user.name || email, role: "admin", active: true, access: "approved" }, $setOnInsert: { email, createdAt: new Date() } },
+          { upsert: true },
+        );
+        console.warn(`[tracker] first administrator created: ${email}`);
+        return true;
       }
-      await users.updateOne(
-        { email },
-        { $setOnInsert: { email, name: process.env.BOOTSTRAP_ADMIN_NAME?.trim() || user.name || email, role: "admin", active: true, createdAt: new Date() } },
-        { upsert: true },
-      );
-      console.warn(`[tracker] first administrator created: ${email}`);
-      return true;
+
+      // Anyone else is not let in. A new account leaves an access request for an administrator to decide;
+      // the visitor is sent to a page that says so (no session is created).
+      const outcome = accessOutcome(existing);
+      if (outcome === "request") {
+        const now = new Date();
+        await users.updateOne(
+          { email },
+          { $setOnInsert: { email, name: user.name?.trim().slice(0, 120) || email, role: "developer", active: false, access: "pending", requestedAt: now, createdAt: now } },
+          { upsert: true },
+        );
+        console.warn(`[tracker] access requested by ${email}`);
+      } else {
+        console.warn(`[tracker] sign-in refused for ${email}: ${outcome}`);
+      }
+      return `/en/access-requested?state=${outcome === "request" ? "waiting" : outcome}`;
     },
     async jwt({ token, user, account }) {
       if (account?.provider === "github" && user?.email) {

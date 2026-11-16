@@ -9,6 +9,9 @@ export type UserDocument = {
   name: string;
   role: Role;
   active: boolean;
+  /** How the account came to be: absent/"approved" = added or approved by an administrator, "pending" = asked for access, "declined". */
+  access?: "pending" | "approved" | "declined";
+  requestedAt?: Date;
   createdAt: Date;
 };
 

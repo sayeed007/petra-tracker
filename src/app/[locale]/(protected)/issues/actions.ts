@@ -241,6 +241,12 @@ export async function createDeveloper(locale: string, formData: FormData) {
     } as UserDocument);
   } catch (error) {
     if (typeof error === "object" && error !== null && "code" in error && error.code === 11000) {
+      // Adding someone who already asked for access (or was declined) is an approval.
+      const approved = await database.collection<UserDocument>("users").updateOne(
+        { email: parsed.data.email, role: "developer", access: { $in: ["pending", "declined"] } },
+        { $set: { name: parsed.data.name, active: true, access: "approved" } },
+      );
+      if (approved.matchedCount) redirect(`/${language}/developers?created=1`);
       redirect(`/${language}/developers?error=exists`);
     }
     throw error;
@@ -273,4 +279,19 @@ export async function importCatalogue(locale: string) {
     redirect(`/${language}/issues?import=failed`);
   }
   redirect(`/${language}/issues?import=done&added=${counts.added}&moved=${counts.applied}&kept=${counts.kept}`);
+}
+
+/** An administrator's answer to an access request: the developer can then sign in (approve) or not (decline). */
+export async function decideAccess(locale: string, developerId: string, formData: FormData) {
+  const language = safeLocale(locale);
+  await requireAdmin(language);
+  if (!ObjectId.isValid(developerId)) redirect(`/${language}/developers?error=invalid`);
+  const approve = formData.get("decision") === "approve";
+  const database = await getDb();
+  const result = await database.collection<UserDocument>("users").updateOne(
+    { _id: new ObjectId(developerId), role: "developer", access: "pending" },
+    { $set: approve ? { active: true, access: "approved" } : { active: false, access: "declined" } },
+  );
+  if (!result.matchedCount) redirect(`/${language}/developers?error=invalid`);
+  redirect(`/${language}/developers?access=${approve ? "approved" : "declined"}`);
 }
