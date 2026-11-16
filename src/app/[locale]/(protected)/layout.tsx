@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requireUser } from "@/lib/auth/user";
 import { countAccessRequests } from "@/lib/issues/data";
+import { importCatalogue } from "./issues/actions";
 import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -28,6 +29,11 @@ export default async function ProtectedLayout({
         </Link>
         <nav className="navlinks" aria-label={t("mainNavigation")}>
           <Link href="/issues">{t("issues")}</Link>
+          {user.role === "admin" && (
+            <form action={importCatalogue.bind(null, locale)} title={t("importHint")}>
+              <button className="button button-sm" type="submit">{t("importCatalogue")}</button>
+            </form>
+          )}
           {user.role === "admin" && <Link href="/developers">{t("developers")}{waiting > 0 && <span className="tag tag-open" style={{ marginLeft: 6 }}>{waiting}</span>}</Link>}
           <Link href="/issues" locale={locale === "en" ? "bn" : "en"} lang={locale === "en" ? "bn" : "en"}>
             {t("switchLanguage")}

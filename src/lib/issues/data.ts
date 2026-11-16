@@ -26,6 +26,8 @@ export async function listIssues(input: {
   status?: string;
   module?: string;
   q?: string;
+  /** frontend, backend or both. */
+  side?: string;
   /** Administrators only: just the issues with a waiting status request. */
   review?: boolean;
 }) {
@@ -38,6 +40,7 @@ export async function listIssues(input: {
     filter.status = input.status as IssueStatus;
   }
   if (input.module) filter.module = input.module;
+  if (input.side && ["frontend", "backend", "both"].includes(input.side)) filter.side = input.side;
   if (input.review && input.user.role === "admin") filter.pendingRequest = { $type: "object" };
   const query = input.q?.trim().slice(0, 100);
   if (query) {
@@ -181,4 +184,16 @@ export async function listAccessRequests() {
 export async function countAccessRequests() {
   const database = await getDb();
   return database.collection<UserDocument>("users").countDocuments({ role: "developer", access: "pending" });
+}
+
+/** Total and open (open, in progress, still a bug) issues per module, for the cards above the list. */
+export async function moduleStats(user: { id: string; role: "admin" | "developer" }) {
+  const database = await getDb();
+  const scope: Filter<IssueDocument> = user.role === "admin" ? {} : { assigneeId: new ObjectId(user.id) };
+  const rows = await database.collection<IssueDocument>("issues").aggregate<{ _id: string; total: number; open: number }>([
+    { $match: scope },
+    { $group: { _id: "$module", total: { $sum: 1 }, open: { $sum: { $cond: [{ $in: ["$status", ["open", "in-progress", "still-bug"]] }, 1, 0] } } } },
+    { $sort: { _id: 1 } },
+  ]).toArray();
+  return rows.map((row) => ({ module: row._id, total: row.total, open: row.open }));
 }

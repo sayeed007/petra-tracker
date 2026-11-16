@@ -14,34 +14,35 @@ function safeLocale(locale: string) {
   return locale === "bn" ? "bn" : "en";
 }
 
+type UpdateResult = "invalid" | "reason" | "denied" | "missing" | "conflict" | "saved" | "requested";
+
 /**
  * A comment, with or without a status.
  *  - Administrator: the status chosen here is final (any waiting developer request is closed as superseded).
  *  - Developer (assigned issues only): a status here is only a REQUEST. The issue keeps its status until an
  *    administrator approves it (decideRequest); a comment without a status needs no approval.
  */
-export async function updateIssue(locale: string, externalId: string, formData: FormData) {
-  const language = safeLocale(locale);
-  const user = await requireUser(language);
+async function applyIssueUpdate(
+  user: { id: string; role: "admin" | "developer" },
+  externalId: string,
+  formData: FormData,
+): Promise<UpdateResult> {
   const update = parseIssueUpdate({
     status: formData.get("status"),
     comment: formData.get("comment"),
   });
-  if (!update.success) {
-    const reason = update.error.issues.some((issue) => issue.message === "wontfix-reason");
-    redirect(`/${language}/issues/${encodeURIComponent(externalId)}?error=${reason ? "reason" : "invalid"}`);
-  }
+  if (!update.success) return update.error.issues.some((issue) => issue.message === "wontfix-reason") ? "reason" : "invalid";
   const parsed = update.data;
   const database = await getDb();
   const client = await getMongoClient();
   const issues = database.collection<IssueDocument>("issues");
   const comments = database.collection<CommentDocument>("comments");
   const actorId = new ObjectId(user.id);
-  const outcome = await client.withSession(async (session) =>
-    session.withTransaction(async () => {
+  return client.withSession(async (session) =>
+    session.withTransaction(async (): Promise<UpdateResult> => {
       const issue = await issues.findOne({ externalId }, { session });
-      if (!issue) return "missing" as const;
-      if (!canManageIssue(user, issue.assigneeId?.toHexString() ?? null)) return "denied" as const;
+      if (!issue) return "missing";
+      if (!canManageIssue(user, issue.assigneeId?.toHexString() ?? null)) return "denied";
 
       const now = new Date();
       const wantsChange = parsed.status !== undefined && parsed.status !== issue.status;
@@ -63,7 +64,7 @@ export async function updateIssue(locale: string, externalId: string, formData: 
         const result = await issues.updateOne(filter, {
           $set: { ...(changed ? { status: parsed.status, pendingRequest: null } : {}), updatedAt: now },
         }, { session });
-        if (!result.matchedCount) return "conflict" as const;
+        if (!result.matchedCount) return "conflict";
         if (changed) await closePending("Superseded by the administrator's own status change.");
         await comments.insertOne({
           issueId: issue._id,
@@ -74,7 +75,7 @@ export async function updateIssue(locale: string, externalId: string, formData: 
           statusTo: changed ? parsed.status! : null,
           createdAt: now,
         } as CommentDocument, { session });
-        return "saved" as const;
+        return "saved";
       }
 
       // A developer asks for a status: record the request, leave the status alone.
@@ -93,15 +94,28 @@ export async function updateIssue(locale: string, externalId: string, formData: 
       const result = await issues.updateOne(filter, {
         $set: { pendingRequest: { commentId: request.insertedId, status: parsed.status!, by: actorId, at: now }, updatedAt: now },
       }, { session });
-      if (!result.matchedCount) return "conflict" as const;
-      return "requested" as const;
+      if (!result.matchedCount) return "conflict";
+      return "requested";
     }),
   );
+}
 
-  if (outcome === "denied") redirect(`/${language}/issues?denied=1`);
-  if (outcome === "missing") redirect(`/${language}/issues?missing=1`);
-  if (outcome === "conflict") redirect(`/${language}/issues/${encodeURIComponent(externalId)}?conflict=1`);
-  redirect(`/${language}/issues/${encodeURIComponent(externalId)}?${outcome === "requested" ? "requested" : "updated"}=1`);
+export async function updateIssue(locale: string, externalId: string, formData: FormData) {
+  const language = safeLocale(locale);
+  const user = await requireUser(language);
+  const result = await applyIssueUpdate(user, externalId, formData);
+  const here = `/${language}/issues/${encodeURIComponent(externalId)}`;
+  if (result === "invalid" || result === "reason") redirect(`${here}?error=${result}`);
+  if (result === "denied") redirect(`/${language}/issues?denied=1`);
+  if (result === "missing") redirect(`/${language}/issues?missing=1`);
+  if (result === "conflict") redirect(`${here}?conflict=1`);
+  redirect(`${here}?${result === "requested" ? "requested" : "updated"}=1`);
+}
+
+/** The same update, answered in place for the list's drawer (no redirect). */
+export async function updateIssueInline(locale: string, externalId: string, formData: FormData): Promise<{ result: UpdateResult }> {
+  const user = await requireUser(safeLocale(locale));
+  return { result: await applyIssueUpdate(user, externalId, formData) };
 }
 
 /** The administrator's decision on a developer's status request: approve (the status changes) or reject (with a reason). */

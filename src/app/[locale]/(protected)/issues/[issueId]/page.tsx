@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { AreaChip, SeverityChip, StatusChip } from "@/components/chips";
 import { requireUser } from "@/lib/auth/user";
 import { ISSUE_STATUSES } from "@/lib/issues/domain";
 import { getIssueDetail, listActiveDevelopers } from "@/lib/issues/data";
@@ -60,7 +61,7 @@ export default async function IssueDetailPage({
           <p className="eyebrow">{issue.module} · {issue.externalId}</p>
           <h1>{issue.title}</h1>
         </div>
-        <span className={`tag tag-${issue.status}`}>{statusT(issue.status)}</span>
+        <StatusChip status={issue.status} label={statusT(issue.status)} />
       </div>
 
       {showNote && <p className="notice" role="status">
@@ -71,10 +72,10 @@ export default async function IssueDetailPage({
         <section className="panel" aria-labelledby="issue-details-title">
           <h2 id="issue-details-title">{t("details")}</h2>
           <dl className="detail-list">
-            <dt>{t("currentStatus")}</dt><dd><span className={`tag tag-${issue.status}`}>{statusT(issue.status)}</span></dd>
+            <dt>{t("currentStatus")}</dt><dd><StatusChip status={issue.status} label={statusT(issue.status)} /></dd>
             <dt>{t("assignedTo")}</dt><dd>{issue.assigneeName || t("unassigned")}</dd>
-            <dt>{t("side")}</dt><dd>{sideT(issue.side as "frontend" | "backend" | "both")}</dd>
-            <dt>{t("severity")}</dt><dd>{severityT(issue.severity as "high" | "medium" | "low" | "unrated")}</dd>
+            <dt>{t("side")}</dt><dd><AreaChip side={issue.side} label={sideT(issue.side as "frontend" | "backend" | "both")} /></dd>
+            <dt>{t("severity")}</dt><dd><SeverityChip severity={issue.severity} label={severityT(issue.severity as "high" | "medium" | "low" | "unrated")} /></dd>
             {owner && <><dt>{t("owner")}</dt><dd>{owner}</dd></>}
             {source && <><dt>{t("source")}</dt><dd>{source}</dd></>}
             {evidence && <><dt>{t("evidence")}</dt><dd>{evidence}</dd></>}

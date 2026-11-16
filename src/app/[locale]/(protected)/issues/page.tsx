@@ -1,59 +1,59 @@
-import { Tag } from "antd";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requireUser } from "@/lib/auth/user";
+import { AreaChip, SeverityChip, StatusChip } from "@/components/chips";
+import { IssueDrawerHost, OpenIssue } from "@/components/issue-drawer";
+import { ListFilters } from "@/components/list-filters";
 import { SelectAll } from "@/components/select-all";
-import { ISSUE_STATUSES } from "@/lib/issues/domain";
-import { listActiveDevelopers, listIssues } from "@/lib/issues/data";
-import { assignIssues, importCatalogue } from "./actions";
+import { listActiveDevelopers, listIssues, moduleStats } from "@/lib/issues/data";
+import { assignIssues } from "./actions";
+
+type Query = {
+  page?: string; status?: string; module?: string; q?: string; side?: string; review?: string;
+  denied?: string; missing?: string; bulk?: string; count?: string;
+  import?: string; added?: string; moved?: string; kept?: string;
+};
 
 export default async function IssuesPage({
   params,
   searchParams,
-}: Readonly<{
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<{ page?: string; status?: string; module?: string; q?: string; denied?: string; missing?: string; bulk?: string; count?: string; review?: string; import?: string; added?: string; moved?: string; kept?: string }>;
-}>) {
+}: Readonly<{ params: Promise<{ locale: string }>; searchParams: Promise<Query> }>) {
   const { locale } = await params;
   const query = await searchParams;
   const user = await requireUser(locale);
-  const [result, developers] = await Promise.all([
+  const isAdmin = user.role === "admin";
+  const [result, developers, stats] = await Promise.all([
     listIssues({
       user,
       page: Number.isFinite(Number(query.page)) ? Number(query.page) : 1,
       status: query.status,
       module: query.module,
+      side: query.side,
       q: query.q,
       review: query.review === "1",
     }),
-    user.role === "admin" ? listActiveDevelopers() : Promise.resolve([]),
+    isAdmin ? listActiveDevelopers() : Promise.resolve([]),
+    moduleStats(user),
   ]);
-  const isAdmin = user.role === "admin";
   const t = await getTranslations({ locale, namespace: "dashboard" });
   const issueT = await getTranslations({ locale, namespace: "issue" });
   const statusT = await getTranslations({ locale, namespace: "statuses" });
   const sideT = await getTranslations({ locale, namespace: "sides" });
   const severityT = await getTranslations({ locale, namespace: "severities" });
   const updatedDate = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
-  const linkForPage = (page: number) => {
+
+  const keep = { q: query.q, status: query.status, side: query.side, review: query.review };
+  const hrefFor = (overrides: Record<string, string | undefined>) => {
     const next = new URLSearchParams();
-    if (query.q) next.set("q", query.q);
-    if (query.status) next.set("status", query.status);
-    if (query.module) next.set("module", query.module);
-    if (query.review) next.set("review", query.review);
-    next.set("page", String(page));
-    return `/issues?${next.toString()}`;
+    for (const [key, value] of Object.entries({ ...keep, module: query.module, ...overrides })) if (value) next.set(key, value);
+    const text = next.toString();
+    return text ? `/issues?${text}` : "/issues";
   };
+  const totalAll = stats.reduce((sum, row) => sum + row.total, 0);
+  const openAll = stats.reduce((sum, row) => sum + row.open, 0);
 
   return (
     <>
-      <div className="pagehead">
-        <div>
-          <p className="eyebrow">{t("eyebrow")}</p>
-          <h1>{t("title")}</h1>
-          <p className="page-description">{user.role === "admin" ? t("adminView") : t("developerView")}</p>
-        </div>
-      </div>
       {query.denied && <p className="notice" role="alert">{t("denied")}</p>}
       {query.missing && <p className="notice" role="alert">{t("missing")}</p>}
       {query.import === "done" && <p className="notice" role="status">{t("importDone", { added: Number(query.added) || 0, moved: Number(query.moved) || 0, kept: Number(query.kept) || 0 })}</p>}
@@ -61,29 +61,33 @@ export default async function IssuesPage({
       {query.bulk === "done" && <p className="notice" role="status">{t("bulkDone", { count: Number(query.count) || 0 })}</p>}
       {query.bulk === "none" && <p className="notice" role="alert">{t("bulkNone")}</p>}
       {query.bulk === "invalid" && <p className="notice" role="alert">{t("bulkInvalid")}</p>}
-      <div className="statrow">
-        <div className="stat">{t("total", { count: result.total })}</div>
-        <div className="stat">{t("openCount", { count: result.open })}</div>
-        {isAdmin && <div className="stat"><Link href="/issues?review=1">{t("awaitingReview", { count: result.awaiting })}</Link></div>}
-      </div>
-      {isAdmin && (
-        <form action={importCatalogue.bind(null, locale)} className="filters">
-          <button className="button" type="submit">{t("importCatalogue")}</button>
-          <span className="muted">{t("importHint")}</span>
-        </form>
-      )}
-      <form className="filters" method="get" action={`/${locale}/issues`}>
-        <input name="q" type="search" placeholder={t("search")} defaultValue={query.q ?? ""} aria-label={t("search")} />
-        <select name="status" defaultValue={query.status ?? ""} aria-label={t("status")}>
-          <option value="">{t("allStatuses")}</option>
-          {ISSUE_STATUSES.map((status) => <option key={status} value={status}>{statusT(status)}</option>)}
-        </select>
-        <select name="module" defaultValue={query.module ?? ""} aria-label={t("module")}>
-          <option value="">{t("allModules")}</option>
-          {result.modules.map((module) => <option key={module} value={module}>{module}</option>)}
-        </select>
-        <button className="button button-primary" type="submit">{t("filter")}</button>
-      </form>
+
+      <section className="modules" aria-label={t("modulesTitle")}>
+        <Link className={`module-card${query.module ? "" : " active"}`} href={hrefFor({ module: undefined, page: undefined })}>
+          <span className="module-name">{t("allModulesTile")}</span>
+          <strong>{totalAll}</strong>
+          <em>{t("moduleOpen", { count: openAll })}</em>
+        </Link>
+        {stats.map((row) => (
+          <Link key={row.module} className={`module-card${query.module === row.module ? " active" : ""}`} href={hrefFor({ module: row.module, page: undefined })}>
+            <span className="module-name">{row.module}</span>
+            <strong>{row.total}</strong>
+            <em>{t("moduleOpen", { count: row.open })}</em>
+          </Link>
+        ))}
+      </section>
+
+      <ListFilters
+        q={query.q ?? ""}
+        status={query.status ?? ""}
+        side={query.side ?? ""}
+        module={query.module ?? ""}
+        modules={result.modules}
+        review={query.review === "1"}
+        awaiting={result.awaiting}
+        isAdmin={isAdmin}
+      />
+
       {isAdmin && result.issues.length > 0 && (
         <form id="bulk-assign" className="filters" action={assignIssues.bind(null, locale)}>
           <select name="assigneeId" defaultValue="" aria-label={t("assignee")}>
@@ -93,31 +97,44 @@ export default async function IssuesPage({
           <button className="button" type="submit">{t("assignSelected")}</button>
         </form>
       )}
-      <div className="tablewrap">
-        {result.issues.length === 0 ? <div className="empty">{t("empty")}</div> : (
-          <table>
-            <thead><tr>{isAdmin && <th><SelectAll label={t("selectAll")} /></th>}<th>{t("issue")}</th><th>{t("module")}</th><th>{t("side")}</th><th>{t("severity")}</th><th>{t("status")}</th><th>{t("assignee")}</th><th>{t("updated")}</th></tr></thead>
-            <tbody>
-              {result.issues.map((issue) => (
-                <tr key={issue.externalId}>
-                  {isAdmin && <td><input type="checkbox" name="ids" value={issue.externalId} form="bulk-assign" aria-label={issue.externalId} /></td>}
-                  <td><Link className="issue-link" href={`/issues/${encodeURIComponent(issue.externalId)}`}>{issue.title}</Link><span className="issue-id">{issue.externalId}</span></td>
-                  <td>{issue.module}</td>
-                  <td>{sideT(issue.side as "frontend" | "backend" | "both")}</td>
-                  <td><span className={`tag tag-${issue.severity}`}>{severityT(issue.severity as "high" | "medium" | "low" | "unrated")}</span></td>
-                  <td><Tag className={`tag tag-${issue.status}`}>{statusT(issue.status)}</Tag>{issue.pendingStatus && <span className="tag" title={t("pendingTag", { status: statusT(issue.pendingStatus) })}> → {statusT(issue.pendingStatus)}?</span>}</td>
-                  <td>{issue.assigneeName || issueT("unassigned")}</td>
-                  <td>{updatedDate.format(issue.updatedAt)}</td>
+
+      <IssueDrawerHost>
+        <div className="tablewrap">
+          {result.issues.length === 0 ? <div className="empty">{t("empty")}</div> : (
+            <table>
+              <thead>
+                <tr>
+                  {isAdmin && <th><SelectAll label={t("selectAll")} /></th>}
+                  <th>{t("issue")}</th><th>{t("module")}</th><th>{t("side")}</th><th>{t("severity")}</th><th>{t("status")}</th><th>{t("assignee")}</th><th>{t("updated")}</th><th />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+              </thead>
+              <tbody>
+                {result.issues.map((issue) => (
+                  <tr key={issue.externalId}>
+                    {isAdmin && <td><input type="checkbox" name="ids" value={issue.externalId} form="bulk-assign" aria-label={issue.externalId} /></td>}
+                    <td><OpenIssue id={issue.externalId} title={issue.title} /><span className="issue-id">{issue.externalId}</span></td>
+                    <td>{issue.module}</td>
+                    <td><AreaChip side={issue.side} label={sideT(issue.side as "frontend" | "backend" | "both")} /></td>
+                    <td><SeverityChip severity={issue.severity} label={severityT(issue.severity as "high" | "medium" | "low" | "unrated")} /></td>
+                    <td>
+                      <StatusChip status={issue.status} label={statusT(issue.status)} />
+                      {issue.pendingStatus && <span className="muted" title={t("pendingTag", { status: statusT(issue.pendingStatus) })}> → {statusT(issue.pendingStatus)}?</span>}
+                    </td>
+                    <td>{issue.assigneeName || issueT("unassigned")}</td>
+                    <td>{updatedDate.format(issue.updatedAt)}</td>
+                    <td><Link className="button button-sm" href={`/issues/${encodeURIComponent(issue.externalId)}`}>{t("details")}</Link></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </IssueDrawerHost>
+
       <nav className="pagination" aria-label={t("pagination")}>
-        {result.page > 1 ? <Link className="button" href={linkForPage(result.page - 1)}>{t("previous")}</Link> : <span />}
+        {result.page > 1 ? <Link className="button" href={hrefFor({ page: String(result.page - 1) })}>{t("previous")}</Link> : <span />}
         <span>{t("page", { page: result.page, pages: result.pages })}</span>
-        {result.page < result.pages ? <Link className="button" href={linkForPage(result.page + 1)}>{t("next")}</Link> : <span />}
+        {result.page < result.pages ? <Link className="button" href={hrefFor({ page: String(result.page + 1) })}>{t("next")}</Link> : <span />}
       </nav>
     </>
   );

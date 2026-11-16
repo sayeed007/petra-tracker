@@ -1,6 +1,6 @@
 {
   "app": { "name": "Petra Issue Tracker", "tagline": "A clear view of the work that needs attention." },
-  "nav": { "issues": "Issues", "developers": "Developers", "switchLanguage": "বাংলা", "signOut": "Sign out", "admin": "Administrator", "mainNavigation": "Main navigation" },
+  "nav": { "issues": "Issues", "developers": "Developers", "switchLanguage": "বাংলা", "signOut": "Sign out", "admin": "Administrator", "mainNavigation": "Main navigation", "importCatalogue": "Import catalogue", "importHint": "Loads the issues of this release into the portal; safe to repeat." },
   "theme": { "light": "Switch to light theme", "dark": "Switch to dark theme" },
   "login": {
     "title": "Sign in to Petra Tracker",
@@ -47,7 +47,12 @@
     "importCatalogue": "Import catalogue",
     "importHint": "Loads the issues of this release into the portal; safe to repeat.",
     "importDone": "Catalogue imported: {added} new, {moved} moved by the code check, {kept} kept as set by a person.",
-    "importFailed": "The catalogue could not be imported. Check the database settings."
+    "importFailed": "The catalogue could not be imported. Check the database settings.",
+    "details": "Details",
+    "allAreas": "All areas",
+    "modulesTitle": "Modules",
+    "allModulesTile": "All modules",
+    "moduleOpen": "{count} open"
   },
   "issue": {
     "back": "Back to issues",
@@ -110,6 +115,12 @@
     "disabledTitle": "This account is switched off",
     "disabledBody": "An administrator deactivated this account. Ask them to switch it on.",
     "back": "Back to sign in"
+  },
+  "drawer": {
+    "loading": "Loading…",
+    "loadError": "The issue could not be loaded. Close this panel and try again.",
+    "openFull": "Open the full page",
+    "pending": "Status request"
   },
   "developers": {
     "eyebrow": "ADMINISTRATION",
