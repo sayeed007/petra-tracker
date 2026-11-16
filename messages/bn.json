@@ -52,7 +52,14 @@
     "allAreas": "সব এলাকা",
     "modulesTitle": "মডিউল",
     "allModulesTile": "সব মডিউল",
-    "moduleOpen": "{count} টি খোলা"
+    "moduleOpen": "{count} টি খোলা",
+    "sn": "ক্র.",
+    "showing": "{total} টির মধ্যে {from}–{to} দেখানো হচ্ছে",
+    "perPage": "প্রতি পাতায়",
+    "goToPage": "পাতায় যান",
+    "go": "যান",
+    "firstPage": "প্রথম পাতা",
+    "lastPage": "শেষ পাতা"
   },
   "issue": {
     "back": "ইস্যু তালিকায় ফিরুন",

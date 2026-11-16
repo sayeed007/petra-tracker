@@ -1,9 +1,8 @@
 import { ObjectId, type Filter } from "mongodb";
-import { ISSUE_STATUSES, type IssueStatus } from "./domain";
+import { DEFAULT_PAGE_SIZE, ISSUE_STATUSES, SEVERITY_ORDER, STATUS_ORDER, type IssueStatus } from "./domain";
 import { getDb } from "@/lib/db";
 import type { CommentDocument, IssueDocument, UserDocument } from "@/lib/db/types";
 
-const PAGE_SIZE = 40;
 const regexEscape = (value: string) => Array.from(value, (char) => ".*+?^$()|[]{}\\".includes(char) ? String.fromCharCode(92) + char : char).join("");
 
 export type IssueListRow = {
@@ -26,6 +25,8 @@ export async function listIssues(input: {
   status?: string;
   module?: string;
   q?: string;
+  /** Rows per page (see PAGE_SIZES). */
+  size?: number;
   /** frontend, backend or both. */
   side?: string;
   /** Administrators only: just the issues with a waiting status request. */
@@ -52,19 +53,21 @@ export async function listIssues(input: {
   const awaiting = input.user.role === "admin"
     ? await collection.countDocuments({ pendingRequest: { $type: "object" } })
     : 0;
-  const openFilter = { ...filter };
-  delete openFilter.status;
-  const open = await collection.countDocuments({
-    ...openFilter,
-    status: { $in: ["open", "in-progress", "still-bug"] },
-  });
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const size = input.size ?? DEFAULT_PAGE_SIZE;
+  const pages = Math.max(1, Math.ceil(total / size));
   const page = Math.max(1, Math.min(input.page, pages));
-  const rows = await collection.find(filter)
-    .sort({ updatedAt: -1, _id: 1 })
-    .skip((page - 1) * PAGE_SIZE)
-    .limit(PAGE_SIZE)
-    .toArray();
+  // Still-bug first, then open, in progress, decisions ... finished work last; inside a status the high severity first,
+  // then module and id so the order never shifts between pages. An unknown value sorts last.
+  const rank = (field: string, order: readonly string[]) => ({
+    $let: { vars: { at: { $indexOfArray: [order, field] } }, in: { $cond: [{ $lt: ["$$at", 0] }, order.length, "$$at"] } },
+  });
+  const rows = await collection.aggregate<IssueDocument>([
+    { $match: filter },
+    { $addFields: { statusRank: rank("$status", STATUS_ORDER), severityRank: rank("$severity", SEVERITY_ORDER) } },
+    { $sort: { statusRank: 1, severityRank: 1, module: 1, externalId: 1 } },
+    { $skip: (page - 1) * size },
+    { $limit: size },
+  ]).toArray();
   const assigneeIds = rows.flatMap((issue) => issue.assigneeId ? [issue.assigneeId] : []);
   const developers = assigneeIds.length
     ? await database.collection<UserDocument>("users").find({ _id: { $in: assigneeIds } }).project({ name: 1 }).toArray()
@@ -87,7 +90,7 @@ export async function listIssues(input: {
     })),
     total,
     awaiting,
-    open,
+    size,
     pages,
     page,
     modules: modules.sort(),

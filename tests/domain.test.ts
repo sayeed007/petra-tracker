@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { MAX_BULK_ASSIGN, accessOutcome, canManageIssue, decisionSchema, isBootstrapAdmin, parseBulkAssign, parseIssueUpdate, planSourceSync } from "../src/lib/issues/domain";
+import { MAX_BULK_ASSIGN, STATUS_ORDER, ISSUE_STATUSES, parsePageSize, accessOutcome, canManageIssue, decisionSchema, isBootstrapAdmin, parseBulkAssign, parseIssueUpdate, planSourceSync } from "../src/lib/issues/domain";
 
 describe("canManageIssue", () => {
   it("lets an admin manage every issue", () => {
@@ -111,5 +111,22 @@ describe("accessOutcome", () => {
   it("tells a deactivated account it is switched off", () => {
     assert.equal(accessOutcome({ active: false }), "disabled");
     assert.equal(accessOutcome({ active: false, access: "approved" }), "disabled");
+  });
+});
+
+describe("list order and page size", () => {
+  it("puts still-a-bug first and finished work last", () => {
+    assert.equal(STATUS_ORDER[0], "still-bug");
+    assert.ok(STATUS_ORDER.indexOf("open") < STATUS_ORDER.indexOf("fixed"));
+    assert.equal(STATUS_ORDER[STATUS_ORDER.length - 1], "wontfix");
+  });
+  it("ranks every status the portal knows", () => {
+    assert.deepEqual([...STATUS_ORDER].sort(), [...ISSUE_STATUSES].sort());
+  });
+  it("accepts only the offered page sizes", () => {
+    assert.equal(parsePageSize("20"), 20);
+    assert.equal(parsePageSize(100), 100);
+    assert.equal(parsePageSize("7"), 40);
+    assert.equal(parsePageSize(undefined), 40);
   });
 });

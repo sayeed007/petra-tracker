@@ -141,3 +141,13 @@ tr:last-child td { border-bottom: 0; }
 .notice-ok { border-color: #86d6a7; background: #effaf3; color: #16643a; }
 .dark .notice-ok { background: #12301f; color: #9be4b8; border-color: #2c6e48; }
 .drawer-title { margin: 4px 0 12px; font-size: 20px; line-height: 1.25; }
+.sn { color: var(--muted); font-variant-numeric: tabular-nums; width: 1%; white-space: nowrap; }
+.pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 18px; margin: 12px 0; }
+.pager-count { color: var(--muted); font-size: 13px; }
+.pager-pages { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.pager-pages .button { min-width: 32px; }
+.pager-pages .button:disabled { opacity: .45; cursor: default; }
+.pager-gap { color: var(--muted); padding: 0 4px; }
+.pager-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
+.pager-tools input, .pager-tools select { min-height: 30px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); padding: 3px 8px; font: inherit; }
+.pager-tools input { width: 84px; }

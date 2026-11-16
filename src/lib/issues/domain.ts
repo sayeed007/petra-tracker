@@ -105,3 +105,15 @@ export function accessOutcome(existing: { active: boolean; access?: string | nul
   if (existing.access === "declined") return "declined";
   return "disabled";
 }
+
+/** The list shows what needs work first: still-a-bug on top, finished and closed work at the bottom. */
+export const STATUS_ORDER: readonly IssueStatus[] = ["still-bug", "open", "in-progress", "decision", "fixed-per-log", "unknown", "fixed", "wontfix"];
+export const SEVERITY_ORDER = ["high", "medium", "low", "unrated"] as const;
+
+export const PAGE_SIZES = [20, 40, 100] as const;
+export const DEFAULT_PAGE_SIZE = 40;
+
+export function parsePageSize(value: unknown) {
+  const size = Number(value);
+  return (PAGE_SIZES as readonly number[]).includes(size) ? size : DEFAULT_PAGE_SIZE;
+}

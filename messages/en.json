@@ -52,7 +52,14 @@
     "allAreas": "All areas",
     "modulesTitle": "Modules",
     "allModulesTile": "All modules",
-    "moduleOpen": "{count} open"
+    "moduleOpen": "{count} open",
+    "sn": "SN",
+    "showing": "Showing {from}–{to} of {total}",
+    "perPage": "Per page",
+    "goToPage": "Go to page",
+    "go": "Go",
+    "firstPage": "First page",
+    "lastPage": "Last page"
   },
   "issue": {
     "back": "Back to issues",

@@ -9,9 +9,9 @@ import { ISSUE_STATUSES } from "@/lib/issues/domain";
 export const SEARCH_DEBOUNCE_MS = 3000;
 
 type Filters = { q: string; status: string; side: string; module: string; review: boolean };
-type Props = Filters & { modules: string[]; awaiting: number; isAdmin: boolean };
+type Props = Filters & { size: number; modules: string[]; awaiting: number; isAdmin: boolean };
 
-export function ListFilters({ q, status, side, module, modules, review, awaiting, isAdmin }: Readonly<Props>) {
+export function ListFilters({ q, status, side, module, size, modules, review, awaiting, isAdmin }: Readonly<Props>) {
   const t = useTranslations("dashboard");
   const statusT = useTranslations("statuses");
   const sideT = useTranslations("sides");
@@ -34,6 +34,7 @@ export function ListFilters({ q, status, side, module, modules, review, awaiting
     if (merged.side) params.set("side", merged.side);
     if (merged.module) params.set("module", merged.module);
     if (merged.review) params.set("review", "1");
+    if (size === 20 || size === 100) params.set("size", String(size));
     const query = params.toString();
     startTransition(() => router.replace(query ? `${pathname}?${query}` : pathname));
   }

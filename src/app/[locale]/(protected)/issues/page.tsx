@@ -4,12 +4,14 @@ import { requireUser } from "@/lib/auth/user";
 import { AreaChip, SeverityChip, StatusChip } from "@/components/chips";
 import { IssueDrawerHost, OpenIssue } from "@/components/issue-drawer";
 import { ListFilters } from "@/components/list-filters";
+import { Pager } from "@/components/pager";
 import { SelectAll } from "@/components/select-all";
 import { listActiveDevelopers, listIssues, moduleStats } from "@/lib/issues/data";
+import { parsePageSize } from "@/lib/issues/domain";
 import { assignIssues } from "./actions";
 
 type Query = {
-  page?: string; status?: string; module?: string; q?: string; side?: string; review?: string;
+  page?: string; size?: string; status?: string; module?: string; q?: string; side?: string; review?: string;
   denied?: string; missing?: string; bulk?: string; count?: string;
   import?: string; added?: string; moved?: string; kept?: string;
 };
@@ -29,6 +31,7 @@ export default async function IssuesPage({
       status: query.status,
       module: query.module,
       side: query.side,
+      size: parsePageSize(query.size),
       q: query.q,
       review: query.review === "1",
     }),
@@ -42,7 +45,7 @@ export default async function IssuesPage({
   const severityT = await getTranslations({ locale, namespace: "severities" });
   const updatedDate = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
 
-  const keep = { q: query.q, status: query.status, side: query.side, review: query.review };
+  const keep = { q: query.q, status: query.status, side: query.side, review: query.review, size: query.size };
   const hrefFor = (overrides: Record<string, string | undefined>) => {
     const next = new URLSearchParams();
     for (const [key, value] of Object.entries({ ...keep, module: query.module, ...overrides })) if (value) next.set(key, value);
@@ -82,6 +85,7 @@ export default async function IssuesPage({
         status={query.status ?? ""}
         side={query.side ?? ""}
         module={query.module ?? ""}
+        size={result.size}
         modules={result.modules}
         review={query.review === "1"}
         awaiting={result.awaiting}
@@ -98,6 +102,8 @@ export default async function IssuesPage({
         </form>
       )}
 
+      <Pager page={result.page} pages={result.pages} total={result.total} size={result.size} />
+
       <IssueDrawerHost>
         <div className="tablewrap">
           {result.issues.length === 0 ? <div className="empty">{t("empty")}</div> : (
@@ -105,13 +111,14 @@ export default async function IssuesPage({
               <thead>
                 <tr>
                   {isAdmin && <th><SelectAll label={t("selectAll")} /></th>}
-                  <th>{t("issue")}</th><th>{t("module")}</th><th>{t("side")}</th><th>{t("severity")}</th><th>{t("status")}</th><th>{t("assignee")}</th><th>{t("updated")}</th><th />
+                  <th>{t("sn")}</th><th>{t("issue")}</th><th>{t("module")}</th><th>{t("side")}</th><th>{t("severity")}</th><th>{t("status")}</th><th>{t("assignee")}</th><th>{t("updated")}</th><th />
                 </tr>
               </thead>
               <tbody>
-                {result.issues.map((issue) => (
+                {result.issues.map((issue, index) => (
                   <tr key={issue.externalId}>
                     {isAdmin && <td><input type="checkbox" name="ids" value={issue.externalId} form="bulk-assign" aria-label={issue.externalId} /></td>}
+                    <td className="sn">{(result.page - 1) * result.size + index + 1}</td>
                     <td><OpenIssue id={issue.externalId} title={issue.title} /><span className="issue-id">{issue.externalId}</span></td>
                     <td>{issue.module}</td>
                     <td><AreaChip side={issue.side} label={sideT(issue.side as "frontend" | "backend" | "both")} /></td>
@@ -131,11 +138,7 @@ export default async function IssuesPage({
         </div>
       </IssueDrawerHost>
 
-      <nav className="pagination" aria-label={t("pagination")}>
-        {result.page > 1 ? <Link className="button" href={hrefFor({ page: String(result.page - 1) })}>{t("previous")}</Link> : <span />}
-        <span>{t("page", { page: result.page, pages: result.pages })}</span>
-        {result.page < result.pages ? <Link className="button" href={hrefFor({ page: String(result.page + 1) })}>{t("next")}</Link> : <span />}
-      </nav>
+      <Pager page={result.page} pages={result.pages} total={result.total} size={result.size} />
     </>
   );
 }
