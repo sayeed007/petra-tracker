@@ -13,13 +13,27 @@ function clientReady() {
   if (!uri) throw new Error("MONGODB_URI is required");
 
   if (!globalForMongo.mongoReady) {
+    // Fail in seconds, not the driver's default 30, so a slow Atlas wake-up shows an error page quickly and the next request retries.
+    const timeout = Number(process.env.MONGODB_CONNECT_TIMEOUT_MS) || 8_000;
     const client = new MongoClient(uri, {
       appName: "petra-issue-tracker",
       maxIdleTimeMS: 5_000,
       maxPoolSize: 10,
+      serverSelectionTimeoutMS: timeout,
+      connectTimeoutMS: timeout,
     });
     globalForMongo.mongoClient = client;
-    globalForMongo.mongoReady = client.connect();
+    const ready = client.connect().catch((error: unknown) => {
+      // A failed connect must not stay cached: this warm instance would otherwise answer every request with the
+      // same error until Vercel recycles it, which looks like "the site is down for some people for a while".
+      if (globalForMongo.mongoReady === ready) {
+        delete globalForMongo.mongoClient;
+        delete globalForMongo.mongoReady;
+      }
+      void client.close().catch(() => undefined);
+      throw error;
+    });
+    globalForMongo.mongoReady = ready;
     if (process.env.VERCEL) attachDatabasePool(client);
   }
   return globalForMongo.mongoReady;
@@ -40,6 +54,8 @@ export async function getDb() {
       database.collection<IssueDocument>("issues").createIndex({ assigneeId: 1, status: 1 }),
       database.collection<CommentDocument>("comments").createIndex({ issueId: 1, createdAt: 1 }),
     ]).then(() => undefined);
+    // same rule: a failed index build is retried by the next request, not remembered
+    globalForMongo.mongoIndexReady.catch(() => { globalForMongo.mongoIndexReady = undefined; });
   }
   await globalForMongo.mongoIndexReady;
   return database;
