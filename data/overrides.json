@@ -486,10 +486,10 @@
   "date": "2026-11-09"
  },
  "rv-fe:sales:36": {
-  "status": "still-bug",
-  "note": "features/sales/receipt has no VDS/TDS/cheque-number inputs; erp-api/sales/receipts/types.ts:119-122 TODO says nothing sends withholding; print shows chequeId that can never be set. | Repro: Sales > Receipts > New: pick Cheque, there is no cheque number and no VDS/TDS amount or certificate fields.",
-  "ref": "",
-  "date": "2026-11-09"
+  "status": "in-progress",
+  "note": "Cheque payments now take a required cheque number (create and edit, shown on the receipt, sent as chequeId). Still open: VDS and TDS withholding on the receipt has no inputs in features/sales/receipt. Merged into release_beta_1.0.0 (checked in code, typecheck, lint and unit tests clean; not run in a browser).",
+  "ref": "53563384",
+  "date": "2026-11-17"
  },
  "rv-fe:sales:53": {
   "status": "still-bug",
@@ -1583,10 +1583,10 @@
   "date": "2026-11-09"
  },
  "rv-fe:sales:56": {
-  "status": "still-bug",
-  "note": "Mostly cleaned (mockDocNo, console.log gone) but dead splitTax (shared/sales-tax.ts:111, no callers) and topRate: 0 (trade-discount-panel.tsx:840) remain. Code hygiene only. | Repro: No UI symptom; code-level cleanup.",
-  "ref": "",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "The dead splitTax in shared/sales-tax.ts and the unused customer transaction types and constants, the unreachable Acknowledge delivery dialog of the fulfilment screen and other dead code are removed; topRate: 0 in the trade discount panel is gone. Merged into release_beta_1.0.0 (checked in code, typecheck, lint and unit tests clean; not run in a browser).",
+  "ref": "1f4ceb44",
+  "date": "2026-11-17"
  },
  "rv-fe:sales:57": {
   "status": "still-bug",
@@ -3203,5 +3203,47 @@
   "status": "wontfix",
   "note": "Closed: Transfer Order and Courier Status are not needed now, so they stay closed (404). Their old tracker items and the 16 skipped e2e cases can be removed. Owner decision 2026-11-15 (inventory and field-force developer answers).",
   "date": "2026-11-15"
+ },
+ "st1111:S7": {
+  "status": "fixed",
+  "note": "The receipt customer picker no longer preselects the first customer (autoSelectFirst off): the operator must pick whom the money came from. Merged into release_beta_1.0.0 (checked in code, typecheck, lint and unit tests clean; not run in a browser).",
+  "ref": "1f4ceb44",
+  "date": "2026-11-17"
+ },
+ "st1111:S32": {
+  "status": "fixed",
+  "note": "Reject Demand now opens a confirmation that asks for a reason (required), the reason goes to the approval history, and a rejected demand shows a banner with the reason, who and when (banner reads outcomeMeta; the backend field was not checked). Merged into release_beta_1.0.0 (checked in code, typecheck, lint and unit tests clean; not run in a browser).",
+  "ref": "53563384",
+  "date": "2026-11-17"
+ },
+ "st1111:S15": {
+  "status": "fixed",
+  "note": "The credit memo page has Approve and Reject for an assigned approver (reject needs a reason) and an Approval history tab. Merged into release_beta_1.0.0 (checked in code, typecheck, lint and unit tests clean; not run in a browser).",
+  "ref": "53563384",
+  "date": "2026-11-17"
+ },
+ "st1111:S34": {
+  "status": "fixed",
+  "note": "Typing more than the unused deposit or the invoice's due now shows a warning that says the amount was cut, to the deposit left or to the due, or that the deposit is used up. Merged into release_beta_1.0.0 (checked in code, typecheck, lint and unit tests clean; not run in a browser).",
+  "ref": "1f4ceb44",
+  "date": "2026-11-17"
+ },
+ "st1111:S37": {
+  "status": "fixed",
+  "note": "The IMS CSV upload warns when no row matched (0 updated) instead of reporting success. Merged into release_beta_1.0.0 (checked in code, typecheck, lint and unit tests clean; not run in a browser).",
+  "ref": "1f4ceb44",
+  "date": "2026-11-17"
+ },
+ "st1111:S22": {
+  "status": "fixed",
+  "note": "The deposit field now says why: hint 'Required for every demand. Enter an amount more than 0.' and its own messages for empty and zero. The deposit is still required on every customer type (rule kept). The Save banner wording is unchanged. Merged into release_beta_1.0.0 (checked in code, typecheck, lint and unit tests clean; not run in a browser).",
+  "ref": "1f4ceb44",
+  "date": "2026-11-17"
+ },
+ "st1111:S12": {
+  "status": "fixed",
+  "note": "A new carrier opens with Time To Delivery 1, and an emptied box asks for the days instead of reading 0. Not part of this fix: the shared 'No shipping carrier is configured.' text still has no link to Settings. Merged into release_beta_1.0.0 (checked in code, typecheck, lint and unit tests clean; not run in a browser).",
+  "ref": "1f4ceb44",
+  "date": "2026-11-17"
  }
 }
