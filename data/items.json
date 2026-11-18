@@ -11446,9 +11446,9 @@
   "side": "frontend",
   "severity": "low",
   "title": "T10-d Misc tidy-ups",
-  "summary": "Small tidy-ups: duplicated route helpers, type casts hiding wrong facade return types, disabled hook lint rules and a PDF download that bypasses the erp-api layer. No user-visible failure.",
+  "summary": "Code-health cleanup in the inventory screens. Nothing is wrong for the user: no screen breaks and no data is wrong. It is four small clean-ups that make the code easier to change safely. Do them in the order below; the first is the quickest and the most useful. Checked against release_beta_1.0.0 (501454ab) on 2026-11-18.",
   "status": "open",
-  "status_evidence": "Still open: eslint-disable at packing-house-form-view.tsx:300, product-distribution-form-view.tsx:225, stock-transfer-form-page.tsx:275; raw fetch at features/shipping/ship-items-page.tsx:151; no shared firstParam in shared/utils.",
+  "status_evidence": "Details rewritten 2026-11-18 so it can be acted on; no user-visible effect. Task 1 is the one to do.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/04-inventory.md",
@@ -11461,16 +11461,20 @@
   "set": "review-fe",
   "checked": {
    "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "date": "2026-11-18"
   },
   "steps": [
-   "Grep the listed lines."
+   "TASK 1 (do first, about 30 minutes): one shared helper for reading the first value of a URL parameter. Six inventory pages each define their own copy of the same 3 lines (Array.isArray(value) ? value[0] : value): src/app/(erp)/inventory-warehouse/adjustment/page.tsx:12 (firstParam), adjustment/new/page.tsx:16 (firstSearchParam), bin-transfer/page.tsx:12 (firstParam), bin-transfer/new/page.tsx:26 (firstSearchParam), lot-breakdown/page.tsx:32 (firstParam), petty-cash/new/page.tsx:21 (firstSearchParam). Purchase already has the same thing as getFirstSearchParamValue in src/features/purchase/shared/purchase-list-query.ts:42. Move one version to src/shared/utils (for example url.ts), export it once, import it in all seven places, delete the local copies (purchase can re-export or import it). Keep the behaviour exactly: an array gives its first item, a string gives itself, undefined gives undefined.",
+   "TASK 2 (about 20 minutes): give every eslint-disable a written reason. src/features/inventory/stock-transfers/components/stock-transfer-form-page.tsx:275 has 'eslint-disable-next-line react-hooks/exhaustive-deps' with no reason (add one after '--', as line 359 does). packing-house/components/packing-house-form-view.tsx:300 and product-distribution/components/product-distribution-form-view.tsx:225 already say 'intentional: rebuild only when the record changes', so leave them, or replace each with a small useMemo keyed on the record id only if that is simpler.",
+   "TASK 3 (optional, about 1 hour): src/features/shipping/ship-items-page.tsx:151 calls fetch() directly to download the dispatch slip and gate pass PDF (deliveryOrderSlipAndGatePassPath). Project rule (AGENTS.md, API Facade Boundary): data calls go through src/erp-api/**. Add a small function in src/erp-api/sales/delivery-orders that returns the PDF blob (or the typed failure) and call that. Keep the user message t('feedback.documentDownloadFailed') on failure.",
+   "TASK 4 (skip unless you are in the file anyway): a few 'as' casts hide a facade return type that does not match, for example initialValues?.attachments as AppFileDropzoneFile[] | undefined in packing-house-form-view.tsx:298 and product-distribution-form-view.tsx:224. Fix the type in the facade instead of casting. Not worth a separate change."
   ],
-  "expected": "One shared helper, no casts, facades own downloads.",
-  "actual": "Still present.",
-  "where": "src/features/shipping/ship-items-page.tsx:151; stock-transfer-form-page.tsx:275; packing-house-form-view.tsx:300",
-  "verify": "pnpm lint and pnpm build pass after cleanup.",
-  "owner": "Frontend inventory"
+  "expected": "One shared first-param helper used everywhere; every eslint-disable states why; the shipping PDF download goes through an erp-api function.",
+  "actual": "Six copies of the same helper in inventory pages (plus a seventh in purchase), one eslint-disable without a reason, one direct fetch in the shipping page, a few type casts. No user-visible failure.",
+  "where": "src/app/(erp)/inventory-warehouse/{adjustment,bin-transfer,lot-breakdown,petty-cash}; src/features/inventory/{stock-transfers,packing-house,product-distribution}/components; src/features/shipping/ship-items-page.tsx",
+  "tests": [],
+  "verify": "Tasks 1 and 2: pnpm lint and pnpm build pass, and these pages still open with their filters: /inventory-warehouse/adjustment, /bin-transfer, /lot-breakdown, /petty-cash/new (try ?status=... or ?adjustmentId=...). Search the repo: no function named firstParam or firstSearchParam is left under src/app/(erp)/inventory-warehouse. Task 3: on the Ship Items screen the dispatch documents still download; with the backend stopped the error message shows.",
+  "owner": "Frontend (inventory developer)"
  },
  {
   "id": "rv-fe:inventory:9",
