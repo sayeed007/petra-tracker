@@ -16880,8 +16880,8 @@
   "severity": "low",
   "title": "URL `size` and `status` trusted in lists",
   "summary": "List screens trusted the URL. A huge page size could load everything and any status text was forwarded to the backend.",
-  "status": "still-bug",
-  "status_evidence": "Page size clamped now (shared/purchase-list-query.ts:149, bill-credit, MR, vendor-bill query.ts), but ?status= is forwarded unvalidated in purchase-list-query.ts and vendor-bill/query.ts (rawStatus); size part fixed. | Repro: Open /purchase/vendor-bill?status=bogus (or receipts list): value goes to the backend unchecked.",
+  "status": "fixed",
+  "status_evidence": "?status= is now checked against what each purchase list offers (resolvePurchaseStatus with the filter catalogue); an unknown value opens the all-status list instead of being sent to the backend. Applied to the bill, receipt, LC master, prepayment and return lists. Test added. Merged into release_beta_1.0.0 (c454da53); checked in code, typecheck, lint and unit tests clean, not run in a browser.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -16894,8 +16894,8 @@
   "theme": "Theme 10. Request volume (Common: F-C11)",
   "set": "review-fe",
   "checked": {
-   "ref": "a03704c99",
-   "date": "2026-11-09"
+   "ref": "d7118a62",
+   "date": "2026-11-18"
   },
   "steps": [
    "Open a purchase list URL with ?size=100000 (now falls back) and with ?status=junk (still sent)."
@@ -17091,8 +17091,8 @@
   "severity": "low",
   "title": "English literals and a USD default in facades and views",
   "summary": "Some purchase texts are hard-coded English, so the Bangla UI shows them untranslated.",
-  "status": "still-bug",
-  "status_evidence": "English literals remain: proforma-invoice-form-view.tsx:442 'To be Generated', orders/index.ts:1172, bill-payment-create-view.tsx:472 '(Unused: ...)', comparative-statement.tsx:134 'Months'; purchase forms import sales posting-period field. | Repro: Switch UI to Bangla: new PI shows 'To be Generated'; payment form prepayment option shows '(Unused: ...)'.",
+  "status": "in-progress",
+  "status_evidence": "The 'To be Generated' literals and '(Unused: ...)' prepayment label are now translated, and the USD default is gone. Still open: purchase-requisition-comparative-statement.tsx:134 prints 'Month'/'Months' as English literals; whether purchase forms still import the sales posting-period field was not checked. Merged into release_beta_1.0.0 (c454da53); checked in code, typecheck, lint and unit tests clean, not run in a browser.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -17107,8 +17107,8 @@
   "theme": "Theme 12. Hardcoded text, colours, currency (Common: F-C8)",
   "set": "review-fe",
   "checked": {
-   "ref": "a03704c99",
-   "date": "2026-11-09"
+   "ref": "ee10e037",
+   "date": "2026-11-18"
   },
   "steps": [
    "Switch to Bangla; open PO/PI new and the prepayment select in Bill Payment."
@@ -17222,8 +17222,8 @@
   "severity": "low",
   "title": "Catch blocks without `unstable_rethrow`",
   "summary": "A Next.js control-flow exception inside a broad catch is logged as a backend failure. No visible break today.",
-  "status": "still-bug",
-  "status_evidence": "unstable_rethrow is absent in erp-api/purchase lc, lc-master, vendor-bills, vendor-payments, vendor-prepayments, proforma-invoices, item-receipts index.ts (only orders, requisitions, MR, bill-credits have it). | Repro: Not visible in UI; a Next control-flow error inside these calls is logged as a backend failure.",
+  "status": "fixed",
+  "status_evidence": "unstable_rethrow was added to the catch blocks of the purchase API clients that lacked it (lc, lc-master, vendor-bills, vendor-payments, vendor-prepayments, proforma-invoices, item-receipts, vendor-returns, vendors). Merged into release_beta_1.0.0 (c454da53); checked in code, typecheck, lint and unit tests clean, not run in a browser.",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -17234,8 +17234,8 @@
   "theme": "Theme 13. Tidy-ups: dead code, duplicates, tests",
   "set": "review-fe",
   "checked": {
-   "ref": "a03704c99",
-   "date": "2026-11-09"
+   "ref": "9cf0961c",
+   "date": "2026-11-18"
   },
   "steps": [
    "grep -c unstable_rethrow src/erp-api/purchase/*/index.ts"
@@ -17494,8 +17494,8 @@
   "severity": "low",
   "title": "LC item links and ids invented",
   "summary": "LC item links used to point to /inventory/items/undefined, and a VAT of 4000% was accepted.",
-  "status": "still-bug",
-  "status_evidence": "itemId link null-checked (fixed), but lc-import-form-view.tsx:387 still falls back to idx+1 for a missing PI line id, and lc-import-form-items-panel.tsx:61-67,151 VAT input has no max 100. | Repro: New LC from a PI: type 4000 in a line's VAT %: accepted.",
+  "status": "fixed",
+  "status_evidence": "The LC import form no longer invents a line id for a missing proforma line (each line must carry its proforma invoice line id or save is refused), and the VAT rate is limited to 0-100 with a message (4000 is refused). Test added (lc-import/schema.test.ts). Merged into release_beta_1.0.0 (c454da53); checked in code, typecheck, lint and unit tests clean, not run in a browser.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -17506,8 +17506,8 @@
   "theme": "Theme 6. Wrong document or wrong data used",
   "set": "review-fe",
   "checked": {
-   "ref": "a03704c99",
-   "date": "2026-11-09"
+   "ref": "5b9d68f0",
+   "date": "2026-11-18"
   },
   "steps": [
    "LC Import > New, type 4000 in VAT %."
@@ -17620,8 +17620,8 @@
   "severity": "low",
   "title": "Paid and partly paid bills get no status colour; edit header shows \"Not Paid\" for pending",
   "summary": "Paid bills now get colours, but the bill edit header still shows 'Not Paid' for a pending bill.",
-  "status": "still-bug",
-  "status_evidence": "purchase-status-badge.tsx now colours paid/partial, but vendor-bill-edit-view.tsx:301 status = paymentStatus ?? approvalStatus, so a pending bill under edit shows Not Paid. Only direct bills (no receipt, no LC) reach that view. | Repro: Open edit of a pending vendor bill that has no receipt or LC: header badge reads Not Paid.",
+  "status": "fixed",
+  "status_evidence": "The bill edit header and list now share getVendorBillDisplayStatus: approval status until approved, then payment status, so a pending bill no longer reads Not Paid. Test added. Merged into release_beta_1.0.0 (c454da53); checked in code, typecheck, lint and unit tests clean, not run in a browser.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/02-purchase.md",
@@ -17632,8 +17632,8 @@
   "theme": "Theme 8. Wrong filters, status maps, columns and labels (Common: F-C12 where noted)",
   "set": "review-fe",
   "checked": {
-   "ref": "a03704c99",
-   "date": "2026-11-09"
+   "ref": "9504f168",
+   "date": "2026-11-18"
   },
   "steps": [
    "Edit a pending vendor bill."
