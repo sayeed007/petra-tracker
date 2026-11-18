@@ -1428,10 +1428,10 @@
   "date": "2026-11-09"
  },
  "rv-fe:inventory:14": {
-  "status": "still-bug",
-  "note": "inventory-snapshot-view.tsx:94-102 channel columns still derived from current page rows only",
-  "ref": "a03704c99",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "The Inventory Snapshot channel columns now come from the configured sales channels, loaded once, so they no longer change from page to page; a channel found on a page but missing from that list is added after them, and a list that cannot be read falls back to the page's own channels. A failed page clears the rows and the total, so the previous page's rows no longer sit under the error banner. Merged into release_beta_1.0.0 (501454ab); checked in code, typecheck, lint, unit tests and a production build clean, not run in a browser. The mixed-unit total part of the title was not touched.",
+  "ref": "7adfe671",
+  "date": "2026-11-18"
  },
  "rv-fe:inventory:30": {
   "status": "still-bug",
