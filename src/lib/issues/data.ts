@@ -1,5 +1,5 @@
 import { ObjectId, type Filter } from "mongodb";
-import { DEFAULT_PAGE_SIZE, ISSUE_STATUSES, SEVERITY_ORDER, STATUS_ORDER, type IssueStatus } from "./domain";
+import { archiveCutoff, CLOSED_STATUSES, DEFAULT_PAGE_SIZE, ISSUE_STATUSES, SEVERITY_ORDER, STATUS_ORDER, type IssueStatus } from "./domain";
 import { getDb } from "@/lib/db";
 import type { CommentDocument, IssueDocument, UserDocument } from "@/lib/db/types";
 
@@ -28,6 +28,8 @@ type FilterInput = {
   q?: string;
   side?: string;
   review?: boolean;
+  /** True lists the archive (closed and untouched for two days); otherwise the archive is left out. */
+  archived?: boolean;
 };
 
 /** The list filters other than the module: the module cards count with these, the list adds the module on top. */
@@ -37,6 +39,13 @@ function issueFilter(input: FilterInput): Filter<IssueDocument> {
     : { assigneeId: new ObjectId(input.user.id) };
   if (input.status && ISSUE_STATUSES.includes(input.status as IssueStatus)) {
     filter.status = input.status as IssueStatus;
+  }
+  const cutoff = archiveCutoff();
+  if (input.archived) {
+    filter.status = filter.status && CLOSED_STATUSES.includes(filter.status as IssueStatus) ? filter.status : { $in: [...CLOSED_STATUSES] };
+    filter.updatedAt = { $lte: cutoff };
+  } else {
+    filter.$nor = [{ status: { $in: [...CLOSED_STATUSES] }, updatedAt: { $lte: cutoff } }];
   }
   if (input.side && ["frontend", "backend", "both"].includes(input.side)) filter.side = input.side;
   if (input.review && input.user.role === "admin") filter.pendingRequest = { $type: "object" };
@@ -60,6 +69,8 @@ export async function listIssues(input: {
   side?: string;
   /** Administrators only: just the issues with a waiting status request. */
   review?: boolean;
+  /** The archive: closed issues nobody has touched for two days. */
+  archived?: boolean;
 }) {
   const database = await getDb();
   const collection = database.collection<IssueDocument>("issues");

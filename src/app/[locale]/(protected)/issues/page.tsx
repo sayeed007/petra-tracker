@@ -13,7 +13,7 @@ import { listQuery, parsePageSize } from "@/lib/issues/domain";
 import { assignIssues } from "./actions";
 
 type Query = {
-  page?: string; size?: string; status?: string; module?: string; q?: string; side?: string; review?: string;
+  page?: string; size?: string; status?: string; module?: string; q?: string; side?: string; review?: string; archived?: string;
   denied?: string; missing?: string; bulk?: string; count?: string;
   import?: string; added?: string; moved?: string; kept?: string;
 };
@@ -36,9 +36,10 @@ export default async function IssuesPage({
       size: parsePageSize(query.size),
       q: query.q,
       review: query.review === "1",
+      archived: query.archived === "1",
     }),
     isAdmin ? listActiveDevelopers() : Promise.resolve([]),
-    moduleStats({ user, status: query.status, side: query.side, q: query.q, review: query.review === "1" }),
+    moduleStats({ user, status: query.status, side: query.side, q: query.q, review: query.review === "1", archived: query.archived === "1" }),
   ]);
   const t = await getTranslations({ locale, namespace: "dashboard" });
   const issueT = await getTranslations({ locale, namespace: "issue" });
@@ -47,7 +48,7 @@ export default async function IssuesPage({
   const severityT = await getTranslations({ locale, namespace: "severities" });
   const updatedDate = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
 
-  const keep = { q: query.q, status: query.status, side: query.side, review: query.review, size: query.size };
+  const keep = { q: query.q, status: query.status, side: query.side, review: query.review, archived: query.archived, size: query.size };
   const hrefFor = (overrides: Record<string, string | undefined>) => {
     const next = new URLSearchParams();
     for (const [key, value] of Object.entries({ ...keep, module: query.module, ...overrides })) if (value) next.set(key, value);
@@ -96,6 +97,7 @@ export default async function IssuesPage({
         size={result.size}
         modules={result.modules}
         review={query.review === "1"}
+        archived={query.archived === "1"}
         awaiting={result.awaiting}
         isAdmin={isAdmin}
       />

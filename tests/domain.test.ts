@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { MAX_BULK_ASSIGN, STATUS_ORDER, ISSUE_STATUSES, parsePageSize, listQuery, accessOutcome, canManageIssue, decisionSchema, isBootstrapAdmin, parseBulkAssign, parseIssueUpdate, planSourceSync } from "../src/lib/issues/domain";
+import { MAX_BULK_ASSIGN, STATUS_ORDER, ISSUE_STATUSES, parsePageSize, listQuery, accessOutcome, canManageIssue, decisionSchema, isBootstrapAdmin, parseBulkAssign, parseIssueUpdate, planSourceSync, archiveCutoff, CLOSED_STATUSES } from "../src/lib/issues/domain";
 
 describe("canManageIssue", () => {
   it("lets an admin manage every issue", () => {
@@ -138,5 +138,13 @@ describe("listQuery", () => {
   it("drops one-off messages and unknown keys", () => {
     assert.equal(listQuery("module=Sales&bulk=done&count=4&denied=1&x=y"), "module=Sales");
     assert.equal(listQuery(""), "");
+  });
+});
+
+describe("archive", () => {
+  it("archives closed work untouched for two days", () => {
+    const now = new Date("2026-11-19T12:00:00Z");
+    assert.equal(archiveCutoff(now).toISOString(), "2026-11-17T12:00:00.000Z");
+    assert.deepEqual([...CLOSED_STATUSES], ["fixed", "wontfix"]);
   });
 });

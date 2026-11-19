@@ -119,7 +119,7 @@ export function parsePageSize(value: unknown) {
 }
 
 /** The list's own query keys (filters, page and page size); anything else (one-off messages and the like) is dropped. */
-export const LIST_QUERY_KEYS = ["q", "status", "side", "module", "review", "size", "page"] as const;
+export const LIST_QUERY_KEYS = ["q", "status", "side", "module", "review", "archived", "size", "page"] as const;
 
 /** Keeps only the list's filters from a query string, so a redirect or a back link can return to the same list. */
 export function listQuery(raw: string) {
@@ -130,4 +130,13 @@ export function listQuery(raw: string) {
     if (value) out.set(key, value.slice(0, 100));
   }
   return out.toString();
+}
+
+/** Finished work: it leaves the main list into the archive once nobody has touched it for ARCHIVE_AFTER_DAYS. */
+export const CLOSED_STATUSES: readonly IssueStatus[] = ["fixed", "wontfix"];
+export const ARCHIVE_AFTER_DAYS = 2;
+
+/** Closed issues last updated at or before this moment are archived. Reopening or commenting moves updatedAt, so they come back. */
+export function archiveCutoff(now: Date = new Date()) {
+  return new Date(now.getTime() - ARCHIVE_AFTER_DAYS * 24 * 60 * 60 * 1000);
 }

@@ -43,6 +43,7 @@
     "assignSelected": "Assign ticked issues",
     "selectAll": "Select all issues on this page",
     "awaitingReview": "{count} waiting for review",
+    "archive": "Archive (closed 2+ days)",
     "pendingTag": "Requested: {status}",
     "importCatalogue": "Import catalogue",
     "importHint": "Loads the issues of this release into the portal; safe to repeat.",
