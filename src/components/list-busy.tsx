@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useSyncExternalStore, useTransition } from "react";
 import { Spin } from "antd";
 import { useFormStatus } from "react-dom";
-import { Link, useRouter } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 
 type Navigate = (href: string, mode?: "push" | "replace") => void;
 const NavBusy = createContext<{ busy: boolean; navigate: Navigate } | null>(null);
@@ -47,6 +47,26 @@ export function BusyLink({ href, className, children }: Readonly<{ href: string;
     <Link
       href={href}
       className={className}
+      onClick={(event) => {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+        event.preventDefault();
+        navigate(href);
+      }}
+    >
+      {children}
+    </Link>
+  );
+}
+
+/** A top-bar link that marks the page it points to (and the pages under it) as current. */
+export function NavLink({ href, children }: Readonly<{ href: string; children: React.ReactNode }>) {
+  const pathname = usePathname();
+  const current = pathname === href || pathname.startsWith(`${href}/`);
+  const { navigate } = useListNav();
+  return (
+    <Link
+      href={href}
+      aria-current={current ? "page" : undefined}
       onClick={(event) => {
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
         event.preventDefault();
