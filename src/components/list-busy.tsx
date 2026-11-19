@@ -73,13 +73,13 @@ export function SubmitButton({ className = "button", name, value, title, childre
   );
 }
 
-const LIST_KEY = "petra-tracker:list-query";
+const LIST_KEY = "petra-tracker:list-href";
 
 /** Remembers the list's filters for this tab, so leaving the list and coming back keeps them. */
-export function RememberListQuery({ query }: Readonly<{ query: string }>) {
+export function RememberListQuery({ query, base = "/issues" }: Readonly<{ query: string; base?: string }>) {
   useEffect(() => {
-    try { sessionStorage.setItem(LIST_KEY, query); } catch { /* storage off: the link simply opens the plain list */ }
-  }, [query]);
+    try { sessionStorage.setItem(LIST_KEY, query ? `${base}?${query}` : base); } catch { /* storage off: the link simply opens the plain list */ }
+  }, [query, base]);
   return null;
 }
 
@@ -90,6 +90,6 @@ function readListQuery() {
 
 /** "Back to the list" that returns to the filters the list had. */
 export function BackToList({ className, children }: Readonly<{ className?: string; children: React.ReactNode }>) {
-  const query = useSyncExternalStore(noSubscribe, readListQuery, () => "");
-  return <BusyLink href={query ? `/issues?${query}` : "/issues"} className={className}>{children}</BusyLink>;
+  const href = useSyncExternalStore(noSubscribe, readListQuery, () => "");
+  return <BusyLink href={href || "/issues"} className={className}>{children}</BusyLink>;
 }

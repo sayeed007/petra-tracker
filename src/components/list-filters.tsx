@@ -10,10 +10,10 @@ import { ISSUE_STATUSES } from "@/lib/issues/domain";
 /** How long typing in the search box may pause before the list reloads (Enter reloads at once). */
 export const SEARCH_DEBOUNCE_MS = 3000;
 
-type Filters = { q: string; status: string; side: string; module: string; review: boolean; archived: boolean };
+type Filters = { q: string; status: string; side: string; module: string; review: boolean };
 type Props = Filters & { size: number; modules: string[]; awaiting: number; isAdmin: boolean };
 
-export function ListFilters({ q, status, side, module, size, modules, review, archived, awaiting, isAdmin }: Readonly<Props>) {
+export function ListFilters({ q, status, side, module, size, modules, review, awaiting, isAdmin }: Readonly<Props>) {
   const t = useTranslations("dashboard");
   const statusT = useTranslations("statuses");
   const sideT = useTranslations("sides");
@@ -21,9 +21,9 @@ export function ListFilters({ q, status, side, module, size, modules, review, ar
   const { busy, navigate } = useListNav();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // the latest values, for a search that fires seconds after the keystroke
-  const latest = useRef<Filters>({ q, status, side, module, review, archived });
+  const latest = useRef<Filters>({ q, status, side, module, review });
   useEffect(() => {
-    latest.current = { q, status, side, module, review, archived };
+    latest.current = { q, status, side, module, review };
   });
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
@@ -35,7 +35,6 @@ export function ListFilters({ q, status, side, module, size, modules, review, ar
     if (merged.side) params.set("side", merged.side);
     if (merged.module) params.set("module", merged.module);
     if (merged.review) params.set("review", "1");
-    if (merged.archived) params.set("archived", "1");
     if (size === 20 || size === 100) params.set("size", String(size));
     const query = params.toString();
     navigate(query ? `${pathname}?${query}` : pathname, "replace");
@@ -78,9 +77,6 @@ export function ListFilters({ q, status, side, module, size, modules, review, ar
           {t("awaitingReview", { count: awaiting })}
         </button>
       )}
-      <button type="button" className={`button${archived ? " button-primary" : ""}`} onClick={() => go({ archived: !archived })}>
-        {t("archive")}
-      </button>
       {busy && <Spin size="small" className="filters-spin" />}
     </div>
   );

@@ -1,5 +1,5 @@
 import { ObjectId, type Filter } from "mongodb";
-import { archiveCutoff, CLOSED_STATUSES, DEFAULT_PAGE_SIZE, ISSUE_STATUSES, SEVERITY_ORDER, STATUS_ORDER, type IssueStatus } from "./domain";
+import { archiveCutoff, CLOSED_STATUSES, DEFAULT_PAGE_SIZE, ISSUE_STATUSES, isArchived, SEVERITY_ORDER, STATUS_ORDER, type IssueStatus } from "./domain";
 import { getDb } from "@/lib/db";
 import type { CommentDocument, IssueDocument, UserDocument } from "@/lib/db/types";
 
@@ -40,13 +40,12 @@ function issueFilter(input: FilterInput): Filter<IssueDocument> {
   if (input.status && ISSUE_STATUSES.includes(input.status as IssueStatus)) {
     filter.status = input.status as IssueStatus;
   }
-  const cutoff = archiveCutoff();
-  if (input.archived) {
-    filter.status = filter.status && CLOSED_STATUSES.includes(filter.status as IssueStatus) ? filter.status : { $in: [...CLOSED_STATUSES] };
-    filter.updatedAt = { $lte: cutoff };
-  } else {
-    filter.$nor = [{ status: { $in: [...CLOSED_STATUSES] }, updatedAt: { $lte: cutoff } }];
-  }
+  const archived: Filter<IssueDocument> = {
+    status: { $in: [...CLOSED_STATUSES] },
+    $or: [{ archivedAt: { $type: "date" } }, { updatedAt: { $lte: archiveCutoff() } }],
+  };
+  if (input.archived) filter.$and = [archived];
+  else filter.$nor = [archived];
   if (input.side && ["frontend", "backend", "both"].includes(input.side)) filter.side = input.side;
   if (input.review && input.user.role === "admin") filter.pendingRequest = { $type: "object" };
   const query = input.q?.trim().slice(0, 100);
@@ -163,6 +162,8 @@ export async function getIssueDetail(input: {
     side: issue.side,
     severity: issue.severity,
     status: issue.status,
+    archived: isArchived(issue),
+    closed: (CLOSED_STATUSES as readonly string[]).includes(issue.status),
     assigneeId: issue.assigneeId?.toHexString() ?? "",
     assigneeName: assignee?.name ?? "",
     details: issue.details,

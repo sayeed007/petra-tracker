@@ -29,6 +29,8 @@ export type IssueDocument = {
   /** A developer's proposed status waiting for an administrator; the official `status` stays as it is until it is approved. */
   pendingRequest?: { commentId: ObjectId; status: IssueStatus; by: ObjectId; at: Date } | null;
   details: Record<string, unknown>;
+  /** Set when an administrator archives a closed issue by hand; any later change to the issue clears it. */
+  archivedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };

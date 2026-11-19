@@ -6,7 +6,7 @@ import { BackToList, SubmitButton } from "@/components/list-busy";
 import { requireUser } from "@/lib/auth/user";
 import { ISSUE_STATUSES } from "@/lib/issues/domain";
 import { getIssueDetail, listActiveDevelopers } from "@/lib/issues/data";
-import { updateIssue, assignIssue, decideRequest } from "../actions";
+import { updateIssue, assignIssue, decideRequest, setArchived } from "../actions";
 
 /** Issue ids hold colons ("rv-fe:accounting:31"); the route parameter can still arrive percent-encoded. */
 function safeDecode(value: string) {
@@ -28,7 +28,7 @@ export default async function IssueDetailPage({
   searchParams,
 }: Readonly<{
   params: Promise<{ locale: string; issueId: string }>;
-  searchParams: Promise<{ updated?: string; requested?: string; decided?: string; assigned?: string; conflict?: string; error?: string; assignment?: string }>;
+  searchParams: Promise<{ updated?: string; requested?: string; decided?: string; assigned?: string; conflict?: string; error?: string; assignment?: string; archive?: string }>;
 }>) {
   const { locale, issueId: rawIssueId } = await params;
   const issueId = safeDecode(rawIssueId);
@@ -52,7 +52,7 @@ export default async function IssueDetailPage({
   const expected = detailText(details.expected);
   const actual = detailText(details.actual);
   const verify = detailText(details.verify);
-  const showNote = query.updated || query.requested || query.decided || query.assigned || query.conflict || query.error || query.assignment;
+  const showNote = query.updated || query.requested || query.decided || query.assigned || query.conflict || query.error || query.assignment || query.archive;
 
   return (
     <>
@@ -62,13 +62,16 @@ export default async function IssueDetailPage({
           <p className="eyebrow">{issue.module} · {issue.externalId}</p>
           <h1>{issue.title}</h1>
         </div>
-        <StatusChip status={issue.status} label={statusT(issue.status)} />
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {issue.archived && <span className="tag">{t("archivedTag")}</span>}
+          <StatusChip status={issue.status} label={statusT(issue.status)} />
+        </div>
       </div>
 
       {showNote && <Flash
-        kind={query.conflict || query.assignment || query.error ? "error" : "success"}
-        text={query.updated ? t("updated") : query.requested ? t("requested") : query.decided === "approved" ? t("decidedApproved") : query.decided === "rejected" ? t("decidedRejected") : query.assigned ? t("assigned") : query.conflict ? t("conflict") : query.assignment ? t("assignmentInvalid") : query.error === "reason" ? t("reasonNeeded") : query.error === "rejectReason" ? t("rejectReasonNeeded") : t("invalid")}
-        clear={["updated", "requested", "decided", "assigned", "conflict", "error", "assignment"]}
+        kind={query.conflict || query.assignment || query.error || query.archive === "open" ? "error" : "success"}
+        text={query.archive === "done" ? t("archivedDone") : query.archive === "restored" ? t("archiveRestored") : query.archive === "open" ? t("archiveNeedsClosed") : query.updated ? t("updated") : query.requested ? t("requested") : query.decided === "approved" ? t("decidedApproved") : query.decided === "rejected" ? t("decidedRejected") : query.assigned ? t("assigned") : query.conflict ? t("conflict") : query.assignment ? t("assignmentInvalid") : query.error === "reason" ? t("reasonNeeded") : query.error === "rejectReason" ? t("rejectReasonNeeded") : t("invalid")}
+        clear={["updated", "requested", "decided", "assigned", "conflict", "error", "assignment", "archive"]}
       />}
 
       <div className="detail-grid">
@@ -103,6 +106,15 @@ export default async function IssueDetailPage({
                   </select>
                 </div>
                 <SubmitButton className="button button-primary">{t("assign")}</SubmitButton>
+              </form>
+            </section>
+          )}
+          {user.role === "admin" && (issue.archived || issue.closed) && (
+            <section className="panel">
+              <h2>{t("archiveTitle")}</h2>
+              <p className="muted">{issue.archived ? t("archiveInfo") : t("archiveNowInfo")}</p>
+              <form action={setArchived.bind(null, locale, issue.externalId, !issue.archived)}>
+                <SubmitButton className="button">{issue.archived ? t("restore") : t("archiveNow")}</SubmitButton>
               </form>
             </section>
           )}

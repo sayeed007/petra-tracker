@@ -31,6 +31,7 @@ export default async function ProtectedLayout({
         </Link>
         <nav className="navlinks" aria-label={t("mainNavigation")}>
           <BusyLink href="/issues">{t("issues")}</BusyLink>
+          <BusyLink href="/archive">{t("archive")}</BusyLink>
           {user.role === "admin" && (
             <form action={importCatalogue.bind(null, locale)} title={t("importHint")}>
               <SubmitButton className="button button-sm">{t("importCatalogue")}</SubmitButton>

@@ -1,6 +1,6 @@
 {
   "app": { "name": "Petra Issue Tracker", "tagline": "A clear view of the work that needs attention." },
-  "nav": { "issues": "Issues", "developers": "Developers", "switchLanguage": "বাংলা", "signOut": "Sign out", "admin": "Administrator", "mainNavigation": "Main navigation", "importCatalogue": "Import catalogue", "importHint": "Loads the issues of this release into the portal; safe to repeat." },
+  "nav": { "archive": "Archive", "issues": "Issues", "developers": "Developers", "switchLanguage": "বাংলা", "signOut": "Sign out", "admin": "Administrator", "mainNavigation": "Main navigation", "importCatalogue": "Import catalogue", "importHint": "Loads the issues of this release into the portal; safe to repeat." },
   "theme": { "light": "Switch to light theme", "dark": "Switch to dark theme" },
   "login": {
     "title": "Sign in to Petra Tracker",
@@ -43,7 +43,7 @@
     "assignSelected": "Assign ticked issues",
     "selectAll": "Select all issues on this page",
     "awaitingReview": "{count} waiting for review",
-    "archive": "Archive (closed 2+ days)",
+    "archiveHint": "Closed issues nobody has touched for 2 days, and issues archived by hand. A comment, status change or assignment brings an issue back to the list.",
     "pendingTag": "Requested: {status}",
     "importCatalogue": "Import catalogue",
     "importHint": "Loads the issues of this release into the portal; safe to repeat.",
@@ -71,6 +71,15 @@
   },
   "issue": {
     "back": "Back to issues",
+    "archiveTitle": "Archive",
+    "archiveNow": "Archive now",
+    "restore": "Restore to list",
+    "archiveNowInfo": "Closed work leaves the list after 2 days on its own; archive it now to move it at once.",
+    "archiveInfo": "This issue is in the archive. Restoring puts it back in the list.",
+    "archivedTag": "Archived",
+    "archivedDone": "Issue archived.",
+    "archiveRestored": "Issue restored to the list.",
+    "archiveNeedsClosed": "Only a fixed or won't-fix issue can be archived.",
     "details": "Issue details",
     "activity": "Comments and status history",
     "noActivity": "No comments yet. Add the first update below.",

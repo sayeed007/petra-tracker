@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { ObjectId, type Filter } from "mongodb";
 import { redirect } from "next/navigation";
-import { canManageIssue, decisionSchema, parseBulkAssign, parseIssueUpdate, developerSchema, listQuery } from "@/lib/issues/domain";
+import { CLOSED_STATUSES, canManageIssue, decisionSchema, parseBulkAssign, parseIssueUpdate, developerSchema, listQuery } from "@/lib/issues/domain";
 import { getDb, getMongoClient } from "@/lib/db";
 import { requireAdmin, requireUser } from "@/lib/auth/user";
 import { importCatalogue as runCatalogueImport, type SourceIssue } from "@/lib/issues/import";
@@ -62,7 +62,7 @@ async function applyIssueUpdate(
       if (user.role === "admin" || !wantsChange) {
         const changed = user.role === "admin" && wantsChange;
         const result = await issues.updateOne(filter, {
-          $set: { ...(changed ? { status: parsed.status, pendingRequest: null } : {}), updatedAt: now },
+          $set: { ...(changed ? { status: parsed.status, pendingRequest: null } : {}), updatedAt: now, archivedAt: null },
         }, { session });
         if (!result.matchedCount) return "conflict";
         if (changed) await closePending("Superseded by the administrator's own status change.");
@@ -92,7 +92,7 @@ async function applyIssueUpdate(
         createdAt: now,
       } as CommentDocument, { session });
       const result = await issues.updateOne(filter, {
-        $set: { pendingRequest: { commentId: request.insertedId, status: parsed.status!, by: actorId, at: now }, updatedAt: now },
+        $set: { pendingRequest: { commentId: request.insertedId, status: parsed.status!, by: actorId, at: now }, updatedAt: now, archivedAt: null },
       }, { session });
       if (!result.matchedCount) return "conflict";
       return "requested";
@@ -141,7 +141,7 @@ async function applyDecision(admin: { id: string; name: string }, externalId: st
       const approved = decision === "approve";
       const result = await issues.updateOne(
         { _id: issue._id, status: issue.status, "pendingRequest.commentId": pending.commentId },
-        { $set: { ...(approved ? { status: pending.status } : {}), pendingRequest: null, updatedAt: now } },
+        { $set: { ...(approved ? { status: pending.status } : {}), pendingRequest: null, updatedAt: now, archivedAt: null } },
         { session },
       );
       if (!result.matchedCount) return "conflict" as const;
@@ -208,7 +208,7 @@ export async function assignIssue(locale: string, externalId: string, formData: 
   const issue = await issues.findOne({ externalId }, { projection: { _id: 1, assigneeId: 1 } });
   if (!issue) redirect(`/${language}/issues?missing=1`);
   const now = new Date();
-  await issues.updateOne({ _id: issue._id }, { $set: { assigneeId: developer?._id ?? null, updatedAt: now } });
+  await issues.updateOne({ _id: issue._id }, { $set: { assigneeId: developer?._id ?? null, updatedAt: now, archivedAt: null } });
   await database.collection<CommentDocument>("comments").insertOne({
     issueId: issue._id,
     authorId: new ObjectId(admin.id),
@@ -238,7 +238,7 @@ export async function assignIssues(locale: string, formData: FormData) {
   const rows = await issues.find({ externalId: { $in: parsed.ids } }).project<Pick<IssueDocument, "_id">>({ _id: 1 }).toArray();
   const now = new Date();
   if (rows.length) {
-    await issues.updateMany({ _id: { $in: rows.map((row) => row._id) } }, { $set: { assigneeId: developer?._id ?? null, updatedAt: now } });
+    await issues.updateMany({ _id: { $in: rows.map((row) => row._id) } }, { $set: { assigneeId: developer?._id ?? null, updatedAt: now, archivedAt: null } });
     await database.collection<CommentDocument>("comments").insertMany(rows.map((row) => ({
       issueId: row._id,
       authorId: new ObjectId(admin.id),
@@ -250,6 +250,23 @@ export async function assignIssues(locale: string, formData: FormData) {
     }) as CommentDocument));
   }
   redirect(list(`bulk=done&count=${rows.length}`));
+}
+
+/** Archive now (a closed issue goes to the archive at once) or restore (back in the list; the two-day clock starts again). Administrators only. */
+export async function setArchived(locale: string, externalId: string, archive: boolean) {
+  const language = safeLocale(locale);
+  await requireAdmin(language);
+  const issues = (await getDb()).collection<IssueDocument>("issues");
+  const issue = await issues.findOne({ externalId }, { projection: { _id: 1, status: 1 } });
+  if (!issue) redirect(`/${language}/issues?missing=1`);
+  const detail = `/${language}/issues/${encodeURIComponent(externalId)}`;
+  if (archive) {
+    if (!CLOSED_STATUSES.includes(issue.status)) redirect(`${detail}?archive=open`);
+    await issues.updateOne({ _id: issue._id }, { $set: { archivedAt: new Date() } });
+    redirect(`${detail}?archive=done`);
+  }
+  await issues.updateOne({ _id: issue._id }, { $set: { archivedAt: null, updatedAt: new Date() } });
+  redirect(`${detail}?archive=restored`);
 }
 
 export async function createDeveloper(locale: string, formData: FormData) {
