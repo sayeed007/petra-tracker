@@ -1,0 +1,63 @@
+[
+ {
+  "id": "handoff:accounting:period-close-bank-check-turns-red-until-signed-off",
+  "module": "accounting",
+  "side": "both",
+  "severity": "low",
+  "title": "Period Close, Bank & Cash check: a fully matched month that is still Draft or Pending Approval now shows red (intended)",
+  "summary": "The backend fix of 18-19 November (hand-off of 2026-11-19, Redmine #165-#173) changed what the Bank & Cash check calls reconciled. It used to be green when no statement line and no ledger line was left unmatched. It now asks the reconciliation panel, which says reconciled only when the month has been signed off (finalized and approved). Finalizing is what posts the adjusting entries, so a month that ties but was never signed off still has bank charges and interest outside the ledger. The check on screen and the record the close keeps both change. This is the fix, not a regression; it is written down so it is not filed as one.",
+  "steps": [
+   "Accounting > Bank & Cash > Reconciliation: start a reconciliation for a bank account and month, import a statement and match every line so the unexplained difference is 0.00. Leave it in Draft (do not finalize) or send it for approval and do not approve it.",
+   "Accounting > Period End (Period Close) for the same month: open the Bank & Cash check."
+  ],
+  "expected": "The bank is shown as not reconciled (red) until the reconciliation is finalized and approved, then green. The frontend only renders the backend's reconciled flag per account (bank-cash-panel.tsx), it computes nothing.",
+  "actual": "Before the backend fix the same month showed green once everything was matched. Now it shows red, on the screen and in the record the close keeps.",
+  "where": "Backend: period-close Bank & Cash check now reads the reconciliation panel's state. Frontend: src/features/accounting/period-end/components/close/bank-cash-panel.tsx shows account.reconciled; no change needed.",
+  "tests": [],
+  "verify": "Match a month fully, leave it Draft: Period Close shows it red. Finalize and approve: it turns green. A month that was already finalized before 19 November is unaffected.",
+  "owner": "QA / Accounting (decision)",
+  "status": "decision",
+  "status_evidence": "Stated in the backend hand-off of 2026-11-19 (section 'Tell QA before they test the period close'); the frontend was checked on 2026-11-23 against release_1.1.0 and only renders the backend flag. Frontend work for the same hand-off is on feat/accounting-handoff-nov19 (eae94445).",
+  "evidence_level": "verified",
+  "found": "2026-11-23",
+  "checked": {
+   "ref": "release_1.1.0@81d76ddb + feat/accounting-handoff-nov19@eae94445",
+   "date": "2026-11-23"
+  },
+  "refs": [
+   "Accounting Frontend Hand-off, 2026-11-19: Tell QA before they test the period close",
+   "Redmine #165, #147, #148, #151, #166, #167, #170, #173"
+  ]
+ },
+ {
+  "id": "handoff:accounting:period-bank-positions-counts-read-zero-without-a-reconciliation",
+  "module": "accounting",
+  "side": "backend",
+  "severity": "low",
+  "title": "Period bank positions: unmatchedStatementLineCount and unacknowledgedLedgerLineCount read 0 for a month that has postings but no reconciliation yet",
+  "summary": "GET /api/accounting/bank-reconciliations/periods/{fiscalPeriodId}/positions now carries two counts per bank for the month. They are filled only when a reconciliation exists for that account and month (PeriodBankPositionService.withReconciliation). Without one (withoutReconciliation) they stay at their primitive default 0, and the response cannot tell 'nothing is standing in the way' from 'nobody has looked yet'. A bank with ledger entries in the month and no reconciliation reports 0 and 0 next to state NEEDS_ATTENTION and ledgerMovementCount > 0. A screen that shows the counts as 'what is standing in the way' would read as all clear exactly where the most is outstanding.",
+  "steps": [
+   "Use a bank account that has postings in a month and no reconciliation started for it (demo data: City Bank, November 2026, which has a cash payment and receipts).",
+   "GET /api/accounting/bank-reconciliations/periods/{November 2026 period id}/positions.",
+   "Read that account's row."
+  ],
+  "expected": "Either the two counts are null (absent) when no reconciliation exists, or unacknowledgedLedgerLineCount equals the month's ledger movement count, since none of those lines has been acknowledged yet.",
+  "actual": "City Bank, November 2026: state NEEDS_ATTENTION, ledgerMovementCount above 0, unmatchedStatementLineCount 0, unacknowledgedLedgerLineCount 0. Seen on 2026-11-23 on the local demo backend built from release_1.1.0; the Java reading above matches it.",
+  "where": "Backend: PeriodBankPositionDTO (the two counts are int, not Integer) and PeriodBankPositionService.withoutReconciliation, which never sets them. Frontend: the New reconciliation page (new-reconciliation-view.tsx) shows 'N on the statement not in our books / N in our books not yet confirmed' under a bank only when a count is above 0, so a bank without a reconciliation shows nothing; correct today, but it cannot show the real outstanding figure.",
+  "tests": [],
+  "verify": "After the change the same GET for a bank with postings and no reconciliation returns null counts (or the movement count); the frontend line then appears for it, with no frontend change needed beyond treating null as 'not started'.",
+  "owner": "Backend (accounting)",
+  "status": "open",
+  "status_evidence": "Found 2026-11-23 while checking the frontend for the 19 November hand-off; confirmed in the backend source (release_1.1.0) and in a live response.",
+  "evidence_level": "verified",
+  "found": "2026-11-23",
+  "checked": {
+   "ref": "release_1.1.0@81d76ddb (frontend), backend release_1.1.0 source + local demo backend",
+   "date": "2026-11-23"
+  },
+  "refs": [
+   "Accounting Frontend Hand-off, 2026-11-19: Two new counts on the period bank positions",
+   "Redmine #173"
+  ]
+ }
+]
