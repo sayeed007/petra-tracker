@@ -3138,10 +3138,10 @@
   "date": "2026-11-11"
  },
  "rv-fe:accounting:50": {
-  "status": "decision",
-  "note": "Decided 2026-11-11: keep the financial-year write UI and the FINANCIAL_YEAR_WRITE_ENABLED=false flag as they are for now. Revisit when Period Closing scope is settled.",
-  "ref": "",
-  "date": "2026-11-11"
+  "status": "wontfix",
+  "note": "Owner decision 2026-11-11: keep the financial-year write UI and the FINANCIAL_YEAR_WRITE_ENABLED=false flag as they are. Revisit when the Period Closing scope is settled.",
+  "ref": "release_1.1.0",
+  "date": "2026-11-25"
  },
  "pt1110:A3": {
   "status": "fixed",
@@ -3263,5 +3263,23 @@
   "status": "open",
   "note": "Details rewritten 2026-11-18 so it can be acted on; no user-visible effect. Task 1 is the one to do.",
   "date": "2026-11-18"
+ },
+ "rv-fe:accounting:16": {
+  "status": "fixed",
+  "note": "Done for every screen that exists today. Items (b) and (c) only matter once the financial-year writes are switched on (item 50); reopen them then.",
+  "ref": "release_1.1.0",
+  "date": "2026-11-25"
+ },
+ "rv-fe:accounting:53": {
+  "status": "wontfix",
+  "note": "Owner decision 2026-11-14: keep the exchange-rate fields and currency types, because international purchasing from PO to Bill can be in USD. The valuation method stays Periodic in practice.",
+  "ref": "release_1.1.0",
+  "date": "2026-11-25"
+ },
+ "rv-fe:accounting:41": {
+  "status": "in-progress",
+  "note": "New Asset no longer reads the register (branch fix/new-asset-no-register-read, not merged yet): its name shortcut offers the names created in the session. Asset Disposal still reads the whole register: the backend has no search on the asset list (be-req:accounting:fixed-asset-search).",
+  "ref": "fix/new-asset-no-register-read",
+  "date": "2026-11-25"
  }
 }

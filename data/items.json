@@ -3169,8 +3169,8 @@
   "severity": "low",
   "title": "Smaller \"empty or wrong message\" cases",
   "summary": "Some screens showed an empty or wrong message when data was missing or a request failed: Budget vs Actual with no rows, a failed month lock, financial-year detail before months load, and the setup panel when the book read fails. Users could read an error as 'no data'.",
-  "status": "decision",
-  "status_evidence": "Done for every screen that exists today. Items (b) and (c) only matter once financial-year writes are switched on (tracker item 50); reopen them then.",
+  "status": "fixed",
+  "status_evidence": "Done for every screen that exists today. Items (b) and (c) only matter once the financial-year writes are switched on (item 50); reopen them then.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -3184,8 +3184,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@efb9a2d8, backend deployment/dev@b2597ef11",
-   "date": "2026-11-14"
+   "ref": "release_1.1.0",
+   "date": "2026-11-25"
   },
   "steps": [
    "Open Banking/Budgeting > Budget vs Actual for a range with no data.",
@@ -3766,8 +3766,8 @@
   "severity": "low",
   "title": "Fixed-asset pages download the whole asset register",
   "summary": "'New asset' downloads every asset just to build a duplicate-name shortcut, and 'Asset disposal' downloads every asset and filters out disposed ones in the browser. With thousands of bulk-purchased assets both pages become slow and heavy.",
-  "status": "still-bug",
-  "status_evidence": "Backend request: be-req:accounting:fixed-asset-search.",
+  "status": "in-progress",
+  "status_evidence": "New Asset no longer reads the register (branch fix/new-asset-no-register-read, not merged yet): its name shortcut offers the names created in the session. Asset Disposal still reads the whole register: the backend has no search on the asset list (be-req:accounting:fixed-asset-search).",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -3778,8 +3778,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
-   "date": "2026-11-14"
+   "ref": "fix/new-asset-no-register-read",
+   "date": "2026-11-25"
   },
   "steps": [
    "Open Asset > Fixed Asset > New (/asset/fixed-asset/new) with the network tab open",
@@ -3988,8 +3988,8 @@
   "severity": "low",
   "title": "Financial-year writes are switched off by a hard-coded constant",
   "summary": "About 1,500 lines of financial-year write UI (create year, generate months, close, lock, reopen) are disabled by a hard-coded constant. Nobody can create a year or generate months from this screen. It was decided to leave it as is until Period Closing scope is settled.",
-  "status": "decision",
-  "status_evidence": "Decided 2026-11-11: keep the financial-year write UI and the FINANCIAL_YEAR_WRITE_ENABLED=false flag as they are for now. Revisit when Period Closing scope is settled.",
+  "status": "wontfix",
+  "status_evidence": "Owner decision 2026-11-11: keep the financial-year write UI and the FINANCIAL_YEAR_WRITE_ENABLED=false flag as they are. Revisit when the Period Closing scope is settled.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -4000,8 +4000,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "",
-   "date": "2026-11-11"
+   "ref": "release_1.1.0",
+   "date": "2026-11-25"
   },
   "steps": [
    "Settings > Accounting > Financial year; look for New year / Generate periods buttons."
@@ -4046,8 +4046,8 @@
   "severity": "low",
   "title": "BDT-only and Periodic-only decisions are not reflected in the types and fields",
   "summary": "The owner decided BDT only and Periodic only, but types and screens still carry exchange-rate fields and a Perpetual valuation option.",
-  "status": "decision",
-  "status_evidence": "Owner decision 2026-11-14: keep the exchange-rate fields and currency types; international purchasing from PO to Bill can be in USD.",
+  "status": "wontfix",
+  "status_evidence": "Owner decision 2026-11-14: keep the exchange-rate fields and currency types, because international purchasing from PO to Bill can be in USD. The valuation method stays Periodic in practice.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/01-accounting.md",
@@ -4060,8 +4060,8 @@
   "theme": "",
   "set": "review-fe",
   "checked": {
-   "ref": "fix/tracker-frontend@3be54d05+77a78f04, backend deployment/dev@b2597ef11",
-   "date": "2026-11-14"
+   "ref": "release_1.1.0",
+   "date": "2026-11-25"
   },
   "steps": [
    "Settings > Accounting book form: look for the valuation method choices.",
