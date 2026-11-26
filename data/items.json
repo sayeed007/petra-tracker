@@ -32365,7 +32365,7 @@
   "title": "Email template editor discards edits when another action is selected",
   "summary": "In Settings > System > Email templates, typing a subject or body and then clicking another action discards the text without asking.",
   "status": "in-progress",
-  "status_evidence": "Fixed on branch fix/shared-settings-batch1 (not merged yet): the email template editor reports unsaved edits to its host, and choosing another action or closing the editor now asks before the edits are thrown away (AppConfirmAction, en and bn).",
+  "status_evidence": "Choosing another action or closing the editor asks before unsaved edits are thrown away (merged in release_1.1.0, fix/shared-settings-batch1). Follow-up on fix/email-unsaved-warning (not merged yet): closing the editor clears its unsaved flag, closing or reloading the tab shows the browser prompt, and clicking an in-app link asks 'Discard your changes?'. The browser Back button is not covered (no official Next.js hook). Not browser-tested here: the page needs the notification service.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/07-shared.md",
@@ -32376,7 +32376,7 @@
   "theme": "Export rounds with `toFixed`; screen rounds with `Intl`  [LOW] [VERIFIED]  [size S]  (source IDs: fe-D44-6, fe-D42-8 (SUSPECT); highest severity LOW)",
   "set": "review-fe",
   "checked": {
-   "ref": "fix/shared-settings-batch1",
+   "ref": "fix/email-unsaved-warning",
    "date": "2026-11-26"
   },
   "steps": [
