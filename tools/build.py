@@ -51,6 +51,10 @@ def load():
     if ov_path.exists():
         for k, v in json.loads(ov_path.read_text(encoding="utf8")).items():
             ov.setdefault(k, {}).update(v)
+    ps_path = ROOT / "data" / "portal-state.json"
+    portal = (
+        {x["id"]: x for x in json.loads(ps_path.read_text(encoding="utf8"))["issues"]} if ps_path.exists() else {}
+    )
     for it in items:
         o = ov.get(it["id"])
         if o:
@@ -64,6 +68,12 @@ def load():
             for k in DETAIL:
                 if k in o:
                     it[k] = o[k]
+        # The portal is the source of truth for status: what people set there (data/portal-state.json, written by
+        # `npm run db:export-state`) is the status of record, so items.json never lags behind the live tracker.
+        ps = portal.get(it["id"])
+        if ps and ps["status"] != ps.get("sourceStatus"):
+            it["status"] = ps["status"]
+            it["_ps"] = True
         if it["status"] not in STATUSES:
             it["status"] = "unknown"
         if it["severity"] not in SEVS:
@@ -76,12 +86,20 @@ def load():
         prim = byid[pid]
         for d in dups:
             dup = byid[d]
-            if dup["status"] != prim["status"] or dup["module"] != prim["module"] or dup["side"] != prim["side"]:
-                raise SystemExit(f"merge {d} -> {pid}: status/module/side differ, fix merges.json")
+            if dup["status"] != prim["status"] and (dup.get("_ps") or prim.get("_ps")):
+                # a person moved one of the two in the portal: that decision stands for the merged item
+                prim["status"] = prim["status"] if prim.get("_ps") else dup["status"]
+                prim["_ps"] = True
+            elif dup["status"] != prim["status"]:
+                raise SystemExit(f"merge {d} -> {pid}: status differs, fix merges.json")
+            if dup["module"] != prim["module"] or dup["side"] != prim["side"]:
+                raise SystemExit(f"merge {d} -> {pid}: module/side differ, fix merges.json")
             prim["refs"] = list(dict.fromkeys(prim["refs"] + [d] + dup["refs"]))
             drop.add(d)
         prim["merged"] = dups
     items = [it for it in items if it["id"] not in drop]
+    for it in items:
+        it.pop("_ps", None)
     order = {s: i for i, s in enumerate(SEVS)}
     items.sort(key=lambda i: (i["module"], order[i["severity"]], i["id"]))
     return items

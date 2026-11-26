@@ -3281,5 +3281,59 @@
   "note": "New Asset no longer reads the register (branch fix/new-asset-no-register-read, not merged yet): its name shortcut offers the names created in the session. Asset Disposal still reads the whole register: the backend has no search on the asset list (be-req:accounting:fixed-asset-search).",
   "ref": "fix/new-asset-no-register-read",
   "date": "2026-11-25"
+ },
+ "rv-fe:shared:20": {
+  "status": "fixed",
+  "note": "Already fixed on release_1.1.0 (checked 2026-11-26): product-distribution-form-view.tsx wraps the whole submit, including the availability pre-check loop, in useSubmitGuard (submitGuard.run on the form's onSubmit), so a second click during the check is ignored.",
+  "ref": "fix/shared-settings-batch1",
+  "date": "2026-11-26"
+ },
+ "rv-fe:shared:45": {
+  "status": "in-progress",
+  "note": "Fixed on branch fix/shared-settings-batch1 (not merged yet): the trade discount schema now refuses an end date before the start date, in flat and slab mode alike (settings/sales/schema.ts, path effectiveTo). Covered by schema.test.ts.",
+  "ref": "fix/shared-settings-batch1",
+  "date": "2026-11-26"
+ },
+ "rv-fe:shared:44": {
+  "status": "in-progress",
+  "note": "Fixed on branch fix/shared-settings-batch1 (not merged yet): volume-tier minimum quantities must now rise from one tier to the next (new message minQtyAfterPrevious, en and bn). The percent and positive-value checks were already in place. Covered by schema.test.ts.",
+  "ref": "fix/shared-settings-batch1",
+  "date": "2026-11-26"
+ },
+ "rv-fe:shared:46": {
+  "status": "wontfix",
+  "note": "Checked 2026-11-26: the 255 default of FormTextArea matches every backend limit found for the 18 fields that use it (the backend sizes were read in the feature/accounting DTOs and migrations). The fields that need more, such as the purchase order and LC terms (2000) and the journal description (500), already pass their own maxLength, and the counter shows n/255 while typing.",
+  "ref": "fix/shared-settings-batch1",
+  "date": "2026-11-26"
+ },
+ "rv-fe:shared:49": {
+  "status": "in-progress",
+  "note": "Fixed on branch fix/shared-settings-batch1 (not merged yet): a new shared AppDraftNumberInput keeps the text as typed while it still means the same number, so typing 0 on the way to 0.5 is no longer wiped. Used for the proforma invoice quantity, unit price and VAT rate, the vendor return quantity and the multi-select inventory dialog quantity.",
+  "ref": "fix/shared-settings-batch1",
+  "date": "2026-11-26"
+ },
+ "rv-fe:shared:16": {
+  "status": "in-progress",
+  "note": "Fixed on branch fix/shared-settings-batch1 (not merged yet): the email template editor reports unsaved edits to its host, and choosing another action or closing the editor now asks before the edits are thrown away (AppConfirmAction, en and bn).",
+  "ref": "fix/shared-settings-batch1",
+  "date": "2026-11-26"
+ },
+ "rv-fe:shared:50": {
+  "status": "in-progress",
+  "note": "Fixed on branch fix/shared-settings-batch1 (not merged yet): saving the currency list keeps the effective date of every rate that did not change; only a new or edited rate is dated today. The rate of 0 was already refused.",
+  "ref": "fix/shared-settings-batch1",
+  "date": "2026-11-26"
+ },
+ "rv-fe:shared:47": {
+  "status": "decision",
+  "note": "Checked 2026-11-26, left unchanged: the three Math.floor sites (lookup panel, multi-select dialog, clamp helper) still round quantities down to whole units. Product decision needed first: can a lot- or serial-tracked quantity be fractional (kg, litre)?",
+  "ref": "fix/shared-settings-batch1",
+  "date": "2026-11-26"
+ },
+ "rv-fe:settings-platform:14": {
+  "status": "decision",
+  "note": "Checked 2026-11-26, left unchanged: a child location is created with its parent's purpose and flags as its own values on purpose (defaultChildForm), so the rename path writing them again follows the same rule. Whether a child should store only its own settings and read the rest from the parent is a design decision for the owner.",
+  "ref": "fix/shared-settings-batch1",
+  "date": "2026-11-26"
  }
 }
