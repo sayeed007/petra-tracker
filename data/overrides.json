@@ -133,9 +133,9 @@
  },
  "rv-be:sales:2.14": {
   "status": "still-bug",
-  "note": "SalesChannelCategoryService:377 stores FALSE when omitted; entity default and DB default false, but SalesChannelCategorySetting javadoc and CustomerCategoryDiscountResolver:111 treat null as true. Still inconsistent. | Repro: Create category setting without taxInclusive: stored false though documented default is true.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /api/sales/channel-categories without taxInclusive then GET returns taxInclusive false; SalesChannelCategorySetting.taxInclusive still @Builder.Default false while its javadoc says true.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:3.2": {
   "status": "still-bug",
@@ -168,10 +168,10 @@
   "date": "2026-11-09"
  },
  "rv-be:sales:4.5": {
-  "status": "still-bug",
-  "note": "CustomerDomainService.updateFields:523,535 and create path accept any creditLimit; CustomerRequestDTO has no validation annotations; negative check only in updateCreditLimit:273. Create forces ACTIVE; update accepts any enum status. | Repro: PUT /api/sales/customers/{id} creditLimit -500: 200.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: PUT /api/sales/customers/{id} with creditLimit -100 returns 200 but the stored limit stays 1000000 (143e9c4fa: PUT never changes the credit limit); PATCH /credit-limit with -1 returns 400 'creditLimit must not be negative'. A negative limit can no longer be stored. (fix 143e9c4fa)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:5.1": {
   "status": "still-bug",
@@ -187,27 +187,27 @@
  },
  "rv-be:sales:9.1": {
   "status": "still-bug",
-  "note": "SalesGeographyRepository.findByTierLevelAndNameContaining:15-20 JPQL WHERE has only tierLevel; :name param unused; SalesGeographyDomainService.findByTierLevel:77 passes it. | Repro: GET geography by tierLevel with name=xyz returns all nodes of the tier.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: GET /api/sales/geographies/by-tier?tierLevel=WING&name=zzzznomatch returns both wings (2 rows); name filter ignored.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:9.6": {
   "status": "still-bug",
-  "note": "SalesOrderCustomerOverviewService:116 Collectors.toMap (4-arg, uses Map.merge) with receipt.getTransactionDate() NPEs on null; Receipt.transactionDate nullable, DTO/mapper do not default it. | Repro: Create receipt without transactionDate applied to an invoice, then GET order customer overview: NPE/500.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: SalesOrderCustomerOverviewService.computeOnTimePaymentPercentage l.127-141 uses Collectors.toMap(..., ra.getReceipt().getTransactionDate(), merge) so a null date throws NullPointerException from HashMap.merge; receipt.transaction_date is nullable in V1.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:9.8": {
   "status": "still-bug",
-  "note": "SalesDemandMapper.applyPackSizing:179 reads attributes 'vatAmount' but VAT is stored under 'vat' (SalesDemandCoordinationService ATTR_VAT); originalTaxAmount null. Nothing reads it, low impact. | Repro: POST demand line attributes {vat:12.28}: originalTaxAmount null.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: demand line created with attributes VatAmount 153.4974 returns attributes.originalTaxAmount null; SalesDemandMapper:185 still reads withOriginals.get(\"vatAmount\") (a key nobody writes).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:9.9": {
   "status": "still-bug",
-  "note": "GatePassDetailMapper:129 and GatePassService.expectedGateCount:143 use totalQuantity.longValue(), truncating fractions; a 0.5 line expects 0 and is skipped in verification. | Repro: Gate pass for line qty 2.5 kg shows count 2; qty 0.5 not counted at gate-out.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: GatePassDetailMapper:129 still uses line.getTotalQuantity().longValue() for as-is lines, and GatePassService.expectedGateCount compares whole counts.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:10.2": {
   "status": "wontfix",
@@ -217,21 +217,21 @@
  },
  "rv-be:sales:2.17": {
   "status": "still-bug",
-  "note": "PricingSchemeDomainService.updateStatus:103-114 checks PricingSchemeStatusPolicy only; DRAFT/PAUSED to ACTIVE ignores effectiveUntil. Daily cron (expireElapsedSchemes) later expires it, so low impact. | Repro: PUT status ACTIVE on a DRAFT scheme with effectiveUntil in the past: ACTIVE until the midnight run.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: scheme with effectiveUntil 2026-02-01 (past) PUT /status ACTIVE -> 200 ACTIVE; scheme starting 2027-06-01 -> ACTIVE (not SCHEDULED).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:7.17": {
   "status": "still-bug",
-  "note": "InvoiceDomainService.getOpenInvoicesByCustomer:1375 findByPartnerIdAndStatusNot loads all non-cancelled invoices for the customer; date/status filtering in a Java loop. Performance only. | Repro: GET /api/sales/invoices/by-customer/{id} for a customer with thousands of invoices loads all of them.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: InvoiceDomainService.getOpenInvoicesByCustomer l.1439-1440 still loads findByPartnerIdAndStatusNot(customerId, CANCELLED) (whole history) and filters in Java.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:7.2": {
   "status": "still-bug",
-  "note": "SalesGeographyScopeService:49, SalesGeographyDomainService:270 findAll() geography tree per call; SalesByCustomerSummaryReportGenerator:96 customerRepository.findAll(). Performance only, grows with data. | Repro: Sales-by-customer summary without customerId loads every customer.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: findAll() still at CustomerWorkflowConditionOptionsProvider:30, SalesByCustomerSummaryReportGenerator:96, SalesGeographyScopeService:49, SalesGeographyDomainService:414.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "sales:B4": {
   "status": "still-bug",
@@ -252,16 +252,16 @@
   "date": "2026-11-09"
  },
  "saleschain:P3-B7": {
-  "status": "still-bug",
-  "note": "InvoiceController and ReceiptController expose no cancel/void/delete (PUT/GET/filter only); SalesOrderController has DELETE only. Credit memo, refund, delivery, return do have /cancel. | Repro: POST /api/sales/invoices/{id}/cancel returns 404/405.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "status": "decision",
+  "note": "Re-checked on backend release_1.1.0: needs a decision. Live: POST /api/sales/invoices/{id}/cancel, /void, /reverse and /receipts/{id}/cancel, /void and /orders/{id}/cancel all 404; DELETE invoice/receipt 405; DELETE order 400 'Only DRAFT or PENDING'. Commit 518c563e0 even removed the dead recordInvoiceCancelled. Needs the product decision (same as C14). (fix 518c563e0)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "saleschain:SC-1": {
   "status": "still-bug",
-  "note": "Only PROMO rewards applied (SalesDemandDomainService.injectPromoFreeLines:1340+); DISCOUNT/CASHBACK never applied; PricingScheme.totalRedemption/totalBudgetUsed have no writer outside entity/mapper. | Repro: Demand/order line with appliedPricingSchemaId of an active DISCOUNT scheme: discount stays 0, scheme redemption stays 0.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live (partly fixed): DISCOUNT 10% scheme now applies, line schemeDiscount 112.5 on 25x45, flows to order/invoice (totalCost 1012.5) and journal (Dr 4810 112.5). But scheme totalRedemption/totalBudgetUsed stay 0 and a scheme with maxRedemption 1 still applied to a 2nd and 3rd demand, so caps unused. (fix cc7585a33)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "saleschain:SC-2": {
   "status": "still-bug",
@@ -499,15 +499,15 @@
  },
  "saleschain:SC-3": {
   "status": "still-bug",
-  "note": "sales itemreceive/itemreturn code never touches ChannelAllocation (only delivery and distribution do), so returns do not refill channel pool",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: delivered 10 to Retail Food (channel alloc 1865->1855), return approved and received: on hand back +10 but channel_allocation stays 1855.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "saleschain:P3-B8": {
   "status": "still-bug",
-  "note": "ItemDomainService.java:360 findFirstByNameOrderByIdAsc is case-sensitive; UOM only has a repository, no controller/API",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: item with unit 'pcs' created uom id 5 although 'Pcs' (id 3) exists; GET /api/inventory/uoms and /units -> 404 (no UoM API).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "inv:INV-01-03": {
   "status": "fixed",
@@ -517,27 +517,27 @@
  },
  "purchase:B-P11": {
   "status": "still-bug",
-  "note": "Sequential case is covered (VendorBillPaymentStatusService.remainingDue counts pending sibling payments), but no lock/@Version: VendorPaymentDomainService.validateCommon:198-207 read-then-write; post() has no re-check. | Repro: Fire two simultaneous POST /api/purchase/vendor-payments of 600 each against one approved 1000 bill; both pass remainingDue and both get approved (paid 1200).",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Two parallel POST vendor-payments of 600 on one 1000 bill both returned 201; after approval bill paidAmount 1200 of 1000, FULLY_PAID.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "purchase:B-P12": {
   "status": "still-bug",
-  "note": "VendorDomainService.validateDelete (sales/business_partner/vendor/service, l.133-136) is an empty TODO; documents keep vendor_id with no FK (V1 schema), so the delete succeeds and orphans them. | Repro: Create a vendor with a PO/bill/payment, then DELETE the vendor (permission purchase.vendor.delete): 204; GET the vendor's bill/aging then shows orphans.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. DELETE /api/sales/vendors/{id} of a vendor with a bill and PO returned 204; GET vendor then 404 and GET /api/purchase/vendor-bills/{id} returns 500.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "purchase:B-P2": {
   "status": "still-bug",
-  "note": "VendorChallanService.upsert:62-103 loads the existing challan (item_receipt_id unique) and does setLines/setExtraCosts(new list) on orphanRemoval collections (VendorChallan.java:58-66); no other upsert path exists. | Repro: Bill an approved receipt, reject the bill, then POST /api/purchase/vendor-bills again for the same receipt with a challan: 500 JpaSystemException.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Rejected the bill task (200), receipt back to NOT_BILLED, then POST /api/purchase/vendor-bills for the same receipt returned 500.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "purchase:B-P6": {
   "status": "still-bug",
-  "note": "BillCreditDomainService.validateSourceReturn:143-160 checks only status APPROVED, vendor and no live credit; fulfilledQty is never read. May be a business choice, but the claim (no link to fulfilment) is accurate. | Repro: Approve a vendor return (not fulfilled), POST /api/purchase/bill-credits for it: accepted and approvable while totalFulfilledQty is 0.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Approved vendor return not fulfilled: POST /api/purchase/bill-credits returned 201 (BC created) instead of 400.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:1": {
   "status": "still-bug",
@@ -547,33 +547,33 @@
  },
  "rv-be:purchase:2": {
   "status": "still-bug",
-  "note": "BillCreditDomainService.outstandingOf:206-212 ignores PENDING payments; payment remainingDue ignores PENDING credits; BillCreditWorkflowHandler.approve:107 and payment post() do not re-check. | Repro: Bill 1000: create payment 600 (pending), create bill credit applying 600 (passes), approve both: bill paid 1200.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Pending payment of 500 and then bill credit of 500 on the same 500 open bill: both 201 (no 400 at step 3); after approving both the bill shows paidAmount 1000 of 500 FULLY_PAID.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:3": {
   "status": "still-bug",
-  "note": "VendorPrepaymentDomainService.loadUsable:203-215 and drawDown never compare the prepayment's vendor; VendorPaymentDomainService:140 passes only id and amount. | Repro: POST /api/purchase/vendor-payments for vendor B's bill with paymentMethod PREPAYMENT and vendorPrepaymentId of an approved vendor A prepayment: accepted.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. POST vendor-payments for vendor A with PREPAYMENT and vendor B's prepayment id returned 201; after approval B's unused_amount fell 1000 -> 700.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:12": {
   "status": "still-bug",
-  "note": "@Version exists only on WorkflowInstance and WorkflowTask (shared/workflow); no purchase or sales entity has it; lock annotations in purchase only on ApprovalRequest. Hardening gap, last write wins. | Repro: Two users open the same pending PO, both PUT /api/purchase/orders/{id} with different lines: the later save silently overwrites the first.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. grep @Version over erp-backend/src/main/java finds only WorkflowInstance and WorkflowTask; no purchase or sales entity (PurchaseOrder etc.) has it.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:13": {
   "status": "still-bug",
-  "note": "VendorPrepaymentDomainService.drawDown:228-236 re-validates at approval (so sequential pending claims are caught) but is findById + save with no lock/@Version; only parallel approvals race. | Repro: Two payments each 600 against one 1000 prepayment, approve both at the same instant: unusedAmount ends at 400 instead of failing.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Two PREPAYMENT payments of 800 on a 1000 prepayment both created (201) and approved in parallel (200/200): unused_amount ended at 200 although 1600 was applied.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:14": {
   "status": "still-bug",
-  "note": "VendorReturnFulfillmentService.fulfill:90 findById (no lock) and remaining check l.164-170 happen before the inventory row lock; fulfilledQty added at l.257-263 from the stale state. | Repro: Two simultaneous POST /api/purchase/vendor-return-fulfillments for the same request line, each for its full returnQty (enough stock): both succeed, fulfilledQty > returnQty.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Two parallel POST vendor-return-fulfillments of 5 for a return of 5: both 201, two VRF rows of 500 in the DB. A sequential second call correctly gives 400, so only the race remains.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:15": {
   "status": "wontfix",
@@ -583,87 +583,87 @@
  },
  "rv-be:purchase:16": {
   "status": "still-bug",
-  "note": "PurchaseOrderReturnQuantityService.applyFulfillment:174-181 and applyProformaInvoiceFulfillment:144-151 do findById then returnedQty += qty with no lock/@Version; parallel fulfilments lose an update. | Repro: Two simultaneous vendor-return fulfilments touching the same PO line: PurchaseOrderItem.returnedQty ends below the sum fulfilled.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code only: no @Lock/@Version anywhere on PO or PI line quantity updates (the only pessimistic locks in purchase are the approval mirror and return-fulfilment stock rows); race not exercised live.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:17": {
   "status": "still-bug",
-  "note": "PurchaseOrderConversionService.validateAndResolve:62-68 check-then-create; purchase_order has no unique on requisition_id (V1) and no lock on the requisition. Sequential duplicates are blocked. | Repro: Two simultaneous POST /api/purchase/orders for the same approved requisition: both 201, two live POs.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Two parallel POST /api/purchase/orders for one requisition and selection both returned 201 (PO-000037 and PO-000038, two live POs in purchase_order).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:20": {
   "status": "still-bug",
-  "note": "PurchasePostingController.getPosting:35-54 takes any EFinanceDocumentType; the anyOf permission is not matched to the type; DocumentPostingReader.read does no type filter. | Repro: As a user with only purchase.vendor_bill.view: GET /api/purchase/postings?documentType=SALES_INVOICE&documentId=<id> returns that invoice's journal entry.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. GET /api/purchase/postings?documentType=SALES_INVOICE&documentId=16 returns 200 with the sales invoice posting; PurchasePostingController.getPosting takes any EFinanceDocumentType and is unchanged (permission side not exercised with a limited user).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:21": {
   "status": "still-bug",
-  "note": "PurchaseOrderFacadeImpl.workflowDecision (l.303-315) checks APPROVE on order {id} then completes decision.taskId; same in other facades. Caller must still be task assignee (TaskAuthorizationService): low impact. | Repro: POST /api/purchase/orders/{A}/workflow-decision with taskId of order B's pending task assigned to caller -> B decided, response shows A",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. PO workflow-decision endpoint was removed (404), but POST /api/purchase/item-receipts/{A}/workflow-decision with receipt B's taskId returned 200 and approved receipt B (ItemReceiptFacadeImpl.workflowDecision:287 completes the body taskId); same method exists on payments and prepayments.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:22": {
   "status": "still-bug",
-  "note": "ItemReceiptDomainService.mergeItems:185-186 copies sourceDocumentItemId/itemId from the client onto existing lines; ItemReceiptOverReceiptValidator.validateOnSave only checks qty against whichever line is named (type also from request). | Repro: PUT /api/purchase/item-receipts/{id} on a PENDING receipt with an existing line's sourceDocumentItemId set to another PO's line and a different itemId: 200.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. PUT /api/purchase/item-receipts/{id} of a PENDING receipt with sourceDocumentItemId of another PO's line returned 200.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:23": {
   "status": "still-bug",
-  "note": "PurchaseOrderDomainService.validateUpdate:73-76 = validateCommon only; PurchaseOrderConversionService.validateAndResolve runs only in facade create (:144). Update can change vendorId/vendorSelectionId/prices freely while PENDING_APPROVAL. | Repro: PUT /api/purchase/orders/{id} on a LOCAL PO in PENDING_APPROVAL with another vendorId (not the selection's vendor): 200.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. PUT /api/purchase/orders/{id} on a PENDING_APPROVAL PO with a vendorId different from the selection's vendor returned 200, vendor changed, same taskId still PENDING.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:24": {
-  "status": "still-bug",
-  "note": "PurchaseOrderConversionService.resolveLocalVendor:84-100 checks requisition match and vendor only; EVendorSelectionStatus (DRAFT/PENDING_APPROVAL/APPROVED/REJECTED/CANCELLED) is never read. | Repro: Create a vendor selection and leave it DRAFT/PENDING, then POST /api/purchase/orders LOCAL with its vendorSelectionId: 201.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. POST /api/purchase/orders LOCAL with a PENDING_APPROVAL selection returned 400 'Only an APPROVED vendor selection can be converted'; after approval the PO is accepted. (fix a0d9b9c84)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:25": {
-  "status": "still-bug",
-  "note": "VendorSelectionDomainService.updateFields:154-158 and validateCommon use dto.requisitionId from the body; VendorSelectionFacadeImpl.update:108-124 never compares it with the stored selection's requisition. | Repro: PUT /api/purchase/vendor-selections/{id} with requisitionId of another LOCAL requisition and one of its quotations: 200; the selection's vendor changes to that quotation's vendor.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. PUT /api/purchase/vendor-selections/{id} now returns 405: the update endpoint was removed with the approval rework (VendorSelectionController has only POST and GET). (fix 63bb2bffb)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:26": {
   "status": "still-bug",
-  "note": "ItemReceiptMapper.toAttachmentEntities (l.277) + ItemReceiptDomainService.updateFields l.148 take attachmentId from request unchecked; item_receipt_attachment.attachment_id has no FK or unique (V1 l.2877); update is plain JSON body. | Repro: PUT /api/purchase/item-receipts/{id} with attachments:[{attachmentId:999999}] on PENDING receipt -> 200",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. PUT /api/purchase/item-receipts/{id} with attachments [{attachmentId:999999}] returned 200.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:29": {
   "status": "still-bug",
-  "note": "VendorPaymentDomainService.validateCommon (l.109-250) checks amount, lines, VDS/AIT but not bankChargeAmount (set at l.384) or exchangeRate; VendorPaymentDTO has no constraints; no @Valid in purchase controllers. | Repro: POST /api/purchase/vendor-payments with bankChargeAmount -500 and exchangeRate 0 and otherwise valid body -> 201",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. POST vendor-payments with bankChargeAmount -500 returned 201 and with exchangeRate 0 returned 201.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:30": {
   "status": "still-bug",
-  "note": "PurchaseOrderDomainService.validateCommon (l.78-105) checks orderedQty>0, exchangeRate>=0 only; unitPrice, discountAmount, taxAmount unchecked (l.224-227, 301). One @Valid in purchase package. LC master/MR similar. | Repro: POST /api/purchase/orders with item unitPrice -100, discountAmount 5000 -> 201 with negative totals",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. POST /api/purchase/orders with item unitPrice -100 and discountAmount 5000 returned 201.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:32": {
   "status": "still-bug",
-  "note": "VendorQuotationDomainService.requireItemsBelongToRequisition (l.510-525) only null-checks qty/price; no signum, no duplicate requisitionItemId, no DTO @Valid. Bad-cell 500 part is fixed (NumberFormatException -> 400). | Repro: POST /api/purchase/vendor-quotations with items [{requisitionItemId:X,quotedQty:-5,unitPrice:0},{requisitionItemId:X,...}] -> 201",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. POST vendor-quotations with the same requisitionItemId twice, unitPrice -5, quotedQty 0 and quotedQty -5 each returned 201.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:33": {
   "status": "still-bug",
-  "note": "Nothing sets quotation status to SELECTED after a vendor selection (selection/*, quotation/* only set SUBMITTED); VendorQuotationStatusPolicy.isEditable allows DRAFT/SUBMITTED/ACTIVE, so still editable/deletable. | Repro: Create selection on quotation Q (even approved), then PUT or DELETE /api/purchase/vendor-quotations/{Q} -> 200",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Improved but not done: while the selection is PENDING PUT /api/purchase/vendor-quotations/{Q} returns 200; once the selection is approved PUT and DELETE return 409 (not 500). DELETE of the preferred quotation 409.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:37": {
   "status": "still-bug",
-  "note": "BillCreditFacadeImpl.getById (l.128) is plain @Transactional; enrichApprovals l.266 calls syncMainWorkflow -> findCurrentForUpdate (PESSIMISTIC_WRITE, ApprovalRequestRepository l.31) and writes steps. Deliberate in code comment; low impact. | Repro: GET /api/purchase/bill-credits/{id} with SQL log shows SELECT ... FOR UPDATE on approval_request and step updates",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: BillCreditFacadeImpl.enrichApprovals l.266 still calls approvalMirrorService.syncMainWorkflow in the detail read (FOR UPDATE + writes).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:4": {
   "status": "still-bug",
@@ -673,21 +673,21 @@
  },
  "rv-be:purchase:5": {
   "status": "still-bug",
-  "note": "VendorBillGenerationService.buildItemsFromRequest (l.257-290): no duplicate itemReceiptItemId check, no all-lines check; validateLines checks ids only. Partial billing may be intended (plan question). | Repro: POST /api/purchase/vendor-bills with billedItems listing the same itemReceiptItemId twice -> 201, PO billedQty counted twice on approval",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. billedItems listing the same receipt line twice returned 201 (partial-bill case not isolated, see duplicate).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:6": {
   "status": "still-bug",
-  "note": "BillCreditDomainService.validateCommon (l.103-132) needs only refundQty>0; unitPrice/vatRate/returnLineId from client (mergeLines l.300-306); no ceiling vs return qty. Bound only by applied-bill outstanding. | Repro: POST /api/purchase/bill-credits for an APPROVED return, line refundQty 999 unitPrice 5000 any itemId, appliedLines equal to total within bill outstanding -> 201",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Bill credit with unitPrice 80 for a return line at 100 returned 201 (client price accepted); only the applied-total mismatch check stopped qty 999/price 5000.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:8": {
   "status": "still-bug",
-  "note": "VendorReturnRequestDomainService.mergeLines (l.196-203) and create take itemId, unitPrice, vatRate from client; validateReturnableAgainstPurchaseOrder checks PO item membership and qty only; vendorId only existence-checked in facade. | Repro: POST /api/purchase/vendor-return-requests with valid poItemId but unitPrice 9999, other itemId, other existing vendorId -> 201",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. POST vendor-return-requests with another vendorId, another itemId and unitPrice 9999 returned 201 and the stored request carries them (vendor 31 vs PO vendor 30, item 502).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:9": {
   "status": "still-bug",
@@ -697,15 +697,15 @@
  },
  "rv-be:purchase:10": {
   "status": "still-bug",
-  "note": "ExtraCostAllocator.allocate (bill/service/ExtraCostAllocator.java l.47) divides each share HALF_UP at scale 4, no remainder to last line; used by VendorChallanService.applyLandingCosts and LC master. | Repro: Challan with extra cost 100 over 3 equal lines: landing costs 33.3333 x3 = 99.9999",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code unchanged since b2597ef11: ExtraCostAllocator.allocate (bill/service/ExtraCostAllocator.java:~48-50) rounds every line share to scale 4 HALF_UP with no remainder fix-up, so 100/3 lines = 33.3333 x 3 = 99.9999.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:11": {
-  "status": "open",
-  "note": "Unclear (needs a run or a decision): PurchaseOrderRelatedRecordsService.java:153 shows payment.getPaymentAmount() (whole payment). Bills/returns also show whole-document amounts, so may be by design; needs business decision (plan asks owner).",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "status": "decision",
+  "note": "Re-checked on backend release_1.1.0: needs a decision. Needs the product owner's choice (full payment amount vs the share for this order); code PurchaseOrderRelatedRecordsService untouched.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "purchase:B-P1": {
   "status": "still-bug",
@@ -715,15 +715,15 @@
  },
  "purchase:B-P3": {
   "status": "still-bug",
-  "note": "VendorBillDomainService.validateLines:138-155 and VendorBillGenerationService.buildItemsFromRequest:257-292 take billedQty as sent; billed qty is never compared with receipt/challan qty. | Repro: POST /api/purchase/vendor-bills for a receipt of 100 with billedItems billedQty 110: 201.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. POST vendor-bills with billedQty 11 on a receipt of 10 returned 201 (VB created).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "purchase:B-P4": {
   "status": "still-bug",
-  "note": "VendorBillDomainService.recomputeItemAmounts:391-399 has no sign/range check on billUnitPrice/taxRate; only VendorChallanService.requirePositive guards challan price and extra costs. | Repro: POST /api/purchase/vendor-bills with billedItems billUnitPrice -3 or taxRate -15: 201 with negative totals.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Bill with billUnitPrice -3 returned 201 with grandTotal -30; price 1e12 returned 201 with grandTotal 1e13; taxRate -15 returned 201 (approval then fails 'unitCost must not be negative' / 'VAT amount must not be negative'), only a negative challanUnitPrice is refused (400).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "purchase:B-P5": {
   "status": "still-bug",
@@ -733,15 +733,15 @@
  },
  "purchase:B-P8": {
   "status": "still-bug",
-  "note": "Partly fixed: bill/PI/LC mappers call PaymentTermLookup.requireActive. PO, quotation, selection have no inactive vendor check (status only in the Excel dropdown, VendorQuotationDomainService:680) and no term check. | Repro: Set a vendor INACTIVE via status toggle, POST /api/purchase/vendor-quotations for it: 201; PO with an inactive paymentTermId: 201.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. With the vendor toggled INACTIVE POST /api/purchase/orders returned 201; with an inactive payment term (PATCH toggle-status {active:false}) PO returned 201; a quotation for an INACTIVE vendor returned 201.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "purchase:B-P9": {
-  "status": "open",
-  "note": "Unclear (needs a run or a decision): Vendor bill detail GL Impact tab (vendor-bill-detail-tabs.tsx) shows FAILED + reason via /api/purchase/postings; e2e note said tab empty. No bill DTO field, no list flag. Needs a runtime check.",
-  "ref": "a03704c99",
-  "date": "2026-11-09"
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. GET /api/purchase/vendor-bills/{id} of a POSTED bill has no posting status field (only postingPeriodStartDate/EndDate), so a FAILED posting is not visible on the bill; failure forcing not attempted.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-fe:purchase:1.2": {
   "status": "fixed",
@@ -1009,237 +1009,237 @@
  },
  "rv-be:inventory:1": {
   "status": "still-bug",
-  "note": "InventoryStockDomainService.java:191 reads balance unlocked (findByItemIdAndDimensionId); no @Version on InventoryBalance/ChannelAllocation; ForUpdate only used by sales/purchase",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: two parallel POST /bin-transfers of 10 from a bin holding 10 both 201 PENDING, reserved_qty ends 10 (not 20): lost update. InventoryStockDomainService.processEntry still has no row lock (findByItemIdAndDimensionIdForUpdate unused).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:2": {
   "status": "still-bug",
-  "note": "No unique constraints on inventory_balance/channel_allocation/lot_master in V1__initial_schema.sql or entity @Table",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: two parallel receives of the same new lot -> one 500; pg_indexes on inventory_balance/dimension/channel_allocation/lot_master/approval_request/sales_channel list only *_pkey (no natural-key unique index).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:3": {
   "status": "still-bug",
-  "note": "No Item findByIdForUpdate or @Version; InventoryStockDomainService.resolveItemByIdOrSku unlocked",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: three rounds of parallel receives 10@10 and 10@20 on a new item: each round one call 500, on hand only 10, average_cost 20 or 10 (never 15).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:4": {
   "status": "still-bug",
-  "note": "PackingHouseLinkFulfillService.requireBook (~l.158-168) unlocked read of salesOrderId; repository has no lock query",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: PackingHouseLinkFulfillService.requireBook uses plain findById (no lock) then checks salesOrderId==null; untouched. Not raced live.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:5": {
   "status": "still-bug",
-  "note": "BinTransferDomainService.startWorkflowIfConfigured:321 and applyRestartOnEdit:352 call completeWithoutWorkflow; onDirectApproval (handler:~98) never releases reservation",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code (untouched): BinTransferDomainService.handleCreateDependencies reserves quantities, startWorkflowIfConfigured falls to completeWithoutWorkflow when no condition matches; onDirectApproval says no reservations exist and never releases. Not live-repro'd (needs a non-matching workflow condition).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:6": {
   "status": "still-bug",
-  "note": "PackingHouseBookDomainService.undoLine:395 has no status or salesOrderId check",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: PackingHouseBookDomainService.undoLine (l.395) has no status or sales-order-link check, only the already-reverted check.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:7": {
   "status": "still-bug",
-  "note": "PackingHouseBookDomainService.validateDelete:531 still empty",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: DELETE approved packing house booking -> 204, GET -> 404, stock stays at packing bin 51 (5) and source 15 of 20.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:8": {
   "status": "still-bug",
-  "note": "StockTransferFacadeImpl.create:105 no-workflow branch applies stock with no reserve/available check",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: StockTransferFacadeImpl.create with no active workflow goes straight to applyOnHandQtyOnApproval, whose subtractAllocatedQty ignores reservedQty (only checks allocated). The STOCK_TRANSFER workflow is ACTIVE on the stack so not run live.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:9": {
   "status": "still-bug",
-  "note": "ItemFacadeImpl.getInventoryDimension:315-317 serial lookup ignores item/location; BinTransferWorkflowHandler does not re-point serial",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: bin transfer line naming another item's serial -> 201; a serial of the right item claimed from the wrong source bin -> 201; after a valid serial transfer was approved, serial_master still points to bin 7 (source), not 8.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:10": {
   "status": "still-bug",
-  "note": "InventoryAdjustmentDomainService:162 uses same serial-only getInventoryDimension, no item/location/status check",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /adjustments for item B with a serial belonging to item A -> 201 (no validation error).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:12": {
   "status": "still-bug",
-  "note": "InventoryStockDomainService.java:342 still uses sumOnHandQtyByItemId (all statuses/locations), not sumCostedOnHandQtyByItemId",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: InventoryStockDomainService.processEntry l.349 still uses sumOnHandQtyByItemId (all statuses/locations); the new sumCostedOnHandQtyByItemId is used only in applyBilledCost (l.293). Not live-repro'd (no damaged-receive endpoint).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:13": {
   "status": "still-bug",
-  "note": "ItemInventoryQueryService.java:348 still name.startsWith(\"Retail\") decides VAT/AIT 0",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: ItemInventoryQueryService.resolveVatAitRate l.348 still name.startsWith(\"Retail\").",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:14": {
   "status": "still-bug",
-  "note": "ItemPriceQueryService.java:97-105 returns basePrice only; promotionalPrice never read",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: item with promo 79.99 priced via POST /items/price -> priceSource CHANNEL_BASE_PRICE; negative promo saved with 200. ItemPriceQueryService has no promo logic; validateChannelPrices has no promo check.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:16": {
   "status": "still-bug",
-  "note": "InventoryAdjustmentDomainService.resolveAndSetRequester:330 still honours dto.getRequesterId()",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /inventory/adjustments as admin with requesterId 3 -> 201, GET returns requesterId 3 'Devon Rahman'.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:17": {
   "status": "still-bug",
-  "note": "BinTransferMapper.toEntity:64-69 copies id, sequence, status, workflowInstanceId from DTO",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /bin-transfers with id=<APPROVED transfer>, sequenceNumber 'X-1', status APPROVED -> 201 with the SAME id; the existing transfer was overwritten (APPROVED -> PENDING, number BT-000004 -> X-1).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:18": {
   "status": "still-bug",
-  "note": "BrandMapper.java:29 stores dto code as-is; BrandDomainService.java:52 skips check on blank, so empty string is stored",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: brand/category/manufacturer with code '': first 201 stored as '', second 409 'A record with the same value already exists' (generic); null code works.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:19": {
   "status": "still-bug",
-  "note": "ItemDomainService.validateChannelPrices:321-335 has no duplicate salesChannelId check",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: PUT item with salesChannelId 1 twice (100 and 120) -> 200; validateChannelPrices has no duplicate check.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:20": {
   "status": "still-bug",
-  "note": "ItemRequestDTO/ItemDTO carry no @Min/@DecimalMin/@NotNull constraints",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST item min 500 / max 10 / reorderPoint -50 / totalQtyPerCarton 0 -> 201; handlingCost -5 -> 201.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:21": {
   "status": "still-bug",
-  "note": "V1__initial_schema.sql:446 sales_channel.name has no unique constraint; no later migration adds one",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /sales-channels name 'Retail Food' -> 201 (duplicate id 7); case variants of a new name both 201; no unique index on sales_channel name (only pkey). Created channels deleted again.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:22": {
   "status": "still-bug",
-  "note": "BudgetAllocatorServiceImpl.java:32-33 update sets dates with no period/overlap validation or lock",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: allocator with start 2113-05-30 end 2113-05-01 -> 201; overlapping allocator (03-15..04-15 over 03-01..03-31) -> 201 (by-month still returned 200 here). BudgetAllocatorRepository has no lock or overlap query.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:25": {
   "status": "still-bug",
-  "note": "ItemDomainService.java:360-361 auto-creates UOM from free text name",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: item with unit 'Bagg<x>' created a new uom row; unit 'pcs' created uom 5 beside 'Pcs' (3); DELETE item with stock -> generic 409 'referenced by other data' (no specific message).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:27": {
   "status": "still-bug",
-  "note": "BrandDomainService.java:73 and SalesChannelDomainService.java:70 validateDelete still empty with 'no references' comment",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: BrandDomainService.validateDelete and SalesChannelDomainService.validateDelete are still empty ('nothing to block on'). Live: delete brand used by an item -> generic 409 'referenced by other data'.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:28": {
   "status": "still-bug",
-  "note": "InventoryLocationDomainService.validateDelete:162 empty, relies on DB cascade/errors",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: InventoryLocationDomainService.validateDelete (l.162) empty; MAX_HIERARCHY_DEPTH=6 only bounds the walk, create does not enforce it. Not live-run (would delete shared locations).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:31": {
   "status": "still-bug",
-  "note": "ItemController.getAll:132-158 returns full list unless both page and size supplied; overview same",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: GET /items/overview, /items, /items/lot-breakdown?warehouseId=2 with no paging return every row (524 / 524 / 5035); size=100000 accepted (200, size 100000).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:32": {
   "status": "still-bug",
-  "note": "LotBreakdownQueryService.query:106 builds all rows then paginate() slices in memory (l.193)",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: LotBreakdownQueryService builds all rows then rows.subList(from,to) (l.214); ItemLocationInventoryQueryService still has the itemRepository.findAll(spec, sort) branch.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:33": {
   "status": "still-bug",
-  "note": "ItemPriceQueryService.queryBatch:59-76 maps entries one by one with findById per entry",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: ItemPriceQueryService.queryBatch is still requests.stream().map(this::query) with no cap and per-entry lookups.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:34": {
   "status": "still-bug",
-  "note": "InventoryLocationDomainService.collectSelfAndDescendantIds:290-295 one query per node (BFS)",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: InventoryLocationDomainService.collectSelfAndDescendantIds still walks the tree with one findByParentLocationId query per node.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:35": {
   "status": "still-bug",
-  "note": "InventoryBalanceFacadeImpl.java:148 loads inventoryLocationRepository.findAll() per stock query (also LotBreakdownQueryService:94)",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: LotBreakdownQueryService:94 and InventoryBalanceFacadeImpl:164 still call inventoryLocationRepository.findAll() into a map.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:36": {
   "status": "still-bug",
-  "note": "ReorderAlertRepository.find:71 and count:95 each rebuild the full STOCK_PER_WAREHOUSE aggregate per page",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: ReorderAlertRepository unchanged since b2597ef11 and has no DAMAGED/status filter.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:37": {
   "status": "still-bug",
-  "note": "PackingHouseBookMapper.java:147-155 catch (Exception) around customer lookup; per-row itemFacade.getById at :194; BinTransferMapper:205",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: PackingHouseBookMapper.toDTO still has per-row lookups and a catch (Exception e) (l.155); mapper dirs unchanged.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:38": {
   "status": "still-bug",
-  "note": "StockTransferRepository.java:60-71 paged methods still use @EntityGraph with items collection; no batch fetch setting",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: StockTransferRepository queries still LEFT JOIN FETCH st.items (collection fetch with Pageable = in-memory paging); untouched.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:39": {
   "status": "still-bug",
-  "note": "InventoryAdjustmentExportDataSource runs unpaged readEntities; InventoryAdjustmentRepository has no EntityGraph",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: InventoryAdjustmentExportDataSource.fetchRows unchanged: unpaged readEntities when page/size absent, per-row lazy mapping.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:40": {
   "status": "still-bug",
-  "note": "BinTransferExportDataSource.java:119 Enum valueOf and :149 LocalDate.parse on raw filter strings, unguarded",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live (POST /api/export, bin-transfers and stock-transfers): bad date -> 500 for both; bin-transfers status=foo -> 400 with Java text 'No enum constant ...EApprovalStatus.FOO'; warehouseId=abc -> 400 'For input string: \"abc\"'; stock-transfers bad status/warehouseId silently ignored (200).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:41": {
   "status": "still-bug",
-  "note": "transfer ItemLine model has no serial field; BinTransferMapper uses serial only to resolve dimension, not stored or returned",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: bin transfer for a SERIAL item with serialNumber S2 created 201; GET detail shows serialNumber null.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:42": {
   "status": "still-bug",
-  "note": "ItemLineRequestDTO.java:28-29 unitId @NotNull but never read; ItemLineResponseDTO.resolveUnitId:61 returns conversion id or UOM id",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: stock transfer line with unitId 99999 -> 201 accepted. Code: ItemLineResponseDTO.resolveUnitId unchanged.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:43": {
   "status": "still-bug",
-  "note": "ItemPackingHouseBookDTO.java:3,20 embeds ItemUOMConversion entity; field packingHosueBookId misspelled (l.25)",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: GET packing-house-books/{id} line keys include adjustingQtyUnit and the misspelled packingHosueBookId.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:45": {
   "status": "still-bug",
-  "note": "PettyCashResponseDTO.java:60 and workflow handlers concatenate firstName + space + lastName with null lastName -> 'Ali null'",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: StockTransferResponseDTO.resolveRequesterName (l.139) still firstName + \" \" + lastName (null -> 'Ali null'). The petty cash part is fixed via PersonDirectory label (a076071bf).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:47": {
   "status": "still-bug",
-  "note": "Private deductSourceOnHand/findOrCreateDestinationDimension copies remain in BinTransferWorkflowHandler, PackingHouseBookDomainService, adjustment handler",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: private deductSourceOnHand / findOrCreateDestinationDimension still copied in BinTransferWorkflowHandler, PackingHouseBookDomainService, InventoryAdjustmentWorkflowHandler.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:inventory:48": {
   "status": "still-bug",
-  "note": "TransferOrder model still present and unused; EReservationStatus has both ACTIVE and RESERVE",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: EReservationStatus still ACTIVE, RESERVE, EXPIRED, RELEASED, CONSUMED; TransferOrder and ReservationTransaction classes still present.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-fe:inventory:2": {
   "status": "fixed",
@@ -1614,9 +1614,9 @@
  },
  "rv-be:sales:2.7": {
   "status": "still-bug",
-  "note": "Credit limit still advisory: outstanding = invoiced - received only (SalesDemandDomainService.computeCurrentOutstanding:1314); no check in SalesOrderDomainService.create or InvoiceDomainService.create. | Repro: Customer with limit 100k: create/approve several 90k demands or orders, none invoiced: all pass.",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: customer creditLimit 100000, two 90k demands verified+approved: both show currentOutstanding 0, creditLimitChecked true; POST /api/sales/orders for 150,030 returned 201 APPROVED. (demand now shows exposureAfterDemand but nothing blocks)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:3.3": {
   "status": "fixed",
@@ -1637,10 +1637,10 @@
   "date": "2026-11-09"
  },
  "sales:B9": {
-  "status": "open",
-  "note": "Unclear (needs a run or a decision): Demand create takes the series row FOR UPDATE (TransactionSeriesConfigServiceImpl.generateNextId) held to commit; no pool config in repo (defaults). 500 cause unproven, code unchanged since report. Needs a run.",
-  "ref": "",
-  "date": "2026-11-09"
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: 30 parallel POST /api/sales/demands gave 10x201, 5x500, 15x401. Log: HikariPool-1 'Connection is not available, request timed out after 30000ms (total=10, active=10...)' -> CannotCreateTransactionException; so pool exhaustion (pool 10), not the series lock.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "saleschain:P3-B1": {
   "status": "still-bug",
@@ -1650,9 +1650,9 @@
  },
  "saleschain:P3-B2": {
   "status": "still-bug",
-  "note": "No BDT-only check: ReceiptMapper:26-27 and SalesOrderMapper copy currency/exchangeRate from the request; CurrencyExchangeConfigServiceImpl.upsertBulk saves any rate. No 400 anywhere. | Repro: POST /api/sales/receipts with currency USD, exchangeRate 100 on an invoice: 201; POST /api/currency-exchange-config/bulk with BDT rate 2: 201.",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /api/sales/receipts currency USD exchangeRate 100 applied to invoice returned 201 (expected 400).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "saleschain:P3-B4": {
   "status": "fixed",
@@ -1728,99 +1728,99 @@
  },
  "rv-be:sales:7.13": {
   "status": "still-bug",
-  "note": "CustomerMapper.buildLocationHierarchy:136-152 walks parents with salesGeographyRepository.findById per level per row; unchanged since review. | Repro: List customers page: depth x rows extra selects (performance only).",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. CustomerMapper.buildLocationHierarchy (l.169-186) still walks parents with salesGeographyRepository.findById per level per customer.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:7.14": {
-  "status": "still-bug",
-  "note": "SalesGeographyManager.allowedChannels is a lazy @ManyToMany List (SalesGeographyManager:52-60), no batch fetch; unchanged. | Repro: List managers: one extra query per manager (performance only).",
-  "ref": "",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Commit 032c8a954 added @BatchSize(size = 100) on SalesGeographyManager.allowedChannels, so channels load in batches instead of one query per manager (code read; no benchmark). (fix 032c8a954)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:7.15": {
   "status": "still-bug",
-  "note": "Moved to modules/inventory/packing_house/export/PackingHouseBookExportDataSource:91-106: customerFacade.getById per book in try/catch, soNo hard-coded null, no paging default. | Repro: Export packing house books with no page/size: per-row lookups (performance only).",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: PackingHouseBookExportDataSource:100 still row.put(\"soNo\", null) with a TODO; l.117 status valueOf(toUpperCase()) with no guard.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:7.3": {
   "status": "still-bug",
-  "note": "PricingSchemeDomainService.convertEntityToResponse:308 runs findBySchemeId for policy and reward per scheme; searchByItems:178 is unbounded and empty itemIds returns all. | Repro: GET pricing-schemes list: 1+2N queries (performance only).",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: PricingSchemeDomainService.search maps every row with convertEntityToResponse (findBySchemeId policy+reward per scheme, l.314-317) and searchByItems l.180 uses unbounded repository.findAll(spec).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:7.4": {
   "status": "still-bug",
-  "note": "ProductDistributionMapper.toResponseDTO resolves warehouse, requester, channel per row via facades (try/catch); export loops it over searchEntities with no cap. | Repro: List/export product distributions: several lookups per row (performance only).",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. ProductDistribution mapper/service unchanged for this point since b2597ef11 (only an approval-outcome enricher was added).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:7.5": {
   "status": "still-bug",
-  "note": "CollectionDomainService.resolveTerritoryFilter:360-371 loads every customer in scope as DTO (PageRequest Integer.MAX_VALUE) to take ids and builds a partnerId IN list. | Repro: Open my-territory collections as an SPO with thousands of outlets (performance only).",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: CollectionDomainService.resolveTerritoryFilter l.364-367 still builds a PageRequest.of(0, Integer.MAX_VALUE) customer DTO page and puts all ids in the filter.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:7.6": {
-  "status": "still-bug",
-  "note": "CustomerRefundFacadeImpl.publishRefundEvents:109-116 calls creditMemoService.getById and itemReturnDomainService.readDTOById per application only to read two ids. | Repro: Create or cancel a refund applied to many memos: full detail builds per memo (performance only).",
-  "ref": "",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. CustomerRefundFacadeImpl.publishRefundEvents now resolves the credit memo, item return and sales order once before the loop (a refund has a single credit memo); the loop only reads response fields, no per-application document rebuild.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:7.7": {
-  "status": "open",
-  "note": "Unclear (needs a run or a decision): Invoice and gate pass lists batch their lookups; demand list still resolves rep name via userRepository.findById per row (SalesDemandDomainService:930-938). Lazy-association query count needs a query log.",
-  "ref": "",
-  "date": "2026-11-09"
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: SalesDemandDomainService.resolveSalesRepName (l.1068-1079) still does userRepository.findById per demand row; GatePassReturnService.toListItem still calls resolvePartnerName per row.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:7.8": {
   "status": "still-bug",
-  "note": "GatePassReturnRepository.findAllDetailed uses @EntityGraph with collection lines + Pageable; GatePassReturnService.list:176 pages in memory (HHH90003004). | Repro: GET gate pass returns list: whole table joined to lines loaded, sliced in Java.",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: GatePassReturnService.list l.177 still uses findAllDetailed(pageable) with an @EntityGraph on the lines collection, which Hibernate pages in memory.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:7.9": {
   "status": "still-bug",
-  "note": "ItemSalesOrderQueryService.openQuantityByItem:98-110 loads all open order entities per item (Pageable.unpaged) then a sum query per item. | Repro: Open inventory overview with 20 items: 2 queries per item and all open orders loaded (performance only).",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: ItemSalesOrderQueryService.openQuantityByItem l.98-109 still loops per item with findOpenOrdersContainingItem(Pageable.unpaged()) then a second query.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:8.1": {
   "status": "still-bug",
-  "note": "Credit memo, deposit, refund, collection, delivery export sources use Pageable.unpaged without page/size; DeliveryOrderDomainService.resolveLines:293 builds an IN list of every id; ExportController has no row cap. | Repro: Export deliveries with no page/size on a very large table: IN list exceeds the PostgreSQL bind limit (500); smaller: full history in memory.",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: export data sources still use Pageable.unpaged() when page/size missing (DeliveryOrder export l.81); DeliveryOrderDomainService.resolveLines still takes all headers; unchanged.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:8.2": {
   "status": "still-bug",
-  "note": "SalesDemandExportDataSource.parseStatus:204 uses EDocStatus.valueOf and returns null on failure; DemandListStatus.toDocStatus (handles labels) is not used, so the filter is dropped. | Repro: Export demands with status Pending Approval, Pending Verification or SO Created: file has all demands.",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: SalesDemandExportDataSource.parseStatus (l.204-211) only does EDocStatus.valueOf(upper-case) so list labels like 'Pending Approval' return null and the filter is dropped.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:9.2": {
   "status": "still-bug",
-  "note": "CreditMemoService.buildListSpec:539 root.get(itemReturn).get(docNumber) is an implicit inner join; standalone memos (itemReturnId null, allowed) vanish whenever search is set. | Repro: Create a credit memo with no itemReturnId, list credit memos with search = its own number: 0 rows.",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: standalone credit memo CM-000002 (no item return) is not found by GET /api/sales/credit-memos?search=CM-000002 (0 rows); CreditMemoService.buildListSpec:549 still does root.get(\"itemReturn\").get(\"docNumber\") (inner join).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:9.3": {
   "status": "still-bug",
-  "note": "AddressMasterDTO has Lombok boolean isDefault (@Data): accessor setDefault, so the JSON property is default; an isDefault key is ignored. Frontend mapper reads address.default. | Repro: POST/PUT customer with addresses[].isDefault=true: saved address has is_default false.",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: AddressMasterDTO:34 is still a primitive boolean field isDefault with no JsonAlias/JsonProperty, so Lombok serialises it as 'default' (live GET customer addresses show 'default' true/false) and an 'isDefault' key is not bound.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:9.4": {
   "status": "still-bug",
-  "note": "Invoice/ItemReturn/ItemReceive mappers send manager-row id as salesRepId, order/demand send user id; only CreditMemo has salesRepUserId. ItemReceiveDomainService.salesRepRef unchecked. | Repro: GET an order (salesRepId = user id), copy it into POST item-receive salesRepId: wrong manager row or FK 409",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: ItemReceiveDomainService.applyLocationAndSalesRep (l.235-259) still builds a SalesGeographyManager stub from the payload id with no lookup/validation; only CreditMemo responses gained salesRepUserId (CreditMemoMapper:141), invoice/item return/item receive have none.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:9.5": {
-  "status": "still-bug",
-  "note": "CustomerRefundMapper.java:123 still .currency(ret != null ? ret.getCurrency() : null), not memo currency. | Repro: Refund applying a standalone credit memo: applications[0].currency is null",
-  "ref": "",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. CustomerRefundMapper was reworked: a refund now carries one credit memo and its currency (CustomerRefundMapper.toNewEntity falls back to memo currency), applications are invoice rows; the item-return currency path (old toApplicationResponses l.107-129) is gone.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "sales:B1": {
   "status": "fixed",
@@ -1830,135 +1830,135 @@
  },
  "sales:B11": {
   "status": "still-bug",
-  "note": "Date w/o period now refused (InvoiceDomainService.requirePostable, 5113a9e19); 24.999 and sub-cent lines absorbed by JournalLines. Still open: price 0 / offer-only invoice has zero amount, posting FAILED. | Repro: POST /api/sales/invoices with unitPrice 0 on a line: 201, posting FAILED 'no amounts to post'",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: invoice with unitPrice 0 saved 201 and posting FAILED 'the document has no amounts to post'. Date with no fiscal period is now refused 400 ('no financial period covers 2030-06-01'). 0.001x8 invoice saved and posted POSTED.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "saleschain:P3-B5": {
   "status": "still-bug",
-  "note": "DeliveryOrderFulfillmentService.reserveLine:303-305 never reads block_from_normal_picking/exclude_from_sellable flags; detail.locationId can be any location; serial path (InventoryDimensionDomainService:38) ignores status and location. | Repro: POST delivery-orders with inventoryDetails serialNumber of a quarantined serial, or locationId of a blocked bin",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: no reference to blockFromNormalPicking, storagePurpose or QUARANTINE in the delivery/pick path (DeliveryOrderFulfillmentService, inventory stock issue); only itemreceive and transfer/balance queries read the flag.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "saleschain:SC-4": {
   "status": "still-bug",
-  "note": "ECustomerLedgerEventType has no credit memo/refund events; CustomerLedgerEntryRepository.receivableBalanceAsOf nets only invoices, payments, deposit applications. Client decision D-11 pending. | Repro: Approve a credit memo, then period-close receivableBalance differs from GL receivable",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: FinancialLedgerService has only recordInvoiceCreated, recordPaymentApplied, recordDepositCreated (no credit memo or refund) and SalesCloseDataProviderImpl:83 still reads customerLedgerEntryRepository.receivableBalanceAsOf.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "saleschain:SC-5": {
   "status": "still-bug",
-  "note": "Invoice validation allows quantity 0 with offerQuantity>0; amount 0 so JournalLines.build:165 throws 'no amounts to post', posting FAILED. requirePostable javadoc says zero-amount invoices are deliberately allowed. | Repro: POST /api/sales/invoices line quantity 0, offerQuantity 2: 201, posting FAILED",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Could not build the PROMO order (helper demand offerQty is reset to null), but the mechanism is unchanged: live invoice with unitPrice 0 (no money) saves 201 and posting is FAILED 'the document has no amounts to post'; JournalLines.java:179/228 still throws and InvoiceDomainService.create does not skip posting.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:1.8": {
   "status": "still-bug",
-  "note": "document/posting/SalesPostingController.java:40-60 class-level anyOf only; no per-documentType permission check. | Repro: User with only sales.receipt.view calls GET postings documentType=SALES_INVOICE: 200 with journal",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: SalesPostingController.getPosting has RequiresPermission anyOf invoice/credit_memo/receipt/customer_deposit/customer_refund view with no per-documentType check.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:1.9": {
   "status": "still-bug",
-  "note": "CollectionDomainService.getSummary:613 still to.atTime(23,59,59); CollectionFacadeImpl scope from client myTerritory flag; no ownership check on create. | Repro: Collection saved at 23:59:59.5 missing from that day's summary; create collection for out-of-territory customer",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: CollectionDomainService:613, GatePassService:74, GatePassReturnService:183 still use to.atTime(23, 59, 59); territory scope still comes from the client's myTerritory flag.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:10.1": {
   "status": "still-bug",
-  "note": "Unused members remain: CreditMemoWorkflowHandler.isAlreadyApproved, CreditMemoHeaderRepository.findByPartnerIdAndStatusNot, DO repo stage finder and countBySalesOrder_Id, 2 InventoryAllocationDetailRepository finders. | Repro: code only, no runtime trigger",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: isAlreadyApproved, findBySalesOrder_IdAndFulfillmentStageOrderByIdDesc, findByDocumentLine_IdAndInventoryDimension_Id, findByDocumentLine_DocumentHeader_Id each occur exactly once under modules/sales (the declaration, no callers).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:10.3": {
   "status": "still-bug",
-  "note": "DeliveryOrderDetailMapper.joinName:135 gives 'null Last' when first name null; ProductDistributionMapper.formatName:156 leading blank; duplicated partner mapping remains. | Repro: View delivery order whose sales rep user has no first name: shows 'null X'",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: three different name builders remain: DeliveryOrderDetailMapper.joinName (first+' '+last trimmed), ProductDistributionMapper.formatName (null becomes '' with a leading blank), GatePassDetailMapper.toUserDisplayName.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:10.4": {
   "status": "still-bug",
-  "note": "SalesOrderRequestDTO still has fulfillmentStatus, invoiceStatus, totalInvoicedAmount, totalDeposited, totalPaymentReceived; SalesOrderLineResponseDTO taxCode/inventoryDetail unused. | Repro: code only, no runtime trigger",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: SalesOrderRequestDTO still declares status, fulfillmentStatus, invoiceStatus, totalInvoicedAmount, totalDeposited, totalPaymentReceived; SalesOrderLineResponseDTO still has taxCode and inventoryDetail.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:2.16": {
   "status": "still-bug",
-  "note": "SalesTax.toFraction:38 treats rate>1 as percent (rate 1 = 100%); vatPart:105-106 divides by zero when VAT and AIT rates both 0. | Repro: Send taxRate 1 meaning 1 percent: taken as 100 percent",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: invoice line taxRate 1 gives taxAmount 450 on 450 (100%); SalesTax.toFraction still treats >1 as percent and <=1 as fraction.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:2.18": {
   "status": "still-bug",
-  "note": "DeliveryOrderFulfillmentService: packRequestedDetail:874 only checks cartonCount>0, no upper bound; ship:1063 overwrites estimatedShippingDate; serial status ignored. | Repro: POST pack with cartonCount 1000 on a 10-unit line: accepted; ship replaces estimated ship date",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: DeliveryOrderFulfillmentService.packLineIntoCartons l.884-896 only checks cartonCount > 0 ('no minimum cartonCount is enforced'); DeliveryOrderFacadeImpl diff since b2597ef11 touches only the super-admin check.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:4.6": {
   "status": "still-bug",
-  "note": "ims/facade/ImsReportFacadeImpl.java:43 YearMonth.from(request.getReportMonth()) with no null check or @Valid; storeAttachment:50 inside transaction. | Repro: POST IMS report multipart with csvFile but no reportMonth: 500 NPE",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /api/sales/ims-reports multipart request {\"customerId\":N} without reportMonth plus a csvFile returns 500 'Something went wrong on our end' (expected 400).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:4.7": {
   "status": "still-bug",
-  "note": "ItemReturnRequestDTO.reason still plain String, no @Size; validateHeader only null check; EReturnReason unused. | Repro: POST item-returns with a reason of 40 characters: DB error 409",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /api/sales/item-returns with a 40-character reason returns 409 'This operation could not be completed due to a data conflict.' (expected 400); ItemReturnRequestDTO.reason is still a plain String.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:4.8": {
   "status": "still-bug",
-  "note": "SalesOrderMapper.resolveCarrier:269-275 still creates ShippingCarrier from free text; shipping_carrier has no unique index (V1, V7). | Repro: POST sales order with a new shipping.carrier text twice in parallel: two rows",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: SalesOrderMapper.resolveCarrier (l.271-277) still does findFirstByNameIgnoreCase().orElseGet(saveAndFlush) in a mapper; live psql \\d shipping_carrier shows no unique index on name.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:4.9": {
-  "status": "still-bug",
-  "note": "65 @RequestBody in sales controllers, only 6 @Valid (discount/distribution); InvoiceController:52,68 no @Valid; invoice DTOs have no constraints, negative shippingCost not rejected. | Repro: POST /api/sales/invoices with shippingCost -5: accepted, lowers total",
-  "ref": "",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: POST /api/sales/invoices with shippingCost -5 now 400 'shipping amount must not be negative, but was -5'.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:6.2": {
   "status": "still-bug",
-  "note": "V1 scheme_reward.scheme_id has only a non-unique index (V7 idx_scheme_reward_scheme_id); sales_channel_category_setting.discount_mode nullable in DB. | Repro: Two parallel creates of one scheme can create two scheme_reward rows",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live psql: scheme_reward has only non-unique idx_scheme_reward_scheme_id (btree) on scheme_id; sales_channel_category_setting.discount_mode is nullable (only a CHECK on values).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:7.16": {
   "status": "still-bug",
-  "note": "Per-line findById/chargesFlatVat remain: InvoiceDomainService:359,509,840,998; InvoiceMapper:296; CreditMemoMapper:105; DeliveryOrderMapper:104; Fulfillment:676,698. | Repro: performance only: 30-line invoice issues many extra selects",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: InvoiceDomainService still calls salesOrderLineRepository.findById per line at l.364, 514, 527, 904 inside loops.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:7.18": {
   "status": "still-bug",
-  "note": "CustomerDirectoryQueryService.search:82-83 still findAll(spec) plus paged findAll; contactPersons/type loaded per row. | Repro: performance only: customer directory page loads the whole list",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: CustomerDirectoryQueryService.search l.82-83 still runs customerRepository.findAll(specification) (all matches) plus the paged query.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:7.19": {
   "status": "still-bug",
-  "note": "SalesGeographyRbacSyncService:213,259 findAll() of the tree per sync; per-geography scope lookup :269; collectAncestors:341 findById loop. | Repro: performance only: geography manager change reloads the tree",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: SalesGeographyRbacSyncService l.213 still does salesGeographyRepository.findAll() (whole tree) inside syncForUser.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:8.3": {
   "status": "still-bug",
-  "note": "Vendor/ProductDistribution/PaymentCollection export sources still Enum.valueOf on filter; CommissionReportExportDataSource.fetchRows:91 uses Pageable.unpaged. Handler maps IllegalArgumentException to 400 with enum text, not 500. | Repro: Export commission report current page: returns all rows; status=foo gives 400 with internal text",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: VendorExportDataSource:104 and ProductDistributionExportDataSource:117/121 still call EnumType.valueOf(value.trim().toUpperCase()) uncaught (bad status gives IllegalArgumentException); CommissionReportExportDataSource:91 still fetchReport(filters, Pageable.unpaged()).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:9.10": {
   "status": "still-bug",
-  "note": "CollectionMapper:53 .createdBy(entity.getCreatedBy()) raw audit string; same in CustomerRefund, SalesDemand DTOs; DeliveryOrderDetailMapper:271 exposes baseImagePath storage key. | Repro: GET /api/sales/collections/{id}: createdBy like '1_@_1'",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: customer-deposit create response still carries createdBy '1_@_1'; same raw audit string in demand/credit memo responses.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:9.11": {
   "status": "still-bug",
-  "note": "CustomerDepositRequestDTO.paymentOption and refund paymentMethod still free String; no payment option enum in sales. | Repro: POST customer-deposits paymentOption 'cash ' vs 'Cash': both accepted",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /api/sales/customer-deposits with paymentOption 'cash', 'CASH ' and 'Bogus Method' all return 201 and store the text as sent.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:9.12": {
   "status": "wontfix",
@@ -1968,27 +1968,27 @@
  },
  "rv-be:sales:9.13": {
   "status": "still-bug",
-  "note": "DeliveryOrderHeaderDetail:92,100,108 jsonb drafts of Pick/Pack/ShipRequestDTO; no JsonIgnoreProperties, no custom Hibernate json mapper. Latent: needs a DTO change plus a stored draft. | Repro: latent: only after a release removes a DTO field while a draft exists",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: DeliveryOrderHeaderDetail:92-108 still stores PickRequestDTO, PackRequestDTO, ShipRequestDTO as JSON columns; none of those DTOs has JsonIgnoreProperties(ignoreUnknown = true).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:9.14": {
   "status": "still-bug",
-  "note": "SalesDemandCoordinationService.verifyQuantity:195 sets quantityValidated TRUE on confirm even if lines invalid; GatePassService:74, GatePassReturnService:183 atTime(23,59,59); getMySummary:519 APPROVED only. | Repro: POST /api/sales/demands/{id}/coordination/quantity/verify confirm=true with an invalid line: gate set",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: quantity/verify with an invalid line is now refused (400 'Demand line not found', quantityValidated stays false), but GatePassService:74 and GatePassReturnService:183 still end the day at 23:59:59.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:9.15": {
   "status": "still-bug",
-  "note": "SalesOrderDomainService.validateLines:769-770 itemFacade.getById in catch(Exception) gives 'Item not found'; updateFields never calls markDemandSoCreated (only create:533). | Repro: Update an order to link a different demand: new demand not moved to SO_CREATED",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: SalesOrderDomainService only has markDemandSoCreated (no old-demand status reset on re-link, l.782-787); ReceiptDomainService still findById per application (l.232, 572, 606).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:sales:9.7": {
   "status": "still-bug",
-  "note": "CustomerSummaryService.get:56-67 ongoingDeliveries filters IN_TRANSIT only; both queries PageRequest.of(0,5) unsorted; DTO javadoc says not yet DELIVERED / newest first. | Repro: Customer with a PACKED delivery order: GET customer summary shows ongoingDeliveries empty",
-  "ref": "",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: CustomerSummaryService.get l.56-66 ongoingDeliveries filters fulfillmentStage IN_TRANSIT only; recentDeliveries uses PageRequest.of(0, PREVIEW_LIMIT) with no delivery-date sort.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "sales:B2": {
   "status": "fixed",
@@ -2003,10 +2003,10 @@
   "date": "2026-11-09"
  },
  "saleschain:P3-B9": {
-  "status": "open",
-  "note": "Unclear (needs a run or a decision): Bundle of 7. uomId stored unconverted (SalesOrderMapper:382) still true. Task complete twice returns quietly (TaskService:372) and NET_DAYS 0 allowed (PaymentTermService:87): intended. Others not traced.",
-  "ref": "",
-  "date": "2026-11-09"
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: demand quantity 0.00004 -> 201; payment term NET_DAYS with dueDays 0 -> 201; POST /api/workflow/tasks/{id}/complete twice -> 200 then 200 'Task completed'. (other three points not checked)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "e2e27:4": {
   "status": "wontfix",
@@ -2226,81 +2226,81 @@
  },
  "purchase:B-P10": {
   "status": "still-bug",
-  "note": "Cause present: requisition create is @Transactional (holds a connection) and purchaseAudit.publish opens REQUIRES_NEW (AuditPublisher:69); no hikari pool setting in application*.properties. Not run-verified. | Repro: 20 simultaneous POST /api/purchase/requisitions: about half return 500 CannotCreateTransactionException after the pool timeout.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. 20 parallel POST /api/purchase/requisitions: 10 x 201, 4 x 500, 6 x 401; backend log shows CannotCreateTransactionException / HikariPool getConnection timeout, no pool settings in application.properties.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:18": {
-  "status": "still-bug",
-  "note": "RequesterApprovalService.recordRequesterDecision:127-173 uses the unlocked finder (not findCurrentForUpdate) and decides allApproved from its own snapshot; two simultaneous approvals each see the other PENDING. | Repro: Requisition with two requesters; both call approve at the same moment: both steps APPROVED, request stays PENDING, requisition stuck in PENDING_REQUESTER_APPROVAL.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. The requester approval step was removed from the requisition flow (RequesterApprovalService, RequisitionRequester and the requester-decision endpoint no longer exist), so the race cannot occur. (fix 2514782ed)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:19": {
-  "status": "still-bug",
-  "note": "LcDomainService.applyCustomsMovement:417-419 runs mergeAdvanceReceiptLines on every RELEASED_FROM_CUSTOMS save, also after advanceReceivePosted; l.440-447 only enforces the total, mergeAdvanceReceiptLines:529-534 overwrites channel. | Repro: PUT /api/purchase/lc/{id}/status RELEASED_FROM_CUSTOMS twice; second with channel quantities swapped (same total): 200, lines change, in-transit stock does not.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. After RELEASED_FROM_CUSTOMS with split 10/20, re-PUT with 20/10 now returns 400 'The advance receive cannot be changed any more' (LcDomainService.requireAdvanceLinesUnchanged). (fix dc6fbeb25)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:31": {
   "status": "still-bug",
-  "note": "Quantity cap removed on purpose (f0d1e64f8) but Swagger in ProformaInvoiceController.convert still promises it; ProformaInvoiceDomainService.validateItem:126-136 never checks unitPrice/vatRate sign. Item-vs-PO match is a business call. | Repro: POST /api/purchase/proforma-invoices/convert with a line unitPrice -5 and quantity above the PO line: 201.",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. POST proforma-invoices/convert with unitPrice -5 returned 201 and with quantity 50 on a PO line of 10 returned 201 (ProformaInvoiceConversionService.java:147-177 checks only quantity > 0).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:35": {
   "status": "still-bug",
-  "note": "ItemReceipt/BillCredit/Lc/VendorPrepayment/ProformaInvoice FacadeImpl.delete: no workflowFacade.cancel, is_current stays true. TaskService.java:148 hides orphan tasks from inbox, but instance/task rows stay. | Repro: Create item receipt (workflow starts), DELETE /api/purchase/item-receipts/{id}; workflow_instance stays RUNNING, approval_request.is_current=true, task PENDING in DB",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. DELETE /api/purchase/item-receipts/{id} of a pending receipt returned 204; its workflow_task stays PENDING and the workflow_instance RUNNING.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:36": {
   "status": "still-bug",
-  "note": "VendorReturnRequestFacadeImpl.update (l.146) and DomainService.updateFields only check status PENDING_APPROVAL, which stays during multi-step approval; no approvedCount check or workflow restart. | Repro: 2-step workflow: approver 1 approves, creator PUT /api/purchase/vendor-return-requests/{id} with returnQty 50 -> 200, approver 2 approves edited doc",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code only: VendorReturnRequestDomainService.updateFields (l.160-175) allows edits whenever the document is pending, with no check of approval progress; unchanged since b2597ef11. Not reproduced with a 2-step workflow.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:38": {
   "status": "still-bug",
-  "note": "Performance only. No hibernate default_batch_fetch_size in resources, one @BatchSize in whole backend; VendorBillFacadeImpl.getByFilter maps full VendorBillMapper.toDTO per row (lazy items/billing/attachments). | Repro: POST /api/purchase/vendor-bills/filter size=20 with SQL logging: statement count grows with rows",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: no hibernate batch-fetch setting in application.properties and VendorBillFacadeImpl.getByFilter still enriches per page without fetch tuning; not benchmarked.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:39": {
   "status": "still-bug",
-  "note": "Performance only, results correct. VendorPaymentFacadeImpl.getEligibleBills (l.246) loads all APPROVED bills unpaged; toEligibleBill calls remainingDue per bill (findById + SUM, VendorBillPaymentStatusService:125). | Repro: GET /api/purchase/vendor-payments/eligible-bills?vendorId=V for vendor with many approved bills; SQL log shows 2+ queries per bill",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: VendorPaymentFacadeImpl.getEligibleBills (l.253-272) still loads all approved bills of the vendor and calls remainingDue per bill, unpaged.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:40": {
   "status": "still-bug",
-  "note": "Performance only. ItemPurchaseOrderQueryService.openPurchaseOrderQuantityByItem (l.161) and openProformaInvoiceQuantityByItem (l.178) loop per item with 2+ queries each; called from ItemInventoryQueryService.java:145-147. | Repro: Open inventory overview page of 20 items with SQL logging: queries scale with item count",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: ItemPurchaseOrderQueryService.openPurchaseOrderQuantityByItem (l.161-165) still loops per itemId with a query each.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:41": {
   "status": "still-bug",
-  "note": "Performance only. ItemReceiptFacadeImpl.getById uses lazy demandSplits/inventoryDetails/damagedInventoryDetails per line (ItemReceiptItem l.99-115, no BatchSize); enrichBinLocations now memoises location codes (partly improved). | Repro: GET /api/purchase/item-receipts/{id} for a 30-line receipt with SQL logging",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: ItemReceiptFacadeImpl.enrichBinLocations now caches location codes per id (small improvement) but line children are still lazy-loaded without batch fetch.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:42": {
   "status": "still-bug",
-  "note": "Performance only. RequisitionFacadeImpl.getAll loops enrichRequesters per row (l.211-213); RequisitionStockAnalysisService.analyze (l.35-70) runs 4 queries per item id, list unbounded. | Repro: Stock-analysis call with 40 itemIds, or requisition list size=20, with SQL logging",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: RequisitionController stock-analysis (l.215) takes the itemIds list with no cap and RequisitionStockAnalysisService.analyze still streams per item.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:7": {
   "status": "still-bug",
-  "note": "PurchaseCloseDataProviderImpl.factsFor l.77-78: payable = sumApprovedGrandTotalUpTo - sumApprovedAppliedToBillsUpTo (payments only); bill credits and PI applications not subtracted, unlike VendorBillPaymentStatusService.settledDirectly. | Repro: Bill 1000, approved bill credit 300, payment 700; month-close facts payableBalance = 300 instead of 0",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: PurchaseCloseDataProviderImpl.factsFor l.90-91 still computes payable as approved bill grand totals minus approved payments applied to bills, with no bill credits or PI applications.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:27": {
   "status": "still-bug",
-  "note": "MaterialRequisitionFacadeImpl.update l.153-160, applyPurchaseRequisitionLinks l.285-312: approved MR only relinks, other edits silently ignored; resolvePurchaseRequisition l.315 by number only, no status/item check. | Repro: PUT /api/purchase/material-requisitions/{id} (APPROVED) with line purchaseRequisitionNo of a PENDING or unrelated PR -> 200 linked",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code only: MaterialRequisitionFacadeImpl.applyPurchaseRequisitionLinks/resolvePurchaseRequisition (l.285-320) only look the PR number up by sequence value, unchanged.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:28": {
   "status": "wontfix",
@@ -2310,21 +2310,21 @@
  },
  "rv-be:purchase:34": {
   "status": "still-bug",
-  "note": "ItemReceiptSplitValidator.validateDemandSplitsSumToAccepted (l.55-72) checks only the sum, so splits 15 and -5 for accepted 10 pass; all-zero receipt accepted; VendorChallanService.requirePositive allows 0 and repeated receipt lines. | Repro: POST /api/purchase/item-receipts/generate with accepted 10, demandSplits [{chA,15},{chB,-5}] -> 201",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Partly fixed: negative channel split now 400 'A sales channel cannot be given a negative quantity'; but a vendor bill with challanQty 0 still returned 201 (challan price 0 not isolated).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:43": {
   "status": "still-bug",
-  "note": "Performance only. VendorReturnRequestRepository.findInFlightRequestIds (l.49-55) returns all live request ids, passed as IN list by PurchaseOrderReturnQuantityService.inFlightClaimByLineIds l.88-123 on every create/update/preview. | Repro: Create or preview a vendor return with SQL log: system-wide select of live request ids",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Code: VendorReturnRequestRepository.findInFlightRequestIds (l.49-55) still selects all live request ids system-wide.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:44": {
   "status": "still-bug",
-  "note": "Minor hygiene: cheque_no VARCHAR(100) (V1 l.2703), currency VARCHAR(10), no DTO @Size. Review claims on payable_bill (a view) and uq_requisition_requester (exists, V1 l.1518) are wrong. | Repro: POST /api/purchase/vendor-payments with 101-char chequeNo -> DB error instead of field 400",
-  "ref": "321870e96",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. chequeNo of 101 chars now returns 409 'data conflict' instead of 500, but there is still no field-level 400.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:purchase:45": {
   "status": "wontfix",
@@ -2484,9 +2484,9 @@
  },
  "rv-be:accounting:48": {
   "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] V4__accounting_indexes.sql adds ~30 FK indexes on accounting tables (6c7671388); RBAC/approval/workflow FKs and attachment columns deliberately left",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live pg_indexes on the stack: no index leading on approval_step.approval_request_id, workflow_instance.definition_id, role_permissions.permission_id (pkey is role_id,permission_id), user_role_assignments.role_id (only inside unique(user_id,role_id,...)), scopes.parent_scope_id.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:accounting:5": {
   "status": "fixed",
@@ -2537,16 +2537,16 @@
   "date": "2026-11-09"
  },
  "rv-be:accounting:15": {
-  "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] @Size (column width) + @Valid on accounting controllers/DTOs gives 400 naming field; journal overflow message; d9bcb10bb, e811c07f2. Depreciation/period-close/year-end/posting/payroll/mapping controllers not touched",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: bulk statement line with 600-char description -> 400 'lines[0].description: size must be between 0 and 500'; file import confirm reports row 2 'description is 600 characters'; chart account with 60-char code -> 400 'accountCode: size must be between 0 and 50'. User-creation DTO not tested.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:accounting:16": {
-  "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] Close-task ownerUserId now checked via userFacade (b49ed3874); petty-cash mapping body validation not changed",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: PUT period-close/38/tasks/SALES_RECEIVABLES/owner?ownerUserId=999999 -> 400 'no user with id 999999'; POST petty-cash-mappings {} -> 400 'accounting book is required' (from the domain service; controller still has no @Valid).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:accounting:18": {
   "status": "fixed",
@@ -2580,9 +2580,9 @@
  },
  "rv-be:accounting:42": {
   "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] Match-workspace lists became sets (cad80f442), export caps added (a63d1b73c), whole-book GL export walks once (460cbe472); chart filter in memory not changed",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. By code: ChartOfAccountDomainService.readPostable l.179-186 and readBankLedgers l.148-156 still findByAccountingBookId(...).stream().filter in Java.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:accounting:43": {
   "status": "fixed",
@@ -2604,9 +2604,9 @@
  },
  "rv-be:accounting:49": {
   "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] @Valid/@Size added on accounting request bodies (d9bcb10bb, e811c07f2); no cap on budget lines/batch size; depreciation/period-close/posting/payroll/mapping controllers untouched",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. By code: BudgetRequestDTO.lines (l.47) has no @Size; FixedAssetDepreciationController (3 @RequestBody) and PeriodCloseStockCountController (2) have no @Valid.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:accounting:51": {
   "status": "fixed",
@@ -2616,27 +2616,27 @@
  },
  "rv-be:accounting:52": {
   "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] Three String fields became enums (DepreciationScheduleLineDTO.status, FixedAssetDisposalRowDTO.status, MatchSuggestionDTO.confidenceLabel), wire format unchanged; e248b6760. Other free strings not reviewed",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. By code: still String fields VatCloseRecord.returnStatus, VatCloseRecordLine.vatType, PeriodCloseInventoryClose.inventoryMethod/valuedAt, PeriodCloseStockCountLine.costingMethod, ProductDistributionFacts.distributionType.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:accounting:53": {
   "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] FiscalYear.yearLabel mapping, ECashFlowCategory/FiscalPeriod javadoc, misplaced facade javadocs fixed (b49ed3874, b5c00d52a); entity length= drift noted but not fixed (d9bcb10bb)",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: not verified. Only change since b2597ef11 in the named files is ECashFlowCategory adding SHORT_TERM_BORROWING; FiscalYear.year_label length 50 matches the DB (50). Other drift items need a full read-through, not proven either way.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:accounting:54": {
   "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] vendorId vs sourceVendorBillId schema clarified; documentVersion nulled without documentId (e248b6760); creditAccountId no longer required on update (e811c07f2). Other sibling-DTO name drift unknown",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. By code: CashStatementRowDTO.summary (l.55) vs GeneralLedgerTreeRowDTO.isSummary (l.50) still differ; PeriodCloseTaskDTO l.30 still says 'checklist, 1 to 8' for 7 checks.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:accounting:55": {
-  "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] Report DTO list fields got @Builder.Default (b5c00d52a); other nullable-where-required fields not verified",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live POST /chart-of-accounts without isSummary/isActive -> 201 with isSummary=false, isActive=true; ChartOfAccount l.96-103 and ApprovalRequest use @Builder.Default.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:accounting:56": {
   "status": "fixed",
@@ -2658,9 +2658,9 @@
  },
  "rv-be:accounting:8": {
   "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] Fixed: cash drawer, month finalize/approve, statement import confirm, period close vs posting (8ecd1808a, d532f3274, 84b82ca89). Generic race-to-409 mapping and manual match race (bank:A-111) remain",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: two concurrent POST /vat-returns/1/settle on a FILED return both answered 200; no row lock in VatReturnService/YearEndCloseTaskService (no PESSIMISTIC lock found).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "closing:ret5": {
   "status": "fixed",
@@ -2706,9 +2706,9 @@
  },
  "merge:C2": {
   "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] JournalEntryResponseDTO javadoc says taskId/canTakeAction are for this caller only; external guide document not checked",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: not verified. The guide document is not in the backend repo. JournalEntryResponseDTO now has Javadoc 'The pending approval task this caller may complete' and Swagger text 'the caller may complete' (+5 lines since b2597ef11), so the API docs say it; the guide wording could not be read.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "bank:A-86": {
   "status": "fixed",
@@ -2723,28 +2723,28 @@
   "date": "2026-11-09"
  },
  "bank:A-96b": {
-  "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] Adjustment date must fall inside the reconciled month (BankReconciliationAdjustmentService l.170-180, 5c1a6d12f) and start() needs an OPEN period, so a closed-January date is refused; a month closed after the draft started is not re-checked at propose",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: propose-adjustment with postingDate in the previous month -> 400 'an adjusting entry dated 2026-09-20 is outside October 2026'; date inside the month -> 200. BankReconciliationAdjustmentService.datedInsideTheMonth. (fix d5d97b8da)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "bank:A-96c": {
   "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] postAll rolls back the whole acceptance if the period closed (no-approval path); with approval workflow finalize still returns PENDING_APPROVAL and posting happens at approval; no finalize pre-check seen",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. finalise() (BankReconciliationSessionService:322) has no check that the period is still open; with a workflow it only goes PENDING_APPROVAL and the 409 appears at approve via adjustmentService.postAll (code comment l.390). Not changed since b2597ef11; closed-month path not run live (no throw-away month to close).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "bank:UI-36c": {
-  "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] History export now honours the status filter (BankReconciliationHistoryExportDataSource.statuses, cad80f442); default with no status still includes DRAFT",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: GET /bank-reconciliations lists 14 rows (DRAFT+FINALIZED), the Excel export has 14 data rows incl. the DRAFT ones (empty date). (fix 383f67950)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "merge:B5": {
-  "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] Export reads bankAccountId via shared helper (400 on bad value, cad80f442); contract doc not verified",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: POST /api/export bank-reconciliations with filters.bankAccountId=<id> -> 200 xlsx; bankAccountId='abc' -> 400 'bankAccountId must be a number'. Guide document is not in the repo (cannot check that part).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "bank:A-103b": {
   "status": "fixed",
@@ -2862,9 +2862,9 @@
  },
  "budgets:B9": {
   "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] Omitted accountingBookId now resolves the primary book (652b141d6); export-job fromDate-only, 1e15 echo, view-right on create not addressed",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: (1) POST budget without accountingBookId -> 201 (fixed); (2) export job accounting-budget-vs-actual with only fromDate -> 202 accepted; (3) line amount 999999999999999.9999 -> 201 echoed as 1000000000000000; (4) POST /budgets is annotated accounting.budget.create only, overriding the class-level view right (BudgetController l.52-53). Three of four remain.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "closing:B-13": {
   "status": "fixed",
@@ -2898,15 +2898,15 @@
  },
  "assets:A-22": {
   "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] @Size on code/name fields and journal amount overflow message (d9bcb10bb, b97e2ba30); asset cost rounding-to-zero case not verified",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: 51-char typeCode -> 400 'typeCode: size must be between 0 and 50' (fixed); proceeds 1e30 -> 400 'larger than this ledger can hold' (fixed); acquisitionCost 0.00004 -> still 409 'could not be completed due to a data conflict' with no field named.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "assets:A-25": {
   "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] Unknown vendor now refused because the acquisition journal validates partyId via requirePartyExists; useful-life upper cap still absent (only >0 check, FixedAssetDomainService l.1407)",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST fixed-assets with usefulLifeMonths 100000 -> 201 (no upper cap).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "closing:A-14": {
   "status": "fixed",
@@ -2934,9 +2934,9 @@
  },
  "rv-be:reports:10": {
   "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] Account/party/voucher predicates in LedgerBalanceRepository rewritten to (:p IS NULL OR col=:p) (635f43685); 12 date COALESCE(:excludedFromDate,...) remain and JournalEntryRepository search still has COALESCE",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. LedgerBalanceRepository still has 12 queries with 'entry.postingDate < COALESCE(:excludedFromDate, entry.postingDate)' (grep count 12); account/party predicates were rewritten, the date pattern was not.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:reports:11": {
   "status": "fixed",
@@ -2946,9 +2946,9 @@
  },
  "rv-be:reports:8": {
   "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] Dashboard low-stock list cut in SQL, reorder-point moved to WHERE, count query added (117a54960); inventoryValue still called twice, no cache; ledger aggregates not cached",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. DashboardKpiService:63 and DashboardInventoryOverviewService:63 both still call queries.inventoryValue(); no cache. Only the pending-actions/recent-transactions queries changed in DashboardQueryRepository.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-be:reports:9": {
   "status": "fixed",
@@ -2970,9 +2970,9 @@
  },
  "rv-be:reports:15": {
   "status": "in-progress",
-  "note": "[release_beta_copy e9a75ca2b] PartyNameResolver now uses PartyDirectoryLookup (NOT_SUPPORTED, WARN log); f2d36c379. YearEndCarryForwardService l.126 still returns e.getMessage()",
-  "ref": "release_beta_copy@e9a75ca2b",
-  "date": "2026-11-09"
+  "note": "Re-checked on backend release_1.1.0: still there. YearEndCarryForwardService.count() l.126 still builds unavailableReason with e.getMessage().",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-fe:accounting:37": {
   "status": "fixed",
@@ -2999,10 +2999,10 @@
   "date": "2026-11-10"
  },
  "merge:B3": {
-  "status": "open",
-  "note": "reported to backend 2026-11-10 (labels need a stable code to translate)",
-  "ref": "",
-  "date": "2026-11-10"
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: GET /accounting/reports/reconciliation-detail?bankAccountId&fiscalPeriodId&statementDate -> 200; SECTION/FIGURE rows carry labelCode (RECONCILED, NO_PREVIOUS_RECONCILED_BALANCE), labelDate separate, TRANSACTION rows labelCode null.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  },
  "rv-fe:reports:6": {
   "status": "open",
@@ -3409,9 +3409,1029 @@
   "note": "Closed 2026-11-26 (product owner): a manager can only be replaced, not removed, by design; the reported silent keep of a cleared manager has no path left on screen. Checked 2026-11-26 against the current code: the backend no longer creates a null manager. With no userId in an update (SalesGeographyManagerDomainService.reassignOnGeographyUpdate) it leaves the assignment exactly as it is. The reworked org-structure screen never sends a cleared assignee either (save-plan.ts sends assigneeId only when a person is chosen) and its person field has no clear button. So the old complaint, a silent save that keeps a manager the user cleared, has no path left on screen. What remains is that a manager can only be replaced, not removed: there is no unassign operation on either side. Needed only if a post must be able to stay empty (a person leaves and nobody takes the post yet); today that is handled by assigning someone else or deactivating the user."
  },
  "demo:shell:notifications-unread-count-401": {
-  "status": "in-progress",
-  "ref": "fix/shared-batch3",
+  "status": "decision",
+  "ref": "backend release_1.1.0@5be512f02",
   "date": "2026-11-26",
-  "note": "Decision 2026-11-26: keep polling so a service that comes up is noticed, but slow down while it does not answer. Done on branch fix/shared-batch3 (not merged yet): the unread-count poll goes one minute, two, four, then five minutes after consecutive failures and back to one minute on the first answer (notifications/live-sync.ts pollDelayMs, tests). The browser still logs the 401 of each request; that cannot be hidden from the frontend."
+  "note": "Re-checked on backend release_1.1.0: needs a decision. The ERP backend has no /api/notifications/unread-count (404 here, no controller); it is the central notification service via the frontend proxy. Hiding the bell on 401 is a frontend/product choice (the poll already slows down, live-sync.test.ts)."
+ },
+ "e2e:year:post-cogs-numeric-overflow": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. By code, not repro live (no stock/sales scenario set up): column still NUMERIC(9,4) (V1__initial_schema.sql:5716) and InventoryCloseStatementService.margin() l.474-479 still computes (sales-cost)*100/sales with no clamp; sales 300 vs COGS 1.8M gives about -599,900%, over 99,999.9999.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "journals:JNL-A-138": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. 30 parallel POST /journal-entries/manual with one token: 10x201 (10 distinct journalNo), 14x401, 6x500; backend log shows CannotCreateTransactionException 'Could not open JPA EntityManager' (DB connection pool exhausted), not a numbering clash.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "be-req:accounting:voucher-register-account": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. GET /reports/voucher-register 200: rows carry journalEntryId, journalNo, particulars, partyId/partyName, amounts but no accountId/accountName; VoucherRegisterLineDTO has no such fields.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:bank:duplicate-line-without-reference": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Upload+confirm of the same CSV (line without reference) twice: second confirm answers 409 'this same file has already been imported into this bank account ... dup.csv', line count stays 1. (File-level check; a different file with identical ref-less lines was not tested.)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:bank:match-concurrent-overwrite": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Two concurrent PUT statement-lines/{id}/match with different ledger lines: [200, 409 'this statement line is already matched']; three further rounds all 409/409.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:year:pp-check-credit-difference": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. By code: PurchaseCloseDataProviderImpl.java:83-84 payable = sumApprovedGrandTotalUpTo(to) - sumApprovedAppliedToBillsUpTo(to) (payments only); bill-credit applications are not subtracted; file unchanged since b2597ef11. Full bill+payment+credit scenario not rebuilt live.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "journals:JNL-A-82": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Journal pending approval: POST /workflow/tasks/{id}/complete REJECTED 200, then APPROVED 200 and REJECTED again 200, all {'message':'Task completed'}; no 409.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:accounting:20": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. pom.xml:243-250 profile with activeByDefault=true sets spring.profiles.active=dev; application.properties:16 bootstrap.enabled=true; application-prod.properties:77 BOOTSTRAP_ENABLED defaults true; application-dev.properties (password=root etc.) is git-tracked.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:accounting:21": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. POST period-close/38/tasks/SALES_RECEIVABLES/close {journalEntryId:96} (an unrelated manual journal) -> 200 and the checklist shows journalEntryId 96 on the task. A non-existent id 999999 only fails on the FK with a generic 409.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:accounting:23": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. PayrollPostings.approved l.58-65 still catches RuntimeException, logs one line and returns (l.96-104 likewise for the payment); no posting-log row. Diff since b2597ef11 (7663cdaca) only adds per-employee lines.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:accounting:24": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. By code: InventoryCloseStatementService.isPosted = existsByFiscalPeriodId (l.94-98) unchanged; PeriodCloseActionService post-cogs still refuses with 'already been posted' regardless of reversal.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:accounting:26": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. By code: PeriodCloseTaskFacadeImpl.summary is @Transactional(readOnly=true) and PeriodCloseSummaryService (l.172-177, 222-226, 445) still catches RuntimeException inside it and puts 'could not be read: ' + e.getMessage() into unavailableReason.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:accounting:3": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: VAT return for period 38 created, filed with filedDate 2025-09-10, settled with settledDate 2025-08-01 -> 200 (no date check). Code still recomputes import-VAT from live movements() in settle.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "be-req:accounting:approval-queue-mine-filter": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. GET /journal-entries (JournalEntryController l.160-210) still has no canTakeAction/assignee/mine parameter.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "be-req:accounting:bank-account-status-endpoint": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. BankAccountController has only POST, PUT /{id}, GET, GET /{id}, DELETE; no status endpoint.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "be-req:accounting:fixed-asset-search": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. FixedAssetController list params are status, assetTypeId, vendorId (+ paging); no search.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:bank:signed-amount-column": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Upload CSV Date,Narration,Reference,Amount (500 / -200): mapping.amountColumn='Amount', mappingComplete true; confirm imported 2 lines S1 DEPOSIT 500, S2 WITHDRAWAL 200.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "handoff:accounting:period-bank-positions-counts-read-zero-without-a-reconciliation": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. GET /bank-reconciliations/periods/{id}/positions for a bank with one posting and no reconciliation: state NEEDS_ATTENTION, ledgerMovementCount 1, unmatchedStatementLineCount 0, unacknowledgedLedgerLineCount 0 (not null).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:accounting:30": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. By code: AccountingPostingLogService.record l.113-135 still does findEntity(key) then save() with no handling of DataIntegrityViolationException.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:accounting:31": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. By code: PayrollDeductionBucket.of l.45-53 still exact lower-case match and returns OTHER with no warning log; the PayrollSummaryTranslator diff does not add one.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:accounting:36": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. By code: PeriodCloseSummaryService.bankCash l.340-355 still calls bankReconciliationDomainService.getSummary per active account (only the counts now come from one bulk positionsForPeriod call), so per-account queries remain.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:accounting:37": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. By code: StockOnHandReader.positionsAsOf l.131 still reads itemFacade.getAll(null,null,null) (whole catalogue) on every call.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:accounting:44": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. By code: InventoryCloseStatementService.applyMargins l.425-460 still calls movement() (full findPeriodBalances) for this and each of 3 earlier periods per account set, and loads all periods of the book.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:accounting:47": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. SalesLinePosting l.48-57 and PurchaseLinePosting l.51-63 cache per product line (done), but InventoryWriteOffTranslator l.78-80 still resolves the mapping per line; ProductDistributionTranslator unchanged.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "posting:lost-events": {
+  "status": "open",
+  "note": "Re-checked on backend release_1.1.0: not verified. Not reproducible here: the item's SQL is wrong on this build (consumed_domain_events.event_id is prefixed 'consumer:uuid'). By posting log instead: 80 accounting.posting outbox events, 80 accounting_posting_log rows (78 POSTED, 2 FAILED), none missing. 100-payment loop not run.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:year:lot-bill-drops-stock-sheet": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: InventoryTransactionLedgerRepository.sumUndamagedQuantityMovedSince still sums every ledger row incl. COST_ASSIGNED (recordCostAssigned writes the lot qty, dated booking day); InventoryBalanceFacadeImpl:151 subtracts it. Not changed since b2597ef11. YEAR-07-06 not re-run.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:inventory:15": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /petty-cash/requests amount -100 -> 201 and reserved_amount goes 0 -> -100; amount 0 -> 201; expenseDate outside the budget period -> 201; requesterId=3 (other user) -> 201; amount null -> 500.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:inventory:30": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: ItemFacadeImpl.getAll still maps findAllByNameOrSku results via ItemResponseDTO::from with lazy associations; ItemRepository diff only adds barcode/priority queries. Items list and overview still return all 524 rows with no page.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "st1111:S29": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: Modern Trade demand of 34 for an item with 20 in the channel (30 elsewhere) -> create 201, coordinate ok, approve ok; no 4xx. Fulfilment refusal not retested.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "pt1110:B8": {
+  "status": "decision",
+  "note": "Re-checked on backend release_1.1.0: needs a decision. Needs the business answer on whether inventory_balance.allocated_qty is a live number; code unchanged (processEntry adds, only consumeInTransitLine reduces). Live: balance shows on hand 10 / allocated 10 after receive.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:year:return-not-credited-to-channel": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: same as SC-3 - a received good-condition customer return raises on hand by 10 but the sales channel's channel_allocation stays at the post-delivery figure.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:inventory:11": {
+  "status": "decision",
+  "note": "Re-checked on backend release_1.1.0: needs a decision. Needs the business answer on allocatedQty; moveStockToDestination in BinTransferWorkflowHandler and PackingHouseBookDomainService untouched.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:inventory:23": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: MonthlyBudgetScheduler still @Scheduled(cron=\"0 0 0 1 * *\") with no catch-up; PettyCashDashboardServiceImpl l.47 remainingBalance.max(ZERO).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:inventory:24": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: information_schema shows channel_allocation.allocated_qty/reserved_qty, channel_price_list.base_price, lot_master.status nullable=YES while the entities say nullable=false.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:inventory:26": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: InventoryLedgerService.recordMovement still writes one +/-1 row per serial regardless of signedQuantity (l.100-108), no count check.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:inventory:29": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: ItemFacadeImpl still calls attachmentHandler.storeAttachment (l.174, 192) and deleteAttachment (l.198) inside the @Transactional method, no afterCommit hook.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:inventory:29#review-be": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: shared/workflow/init has 33 seeder files and @Order values repeat (@Order(37) x3, 65/64/40/36 x2).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:inventory:44": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: PUT /dashboard/preferences {\"hiddenWidgets\":null} -> 500. Code: syncImages treats null keepImageIds as an empty set (removes all images); ItemResponseDTO still has manufacturingId.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:inventory:46": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: InventoryOpenItemsProviderImpl:24 still findItemIdsWithPositiveOnHand().size(); VendorBillFacadeImpl.enrichVendor still swallows RuntimeException silently.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "saleschain:SC-13": {
+  "status": "decision",
+  "note": "Re-checked on backend release_1.1.0: needs a decision. Needs business answer first; inventory_balance.allocated_qty is still only raised in processEntry (live: stays equal to what was received, never reduced by sales).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "demo:release:frontend-needs-channel-allocations-endpoint": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live GET /api/purchase/item-receipts/channel-allocations?sourceDocumentType=PURCHASE_ORDER&sourceDocumentId=13 returns 200 with items and channels (endpoint is in release_1.1.0). (fix f98c51dfa)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "pt1110:A1": {
+  "status": "decision",
+  "note": "Re-checked on backend release_1.1.0: needs a decision. Live: preview returnableQty 0 while the bill is partly paid (paidQty 0) and 10 once fully paid; a credit applied to the fully paid bill gives 400 'exceeds its outstanding balance (0.0000)' and a credit with no applied bills gives 400 'must be applied in full'. Refund still impossible, needs the business rule decision.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "pt1110:B2": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Bill dated 2026-11-10 with period start 2026-11-01 approved: journal_entry.posting_date = 2026-11-01 (PurchasePostingFactsBuilder passes orToday(bill.getPostingPeriodStartDate())).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:platform:vendor-bill-dev-seeder-crash": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: VendorBillDevSeeder.buildBilling l.142-147 indexes options (length 4) with receipt id % terms.length (5), so id%5==4 is out of bounds; unchanged.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "pt1110:B4": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: preview of a bill paid 350 of 1000 shows paidQty 0 and returnableQty 0 (paid only counts on fully paid bills); same root as A1.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "bank:A-97c": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: fully matched DRAFT month and after finalize (PENDING_APPROVAL) -> period-close summary bankCash.accounts[].reconciled=false, positions say NEEDS_ATTENTION. Service now reads PeriodBankPositionService. (fix cbda9bb81)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "bank:UI-36d": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live export: Status cell now a label ('Draft','Finalized') but Difference/Closing Bank are plain numbers with no number format (numFmt undefined, -1600 / 749.5). Commit message itself says money style is deferred to ExcelExportService. (fix 383f67950)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "bank:A-111": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: two parallel PUT match calls on one statement line -> [200, 409 'this statement line is already matched']. (fix fc6017403)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "bank:A-68": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: same CSV (blank reference) uploaded and confirmed twice -> 2nd upload confirm 409 'this same file has already been imported into this bank account ... 1 line'; line count stays 1. (fix acb56205c)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "bank:A-71": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: CSV with Date,Narration,Reference,Amount -> mapping.amountColumn='Amount', mappingComplete=true; confirm imports S1 DEPOSIT 500 and S2 WITHDRAWAL 200. (fix 914eaea62)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "assets:A-72": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: POST dispose without disposalMethod -> 400 'disposal method is required -- SALE ... SCRAP ... WRITE_OFF'. (fix 4460fadbb)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "assets:A-83": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: POST /journal-entries/{acquisition journal}/reverse -> 409 'was posted by FIXED_ASSET_ACQUISITION ... dispose of the asset instead'; disposal journal reverse -> 409 'a disposal cannot be undone'. (fix 5a2633014)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "assets:A-02": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: asset type 'AT-1DYT' then ' AT-1DYT ' and 'at-1dyt' -> 400 'type code already exists'; asset code with spaces / lower case -> 400 'asset code already exists'. (fix 24ab17834)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "assets:A-37b": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: asset 2400 over 24 months, 3 months posted -> depreciation-schedule forecastRemaining=2100. (fix 5e722c989)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "assets:A-58": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: 1,000 over 4 months QUARTERLY from July 2025, runs July..October posted -> status FULLY_DEPRECIATED, NBV 0, accumulated 1000.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "closing:A-08": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: preview of December 2025 while November unposted -> canPost=false, cannotPostReason names November, figuresWithheld=true, charge 0 (the unposted-earlier month itself still previews normally). (fix 8847da10d)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "vqa:fa-raw-enums": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live GET /fixed-assets/{id}/timeline: details 'Straight Line', 'Last posted 31 October 2025'; Put into service event carries no location text. Not re-checked after a transfer. (fix 423ee935d)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "closing:A-07": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: PUT on a FULLY_DEPRECIATED asset with changed salvageValue -> 409 'salvage value cannot be changed once ... fully depreciated'; changed usefulLifeMonths -> 409; changed name -> 200.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "closing:A-12": {
+  "status": "decision",
+  "note": "Re-checked on backend release_1.1.0: needs a decision. Live: asset disposed 15 Sep 2025 under FULL_MONTH convention has charges for July and August only, none for the disposal month; behaviour unchanged, the item asks the accountants to confirm the rule.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "be-req:reports:engine-page-cache": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. ReportService.run (shared/report/ReportService.java:100-120) still generates the whole report and then paginate() cuts the page in place; no cache anywhere. File untouched since b2597ef11.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:reports:5": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Code: ReportService.runFromBody (l.84), run 2-arg (l.91) and run 4-arg (l.100) all carry @Transactional(readOnly = true); ReportController.run calls runFromBody (l.114), so the proxy is crossed. No HTTP proof possible.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:reports:6": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. ExportJobRunner.run only proceeds from PENDING, sets RUNNING and never recovers it; ExportJobCleanupScheduler only re-dispatches stale PENDING jobs; catch block stores truncate(e.getMessage()) (l.96); ExportJob has no @Version. Unchanged.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:reports:7": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. CommissionReportExportDataSource.columns() (l.78) still calls fetchReport(filters, PageRequest.of(0,1)) and fetchRows() calls it again unpaged: two report runs per export. Unchanged.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "be-req:reports:engine-accounting-book": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /api/reports/OPEN_INVOICES with accountingBookId in the body -> 200 and the echoed params list only fiscalYearId/startDate/endDate/customerId; the field is ignored, no book filter exists.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:reports:12": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. CustomerAgingQueryRepository.findInvoices l.46 'i.docDate BETWEEN :startDate AND :endDate' and VendorAgingQueryRepository l.54/91 'BETWEEN' unchanged; documents before startDate still dropped.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:reports:13": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. BalanceSheetExportDataSource.requiredPermission() still returns 'accounting.report.view' (l.75); export data sources unchanged for permission since b2597ef11.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:reports:2": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. OpenSalesOrderReportGenerator.toRow l.87: rate = exchangeRate != null ? exchangeRate : ONE, no signum guard (SalesByCustomerSummaryCalculator l.35 has one), so rate 0 still gives amountInTk 0. Unchanged.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:reports:3": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. TerritorySalesQueryService.buildSpecification l.164 still only excludes CANCELLED when no status is given; drafts and rejected orders stay in.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:reports:4": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. CommissionReportQueryService l.656 still 'spos.size() - linkedSpos.size()' over assignment rows (not distinct users); liftingVsImsPercent unchanged.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "st1111:S40": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. SalesByItemSummaryQueryRepository l.30 still sums l.itemAmount / totalValue / qty*price per line, with no trade discount or return netting; the repository is unchanged.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "demo:docs:cheat-sheet-click-paths-not-walked": {
+  "status": "open",
+  "note": "Re-checked on backend release_1.1.0: not verified. Not a backend behaviour: it is a manual walk of the demo guide in a browser; nothing here can be checked by an API call.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:platform:connection-pool-starvation": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. No spring.datasource.hikari setting exists in src/main/resources (only the test properties set max 4), so the Hikari default of 10 still applies. Burst not re-run live to avoid starving the shared stack.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "demo:e2e:stack-reset-needs-docker-hub": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Frontend e2e/stack/stack.mjs:107 still runs compose('up','-d','--build'); no E2E_NO_BUILD switch exists.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "merge:A4": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. git merge-base --is-ancestor: bb54acf8 and 8170575a are ancestors of b2597ef11 and of HEAD 5be512f02.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "merge:C1": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: POST /workflow/tasks/{id}/complete with decision APPROVE -> 400 'decision must be approved, rejected or sent_for_rework'; 'approved' -> 200 (CompleteTaskRequest regex, case-insensitive). The guide document is outside the repo, so its text is not checked.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "pt1110:B16": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Login placeholder is now 'name@example.com' (login-form.tsx:78, fixed), but petra-chart.json still seeds 17 BANK_ACCOUNT ledgers (16 leaves like 112001 'ABL-4305-764539-000'). HRMS assign-employee part not run.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "saleschain:P2-2": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. CustomerFacadeImpl.getByFilter (l.107-108) only narrows to the caller's territory when myTerritory=true; no server-side scope otherwise. Files unchanged. An ASE user was not created for a live run.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "saleschain:SC-10": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: created a TERRITORY with no userId (201), PUT rename -> 200 with the new name.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "saleschain:SC-9": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: PUT territory 581 with parentId 5 (Gazipur) -> 200 but GET shows parentId still 4.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "be-req:field-force:collection-by-id": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Backend has GET /api/sales/collections/{id} (CollectionController l.58); live GET /collections/999999 -> 404 'PaymentCollection not found' (route exists; no collection rows in this DB to read one back). The frontend still has to use it.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "closing:B-03": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: item received with grnDate 2025-10-15 (entered 2026-11-26) -> period-close stock-count of October 2025 (period 40) lists it with systemQty 7, September (period 39) does not. sumUndamagedQuantityMovedSince works on documentDate.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "closing:B-27f": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: vendor bill dated 2025-10-25 left PENDING_APPROVAL -> POST period-close/40/tasks/PURCHASES_PAYABLES/close -> 409 'cannot be closed: 1 vendor bill(s) or payment(s) dated in it are still waiting for approval'.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "closing:C-13": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST fiscal-years/4/reopen on an OPEN year -> 409 'a OPEN financial year cannot be reopened' (FiscalYearDomainService:417).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "closing:B-19": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code only: FiscalPeriodDomainService.reopen has no hook into the period-close tasks (guards exist only for year reopen) and PeriodCloseTaskService only clears the GL task via DELETE .../tasks/GENERAL_LEDGER/close. No closed month on this stack to run it live.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "dash:income-expense": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. LedgerIncomeExpenseService CLOSING_TYPES (l.55) still filters EFinanceDocumentType::isClosingEntry = PERIOD_CLOSING and YEAR_END_CLOSING, so the month-close COGS entry is still excluded from the dashboard expense. Unchanged.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:dashboard:ap-card-vs-aging-report": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: dashboard KPI_PAYABLES and payables-aging total 529,991.82 (ledger 2111 474,571.32 + 2112 55,420.50) against POST VENDOR_AGING grand total 73,985.56 (49,436.96 + 24,548.60). Gap persists and is larger on this stack.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:dashboard:pending-actions-date-null": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. DashboardPendingActionsRepository l.125-129 still adds 'i.docDate >= :from' / '<= :to' with no 'OR i.docDate IS NULL', so an instance with a null doc date drops out when a range is set (only the cursor paging got the null handling). Not run live: no PENDING instance with null doc date on this stack.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "budgets:B8": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /workflow/tasks/{id}/complete {decision:approved} on an already COMPLETED task -> 200 'Task completed' again (TaskService.completeTask l.372 returns silently).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "be-req:payables:payment-history-line-ids": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: AP_PAYMENT_HISTORY_BY_BILL lines carry type/date/docNumber/account/amount/balanceAfter only, no documentId/documentType and no line for the bill itself; AR_PAYMENT_HISTORY_BY_INVOICE has the 'Invoice' line but also no id/type per line.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "be-req:payables:register-per-bill": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /api/reports/ACCOUNTS_PAYABLE_REGISTER -> 404 'Report not found'; the key exists in EReportKeyType but has no generator and is not in the controller's allowed key list.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "be-req:receivables:customer-profitability-generator": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /api/reports/CUSTOMER_PROFITABILITY_SUMMARY -> 404 'Report not found'; enum constant exists, no generator.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "st1111:S1": {
+  "status": "open",
+  "note": "Re-checked on backend release_1.1.0: not verified. Backend side works: POST /api/sales/demands (non-ASE, Modern Trade/Retail customer) with lines[].appliedPricingSchemaId stamps scheme discount (360 on 3600) and rejects a scheme not covering the item (400). Whether the Sales demand form sends the scheme id is a frontend question (not backend). (fix cc7585a33)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "st1111:S25": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: Retail customer with 7% flat category + 10% DISCOUNT scheme: demand shows CUSTOMER 7% 226.80 and SCHEME_DISCOUNT 360 (3600-360-226.8=3013.2); after coordination/quantity/verify confirm the same two discounts and exposure 3013.2 remain, order/invoice carry the scheme discount. (fix cc7585a33)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "st1111:S20": {
+  "status": "decision",
+  "note": "Re-checked on backend release_1.1.0: needs a decision. Live: invoice for an APPROVED order with fulfillmentStatus NOT_FULFILLED (no delivery) still created (POST /api/sales/invoices 201). Rule still undecided.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "st1111:S27": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: applying a Modern Trade-only scheme on a Retail Food customer's demand is now refused 400 'not available for this customer's type', but GET /api/sales/pricing-schemes/by-items?...&customerTypeId=<Retail Food> still lists the MT-only scheme (param ignored).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "st1111:S35": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: after demands, an order and a posted invoice using a DISCOUNT scheme, GET /api/sales/pricing-schemes/{id} shows totalRedemption 0 and totalBudgetUsed 0.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "st1111:S4": {
+  "status": "in-progress",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: PUT /api/sales/pricing-schemes/{id} with status ACTIVE on a DRAFT scheme returns 200 but status stays DRAFT (create honours status, update ignores it); only PUT /{id}/status activates. FE lifecycleStatus control still on the edit form.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "st1111:S5": {
+  "status": "in-progress",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: approving a demand only sets status Approved (order is created by a separate POST /api/sales/orders), yet src/messages/sales-demand/en.json:384 still says approving will 'create a sales order'. (Frontend text.)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:year:ar-one-cent-vat-ait": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: Modern Trade invoice of one line 12,400.00 (VAT inside) posts Dr 1130 12,400.00 against Cr 4114 10,708.12 + 2146 85.66 + 1161 1,606.22 = 12,400.00 (invoice vat 1606.2178 + ait 85.6649 now split from one tax amount).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "st1111:S11": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: return on an approved, undelivered order line answers 400 'Nothing left to return on sales order line: 66' (names no cause such as goods not yet shipped).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "st1111:S21": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: not verified. Frontend-only item (sales-demand utils.ts and schema.ts: negative Sales TP on Other Corporate); no backend call to re-check.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "st1111:S31": {
+  "status": "decision",
+  "note": "Re-checked on backend release_1.1.0: needs a decision. Live: POST /api/sales/customer-refunds without creditMemoId answers 400 'creditMemoId is required.'; a customer deposit exposes no refund or transfer action. Needs design.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "st1111:S36": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: not verified. Frontend-only item (ASE record-collection-modal overpay warning); backend collection approval not re-checked.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "st1111:S38": {
+  "status": "decision",
+  "note": "Re-checked on backend release_1.1.0: needs a decision. Policy decision (edit of a posted invoice without approval); 1249ddc99 only added resync of paymentStatus and refusal of a total below paid; no approval or lock rule added. (fix 1249ddc99)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:gate-pass:fresh-stack-channel-allocation": {
+  "status": "open",
+  "note": "Re-checked on backend release_1.1.0: not verified. Seen again on this stack: the stock-up item receipt stayed document_status PENDING after the inbox sweep (the task was not in the admin inbox, sweep approved 0). Completing the receipt's own taskId (GET /api/purchase/item-receipts/{id}.taskId) made it APPROVED within 3 s. Test-helper timing, not a sales backend bug.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:1": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live as a no-grant user: DELETE /api/companies/1 -> 403, PUT /api/transaction-series-config/{id} -> 403, GET /api/general-setting -> 200. (fix 122f355f8)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:2": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: WorkflowInstanceController.cancel/signal only need workflow.definition.edit; WorkflowEngine.cancel (l.276-301) has no starter/ownership check and drops the reason.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:3": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: user B downloaded A's attachment (200) and deleted it (204); a token for one id opened /api/public/media/{other}/preview (200).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:4": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: AuditTrailController.timeline still has 'TODO: authorize' and passes size through; live no-grant user reached the handler (500 only because the audit service is absent).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:41": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: UserAdminService.activeRoleCodes (l.540) still does userRoleAssignmentRepository.findAll() per user.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:42": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: WorkflowSetupQueryService.resolveEntityDisplayName (l.174) still calls conditionCatalogService.getModule per row (toSummary/toDetail).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:5": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /api/sales/gate-passes/filter with [{field:gateOfficer.password,valueLike:'$2a%'}] -> 200 with rows; DomainService.resolveSpecificationPath has no field whitelist.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:6": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: PUT /api/auth/account/profile-picture with me.html and me.svg -> 200, stored as erp-img/..._29.html; NativeProfilePictureStorage.store l.34 keeps any extension.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "be-req:settings-platform:drill-down-permissions": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: permission catalogue (413 codes) has only settings.system.manage and settings.email-template.* under settings.*; no per-page keys. A no-grant user still gets 200 on /api/general-setting.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:platform:permission-lookup-stalls-401": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: fresh role user, 16 parallel GETs: all answered in 20-92 ms (total 94 ms), no 401, no stall.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:settings:purchase-preset-saves-wider-permissions": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: saved the purchaseLocal preset as the form builds it (58 codes incl. companions): stored role holds exactly 58, no extra permissions.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "purchase:B-P7": {
+  "status": "in-progress",
+  "note": "Re-checked on backend release_1.1.0: still there. Live POST configure ACTIVE: unknown approver role NO_SUCH_ROLE -> 200, priority 0 and -1 -> 200, slaHours 0 -> 200; only empty steps (400) and unknown condition field (400) are refused.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:10": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: TaskAuthorizationService.canComplete/assertCanComplete has no submitter check (only assignee/role); the diff since b2597ef11 only adds the super-administrator bypass.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:11": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: 20 wrong passwords in a row all 401, then the right password -> 200; no throttling or lockout.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:12": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: AuthTokenFilter.SENSITIVE_FIELDS = List.of(\"password\") (l.39); regex needs the key to end after 'password', so 'passwordHash' is not redacted.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:13": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: UserAdminService.sendNativeUserWelcomeEmailIfPossible puts generatedPassword in the rendered body published as EmailRequestedEvent (l.595-615).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:21": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: PUT /api/auth/account/password with newPassword 'a' -> 204; ChangePasswordRequestDTO has only @NotBlank.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:22": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: PUT /api/transaction-series-config/{id} with sequenceLength 0 -> 200 (restored afterwards); CurrencyExchangeConfigMapper l.16 still sets id from the request; nextSequence is overwritten from the DTO (ServiceImpl l.52).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:23": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: IdentitySyncRequestDTO.active is a primitive boolean (l.38), so an omitted field deactivates.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:24": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: created a company with a logo (logoId 2), PUT without the logo -> GET shows logoId null.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:25": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: CurrencyExchangeConfigServiceImpl.upsertBulk changed-check only compares targetCurrency and exchangeRate, so effectiveDate/isActive changes are dropped.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:26": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: rule A (INACTIVE, priority 100) and rule B (ACTIVE, priority 100) same module: PUT toggle-status on A -> 200, both ACTIVE (configure checks priority, toggle does not).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:29": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: ConsumedDomainEvent has an assigned String id and no Persistable/@Version, so saveAndFlush merges (no exception) and tryClaim returns true twice.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:33": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: RestTemplateConfig builds the RestTemplate with no connect/read timeout; no hikari settings in any application*.properties.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:34": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: AccountServiceImpl.changePassword is @Transactional and calls hrmsIdentityClient.pushPasswordHashToHrms inside it (l.73-90).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:35": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: AdminBootstrapHrmsLinker.linkIfConfigured is @Transactional and catches Exception (l.25,53) inside the seeder's transaction.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:36": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: user with only user.account.view called GET /api/rbac/roles (200) and authorization_audit_log gained a DENIED row for rbac.role.view (64 -> 65).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:37": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: OutboxProcessor.process is @Transactional (l.32) and marks PUBLISHED (l.60) with no publisher confirms or purge; outbox_events holds 2765 PUBLISHED rows.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:38": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: WorkflowDocumentSummaryService.refresh still catches RuntimeException and only logs (l.73-76).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:43": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: V1__initial_schema.sql has only the RUNNING partial index and instance/pending-assignee indexes; none for entity history or completed tasks.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:44": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: WorkflowSlaEscalationScheduler (l.30-32) loads findByStatusAndDueAtBefore unbounded, no lock or due_at index.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:45": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: TaskApproverDetailsService still does roleRepository/userRepository lookups per approver (l.161, 228, 233).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:46": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: TaskService.inOwnTransaction (l.69) still opens a second transaction per entity type (l.176, 229).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:50": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: ExportController.export has no row/size limit or 413 path.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:7": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: no-grant user GET /dev/test/workflow/instances -> 200 and GET /api/cns/registration-info -> 200 (dev profile here; the dev controller is not gated by role).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:8": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: tenant admin PATCH /api/admin/users/1/status -> 400 (platform operator guarded), but PATCH on own id {active:false} -> 200 and the admin is deactivated.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:9": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: user with only user.account.edit PUT /api/admin/users/{ownId}/roles with TENANT_SUPER_ADMIN -> 200 (self-elevation).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "saleschain:P3-B6": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live POST configure ACTIVE: unknown role 200, priority 0 and -1 200, slaHours 0 200, steps [] 400, bad condition field 400; numeric value '0 or true' also 200.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "be-req:platform:light-user-lookup": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: GET /api/users/lookup -> 404 (no such endpoint); only field-force person-options exists (d2c2bff6d), not a general light lookup for the Requester dropdown.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:platform:admin-email-renamed-on-seed": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: login super@admin.com / 123456 -> 200 on the current build; dev seed sets super@admin.com, user id 1. (fix 0ee5fe7c5)",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e:platform:external-endpoints-slow": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: RestTemplateConfig has no timeout (see 33). Live here the unreachable HRMS refuses fast (hrms-employees 400 in 38 ms, sso 502 in 16 ms), so the 42 s hang was not reproduced.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:14": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: after admin POST /api/admin/users/{id}/password/reset the old token still gets 200 on /api/auth/me/access; JwtUtil.isTokenValid does not reject purpose=sso tokens.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:15": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: OPTIONS with Origin https://example.invalid returned the origin echoed with allow-credentials true; AuthTokenFilter l.56 logs at INFO.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:16": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: generate-token expiresInSeconds 3600 and a token from user B opens /api/public/media/{A's id}/preview (200); javadoc still says 60 s.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:17": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /api/rbac/assignments with TENANT_SUPER_ADMIN (SYSTEM), globalAccess false, no scopes -> 201; validateAssignmentScopeRules only rejects BUSINESS.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:18": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: WorkflowActorResolver.isAdmin (l.81-87) still returns true for any non-null authentication.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:19": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: configure ACTIVE with GREATER_THAN value '0 or true' -> 200; SpelConditionCompiler l.187-198 concatenates rule.getValue().",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:20": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: EmailTemplateRenderer.render (l.23-25) does plain template.replace with no HTML escaping.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:27": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: company name of 300 chars -> 409 and table-view name of 101 chars -> 409 (not 400); CompanyRequestDTO.name still has no @Size; only bin/vat limits were added.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:28": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: created userId 'BCCase..' then 'bccase..' (email in different case too) -> both 201.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:30": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: TransactionSeriesConfigServiceImpl.update l.52 sets nextSequence from the request DTO.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:31": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: two parallel POST /api/ui/table-views isDefault=true -> 201,201; GET /api/ui/table-views/default -> 500.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:32": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: WorkflowEngine.start/invokeHandler unchanged except the reject-support check; no idempotent handling of the unique-index race or non-numeric entity id.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:39": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: filename a\"b.txt is sent as a%22b.txt so the header parses (that part fine); code: storeAttachment is @Transactional, uploads to MinIO before save with no cleanup on failure (l.37-57).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:40": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: AttachmentHandler.deleteAttachment (l.109-113) deletes the MinIO file before attachmentRepository.delete.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:47": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: ApprovalHistoryService still runs taskRepository.findByInstanceId per instance in a loop (l.572) plus per-cycle lookups.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:48": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: NativeUserIdGenerator (l.24-29) loops userRepository.existsByUserId per candidate id.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:49": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: wrong password for a deactivated user -> 401 'This account is inactive...', unknown user -> 401 'Invalid login credentials'.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:51": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: EmailDeliveryStatus.QUEUED is set on create (EmailNotificationService l.194); nothing in shared/emailnotification or events/email sets SENT or FAILED.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:52": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: gate-pass filter with a bad enum value -> 400 whose message exposes 'SqmBasicValuedSimplePath(com.nsl.erp...GatePass(var_1).status)'.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:53": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: no-grant user GET /api/cns/registration-info -> 200 (NotificationController l.59 has no permission).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:54": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: InternalApiKeyFilter l.47 uses String.equals (not constant time); IdentitySyncServiceImpl.handleSeparated l.49-51 dereferences request.getUserId() without a null check.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:55": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Live: POST /dev/test/workflow/seed -> 500; seeder still references workflow/definitions/petty-cash-approval.json which is missing from resources (it left two ACTIVE rules, which I deactivated).",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "rv-be:settings-platform:56": {
+  "status": "still-bug",
+  "note": "Re-checked on backend release_1.1.0: still there. Code: V1__initial_schema.sql columns are TIMESTAMP without zone except sessions_revoked_at; no jdbc time_zone setting in application*.properties.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
+ },
+ "e2e27:6": {
+  "status": "fixed",
+  "note": "Re-checked on backend release_1.1.0: fixed. Live: created a TERRITORY with no userId (201), PUT rename -> 200 with the new name.",
+  "ref": "backend release_1.1.0@5be512f02",
+  "date": "2026-11-26"
  }
 }

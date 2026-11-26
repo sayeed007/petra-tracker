@@ -1,0 +1,4443 @@
+{
+ "exportedAt": "2026-11-26T03:25:53.639Z",
+ "issues": [
+  {
+   "id": "assets:A-02",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Saif Mahmud Khan Dourjoy",
+   "updatedAt": "2026-11-18T06:29:43.608Z",
+   "lastComment": null
+  },
+  {
+   "id": "assets:A-07",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": null,
+   "updatedAt": "2026-11-17T21:15:35.843Z",
+   "lastComment": {
+    "by": "Saif Mahmud Khan Dourjoy",
+    "at": "2026-11-17T21:15:35.843Z",
+    "text": "Fixed",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "assets:A-37b",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Saif Mahmud Khan Dourjoy",
+   "updatedAt": "2026-11-18T06:29:43.608Z",
+   "lastComment": null
+  },
+  {
+   "id": "assets:A-71",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Saif Mahmud Khan Dourjoy",
+   "updatedAt": "2026-11-18T06:30:14.252Z",
+   "lastComment": {
+    "by": "Saif Mahmud Khan Dourjoy",
+    "at": "2026-11-18T06:30:14.252Z",
+    "text": "Fixed",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "assets:A-72",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Saif Mahmud Khan Dourjoy",
+   "updatedAt": "2026-11-18T06:29:43.608Z",
+   "lastComment": null
+  },
+  {
+   "id": "assets:A-83",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Saif Mahmud Khan Dourjoy",
+   "updatedAt": "2026-11-18T06:29:43.608Z",
+   "lastComment": null
+  },
+  {
+   "id": "be-req:field-force:collection-by-id",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:53:57.845Z",
+   "lastComment": null
+  },
+  {
+   "id": "closing:A-08",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Saif Mahmud Khan Dourjoy",
+   "updatedAt": "2026-11-18T06:29:43.608Z",
+   "lastComment": null
+  },
+  {
+   "id": "demo:e2e:stale-test-fail-bill-payment-term",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "demo:purchase:item-receipt-bin-dialog-hard-to-use",
+   "status": "wontfix",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-18T03:49:57.185Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T06:27:33.947Z",
+    "text": "bin options come from the backend based on selected zone, shelf",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "demo:purchase:receipt-without-requisition-split-suggests-zero",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "demo:release:frontend-needs-channel-allocations-endpoint",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "e2e:gate-pass:fresh-stack-channel-allocation",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "e2e:inventory:distribution-item-name-500",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T03:56:23.276Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T03:12:30.520Z",
+    "text": "Already fixed",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "e2e:platform:vendor-bill-dev-seeder-crash",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "e2e:purchase:payment-delete-missing",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T14:54:57.182Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-16T14:54:57.182Z",
+    "text": "delete button is mot necessary.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "e2e:purchase:payment-save-stuck-after-refusal",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "e2e:sales:credit-memo-edit-unreachable",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "e2e:sales:credit-memo-list-number",
+   "status": "decision",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T10:47:32.176Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-16T10:47:32.176Z",
+    "text": ".",
+    "statusTo": "decision"
+   }
+  },
+  {
+   "id": "e2e:year:ar-one-cent-vat-ait",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "e2e:year:lot-bill-drops-stock-sheet",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "e2e:year:return-not-credited-to-channel",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "e2e27:5",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Ashikul Islam Abir",
+   "updatedAt": "2026-11-16T08:09:41.810Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-16T08:09:41.810Z",
+    "text": "fixed the logic",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "pt1110:A1",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "pt1110:A2",
+   "status": "wontfix",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T08:42:31.108Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T08:42:31.108Z",
+    "text": "trackingType field is automatically set LOT during new item creation",
+    "statusTo": "wontfix"
+   }
+  },
+  {
+   "id": "pt1110:B1",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-23T02:54:59.485Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-23T02:54:59.485Z",
+    "text": "removed receive by functionality",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "pt1110:B10",
+   "status": "fixed",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-18T03:55:48.411Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T03:23:31.897Z",
+    "text": "Automatically fill the lot if prefix, digits, start, qty set",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "pt1110:B11",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "pt1110:B12",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T15:01:22.941Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-16T15:01:22.941Z",
+    "text": "fixed",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "pt1110:B13",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "pt1110:B14",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "pt1110:B17",
+   "status": "decision",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T15:20:46.730Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-16T15:20:46.730Z",
+    "text": "There is \"Reason\" field on each item line on the form. So showing reason on the details page should be come from Nahian vai",
+    "statusTo": "decision"
+   }
+  },
+  {
+   "id": "pt1110:B18",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "pt1110:B2",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "pt1110:B4",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "pt1110:B5",
+   "status": "wontfix",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-22T03:26:00.762Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-22T03:26:00.762Z",
+    "text": "For some case, it is okay. There is validation that payment amount can not exceed the available amount. So it will give error message.",
+    "statusTo": "wontfix"
+   }
+  },
+  {
+   "id": "pt1110:B6",
+   "status": "decision",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T16:25:48.115Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-16T16:25:48.115Z",
+    "text": "it shows the amount vendor is owed to petra",
+    "statusTo": "decision"
+   }
+  },
+  {
+   "id": "pt1110:B8",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:B-P10",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:B-P11",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:B-P12",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:B-P2",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:B-P3",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:B-P4",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:B-P6",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:B-P8",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:B-P9",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:C-P1",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:C-P11",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:C-P12",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:C-P13",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:C-P14",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:C-P15",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:C-P16",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:C-P17",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:C-P18",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:C-P19",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:C-P21",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:C-P22",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:C-P24",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:C-P28",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "purchase:C-P29",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:1",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:10",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:11",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:12",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:13",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:14",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:15",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:16",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:17",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:18",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:19",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:2",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:20",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:21",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:22",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:23",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:24",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:25",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:26",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:27",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:28",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:29",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:29#review-be",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:3",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:30",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:31",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:32",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:33",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:34",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:35",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:36",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:37",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:38",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:39",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:4",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:40",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:41",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:42",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:43",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:44",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:45",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:46",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:47",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:48",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:5",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:6",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:7",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:8",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:inventory:9",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:10",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:11",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:12",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:13",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:14",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:16",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:17",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:18",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:19",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:2",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:20",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:21",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:22",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:23",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:24",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:25",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:26",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:27",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:29",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:3",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:30",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:31",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:32",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:33",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:34",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:35",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:36",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:37",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:38",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:39",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:40",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:41",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:42",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:43",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:44",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:5",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:6",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:7",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:purchase:8",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:1.1",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Ashikul Islam Abir",
+   "updatedAt": "2026-11-16T05:39:16.810Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-16T05:39:16.810Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:1.2",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T06:41:09.993Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-16T06:41:09.993Z",
+    "text": ".",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:1.3",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Ashikul Islam Abir",
+   "updatedAt": "2026-11-16T08:22:38.489Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-16T08:22:38.489Z",
+    "text": "User with the permission to check the credit limit, s/he can take this action only. Previously the requirement was to assign another person as credit limit validator. So to keep this particular segment flexible it has been kept as open from BE.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:1.4",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T04:36:43.477Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-18T04:36:43.477Z",
+    "text": "fixed from BE",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:1.5",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Ashikul Islam Abir",
+   "updatedAt": "2026-11-16T09:20:27.188Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-16T09:20:27.188Z",
+    "text": "the audit about credit limit is intentionally not integrated here as credit limit can now only be changed through the additional limit changing API.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:1.6",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:1.7",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Ashikul Islam Abir",
+   "updatedAt": "2026-11-16T09:51:40.778Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-16T09:51:30.403Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:1.8",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:1.9",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:10.1",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:10.3",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:10.4",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:2.1",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:2.10",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T04:44:12.611Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-18T04:44:12.611Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:2.11",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T10:21:57.563Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-16T10:21:57.563Z",
+    "text": "validation added",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:2.12",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Ashikul Islam Abir",
+   "updatedAt": "2026-11-16T08:18:21.385Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-16T08:18:21.385Z",
+    "text": "The order is created from a requisition. So while giving requisition if the trade discount config is changed then the order should consider the exact same discount properties that was used during that requisition time.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:2.13",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Ashikul Islam Abir",
+   "updatedAt": "2026-11-16T09:36:11.266Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-16T09:36:11.266Z",
+    "text": "It's intentional cz a demand requisition may have been used to create multiple orders, though it's not possible from the UI.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:2.14",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:2.15",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T04:44:31.075Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-18T04:44:31.075Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:2.16",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:2.17",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:2.18",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:2.2",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:2.3",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:2.4",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Ashikul Islam Abir",
+   "updatedAt": "2026-11-16T06:42:12.420Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-16T06:42:12.420Z",
+    "text": ".",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:2.5",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:2.6",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:2.7",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:2.8",
+   "status": "decision",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Ashikul Islam Abir",
+   "updatedAt": "2026-11-16T10:29:44.298Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-16T10:29:44.298Z",
+    "text": "As currently there is no support of clearing the invoice through the credit memos so the outstanding is calculated by: (Total invoiced amount - The remaining amount to clear the invoices fully)",
+    "statusTo": "decision"
+   }
+  },
+  {
+   "id": "rv-be:sales:2.9",
+   "status": "wontfix",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T04:40:36.217Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-18T04:40:36.217Z",
+    "text": "It is kept open from BE as the client may alter the vat rate as their own need. But this action can't be taken from UI",
+    "statusTo": "wontfix"
+   }
+  },
+  {
+   "id": "rv-be:sales:3.1",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:3.2",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Ashikul Islam Abir",
+   "updatedAt": "2026-11-16T05:52:51.939Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-16T05:52:51.939Z",
+    "text": "Used locking mechanism to handle concurrent processing.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:3.3",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:3.4",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T05:19:01.105Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-18T05:19:01.105Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:4.1",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T05:19:20.833Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-18T05:19:20.833Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:4.2",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T05:19:36.013Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-18T05:19:36.013Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:4.3",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:4.4",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:4.5",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:4.6",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:4.7",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:4.8",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:4.9",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:5.1",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Ashikul Islam Abir",
+   "updatedAt": "2026-11-16T06:03:14.651Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-16T06:03:14.651Z",
+    "text": "validation layer added",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:5.2",
+   "status": "wontfix",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T05:22:03.912Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-18T05:22:03.912Z",
+    "text": "Currently there is no functionality of deleting any document so will adjust it when this type of action will be enabled later.",
+    "statusTo": "wontfix"
+   }
+  },
+  {
+   "id": "rv-be:sales:5.3",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T09:22:33.406Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-18T09:22:33.406Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:6.1",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T09:22:47.229Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-18T09:22:47.229Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:6.2",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.1",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.10",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T11:56:45.315Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-18T11:56:45.315Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:7.11",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T11:57:12.319Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-18T11:57:12.319Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:7.12",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T11:57:27.047Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-18T11:57:27.047Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-be:sales:7.13",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.14",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.15",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.16",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.17",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.18",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.19",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.2",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.3",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.4",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.5",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.6",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.7",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.8",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:7.9",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:8.1",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:8.2",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:8.3",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:9.1",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:9.10",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:9.11",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:9.13",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:9.14",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:9.15",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:9.2",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:9.3",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:9.4",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:9.5",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:9.6",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:9.7",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:9.8",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-be:sales:9.9",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:accounting:16",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "tanguarhaor2025-star",
+   "updatedAt": "2026-11-25T03:47:03.986Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:1",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:10",
+   "status": "wontfix",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T10:28:35.280Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T10:28:35.280Z",
+    "text": "Maybe the tracking type is missing for backend seeded data.\r\nValues are set to default values during item creation.",
+    "statusTo": "wontfix"
+   }
+  },
+  {
+   "id": "rv-fe:inventory:11",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:12",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:13",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:14",
+   "status": "fixed-per-log",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-18T04:05:33.174Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T08:54:39.080Z",
+    "text": "solved",
+    "statusTo": "fixed-per-log"
+   }
+  },
+  {
+   "id": "rv-fe:inventory:15",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:17",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:18",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:19",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:2",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:22",
+   "status": "in-progress",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:23",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:24",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:27",
+   "status": "in-progress",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:28",
+   "status": "in-progress",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:30",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-17T09:41:17.024Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-17T09:41:17.024Z",
+    "text": "Buttons are not stuck. Already fixed",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:inventory:32",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:34",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:37",
+   "status": "in-progress",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:38",
+   "status": "in-progress",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:40",
+   "status": "in-progress",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:43",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-18T03:29:54.879Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T03:20:05.161Z",
+    "text": "Used AppMonthPicker instead of AppDateRangePicker.",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "rv-fe:inventory:45",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:46",
+   "status": "in-progress",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:47",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:48",
+   "status": "in-progress",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:50",
+   "status": "in-progress",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:51",
+   "status": "in-progress",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:inventory:52",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-18T05:42:28.832Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T05:29:53.750Z",
+    "text": "issue is not clear.",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "rv-fe:inventory:6",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:other:14",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:other:21",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-17T06:04:45.948Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-17T06:04:45.948Z",
+    "text": "Pack issue is not reproducible. Date and duplicate validation being fixed",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:other:9",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:purchase:1.1",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:purchase:1.15",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-17T06:19:07.276Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-17T06:19:07.276Z",
+    "text": "fixed",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:1.19",
+   "status": "wontfix",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-22T03:24:45.653Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-22T03:24:45.653Z",
+    "text": "currently price and vat are open",
+    "statusTo": "wontfix"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:10.3",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-18T04:05:35.193Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-17T06:53:17.598Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:10.4",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-18T07:34:41.158Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-18T07:34:41.158Z",
+    "text": "removed",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:10.5",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-19T06:43:00.581Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-19T06:43:00.581Z",
+    "text": "fixed",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:10.6",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-18T05:45:38.408Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-18T05:45:38.408Z",
+    "text": "fixed",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:11.3",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-17T07:07:27.122Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-17T07:07:27.122Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:12.1",
+   "status": "fixed",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-18T04:05:35.193Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-17T07:07:51.165Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:13.1",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-18T07:10:47.127Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-18T07:10:47.127Z",
+    "text": "removed fix(purchase:13.1): remove dead and always-empty code, duplicate refinements, and align query defaults",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:13.2",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-17T09:22:25.305Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-17T09:22:25.305Z",
+    "text": "remove all unused types helpers and action",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:13.3",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-18T04:05:35.193Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-17T10:10:09.304Z",
+    "text": "added unstable_rethrow",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:13.5",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-18T06:15:25.293Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-18T06:15:25.293Z",
+    "text": "fixed",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:3.5",
+   "status": "in-progress",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T02:55:20.279Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:purchase:4.4",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-18T04:16:50.063Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-18T04:16:50.063Z",
+    "text": "fixed",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:6.3",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-18T04:05:35.193Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-17T09:53:59.524Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:8.5",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T09:27:59.286Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-16T09:27:59.286Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:8.7",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-18T04:05:35.193Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-17T10:19:14.701Z",
+    "text": "fixed",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:9.1",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-16T11:34:19.714Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-16T11:34:19.714Z",
+    "text": "Fixed reported issue. Removed email communication tab from vendor fulfillment form.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:9.2",
+   "status": "unknown",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-17T10:14:07.584Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-17T10:14:07.584Z",
+    "text": "not a bug",
+    "statusTo": "unknown"
+   }
+  },
+  {
+   "id": "rv-fe:purchase:9.4",
+   "status": "unknown",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Sadi Muhammad Tanzim",
+   "updatedAt": "2026-11-19T11:03:24.077Z",
+   "lastComment": {
+    "by": "Sadi Muhammad Tanzim",
+    "at": "2026-11-19T11:03:24.077Z",
+    "text": "Dont regenerate",
+    "statusTo": "unknown"
+   }
+  },
+  {
+   "id": "rv-fe:reports:16",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-18T03:35:29.497Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T04:17:30.037Z",
+    "text": "here fiscalYear denotes selected year, not Accounting fiscalYear",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "rv-fe:reports:20",
+   "status": "fixed-per-log",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-18T03:35:45.805Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T03:24:25.704Z",
+    "text": "set page size 20",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "rv-fe:reports:32",
+   "status": "fixed-per-log",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-18T03:39:02.936Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T04:59:19.045Z",
+    "text": "remove duplicate copies",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "rv-fe:reports:33",
+   "status": "fixed",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-18T03:39:19.853Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T03:27:38.263Z",
+    "text": "Frontend can't submit without a slip",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "rv-fe:reports:34",
+   "status": "decision",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-18T03:39:47.842Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T05:07:16.821Z",
+    "text": "May be there is no Unit Test file for 'use-trade-discount'",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "rv-fe:reports:6",
+   "status": "fixed-per-log",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-18T03:40:01.284Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T03:31:11.767Z",
+    "text": "Make the input as number field",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "rv-fe:reports:7",
+   "status": "wontfix",
+   "sourceStatus": "wontfix",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T06:58:31.423Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T06:58:31.423Z",
+    "text": "Frontend validates it",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "rv-fe:reports:8",
+   "status": "wontfix",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T06:56:35.907Z",
+   "lastComment": {
+    "by": "Wakil Mahmud",
+    "at": "2026-11-16T06:56:35.907Z",
+    "text": "Acknowledge button appears if the order is \"In Transit\" and the user has the permission",
+    "statusTo": "wontfix"
+   }
+  },
+  {
+   "id": "rv-fe:sales:1",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:10",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:11",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:12",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:13",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:14",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:15",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:16",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:17",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:18",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:19",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:2",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:20",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:21",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-25T10:38:52.853Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-25T10:38:52.853Z",
+    "text": ".",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:sales:22",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:23",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:24",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:25",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:26",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:27",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:28",
+   "status": "decision",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T10:10:17.972Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-16T10:10:17.972Z",
+    "text": ".",
+    "statusTo": "decision"
+   }
+  },
+  {
+   "id": "rv-fe:sales:29",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:30",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:31",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:32",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-17T06:47:52.560Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-17T06:47:52.560Z",
+    "text": "it was already fixed",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:sales:34",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T10:26:04.210Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-16T10:26:04.210Z",
+    "text": "Resolved",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:sales:35",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:36",
+   "status": "fixed",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T04:05:37.172Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-16T10:11:10.685Z",
+    "text": "Cheque no field added",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:sales:37",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:38",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:39",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:4",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:40",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:41",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:42",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:43",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:44",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:45",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:46",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:47",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:48",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:49",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:5",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:51",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:52",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:53",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-19T05:11:15.463Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-19T05:11:15.463Z",
+    "text": ".",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:sales:54",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:55",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:56",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T04:05:38.250Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-17T07:05:26.686Z",
+    "text": "removed dead code",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:sales:57",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:58",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:7",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:8",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:sales:9",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "rv-fe:settings-platform:26",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": null,
+   "updatedAt": "2026-11-18T15:04:57.381Z",
+   "lastComment": {
+    "by": "sayeed007",
+    "at": "2026-11-18T15:04:57.381Z",
+    "text": "Fixed in release_beta_1.0.0 (047aedad): the support login locks a client out for 5 minutes after 5 wrong answers within a minute (login-throttle.ts, with a unit test). The counter is in memory, so each server instance counts for itself.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:settings-platform:45",
+   "status": "fixed",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": null,
+   "updatedAt": "2026-11-18T15:06:06.804Z",
+   "lastComment": {
+    "by": "sayeed007",
+    "at": "2026-11-18T15:06:06.804Z",
+    "text": "Fixed in release_beta_1.0.0 (047aedad): the 13 inventory-settings writes check their own permission (typed PERMISSION_DENIED) and failed reads throw a stable code, not the request text. Reads are deliberately not permission-checked because other modules use them as lookups. getSalesChannels still returns an empty list on failure.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:settings-platform:5",
+   "status": "fixed",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": null,
+   "updatedAt": "2026-11-18T15:06:15.656Z",
+   "lastComment": {
+    "by": "sayeed007",
+    "at": "2026-11-18T15:06:15.656Z",
+    "text": "Fixed in release_beta_1.0.0 (047aedad): the org-structure add/update/delete/assign primitives are no longer public actions, and the four action wrappers check the sales.geography create/edit/delete permission. The customer-lookup error with retry was already in place.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:settings-platform:55",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": null,
+   "updatedAt": "2026-11-18T15:05:06.865Z",
+   "lastComment": {
+    "by": "sayeed007",
+    "at": "2026-11-18T15:05:06.865Z",
+    "text": "Fixed in release_beta_1.0.0 (047aedad): the sidebar flask link to the component gallery is shown only outside production. The /examples route already answered 404 in a production build.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:settings-platform:57",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": null,
+   "updatedAt": "2026-11-18T15:06:24.215Z",
+   "lastComment": {
+    "by": "sayeed007",
+    "at": "2026-11-18T15:06:24.215Z",
+    "text": "Closed after checking release_beta_1.0.0 (047aedad): only one getInitials helper is left in the settings code, the duplicates are gone.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:settings-platform:58",
+   "status": "fixed",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": null,
+   "updatedAt": "2026-11-18T15:05:58.159Z",
+   "lastComment": {
+    "by": "sayeed007",
+    "at": "2026-11-18T15:05:58.159Z",
+    "text": "Fixed in release_beta_1.0.0 (047aedad): the unused duplicate ROLE_LABEL in features/settings/field-force/constants.ts was removed; one definition remains in the facade.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:settings-platform:60",
+   "status": "fixed",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": null,
+   "updatedAt": "2026-11-18T15:04:25.859Z",
+   "lastComment": {
+    "by": "sayeed007",
+    "at": "2026-11-18T15:04:25.859Z",
+    "text": "Fixed in release_beta_1.0.0 (047aedad, MR fix/warehouse-label-descendants): the subtree of a location is collected in one pass with a parent-to-children map instead of scanning the whole list per node. Unit test descendants.test.ts (5,050 nodes). Not timed on a real 5,000-bin warehouse.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "rv-fe:settings-platform:63",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": null,
+   "updatedAt": "2026-11-18T15:05:15.713Z",
+   "lastComment": {
+    "by": "sayeed007",
+    "at": "2026-11-18T15:05:15.713Z",
+    "text": "Fixed in release_beta_1.0.0 (047aedad): eslint now fails an import of '@/erp-api/api-client' inside src/features. The one existing violation (an unused vendor-return bin action) was removed.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "sales:B1",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "sales:B10",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "sales:B11",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "sales:B4",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Ashikul Islam Abir",
+   "updatedAt": "2026-11-16T06:42:56.686Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-16T06:42:56.686Z",
+    "text": ".",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "sales:B8",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "sales:B9",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "sales:N1",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "sales:N2",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "sales:N3",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "sales:N4",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "sales:N5",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "sales:N7",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:C1",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:C11",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:53:57.845Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:C12",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:53:57.845Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:C14",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:C15",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:C2",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:C3",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:C4",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:C7",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:C8",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:FD-P3-7",
+   "status": "fixed",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": null,
+   "updatedAt": "2026-11-18T15:06:32.856Z",
+   "lastComment": {
+    "by": "sayeed007",
+    "at": "2026-11-18T15:06:32.856Z",
+    "text": "Closed after checking release_beta_1.0.0 (047aedad): AntdProvider renders the page only once the real theme is known, which was the cause of the white selects in dark mode. Not re-seen in a browser.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "saleschain:FD-P3-8",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:53:57.845Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:FD-P3-9",
+   "status": "fixed",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": null,
+   "updatedAt": "2026-11-18T15:06:41.621Z",
+   "lastComment": {
+    "by": "sayeed007",
+    "at": "2026-11-18T15:06:41.621Z",
+    "text": "Closed after checking release_beta_1.0.0 (047aedad): every English message key has a Bengali one; the remaining identical values are brands, formats and mock names. The untranslated year-end block under settings.system is used by no live screen. Not re-checked in a browser.",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "saleschain:FP2-1",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:53:57.845Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:P2-2",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:53:57.845Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:P2-3",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:53:57.845Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:P3-B2",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:P3-B4",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:P3-B5",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:P3-B7",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:P3-B8",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:P3-B9",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:SC-1",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Ashikul Islam Abir",
+   "updatedAt": "2026-11-16T06:37:34.064Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:SC-10",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:53:57.845Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:SC-11",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:53:57.845Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:SC-12",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:SC-13",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:SC-2",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Ashikul Islam Abir",
+   "updatedAt": "2026-11-16T09:44:51.665Z",
+   "lastComment": {
+    "by": "Ashikul Islam Abir",
+    "at": "2026-11-16T09:44:51.665Z",
+    "text": "done",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "saleschain:SC-3",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:SC-4",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:SC-5",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:SC-7",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "saleschain:SC-9",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:53:57.845Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S1",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S10",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S11",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S12",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T04:05:38.250Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-16T06:57:21.456Z",
+    "text": ".",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "st1111:S13",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S15",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T04:05:37.172Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-16T03:56:08.136Z",
+    "text": "Credit memo approval flow",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "st1111:S18",
+   "status": "wontfix",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-17T05:25:31.468Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-17T05:25:31.468Z",
+    "text": "according to the business flow, it isn't issue",
+    "statusTo": "wontfix"
+   }
+  },
+  {
+   "id": "st1111:S19",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S20",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S21",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S22",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T04:05:38.250Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-16T06:04:13.784Z",
+    "text": "modify placeholder and error message",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "st1111:S23",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S24",
+   "status": "decision",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T10:40:08.123Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-16T10:40:08.123Z",
+    "text": ".",
+    "statusTo": "decision"
+   }
+  },
+  {
+   "id": "st1111:S25",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S27",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S28",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S29",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Wakil Mahmud",
+   "updatedAt": "2026-11-16T02:54:18.539Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S3",
+   "status": "fixed",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T10:25:14.698Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-16T10:25:14.698Z",
+    "text": "renamed subtitle",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "st1111:S30",
+   "status": "decision",
+   "sourceStatus": "decision",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S31",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S32",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T04:05:38.250Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-16T07:01:03.713Z",
+    "text": "Resolved",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "st1111:S33",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S34",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T04:05:38.250Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-16T05:29:41.076Z",
+    "text": "Currently showing warning message to the user that why it it is cuts",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "st1111:S35",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S36",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:07.468Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S37",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T04:05:38.250Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-16T10:12:10.441Z",
+    "text": ".",
+    "statusTo": "fixed"
+   }
+  },
+  {
+   "id": "st1111:S38",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S4",
+   "status": "in-progress",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S5",
+   "status": "in-progress",
+   "sourceStatus": "in-progress",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S6",
+   "status": "open",
+   "sourceStatus": "open",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-16T03:54:37.728Z",
+   "lastComment": null
+  },
+  {
+   "id": "st1111:S7",
+   "status": "fixed",
+   "sourceStatus": "fixed",
+   "pendingRequest": null,
+   "assignee": "mdrohed-nsl",
+   "updatedAt": "2026-11-18T04:05:38.250Z",
+   "lastComment": {
+    "by": "mdrohed-nsl",
+    "at": "2026-11-16T05:19:00.492Z",
+    "text": "Remove default auto select option for customer",
+    "statusTo": null
+   }
+  },
+  {
+   "id": "vqa:fa-raw-enums",
+   "status": "still-bug",
+   "sourceStatus": "still-bug",
+   "pendingRequest": null,
+   "assignee": "Saif Mahmud Khan Dourjoy",
+   "updatedAt": "2026-11-18T06:29:43.608Z",
+   "lastComment": null
+  }
+ ]
+}

@@ -1,0 +1,206 @@
+[
+ {
+  "id": "be-recheck:role-self-elevation",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "high",
+  "title": "A user with only user.account.edit can give themselves or anyone the TENANT_SUPER_ADMIN role",
+  "summary": "Editing a user's role needs only the account-edit right, and the new role takes effect at once, so any account editor can make themselves a super admin.",
+  "steps": [
+   "Log in as a user whose role has only user.account.edit.",
+   "Edit your own user (or another) and assign TENANT_SUPER_ADMIN.",
+   "Call any admin-only endpoint."
+  ],
+  "expected": "The assignment is refused unless the caller already holds that role (or a dedicated 'assign roles' right).",
+  "actual": "The role is assigned and works immediately (proved live on the e2e stack).",
+  "where": "Backend: user account update / role assignment service",
+  "verify": "As an account-edit-only user, PUT the user with TENANT_SUPER_ADMIN: expect 403.",
+  "owner": "Backend (platform)",
+  "status": "open",
+  "status_evidence": "Found while re-checking the backend on release_1.1.0, 2026-11-26.",
+  "evidence_level": "verified",
+  "found": "2026-11-26",
+  "checked": {
+   "ref": "backend release_1.1.0@5be512f02",
+   "date": "2026-11-26"
+  },
+  "refs": []
+ },
+ {
+  "id": "be-recheck:dev-endpoints-open",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "medium",
+  "title": "/dev/test/* and /api/cns/registration-info answer 200 to a user with no rights",
+  "summary": "A user with no granted permissions can call the dev test endpoints and read the notification-service registration info.",
+  "steps": [
+   "Log in as a role with no permissions.",
+   "GET /api/cns/registration-info and POST /dev/test/workflow/seed."
+  ],
+  "expected": "401/403, or the endpoints do not exist outside the dev profile.",
+  "actual": "200 on the e2e stack (dev profile); not checked on a production profile.",
+  "where": "Backend: dev test controllers, CNS registration controller",
+  "verify": "Run with the prod profile and repeat the calls: expect 404/403.",
+  "owner": "Backend (platform)",
+  "status": "open",
+  "status_evidence": "Found while re-checking the backend on release_1.1.0, 2026-11-26.",
+  "evidence_level": "verified",
+  "found": "2026-11-26",
+  "checked": {
+   "ref": "backend release_1.1.0@5be512f02",
+   "date": "2026-11-26"
+  },
+  "refs": []
+ },
+ {
+  "id": "be-recheck:bill-negative-tax-saved",
+  "module": "purchase",
+  "side": "backend",
+  "severity": "medium",
+  "title": "A vendor bill with a negative tax rate or unit price is saved, then cannot be approved",
+  "summary": "Create accepts negative taxRate and billUnitPrice; approval then fails with 400 on the workflow task and the bill stays Pending forever.",
+  "steps": [
+   "POST a vendor bill with taxRate -5 (or billUnitPrice -1).",
+   "Approve its workflow task."
+  ],
+  "expected": "The create is refused with a readable 400.",
+  "actual": "201 on create; 400 on approval; the bill is stuck Pending.",
+  "where": "Backend: vendor bill create validation",
+  "verify": "POST with taxRate -5: expect 400.",
+  "owner": "Backend (purchase)",
+  "status": "open",
+  "status_evidence": "Found while re-checking the backend on release_1.1.0, 2026-11-26.",
+  "evidence_level": "verified",
+  "found": "2026-11-26",
+  "checked": {
+   "ref": "backend release_1.1.0@5be512f02",
+   "date": "2026-11-26"
+  },
+  "refs": []
+ },
+ {
+  "id": "be-recheck:parallel-bin-transfer-overbook",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Two parallel bin transfers of 10 from a bin holding 10 both become Pending with only 10 reserved",
+  "summary": "The reservation is not locked, so both transfers are accepted and approving both could move stock twice.",
+  "steps": [
+   "Send two bin transfers of 10 from a bin holding exactly 10 at the same time."
+  ],
+  "expected": "The second is refused (insufficient stock) or reserved separately.",
+  "actual": "Both 201 Pending; only 10 reserved.",
+  "where": "Backend: bin transfer create and reservation",
+  "verify": "Repeat the two parallel POSTs: one must be 4xx.",
+  "owner": "Backend (inventory)",
+  "status": "open",
+  "status_evidence": "Found while re-checking the backend on release_1.1.0, 2026-11-26.",
+  "evidence_level": "verified",
+  "found": "2026-11-26",
+  "checked": {
+   "ref": "backend release_1.1.0@5be512f02",
+   "date": "2026-11-26"
+  },
+  "refs": []
+ },
+ {
+  "id": "be-recheck:petty-cash-null-amount-500",
+  "module": "inventory",
+  "side": "backend",
+  "severity": "low",
+  "title": "A petty cash request with no amount answers 500",
+  "summary": "A null amount reaches the database layer and returns an internal error instead of a 400.",
+  "steps": [
+   "POST a petty cash request without amount."
+  ],
+  "expected": "400 naming the amount.",
+  "actual": "500.",
+  "where": "Backend: petty cash request validation",
+  "verify": "POST without amount: expect 400.",
+  "owner": "Backend (inventory)",
+  "status": "open",
+  "status_evidence": "Found while re-checking the backend on release_1.1.0, 2026-11-26.",
+  "evidence_level": "verified",
+  "found": "2026-11-26",
+  "checked": {
+   "ref": "backend release_1.1.0@5be512f02",
+   "date": "2026-11-26"
+  },
+  "refs": []
+ },
+ {
+  "id": "be-recheck:series-sequence-length-zero",
+  "module": "settings-platform",
+  "side": "backend",
+  "severity": "low",
+  "title": "A transaction series can be saved with sequenceLength 0",
+  "summary": "PUT /api/transaction-series-config/{id} with sequenceLength 0 returns 200 and has no validation.",
+  "steps": [
+   "PUT a series with sequenceLength 0."
+  ],
+  "expected": "400.",
+  "actual": "200.",
+  "where": "Backend: transaction series config update",
+  "verify": "PUT sequenceLength 0: expect 400.",
+  "owner": "Backend (platform)",
+  "status": "open",
+  "status_evidence": "Found while re-checking the backend on release_1.1.0, 2026-11-26.",
+  "evidence_level": "verified",
+  "found": "2026-11-26",
+  "checked": {
+   "ref": "backend release_1.1.0@5be512f02",
+   "date": "2026-11-26"
+  },
+  "refs": []
+ },
+ {
+  "id": "be-recheck:ar-aging-vs-kpi",
+  "module": "receivables",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Customer aging total differs from the dashboard receivables card by 990",
+  "summary": "CUSTOMER_AGING totals 17,002.51 while KPI_RECEIVABLES shows 16,012.51 on the same data (the tracker said they agree).",
+  "steps": [
+   "Run the Customer Aging report and read the dashboard receivables KPI."
+  ],
+  "expected": "Both equal.",
+  "actual": "17,002.51 vs 16,012.51.",
+  "where": "Backend: aging generator and KPI query",
+  "verify": "Compare the two on the same book.",
+  "owner": "Backend (reports)",
+  "status": "open",
+  "status_evidence": "Found while re-checking the backend on release_1.1.0, 2026-11-26.",
+  "evidence_level": "verified",
+  "found": "2026-11-26",
+  "checked": {
+   "ref": "backend release_1.1.0@5be512f02",
+   "date": "2026-11-26"
+  },
+  "refs": []
+ },
+ {
+  "id": "be-recheck:stock-count-negative-system-qty",
+  "module": "closing",
+  "side": "backend",
+  "severity": "medium",
+  "title": "Period-close stock count shows negative system quantity at past dates",
+  "summary": "For seed items the as-of calculation gives negative systemQty (item 81: -390 for Oct 2025) while the ledger sums to 3020 and the balance is 2630.",
+  "steps": [
+   "Open the period-close stock count for Oct 2025 on the e2e stack."
+  ],
+  "expected": "System quantity matches the ledger as of that date.",
+  "actual": "Negative values; ledger and balance disagree.",
+  "where": "Backend: period close stock-count as-of calculation",
+  "verify": "Compare the stock count with the item ledger for item 81.",
+  "owner": "Backend (inventory/closing)",
+  "status": "open",
+  "status_evidence": "Found while re-checking the backend on release_1.1.0, 2026-11-26.",
+  "evidence_level": "verified",
+  "found": "2026-11-26",
+  "checked": {
+   "ref": "backend release_1.1.0@5be512f02",
+   "date": "2026-11-26"
+  },
+  "refs": []
+ }
+]
