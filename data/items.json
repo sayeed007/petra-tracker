@@ -28511,8 +28511,8 @@
   "severity": "medium",
   "title": "Settings routes and menus have no permission check",
   "summary": "Any signed-in user can still open the Field Force tree, system settings and inventory settings by URL and see the Field Force, Warehouse and System menu entries.",
-  "status": "decision",
-  "status_evidence": "Owner 2026-11-15: route and menu permission needs drill-down permission assignment in settings (per page and per action) and proper backend support first. Waiting for the backend; no frontend guard until then.",
+  "status": "in-progress",
+  "status_evidence": "Fixed on branch fix/settings-route-permissions (not merged yet). The backend now has the codes the owner was waiting for: settings.system.manage and settings.email-template.view/manage (system settings), inventory.location.view (warehouse), sales.geography.view (field force). The sidebar entry and the route read one list (shared/access/settings-route-permissions.ts), so a page hidden from the menu is also closed by address (No Access). System settings opens for anyone holding one of its codes (system manage, email template view/manage, payment term view), because its General tab has no view right of its own. Checked in the browser against the feature/accounting backend with a user holding only sales.geography.view: System, Warehouse and Inventory show No Access and are gone from the menu, Field Force opens; the super administrator opens all four.",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/06-settings-platform.md",
@@ -28525,8 +28525,8 @@
   "theme": "Theme 3. Permission and access holes",
   "set": "review-fe",
   "checked": {
-   "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
-   "date": "2026-11-15"
+   "ref": "fix/settings-route-permissions",
+   "date": "2026-11-26"
   },
   "steps": [
    "Sign in as a user without field-force or system permission.",
@@ -31466,8 +31466,8 @@
   "severity": "unrated",
   "title": "Sidebar and Settings > Sales/System not permission-filtered (FD-P3-4/5)",
   "summary": "A view-only user used to see every module in the sidebar and could open Settings > Sales (with a New button) and Settings > System (13 inputs). The sidebar and Sales settings are now gated; System settings still opens for any signed-in user.",
-  "status": "decision",
-  "status_evidence": "Owner 2026-11-15: same as rv-fe:settings-platform:19, waiting for drill-down permissions and backend support.",
+  "status": "in-progress",
+  "status_evidence": "Fixed on branch fix/settings-route-permissions (not merged yet). The backend now has the codes the owner was waiting for: settings.system.manage and settings.email-template.view/manage (system settings), inventory.location.view (warehouse), sales.geography.view (field force). The sidebar entry and the route read one list (shared/access/settings-route-permissions.ts), so a page hidden from the menu is also closed by address (No Access). System settings opens for anyone holding one of its codes (system manage, email template view/manage, payment term view), because its General tab has no view right of its own. Checked in the browser against the feature/accounting backend with a user holding only sales.geography.view: System, Warehouse and Inventory show No Access and are gone from the menu, Field Force opens; the super administrator opens all four.",
   "evidence_level": "likely",
   "found": "2026-10-31",
   "source": "backend-saleschain-bugs-2026-10-31.md FD-P3-4",
@@ -31478,8 +31478,8 @@
   "theme": "",
   "set": "notes-B",
   "checked": {
-   "ref": "release_beta_1.0.0@3a78ce85, backend deployment/dev@b2597ef11",
-   "date": "2026-11-15"
+   "ref": "fix/settings-route-permissions",
+   "date": "2026-11-26"
   },
   "steps": [
    "Sign in as a user with only view rights on sales.",

@@ -3335,5 +3335,17 @@
   "note": "Checked 2026-11-26, left unchanged: a child location is created with its parent's purpose and flags as its own values on purpose (defaultChildForm), so the rename path writing them again follows the same rule. Whether a child should store only its own settings and read the rest from the parent is a design decision for the owner.",
   "ref": "fix/shared-settings-batch1",
   "date": "2026-11-26"
+ },
+ "rv-fe:settings-platform:19": {
+  "status": "in-progress",
+  "note": "Fixed on branch fix/settings-route-permissions (not merged yet). The backend now has the codes the owner was waiting for: settings.system.manage and settings.email-template.view/manage (system settings), inventory.location.view (warehouse), sales.geography.view (field force). The sidebar entry and the route read one list (shared/access/settings-route-permissions.ts), so a page hidden from the menu is also closed by address (No Access). System settings opens for anyone holding one of its codes (system manage, email template view/manage, payment term view), because its General tab has no view right of its own. Checked in the browser against the feature/accounting backend with a user holding only sales.geography.view: System, Warehouse and Inventory show No Access and are gone from the menu, Field Force opens; the super administrator opens all four.",
+  "ref": "fix/settings-route-permissions",
+  "date": "2026-11-26"
+ },
+ "saleschain:FD-P3-4": {
+  "status": "in-progress",
+  "note": "Fixed on branch fix/settings-route-permissions (not merged yet). The backend now has the codes the owner was waiting for: settings.system.manage and settings.email-template.view/manage (system settings), inventory.location.view (warehouse), sales.geography.view (field force). The sidebar entry and the route read one list (shared/access/settings-route-permissions.ts), so a page hidden from the menu is also closed by address (No Access). System settings opens for anyone holding one of its codes (system manage, email template view/manage, payment term view), because its General tab has no view right of its own. Checked in the browser against the feature/accounting backend with a user holding only sales.geography.view: System, Warehouse and Inventory show No Access and are gone from the menu, Field Force opens; the super administrator opens all four.",
+  "ref": "fix/settings-route-permissions",
+  "date": "2026-11-26"
  }
 }
