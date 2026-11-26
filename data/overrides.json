@@ -3326,7 +3326,7 @@
  },
  "rv-fe:shared:47": {
   "status": "decision",
-  "note": "Checked 2026-11-26, left unchanged: the three Math.floor sites (lookup panel, multi-select dialog, clamp helper) still round quantities down to whole units. Product decision needed first: can a lot- or serial-tracked quantity be fractional (kg, litre)?",
+  "note": "Decision 2026-11-26 (product owner): keep as it is for now; allowing fractional lot quantities is a lot of work and comes later. Checked: the three Math.floor sites (lookup panel, multi-select dialog, clamp helper) still round quantities down to whole units. Suggested later rule: serial-tracked quantities stay whole, lot-tracked ones follow the unit of measure's precision.",
   "ref": "fix/shared-settings-batch1",
   "date": "2026-11-26"
  },
@@ -3346,6 +3346,60 @@
   "status": "in-progress",
   "note": "Fixed on branch fix/settings-route-permissions (not merged yet). The backend now has the codes the owner was waiting for: settings.system.manage and settings.email-template.view/manage (system settings), inventory.location.view (warehouse), sales.geography.view (field force). The sidebar entry and the route read one list (shared/access/settings-route-permissions.ts), so a page hidden from the menu is also closed by address (No Access). System settings opens for anyone holding one of its codes (system manage, email template view/manage, payment term view), because its General tab has no view right of its own. Checked in the browser against the feature/accounting backend with a user holding only sales.geography.view: System, Warehouse and Inventory show No Access and are gone from the menu, Field Force opens; the super administrator opens all four.",
   "ref": "fix/settings-route-permissions",
+  "date": "2026-11-26"
+ },
+ "rv-fe:shared:30": {
+  "status": "in-progress",
+  "note": "Fixed on branch fix/shared-batch3 (not merged yet): 'last period one quarter ago' and 'same period last quarter' step back by the calendar's own quarter length (3 monthly periods, 4 on thirteen four-week periods, 1 on quarterly periods) instead of a fixed 3. Covered by presets.test.ts.",
+  "ref": "fix/shared-batch3",
+  "date": "2026-11-26"
+ },
+ "rv-fe:shared:37": {
+  "status": "in-progress",
+  "note": "Fixed on branch fix/shared-batch3 (not merged yet): the text and CSV previews read only the start of the file (shared/utils/read-text-head.ts) and stop downloading there; an XLSX larger than 25 MB, declared by its size or Content-Length, shows 'too large to preview, download it' instead of freezing the tab. Covered by read-text-head.test.ts.",
+  "ref": "fix/shared-batch3",
+  "date": "2026-11-26"
+ },
+ "rv-fe:shared:59": {
+  "status": "in-progress",
+  "note": "Partly fixed on branch fix/shared-batch3 (not merged yet): shared/export/use-export-texts.ts now reads the shared CURRENCY_SYMBOLS table instead of its own copy. The claim about shared/utils/url.ts was wrong: every helper in it is reached through buildUrl, which lot-breakdown-list uses, so nothing there is dead.",
+  "ref": "fix/shared-batch3",
+  "date": "2026-11-26"
+ },
+ "rv-fe:shared:57": {
+  "status": "in-progress",
+  "note": "Partly fixed on branch fix/shared-batch3 (not merged yet): the login headline goes through the auth messages (en and bn). The requisition number was already fixed (prNo is empty and the form words it). The login gradient is the brand's login art and was left as it is.",
+  "ref": "fix/shared-batch3",
+  "date": "2026-11-26"
+ },
+ "rv-fe:shared:26": {
+  "status": "fixed",
+  "note": "Already fixed on release_1.1.0 (checked 2026-11-26): formatStatusLabel only reformats text that looks like a code (an underscore, or all upper or all lower case), so 'VAT Paid' is left as it is.",
+  "ref": "fix/shared-batch3",
+  "date": "2026-11-26"
+ },
+ "rv-fe:shared:7": {
+  "status": "fixed",
+  "note": "Already fixed on release_1.1.0 (checked 2026-11-26): next.config.ts sends X-Frame-Options, X-Content-Type-Options and Referrer-Policy, there is one lockfile (pnpm-lock.yaml), and the 60 MB server action limit is explained by the attachment forms it must cover.",
+  "ref": "fix/shared-batch3",
+  "date": "2026-11-26"
+ },
+ "pt1110:B15": {
+  "status": "wontfix",
+  "note": "By design (checked 2026-11-26): features/reports/shared/currency.ts states that the design prints taka as 'Tk' on every report figure, while the rest of the app shows the taka sign. The difference between reports and other screens is deliberate.",
+  "ref": "fix/shared-batch3",
+  "date": "2026-11-26"
+ },
+ "rv-fe:shared:40": {
+  "status": "decision",
+  "note": "Decision 2026-11-26 (product owner): keep for now. clientPeriod and clientDateRange mirror the client's printed statement wording on purpose (English, Tally style); clientDateRange has no caller and clientPeriod is used by a test only.",
+  "ref": "fix/shared-batch3",
+  "date": "2026-11-26"
+ },
+ "rv-fe:shared:29": {
+  "status": "decision",
+  "note": "Checked 2026-11-26, left unchanged: AppSelect shows the raw value when it is not in options. Hiding it is wrong for async-search selects, where the chosen item is legitimately not in the current list, so the fix needs a rule for what to show (a label lookup, blank, or the placeholder).",
+  "ref": "fix/shared-batch3",
   "date": "2026-11-26"
  }
 }

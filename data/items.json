@@ -32271,8 +32271,8 @@
   "severity": "low",
   "title": "Currency symbol differs: taka sign on purchase pages, 'Tk' in reports",
   "summary": "The currency label is inconsistent: purchase pages show the taka sign, but accounting reports (Trial Balance, ledgers, Balance Sheet) print the text 'Tk'.",
-  "status": "still-bug",
-  "status_evidence": "Still present: accounting report views hard-code currency=\"Tk\" (features/reports/accounting-reports/components/statement-table.tsx:411, general-ledger-view.tsx:117 and 132, ledger-views.tsx:252, 753, 768, balance-sheet-view.tsx:287) while the rest of the app shows the taka sign from shared/constants/currencies.ts.",
+  "status": "wontfix",
+  "status_evidence": "By design (checked 2026-11-26): features/reports/shared/currency.ts states that the design prints taka as 'Tk' on every report figure, while the rest of the app shows the taka sign. The difference between reports and other screens is deliberate.",
   "evidence_level": "verified",
   "found": "2026-11-10",
   "source": "TEST-OBSERVATIONS-2026-11-10.md B15",
@@ -32281,8 +32281,8 @@
   "theme": "Accounting segment (accounting developer)",
   "set": "purchase-test-2026-11-10",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/shared-batch3",
+   "date": "2026-11-26"
   },
   "steps": [
    "Open Purchase > Vendor Bills and note the amount prefix.",
@@ -32521,8 +32521,8 @@
   "severity": "low",
   "title": "AppStatusBadge lowercases and re-capitalises every string",
   "summary": "Status badges lowercase and re-capitalise any text, so acronyms and names are shown wrongly (VAT Paid becomes Vat paid, GRN posted becomes Grn posted).",
-  "status": "still-bug",
-  "status_evidence": "Still present: AppStatusBadge defaults formatLabel = true and formatBadgeText runs formatStatusLabel on every string child (src/shared/components/ui/app-status-badge.tsx:37-48), so 'VAT Paid' becomes 'Vat paid'.",
+  "status": "fixed",
+  "status_evidence": "Already fixed on release_1.1.0 (checked 2026-11-26): formatStatusLabel only reformats text that looks like a code (an underscore, or all upper or all lower case), so 'VAT Paid' is left as it is.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/07-shared.md",
@@ -32534,8 +32534,8 @@
   "theme": "Export rounds with `toFixed`; screen rounds with `Intl`  [LOW] [VERIFIED]  [size S]  (source IDs: fe-D44-6, fe-D42-8 (SUSPECT); highest severity LOW)",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/shared-batch3",
+   "date": "2026-11-26"
   },
   "steps": [
    "Open a list where a badge shows a label with an acronym, for example a status text 'VAT Paid'."
@@ -32618,8 +32618,8 @@
   "severity": "low",
   "title": "`AppSelect` shows a raw id when the value is not in `options`",
   "summary": "When a select is given a value that is not in its option list (an inactive record, or a list that is still loading) the box shows the raw id (often a UUID) instead of a name. Users see an unreadable code on any of the 128 screens that use AppSelect.",
-  "status": "still-bug",
-  "status_evidence": "Still present: src/shared/components/ui/app-select.tsx passes value straight to the AntD select (normalizedValue ~l.131-139) with no fallback label when the value is missing from options.",
+  "status": "decision",
+  "status_evidence": "Checked 2026-11-26, left unchanged: AppSelect shows the raw value when it is not in options. Hiding it is wrong for async-search selects, where the chosen item is legitimately not in the current list, so the fix needs a rule for what to show (a label lookup, blank, or the placeholder).",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/07-shared.md",
@@ -32631,8 +32631,8 @@
   "theme": "Export rounds with `toFixed`; screen rounds with `Intl`  [LOW] [VERIFIED]  [size S]  (source IDs: fe-D44-6, fe-D42-8 (SUSPECT); highest severity LOW)",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/shared-batch3",
+   "date": "2026-11-26"
   },
   "steps": [
    "Open an edit form whose select value is an inactive record (for example Sales > Customer edit where the saved category is no longer in the active list).",
@@ -32653,7 +32653,7 @@
   "title": "Trial Balance presets assume 12 monthly periods",
   "summary": "Trial Balance date presets meaning 'one quarter ago' step back exactly 3 periods. On a calendar with 13 four-week periods or quarterly periods that is the wrong period, and two presets with different names return the same period.",
   "status": "in-progress",
-  "status_evidence": "Partly fixed: src/features/reports/trial-balance/presets.ts ~l.186-188 'last-period-one-year-ago' now uses lastYear.periods.length. 'last-period-one-quarter-ago' and 'same-period-last-quarter' still use a fixed at(-3) (l.178-181,189), which assumes monthly periods.",
+  "status_evidence": "Fixed on branch fix/shared-batch3 (not merged yet): 'last period one quarter ago' and 'same period last quarter' step back by the calendar's own quarter length (3 monthly periods, 4 on thirteen four-week periods, 1 on quarterly periods) instead of a fixed 3. Covered by presets.test.ts.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/07-shared.md",
@@ -32664,8 +32664,8 @@
   "theme": "Export rounds with `toFixed`; screen rounds with `Intl`  [LOW] [VERIFIED]  [size S]  (source IDs: fe-D44-6, fe-D42-8 (SUSPECT); highest severity LOW)",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/shared-batch3",
+   "date": "2026-11-26"
   },
   "steps": [
    "Set up a fiscal year with 13 periods (Accounting > Fiscal years).",
@@ -32817,8 +32817,8 @@
   "severity": "low",
   "title": "Spreadsheet and text previews read the whole file before applying caps",
   "summary": "Previewing a very large CSV or XLSX attachment downloads and parses the whole file in the browser before cutting it to 100 rows. An 80 MB file freezes the tab.",
-  "status": "still-bug",
-  "status_evidence": "Still present: src/shared/components/ui/app-text-preview.tsx sourceText (l.19-31) calls response.text() on the whole file and applies MAX_PREVIEW_CHARS afterwards; app-spreadsheet-preview.tsx fetches the whole blob (l.80-107) with only row/column caps after parsing. No size check before reading.",
+  "status": "in-progress",
+  "status_evidence": "Fixed on branch fix/shared-batch3 (not merged yet): the text and CSV previews read only the start of the file (shared/utils/read-text-head.ts) and stop downloading there; an XLSX larger than 25 MB, declared by its size or Content-Length, shows 'too large to preview, download it' instead of freezing the tab. Covered by read-text-head.test.ts.",
   "evidence_level": "likely",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/07-shared.md",
@@ -32829,8 +32829,8 @@
   "theme": "Export rounds with `toFixed`; screen rounds with `Intl`  [LOW] [VERIFIED]  [size S]  (source IDs: fe-D44-6, fe-D42-8 (SUSPECT); highest severity LOW)",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/shared-batch3",
+   "date": "2026-11-26"
   },
   "steps": [
    "Attach an 80 MB CSV to any record that has attachments.",
@@ -32949,8 +32949,8 @@
   "severity": "low",
   "title": "Dead and unreachable client-format code with hardcoded English",
   "summary": "The client-format printout module still contains an unused 'register' path and two helpers with English text that no screen calls. It is dead weight and would be untranslated if reused.",
-  "status": "still-bug",
-  "status_evidence": "Still present: client-format/maths.ts l.35-42 still defines clientPeriod/clientDateRange with hardcoded English ('Date From', 'to'); only client-format.test.ts imports clientPeriod.",
+  "status": "decision",
+  "status_evidence": "Decision 2026-11-26 (product owner): keep for now. clientPeriod and clientDateRange mirror the client's printed statement wording on purpose (English, Tally style); clientDateRange has no caller and clientPeriod is used by a test only.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/07-shared.md",
@@ -32961,8 +32961,8 @@
   "theme": "Export rounds with `toFixed`; screen rounds with `Intl`  [LOW] [VERIFIED]  [size S]  (source IDs: fe-D44-6, fe-D42-8 (SUSPECT); highest severity LOW)",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/shared-batch3",
+   "date": "2026-11-26"
   },
   "steps": [
    "Run grep -rn clientPeriod src (only the test imports it)."
@@ -33081,7 +33081,7 @@
   "title": "Inventory-detail panels floor quantities to whole numbers",
   "summary": "The bin/lot detail panels round entered quantities down to whole numbers (2.5 becomes 2) without a message, while the manual panel accepts decimals, so the panels disagree.",
   "status": "decision",
-  "status_evidence": "Checked 2026-11-26, left unchanged: the three Math.floor sites (lookup panel, multi-select dialog, clamp helper) still round quantities down to whole units. Product decision needed first: can a lot- or serial-tracked quantity be fractional (kg, litre)?",
+  "status_evidence": "Decision 2026-11-26 (product owner): keep as it is for now; allowing fractional lot quantities is a lot of work and comes later. Checked: the three Math.floor sites (lookup panel, multi-select dialog, clamp helper) still round quantities down to whole units. Suggested later rule: serial-tracked quantities stay whole, lot-tracked ones follow the unit of measure's precision.",
   "evidence_level": "suspect",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/07-shared.md",
@@ -33407,8 +33407,8 @@
   "severity": "low",
   "title": "Hardcoded English and literal colours in route files",
   "summary": "Route files still hold hardcoded English text and fixed colours (login screen, requisition default number), so the Bangla UI shows English and dark mode ignores the login gradient.",
-  "status": "still-bug",
-  "status_evidence": "Still present: app/(auth)/login/page.tsx l.24-35 has an inline hex gradient and English 'Welcome to Petra ERP.'; purchase/purchase-requisition/new/page.tsx:119 prNo 'To be Generated'.",
+  "status": "in-progress",
+  "status_evidence": "Partly fixed on branch fix/shared-batch3 (not merged yet): the login headline goes through the auth messages (en and bn). The requisition number was already fixed (prNo is empty and the form words it). The login gradient is the brand's login art and was left as it is.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/07-shared.md",
@@ -33419,8 +33419,8 @@
   "theme": "Export rounds with `toFixed`; screen rounds with `Intl`  [LOW] [VERIFIED]  [size S]  (source IDs: fe-D44-6, fe-D42-8 (SUSPECT); highest severity LOW)",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/shared-batch3",
+   "date": "2026-11-26"
   },
   "steps": [
    "Switch to Bangla, open /login and Purchase > Purchase Requisition > New."
@@ -33472,7 +33472,7 @@
   "title": "Dead and duplicated helpers; shared constant never used",
   "summary": "Some helpers and constants are unused or duplicated, which invites drift.",
   "status": "in-progress",
-  "status_evidence": "Part fixed: TIME_RANGE_OPTIONS is gone. Still open: shared/utils/url.ts helpers have no importers outside the file; shared/export/use-export-texts.ts:8 still defines its own CURRENCY_SYMBOLS next to shared/constants/currencies.ts:65.",
+  "status_evidence": "Partly fixed on branch fix/shared-batch3 (not merged yet): shared/export/use-export-texts.ts now reads the shared CURRENCY_SYMBOLS table instead of its own copy. The claim about shared/utils/url.ts was wrong: every helper in it is reached through buildUrl, which lot-breakdown-list uses, so nothing there is dead.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/07-shared.md",
@@ -33484,8 +33484,8 @@
   "theme": "Export rounds with `toFixed`; screen rounds with `Intl`  [LOW] [VERIFIED]  [size S]  (source IDs: fe-D44-6, fe-D42-8 (SUSPECT); highest severity LOW)",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/shared-batch3",
+   "date": "2026-11-26"
   },
   "steps": [
    "Run grep -rn getQueryParams src and grep -rn CURRENCY_SYMBOLS src."
@@ -33670,8 +33670,8 @@
   "severity": "low",
   "title": "No security headers, 60 MB action body limit, two lockfiles",
   "summary": "Security headers were added; the server action body limit is far above the backend caps and two lockfiles exist.",
-  "status": "in-progress",
-  "status_evidence": "Part fixed: next.config.ts l.17-28 now sends X-Frame-Options, X-Content-Type-Options and Referrer-Policy. Still open: bodySizeLimit '60mb' (l.14, now with a comment) and package-lock.json is still tracked next to pnpm-lock.yaml.",
+  "status": "fixed",
+  "status_evidence": "Already fixed on release_1.1.0 (checked 2026-11-26): next.config.ts sends X-Frame-Options, X-Content-Type-Options and Referrer-Policy, there is one lockfile (pnpm-lock.yaml), and the 60 MB server action limit is explained by the attachment forms it must cover.",
   "evidence_level": "verified",
   "found": "2026-11-02",
   "source": "FRONTEND-BY-MODULE/07-shared.md",
@@ -33682,8 +33682,8 @@
   "theme": "Export rounds with `toFixed`; screen rounds with `Intl`  [LOW] [VERIFIED]  [size S]  (source IDs: fe-D44-6, fe-D42-8 (SUSPECT); highest severity LOW)",
   "set": "review-fe",
   "checked": {
-   "ref": "frontend release_beta_1.0.0@05aecf15",
-   "date": "2026-11-13"
+   "ref": "fix/shared-batch3",
+   "date": "2026-11-26"
   },
   "steps": [
    "curl -I the app root and read the headers.",
