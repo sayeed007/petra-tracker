@@ -3331,10 +3331,10 @@
   "date": "2026-11-26"
  },
  "rv-fe:settings-platform:14": {
-  "status": "decision",
-  "note": "Checked 2026-11-26, left unchanged: a child location is created with its parent's purpose and flags as its own values on purpose (defaultChildForm), so the rename path writing them again follows the same rule. Whether a child should store only its own settings and read the rest from the parent is a design decision for the owner.",
-  "ref": "fix/shared-settings-batch1",
-  "date": "2026-11-26"
+  "status": "wontfix",
+  "ref": "fix/shared-batch3",
+  "date": "2026-11-26",
+  "note": "Decision 2026-11-26 (product owner): leave as it is. Checked 2026-11-26 against the backend (InventoryLocationInheritancePolicy, InventoryLocationDomainService.validateInheritedRestrictions): the backend REQUIRES a child to store the same storage purpose and restriction flags as a restricted parent, and answers 400 to a child that carries NONE under a quarantined parent. So the frontend writing the inherited values on a rename is what the backend demands, and sending only the child's own values would make every rename under a restricted parent fail. The real gap is the other direction: when a parent's restriction is lifted the children keep theirs (the backend only cascades a NEW restriction down, with force=true), so each child has to be edited by hand. Options: leave it as is; show a hint after lifting a parent's restriction that N child locations still carry it; or ask the backend for a cascade for lifting too."
  },
  "rv-fe:settings-platform:19": {
   "status": "in-progress",
@@ -3397,9 +3397,21 @@
   "date": "2026-11-26"
  },
  "rv-fe:shared:29": {
-  "status": "decision",
-  "note": "Checked 2026-11-26, left unchanged: AppSelect shows the raw value when it is not in options. Hiding it is wrong for async-search selects, where the chosen item is legitimately not in the current list, so the fix needs a rule for what to show (a label lookup, blank, or the placeholder).",
+  "status": "in-progress",
   "ref": "fix/shared-batch3",
-  "date": "2026-11-26"
+  "date": "2026-11-26",
+  "note": "Decision 2026-11-26 (product owner): show a dash. Done on branch fix/shared-batch3 (not merged yet): a single AppSelect whose value none of the options carries shows a dash instead of the raw id (shared/components/ui/app-select.tsx, helper app-select-options.ts with tests); multiple and tags selects and labelInValue keep their own display."
+ },
+ "rv-fe:settings-platform:17": {
+  "status": "wontfix",
+  "ref": "fix/shared-batch3",
+  "date": "2026-11-26",
+  "note": "Closed 2026-11-26 (product owner): a manager can only be replaced, not removed, by design; the reported silent keep of a cleared manager has no path left on screen. Checked 2026-11-26 against the current code: the backend no longer creates a null manager. With no userId in an update (SalesGeographyManagerDomainService.reassignOnGeographyUpdate) it leaves the assignment exactly as it is. The reworked org-structure screen never sends a cleared assignee either (save-plan.ts sends assigneeId only when a person is chosen) and its person field has no clear button. So the old complaint, a silent save that keeps a manager the user cleared, has no path left on screen. What remains is that a manager can only be replaced, not removed: there is no unassign operation on either side. Needed only if a post must be able to stay empty (a person leaves and nobody takes the post yet); today that is handled by assigning someone else or deactivating the user."
+ },
+ "demo:shell:notifications-unread-count-401": {
+  "status": "in-progress",
+  "ref": "fix/shared-batch3",
+  "date": "2026-11-26",
+  "note": "Decision 2026-11-26: keep polling so a service that comes up is noticed, but slow down while it does not answer. Done on branch fix/shared-batch3 (not merged yet): the unread-count poll goes one minute, two, four, then five minutes after consecutive failures and back to one minute on the first answer (notifications/live-sync.ts pollDelayMs, tests). The browser still logs the 401 of each request; that cannot be hidden from the frontend."
  }
 }
